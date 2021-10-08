@@ -12,7 +12,7 @@ let package = Package(
     products: [
         .library(
             name: "BlueTriangle",
-            targets: ["BlueTriangle"]),
+            targets: ["BlueTriangle"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -27,5 +27,8 @@ let package = Package(
         .testTarget(
             name: "BlueTriangleTests",
             dependencies: ["BlueTriangle"]),
+        .testTarget(
+            name: "ObjcCompatibilityTests",
+            dependencies: ["BlueTriangle"])
     ]
 )
