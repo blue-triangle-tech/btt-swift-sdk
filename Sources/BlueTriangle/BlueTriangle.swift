@@ -56,4 +56,17 @@ final public class BlueTriangle: NSObject {
             Self.initialized = true
         }
     }
+
+    @objc
+    public static func startTimer() -> BTTimer {
+        let timer = BTTimer()
+        timer.start()
+        return timer
+    }
+
+    @objc
+    public static func endTimer(_ timer: BTTimer) {
+        timer.end()
+        // ...
+    }
 }
