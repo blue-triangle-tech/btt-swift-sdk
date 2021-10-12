@@ -27,6 +27,7 @@ final public class BTTimer: NSObject {
     private let timeIntervalProvider: () -> TimeInterval
     private let log: (String) -> Void = { _ in }
 
+    @objc public let page: Page
     @objc public private(set) var state: State = .initial
     @objc public private(set) var startTime: TimeInterval = 0.0
     @objc public private(set) var interactiveTime: TimeInterval = 0.0
@@ -34,6 +35,7 @@ final public class BTTimer: NSObject {
 
     init(page: Page,
          intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }) {
+        self.page = page
         self.timeIntervalProvider = intervalProvider
     }
 

@@ -7,6 +7,7 @@
 
 import Foundation
 
+// TODO: use more appropriate name for mobile context
 final public class Page: NSObject {
 
     /// Brand Value, Optional static monetary amount assigned to a step in the user’s path
@@ -32,14 +33,14 @@ final public class Page: NSObject {
     @objc public var customNumbers: CustomNumbers?
 
     @objc public init(
-        brandValue: Decimal,
         pageName: String,
-        pageType: String,
-        referringURL: String,
-        url: String,
-        customVariables: CustomVariables?,
-        customCategories: CustomCategories?,
-        customNumbers: CustomNumbers?
+        brandValue: Decimal = 0.0,
+        pageType: String = "Main Group",
+        referringURL: String = "",
+        url: String = "",
+        customVariables: CustomVariables? = nil,
+        customCategories: CustomCategories? = nil,
+        customNumbers: CustomNumbers? = nil
     ) {
         self.brandValue = brandValue
         self.pageName = pageName

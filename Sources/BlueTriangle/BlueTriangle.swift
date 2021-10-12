@@ -13,10 +13,10 @@ final public class BlueTriangleConfiguration: NSObject {
     @objc public var siteID: String = ""
 
     /// Session ID.
-    @objc public var sessionID: String = "" // `sID`
+    @objc public var sessionID: Identifier = 0 // `sID`
 
     /// Global User ID
-    @objc public var globalUserID: String = "" // `gID`
+    @objc public var globalUserID: Identifier = 0 // `gID`
 
     /// A/B testing identifier.
     @objc public var abTestID: String = "Default" // `AB`
