@@ -58,8 +58,8 @@ final public class BlueTriangle: NSObject {
     }
 
     @objc
-    public static func startTimer() -> BTTimer {
-        let timer = BTTimer()
+    public static func startTimer(page: Page) -> BTTimer {
+        let timer = BTTimer(page: page)
         timer.start()
         return timer
     }

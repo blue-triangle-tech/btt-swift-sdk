@@ -32,7 +32,8 @@ final public class BTTimer: NSObject {
     @objc public private(set) var interactiveTime: TimeInterval = 0.0
     @objc public private(set) var endTime: TimeInterval = 0.0
 
-    init(intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }) {
+    init(page: Page,
+         intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }) {
         self.timeIntervalProvider = intervalProvider
     }
 
