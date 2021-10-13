@@ -47,8 +47,7 @@ final public class BTTimer: NSObject {
         handle(.start)
     }
 
-    // TODO: should we allow stopping a timer independently of `BlutTriangle.endTimer(_:)`?
-    func end() {
+    @objc public func end() {
         handle(.end)
     }
 
