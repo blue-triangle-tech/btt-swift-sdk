@@ -9,7 +9,6 @@ import Foundation
 
 enum Constants {
     static let browserName = "Native App"
-    static let osName = "iOS"
     static let globalUserIDKey = "com.bluetriangle.kGlobalUserIDUserDefault"
     static let endpoint = "https://d.btttag.com/analytics.rcv"
 
