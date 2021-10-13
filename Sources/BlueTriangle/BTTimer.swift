@@ -63,8 +63,16 @@ final public class BTTimer: NSObject {
             case (.started, .end), (.interactive, .end):
                 endTime = timeIntervalProvider()
                 state = .ended
+            case (.initial, .markInteractive):
+                log("Interactive time cannot be set until timer is started.")
+            case (.initial, .end):
+                log("Cannot end timer before it is started.")
+            case (.started, .start):
+                log("Start time already set.")
             case (.interactive, .markInteractive):
                 log("Interactive time already set.")
+            case (.ended, .start), (.ended, .markInteractive), (.ended, .end):
+                log("Timer already ended.")
             default:
                 log("Invalid transition.")
             }
