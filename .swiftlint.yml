@@ -1,7 +1,5 @@
 excluded:
     - .build
-    - Submodules
-    - */Utils/Lingo.swift
 opt_in_rules:
     - empty_count
     - explicit_init
