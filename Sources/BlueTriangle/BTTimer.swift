@@ -39,15 +39,18 @@ final public class BTTimer: NSObject {
         self.timeIntervalProvider = intervalProvider
     }
 
-    @objc public func markInteractive() {
-        handle(.markInteractive)
-    }
-
-    func start() {
+    @objc
+    public func start() {
         handle(.start)
     }
 
-    @objc public func end() {
+    @objc
+    public func markInteractive() {
+        handle(.markInteractive)
+    }
+
+    @objc
+    public func end() {
         handle(.end)
     }
 
