@@ -7,7 +7,7 @@
 import Foundation
 
 extension URL: ExpressibleByStringLiteral {
-    init(stringLiteral value: StaticString) {
+    public init(stringLiteral value: StaticString) {
         guard let url = URL(string: "\(value)") else {
             preconditionFailure("Invalid static URL string: \(value)")
         }
