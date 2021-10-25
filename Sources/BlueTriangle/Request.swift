@@ -41,9 +41,9 @@ extension Request {
         url: URL,
         headers: Headers? = nil,
         model: T,
-        encoder: JSONEncoder = JSONEncoder()
+        encode: (T) throws -> Data = { try JSONEncoder().encode($0).base64EncodedData() }
     ) throws {
-        let body = try encoder.encode(model)
+        let body = try encode(model)
         self.init(method: method, url: url, headers: headers, body: body)
     }
 }
