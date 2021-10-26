@@ -26,21 +26,28 @@ class Uploader: Uploading {
 
     private let networking: Networking
 
+    private let retryConfiguration: RetryConfiguration<DispatchQueue>
+
     private var subscriptions = [UUID: AnyCancellable]()
 
      var subscriptionCount: Int {
          lock.sync { subscriptions.count }
      }
 
-    init(log: @escaping (String) -> Void, networking: @escaping Networking) {
+    init(
+        log: @escaping (String) -> Void,
+        networking: @escaping Networking,
+        retryConfiguration: RetryConfiguration<DispatchQueue>
+    ) {
         self.log = log
         self.networking = networking
+        self.retryConfiguration = retryConfiguration
     }
 
     func send(request: Request) {
         let id = UUID()
         let publisher = networking(request)
-            .retry(retries: 3, initialDelay: 10.0, delayMultiplier: 1.0, shouldRetry: nil, scheduler: queue)
+            .retry(retryConfiguration, scheduler: queue)
             .subscribe(on: queue)
             .sink(
                 receiveCompletion: { [weak self] completion in
@@ -66,3 +73,26 @@ class Uploader: Uploading {
     }
 }
 
+// MARK: - Supporting Types
+extension Uploader {
+    struct RetryConfiguration<S: Scheduler> {
+        let maxRetry: UInt
+        let initialDelay: S.SchedulerTimeType.Stride
+        let delayMultiplier: Double
+        let shouldRetry: Publisher.RetryPredicate?
+    }
+}
+
+// MARK: - Publisher+RetryConfiguration
+extension Publisher {
+    func retry<S: Scheduler>(
+        _ configuration: Uploader.RetryConfiguration<S>,
+        scheduler: S
+    ) -> AnyPublisher<Output, Failure> {
+        retry(retries: configuration.maxRetry,
+              initialDelay: configuration.initialDelay,
+              delayMultiplier: configuration.delayMultiplier,
+              shouldRetry: configuration.shouldRetry,
+              scheduler: scheduler)
+    }
+}
