@@ -14,8 +14,22 @@ protocol Uploading {
 
 typealias Networking = (Request) -> AnyPublisher<HTTPResponse<Data>, NetworkError>
 
-class Uploader: Uploading {
+struct RequestBuilder {
+    let builder: (Session, BTTimer) throws -> Request
 
+    static var live: Self = RequestBuilder { session, timer in
+        let model = TimerRequest(session: session,
+                                 page: timer.page,
+                                 timer: timer.pageTimeInterval,
+                                 purchaseConfirmation: nil)
+        return try Request(method: .post,
+                           url: Constants.timerEndpoint,
+                           headers: nil,
+                           model: model)
+    }
+}
+
+class Uploader: Uploading {
     private let lock = NSLock()
 
     private let queue = DispatchQueue(label: "com.bluetriangle.uploader",
@@ -80,6 +94,27 @@ extension Uploader {
         let initialDelay: S.SchedulerTimeType.Stride
         let delayMultiplier: Double
         let shouldRetry: Publisher.RetryPredicate?
+    }
+
+    struct Configuration {
+        let log: (String) -> Void
+        let networking: Networking
+        let retryConfiguration: RetryConfiguration<DispatchQueue>
+
+        func makeUploader() -> Uploading {
+            Uploader(log: log, networking: networking, retryConfiguration: retryConfiguration)
+        }
+
+        static var live: Self {
+            let configuration = URLSessionConfiguration.default
+            let session = URLSession(configuration: configuration)
+            return Self(log: { _ in },
+                        networking: session.dataTaskPublisher,
+                        retryConfiguration: .init(maxRetry: 3,
+                                                  initialDelay: 10.0,
+                                                  delayMultiplier: 1.0,
+                                                  shouldRetry: nil))
+        }
     }
 }
 
