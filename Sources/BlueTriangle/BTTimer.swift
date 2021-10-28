@@ -33,6 +33,13 @@ final public class BTTimer: NSObject {
     @objc public private(set) var interactiveTime: TimeInterval = 0.0
     @objc public private(set) var endTime: TimeInterval = 0.0
 
+    var pageTimeInterval: PageTimeInterval {
+        PageTimeInterval(
+            startTime: startTime.milliseconds,
+            interactiveTime: interactiveTime.milliseconds,
+            pageTime: endTime.milliseconds - startTime.milliseconds)
+    }
+
     init(page: Page,
          log: @escaping (String) -> Void,
          intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }) {

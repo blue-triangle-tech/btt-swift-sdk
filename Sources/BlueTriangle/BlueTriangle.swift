@@ -8,6 +8,7 @@
 import Foundation
 
 final public class BlueTriangleConfiguration: NSObject {
+    private var customCampaign: String?
 
     /// Blue Triangle Technologies-assigned site ID.
     @objc public var siteID: String = ""
@@ -23,7 +24,9 @@ final public class BlueTriangleConfiguration: NSObject {
 
     /// Legacy campaign name.
     @available(*, deprecated, message: "Use `campaignName` instead.")
-    @objc public var campaign: String? = "" // `campaign`
+    @objc public var campaign: String? = "" { // `campaign`
+        didSet { customCampaign = campaign }
+    }
 
     /// Campaign medium.
     @objc public var campaignMedium: String = "" // `CmpM`
@@ -41,6 +44,28 @@ final public class BlueTriangleConfiguration: NSObject {
     @objc public var trafficSegmentName: String = "" // `txnName`
 
     var timerConfiguration: BTTimer.Configuration = .live
+
+    var uploaderConfiguration: Uploader.Configuration = .live
+
+    var requestBuilder: RequestBuilder = .live
+}
+
+// MARK: - Supporting Types
+extension BlueTriangleConfiguration {
+
+    func makeSession() -> Session {
+        Session(siteID: siteID,
+                globalUserID: globalUserID,
+                sessionID: sessionID,
+                abTestID: abTestID,
+                campaign: customCampaign,
+                campaignMedium: campaignMedium,
+                campaignName: campaignName,
+                campaignSource: campaignSource,
+                dataCenter: dataCenter,
+                trafficSegmentName: trafficSegmentName
+        )
+    }
 }
 
 final public class BlueTriangle: NSObject {
