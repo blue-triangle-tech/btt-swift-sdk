@@ -39,6 +39,8 @@ final public class BlueTriangleConfiguration: NSObject {
 
     /// Traffic segment.
     @objc public var trafficSegmentName: String = "" // `txnName`
+
+    var timerConfiguration: BTTimer.Configuration = .live
 }
 
 final public class BlueTriangle: NSObject {
@@ -59,13 +61,13 @@ final public class BlueTriangle: NSObject {
 
     @objc
     public static func makeTimer(page: Page) -> BTTimer {
-        let timer = BTTimer(page: page)
+        let timer = configuration.timerConfiguration.timerFactory()(page)
         return timer
     }
 
     @objc
     public static func startTimer(page: Page) -> BTTimer {
-        let timer = BTTimer(page: page)
+        let timer = configuration.timerConfiguration.timerFactory()(page)
         timer.start()
         return timer
     }
