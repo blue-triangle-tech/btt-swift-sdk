@@ -73,26 +73,33 @@ final public class BlueTriangle: NSObject {
     private static let lock = NSLock()
     private static var configuration = BlueTriangleConfiguration()
 
+    private static var uploader: Uploading = {
+        configuration.uploaderConfiguration.makeUploader()
+    }()
+
     public private(set) static var initialized = false
 
     @objc
     public static func configure(_ configure: (BlueTriangleConfiguration) -> Void) {
         lock.sync {
             precondition(!Self.initialized, "BlueTriangle can only be initialized once.")
+            initialized.toggle()
             configure(configuration)
-            Self.initialized = true
         }
     }
 
     @objc
     public static func makeTimer(page: Page) -> BTTimer {
+        lock.lock()
+        precondition(initialized, "BlueTriangle must be initialized before sending timers.")
         let timer = configuration.timerConfiguration.timerFactory()(page)
+        lock.unlock()
         return timer
     }
 
     @objc
     public static func startTimer(page: Page) -> BTTimer {
-        let timer = configuration.timerConfiguration.timerFactory()(page)
+        let timer = makeTimer(page: page)
         timer.start()
         return timer
     }
@@ -100,6 +107,32 @@ final public class BlueTriangle: NSObject {
     @objc
     public static func endTimer(_ timer: BTTimer) {
         timer.end()
-        // ...
+        let request: Request
+        lock.lock()
+        do {
+            request = try configuration.requestBuilder.builder(configuration.makeSession(), timer)
+            lock.unlock()
+        } catch  {
+            lock.unlock()
+            print(error) // FIXME: add actual implementation
+            return
+        }
+        uploader.send(request: request)
+    }
+}
+
+extension BlueTriangle {
+    // Support for testing
+    @objc
+    static func reset() {
+        lock.sync {
+            configuration = BlueTriangleConfiguration()
+            initialized = false
+        }
+    }
+
+    @objc
+    static func prime() {
+        let _ = uploader
     }
 }
