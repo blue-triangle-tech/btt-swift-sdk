@@ -54,6 +54,13 @@ enum Mock {
 
 // MARK: - Configuration
 extension Mock {
+
+    static var uploaderQueue: DispatchQueue {
+        DispatchQueue(label: "com.bluetriangle.uploader",
+                      qos: .userInitiated,
+                      autoreleaseFrequency: .workItem)
+    }
+
     static func configureBlueTriangle(configuration config: BlueTriangleConfiguration) {
         config.siteID = "MY_SITE_ID"
         config.sessionID = Mock.sessionID
@@ -66,7 +73,9 @@ extension Mock {
         config.trafficSegmentName = "MY_SEGMENT_NAME"
     }
 
-    static func makeRequestBuilder(onBuild: @escaping (Session, BTTimer) -> Void = { _, _ in }) -> RequestBuilder {
+    static func makeRequestBuilder(
+        onBuild: @escaping (Session, BTTimer) -> Void = { _, _ in }
+    ) -> RequestBuilder {
         RequestBuilder { session, timer in
             onBuild(session, timer)
             return Request(method: .post, url: "https://example.com")
@@ -78,8 +87,12 @@ extension Mock {
                                                                                delayMultiplier: 0.1,
                                                                                shouldRetry: nil)
 
-    static func makeUploaderConfiguration(onSend: @escaping (Request) -> Void = {_ in }) -> Uploader.Configuration {
+    static func makeUploaderConfiguration(
+        queue: DispatchQueue,
+        onSend: @escaping (Request) -> Void = {_ in }
+    ) -> Uploader.Configuration {
         Uploader.Configuration(
+            queue: queue,
             log: { print($0) },
             networking: { request in
                 Deferred {
@@ -92,7 +105,9 @@ extension Mock {
             retryConfiguration: retryConfiguration)
     }
 
-    static func makeTimerConfiguration(intervalProvider: @escaping () -> TimeInterval) ->  BTTimer.Configuration {
+    static func makeTimerConfiguration(
+        intervalProvider: @escaping () -> TimeInterval
+    ) ->  BTTimer.Configuration {
         BTTimer.Configuration(
             logProvider: { print($0) },
             timeIntervalProvider: intervalProvider

@@ -32,9 +32,7 @@ struct RequestBuilder {
 class Uploader: Uploading {
     private let lock = NSLock()
 
-    private let queue = DispatchQueue(label: "com.bluetriangle.uploader",
-                                      qos: .userInitiated,
-                                      autoreleaseFrequency: .workItem)
+    private let queue: DispatchQueue
 
     private let log: (String) -> Void
 
@@ -49,10 +47,12 @@ class Uploader: Uploading {
      }
 
     init(
+        queue: DispatchQueue,
         log: @escaping (String) -> Void,
         networking: @escaping Networking,
         retryConfiguration: RetryConfiguration<DispatchQueue>
     ) {
+        self.queue = queue
         self.log = log
         self.networking = networking
         self.retryConfiguration = retryConfiguration
@@ -97,18 +97,22 @@ extension Uploader {
     }
 
     struct Configuration {
+        let queue: DispatchQueue
         let log: (String) -> Void
         let networking: Networking
         let retryConfiguration: RetryConfiguration<DispatchQueue>
 
         func makeUploader() -> Uploading {
-            Uploader(log: log, networking: networking, retryConfiguration: retryConfiguration)
+            Uploader(queue: queue, log: log, networking: networking, retryConfiguration: retryConfiguration)
         }
 
         static var live: Self {
             let configuration = URLSessionConfiguration.default
             let session = URLSession(configuration: configuration)
-            return Self(log: { _ in },
+            return Self(queue: DispatchQueue(label: "com.bluetriangle.uploader",
+                                             qos: .userInitiated,
+                                             autoreleaseFrequency: .workItem),
+                        log: { _ in },
                         networking: session.dataTaskPublisher,
                         retryConfiguration: .init(maxRetry: 3,
                                                   initialDelay: 10.0,
