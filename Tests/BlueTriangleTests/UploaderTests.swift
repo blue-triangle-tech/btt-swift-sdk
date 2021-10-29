@@ -20,7 +20,7 @@ final class UploaderTests: XCTestCase {
         let dataTaskPublisher: AnyPublisher<(data: Data, response: URLResponse), Error> = Deferred {
             Future { promise in
                 requestCount += 1
-                promise(.failure(TestError()))
+                promise(.failure(Mock.TestError()))
             }
         }.eraseToAnyPublisher()
 
@@ -57,7 +57,7 @@ final class UploaderTests: XCTestCase {
         let dataTaskPublisher: AnyPublisher<(data: Data, response: URLResponse), Error> = Deferred {
             Future { promise in
                 requestCount += 1
-                promise(.success(Self.successResponse))
+                promise(.success(Mock.urlSuccessResponse))
             }
         }.eraseToAnyPublisher()
 
@@ -97,9 +97,9 @@ final class UploaderTests: XCTestCase {
                 requestCount += 1
                 if requestCount < 3 {
                     errorCount += 1
-                    promise(.failure(TestError()))
+                    promise(.failure(Mock.TestError()))
                 } else {
-                    promise(.success(Self.successResponse))
+                    promise(.success(Mock.urlSuccessResponse))
                 }
             }
         }.eraseToAnyPublisher()
@@ -128,40 +128,4 @@ final class UploaderTests: XCTestCase {
         XCTAssertEqual(requestCount, 3)
         waitForExpectations(timeout: 1.0)
     }
-}
-
-// MARK: - Helpers
-extension BTUploaderTests {
-    typealias Response = (data: Data, response: HTTPURLResponse)
-
-    struct TestError: Error {}
-
-    static let errorJSON = """
-          {
-            "error": "someError"
-          }
-          """.data(using: .utf8)!
-
-    static let successJSON = """
-          {
-            "foo": "bar"
-          }
-          """.data(using: .utf8)!
-
-    static func makeHTTPResponse(statusCode: Int) -> HTTPURLResponse {
-        HTTPURLResponse(url: "https://example.com",
-                        statusCode: statusCode,
-                        httpVersion: nil,
-                        headerFields: nil)!
-    }
-
-    static var successResponse = Response(
-        data: successJSON,
-        response: makeHTTPResponse(statusCode: 200)
-    )
-
-    static var errorResponse = Response(
-        data: errorJSON,
-        response: makeHTTPResponse(statusCode: 400)
-    )
 }
