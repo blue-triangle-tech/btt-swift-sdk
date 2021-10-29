@@ -22,6 +22,13 @@ struct Request: URLRequestConvertible {
 
     let body: Data?
 
+    init(method: HTTPMethod, url: URL, headers: Headers? = nil, body: Data? = nil) {
+        self.method = method
+        self.url = url
+        self.headers = headers
+        self.body = body
+    }
+
     func asURLRequest() throws -> URLRequest {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = method.rawValue
