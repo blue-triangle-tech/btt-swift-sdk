@@ -43,6 +43,9 @@ final public class BlueTriangleConfiguration: NSObject {
     /// Traffic segment.
     @objc public var trafficSegmentName: String = "" // `txnName`
 
+    /// Crash Tracking Behavior.
+    @objc public var crashTracking: CrashTracking = .none
+
     var timerConfiguration: BTTimer.Configuration = .live
 
     var uploaderConfiguration: Uploader.Configuration = .live
@@ -52,6 +55,19 @@ final public class BlueTriangleConfiguration: NSObject {
 
 // MARK: - Supporting Types
 extension BlueTriangleConfiguration {
+
+    @objc
+    public enum CrashTracking: Int {
+        case none
+        case nsException
+
+        var configuration: CrashReportConfiguration? {
+            switch self {
+            case .none: return nil
+            case .nsException: return .nsException
+            }
+        }
+    }
 
     func makeSession() -> Session {
         Session(siteID: siteID,
