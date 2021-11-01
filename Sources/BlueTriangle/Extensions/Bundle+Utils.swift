@@ -8,6 +8,10 @@
 import Foundation
 
 extension Bundle {
+    var appName: String? {
+        infoDictionary?["CFBundleDisplayName"] as? String ?? infoDictionary?["CFBundleName"] as? String
+    }
+
     var releaseVersionNumber: String? {
         infoDictionary?["CFBundleShortVersionString"] as? String
     }

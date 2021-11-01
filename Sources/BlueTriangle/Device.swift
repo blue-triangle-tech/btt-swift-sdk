@@ -41,4 +41,14 @@ enum Device {
         return ""
         #endif
     }
+
+    static var name: String {
+        #if os(iOS) || os(tvOS)
+        return UIDevice.current.name
+        #elseif os(watchOS)
+        return "" // FIXME: implement
+        #elseif os(macOS)
+        return "" // FIXME: implement
+        #endif
+    }
 }
