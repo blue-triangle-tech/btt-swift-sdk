@@ -32,19 +32,27 @@ class CrashReportManager: CrashReportManaging {
     }
 
     func uploadReports(session: Session) {
-        guard let crashReport = CrashReportPersistence.read() else {
-            return
-        }
-        do {
-            let timerRequest = try makeTimerRequest(session: session, crashTime: crashReport.time)
-            uploader.send(request: timerRequest)
+        DispatchQueue.global(qos: .utility).async { [weak self] in
+            guard let crashReport = CrashReportPersistence.read() else {
+                return
+            }
+            do {
+                guard let strongSelf = self else {
+                    return
+                }
 
-            let reportRequest = try makeCrashReportRequest(session: session, crashReport: crashReport)
-            uploader.send(request: reportRequest)
+                let timerRequest = try strongSelf.makeTimerRequest(session: session,
+                                                                   crashTime: crashReport.time)
+                strongSelf.uploader.send(request: timerRequest)
 
-            CrashReportPersistence.clear()
-        } catch {
-            log("Error building crash report request: \(error)")
+                let reportRequest = try strongSelf.makeCrashReportRequest(session: session,
+                                                                          crashReport: crashReport)
+                strongSelf.uploader.send(request: reportRequest)
+
+                CrashReportPersistence.clear()
+            } catch {
+                self?.log("Error building crash report request: \(error)")
+            }
         }
     }
 
