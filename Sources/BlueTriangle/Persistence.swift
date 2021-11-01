@@ -126,3 +126,24 @@ struct Persistence {
     }
 }
 
+extension Persistence {
+    static let crashReport = Self(fileManager: .default,
+                                  fileLocation: UserLocation.cache(Constants.crashReportFilename),
+                                  log: { print($0) })
+}
+
+struct CrashReportPersistence {
+    static let persistence: Persistence = .crashReport
+
+    static func save(_ exception: NSException) {
+        persistence.save(CrashReport(exception: exception))
+    }
+
+    static func read() -> CrashReport? {
+        persistence.read()
+    }
+
+    static func clear() {
+        persistence.clear()
+    }
+}
