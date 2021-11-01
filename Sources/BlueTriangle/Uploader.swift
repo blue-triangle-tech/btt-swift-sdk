@@ -14,6 +14,14 @@ protocol Uploading {
 
 typealias Networking = (Request) -> AnyPublisher<HTTPResponse<Data>, NetworkError>
 
+extension URLSession {
+    static var live: Networking {
+        let configuration = URLSessionConfiguration.default
+        let session = URLSession(configuration: configuration)
+        return session.dataTaskPublisher
+    }
+}
+
 struct RequestBuilder {
     let builder: (Session, BTTimer) throws -> Request
 
@@ -107,13 +115,11 @@ extension Uploader {
         }
 
         static var live: Self {
-            let configuration = URLSessionConfiguration.default
-            let session = URLSession(configuration: configuration)
             return Self(queue: DispatchQueue(label: "com.bluetriangle.uploader",
                                              qos: .userInitiated,
                                              autoreleaseFrequency: .workItem),
                         log: { _ in },
-                        networking: session.dataTaskPublisher,
+                        networking: URLSession.live,
                         retryConfiguration: .init(maxRetry: 3,
                                                   initialDelay: 10.0,
                                                   delayMultiplier: 1.0,
