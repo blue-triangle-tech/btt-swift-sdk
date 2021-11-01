@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct PageTimeInterval: Codable {
+struct PageTimeInterval: Equatable {
     let startTime: Millisecond
     let interactiveTime: Millisecond
     let pageTime: Millisecond
