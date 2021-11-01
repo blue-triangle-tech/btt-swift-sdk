@@ -29,7 +29,7 @@ struct RequestBuilder {
     }
 }
 
-class Uploader: Uploading {
+final class Uploader: Uploading {
     private let lock = NSLock()
 
     private let queue: DispatchQueue
@@ -71,7 +71,7 @@ class Uploader: Uploading {
                     self?.removeSubscription(id: id)
                 },
                 receiveValue: { [weak self] value in
-                    self?.log("\(value)")
+                    self?.log("HTTP Status: \(value.response.statusCode)")
                 }
             )
 
