@@ -15,4 +15,7 @@ enum Constants {
 
     static let sessionTimeoutInMinutes = 30
     static let userSessionTimeoutInDays = 365
+
+    static let crashID = "iOS%20Crash"
+    static let eTp = "NativeAppCrash"
 }
