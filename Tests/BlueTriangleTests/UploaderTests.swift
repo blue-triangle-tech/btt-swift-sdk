@@ -128,4 +128,58 @@ final class UploaderTests: XCTestCase {
         XCTAssertEqual(requestCount, 3)
         waitForExpectations(timeout: 1.0)
     }
+
+    func testUploaderSubscriptionRemoval() throws {
+        let requestCount: Int = 10_000
+        let expectation = self.expectation(description: "Requests finished")
+
+        var currentRequestCount = 0
+        let networking: Networking = { request in
+            Deferred {
+                Future { promise in
+                    currentRequestCount += 1
+                    promise(.success(Mock.successResponse))
+                }
+            }.eraseToAnyPublisher()
+        }
+
+        var responseCount = 0
+        let log: (String) -> Void = { _ in
+            responseCount += 1
+            if responseCount == requestCount * 2 {
+                expectation.fulfill()
+            }
+        }
+
+        let uploaderQueue = Mock.uploaderQueue
+        let uploader = Uploader(queue: uploaderQueue, log: log, networking: networking, retryConfiguration: Mock.retryConfiguration)
+
+        let group = DispatchGroup()
+        DispatchQueue.global().async(group: group) {
+            for _ in 0 ..< requestCount {
+                uploader.send(request: Mock.request)
+            }
+        }
+
+        DispatchQueue.global().async(group: group) {
+            for _ in 0 ..< requestCount {
+                uploader.send(request: Mock.request)
+            }
+        }
+
+        group.notify(queue: .main) {
+            print("SubscriptionCount: \(uploader.subscriptionCount)")
+            XCTAssert(uploader.subscriptionCount > requestCount)
+        }
+
+        wait(for: [expectation], timeout: 5)
+        XCTAssertEqual(currentRequestCount, requestCount * 2)
+        XCTAssertEqual(responseCount, requestCount * 2)
+
+        let otherExpectation = self.expectation(description: "Allow completion")
+        otherExpectation.isInverted = true
+        wait(for: [otherExpectation], timeout: 2.0)
+
+        XCTAssertEqual(uploader.subscriptionCount, 0)
+    }
 }
