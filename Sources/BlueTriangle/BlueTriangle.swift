@@ -95,12 +95,21 @@ final public class BlueTriangle: NSObject {
 
     public private(set) static var initialized = false
 
+    private static var crashReportManager: CrashReportManaging?
+
+    private static var appEventObserver: AppEventObserver?
+
     @objc
     public static func configure(_ configure: (BlueTriangleConfiguration) -> Void) {
         lock.sync {
             precondition(!Self.initialized, "BlueTriangle can only be initialized once.")
             initialized.toggle()
             configure(configuration)
+            if let crashConfig = configuration.crashTracking.configuration {
+                DispatchQueue.global(qos: .utility).async {
+                    configureCrashTracking(with: crashConfig)
+                }
+            }
         }
     }
 
@@ -134,6 +143,19 @@ final public class BlueTriangle: NSObject {
             return
         }
         uploader.send(request: request)
+    }
+}
+
+extension BlueTriangle {
+    static func configureCrashTracking(with crashConfiguration: CrashReportConfiguration) {
+        crashReportManager = CrashReportManager(crashConfiguration,
+                                                log: { print($0) },
+                                                uploader: uploader)
+
+        appEventObserver = AppEventObserver(onLaunch: {
+            crashReportManager?.uploadReports(session: configuration.makeSession())
+        })
+        appEventObserver?.configureNotifications()
     }
 }
 
