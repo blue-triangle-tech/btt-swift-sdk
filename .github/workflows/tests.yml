@@ -10,7 +10,10 @@ on:
 jobs:
   macos_tests:
     name: macOS Tests (SwiftPM)
-    runs-on: macos-latest
+    runs-on: macos-11
+    strategy:
+      matrix:
+        swift: ['5.5']
 
     steps:
       - uses: actions/checkout@v2
