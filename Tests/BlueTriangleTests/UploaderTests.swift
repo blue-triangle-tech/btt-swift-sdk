@@ -144,7 +144,7 @@ final class UploaderTests: XCTestCase {
         }
 
         var responseCount = 0
-        let logger = MockLogger(
+        let logger = LoggerMock(
             onInfo: { message in
                 responseCount += 1
                 if responseCount == requestCount * 2 {

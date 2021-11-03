@@ -225,7 +225,7 @@ extension Mock {
     }
 }
 
-struct MockLogger: Logging {
+struct LoggerMock: Logging {
     var onInfo: (String) -> Void = { _ in }
     var onError: (String) -> Void = { _ in }
 
