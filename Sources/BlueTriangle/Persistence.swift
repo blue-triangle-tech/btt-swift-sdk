@@ -59,16 +59,16 @@ struct Persistence {
 
     private let fileLocation: FileLocation
 
-    private let log: (String) -> Void
+    private let logger: Logging
 
     private var containerURL: URL? {
         return fileLocation.containerURL
     }
 
-    init(fileManager: FileManager, fileLocation: FileLocation, log: @escaping (String) -> Void) {
+    init(fileManager: FileManager, fileLocation: FileLocation, logger: Logging) {
         self.fileManager = fileManager
         self.fileLocation = fileLocation
-        self.log = log
+        self.logger = logger
     }
 
     func save<T: Encodable>(_ object: T) {
@@ -76,14 +76,14 @@ struct Persistence {
             return
         }
         if fileManager.fileExists(atPath: containerURL.path) {
-            log("Deleting existing file at \(containerURL.path)")
+            logger.info("Deleting existing file at \(containerURL.path)")
         }
 
         do {
             let data = try JSONEncoder().encode(object)
             try data.write(to: containerURL)
         } catch {
-            log("Error saving \(object) to \(containerURL.path): \(error.localizedDescription)")
+            logger.error("Error saving \(object) to \(containerURL.path): \(error.localizedDescription)")
         }
     }
 
@@ -95,21 +95,21 @@ struct Persistence {
             let object = try JSONDecoder().decode(T.self, from: data)
             return object
         } catch {
-            log("Error decoding object at \(containerURL?.path ?? ""): \(error.localizedDescription)")
+            logger.error("Error decoding object at \(containerURL?.path ?? ""): \(error.localizedDescription)")
             return nil
         }
     }
 
     func readData() -> Data? {
         guard let containerURL = containerURL, fileManager.fileExists(atPath: containerURL.path) else {
-            log("Unable to locate file at \(containerURL?.path ?? "unknown path")")
+            logger.error("Unable to locate file at \(containerURL?.path ?? "unknown path")")
             return nil
         }
         do {
             let data = try Data(contentsOf: containerURL)
             return data
         } catch {
-            log("Error reading data at \(containerURL.path): \(error.localizedDescription)")
+            logger.error("Error reading data at \(containerURL.path): \(error.localizedDescription)")
             return nil
         }
     }
@@ -121,7 +121,7 @@ struct Persistence {
         do {
             try fileManager.removeItem(at: containerURL)
         } catch {
-            log("\(error)")
+            logger.error("\(error)")
         }
     }
 }
@@ -129,7 +129,7 @@ struct Persistence {
 extension Persistence {
     static let crashReport = Self(fileManager: .default,
                                   fileLocation: UserLocation.cache(Constants.crashReportFilename),
-                                  log: { print($0) })
+                                  logger: BTLogger.live)
 }
 
 struct CrashReportPersistence {
