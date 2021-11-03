@@ -10,14 +10,14 @@ import os.log
 
 protocol Logging {
     func logInfo(
-        _ message: () -> String,
+        _ message: @escaping () -> String,
         file: StaticString,
         function: StaticString,
         line: UInt
     )
 
     func logError(
-        _ message: () -> String,
+        _ message: @escaping () -> String,
         file: StaticString,
         function: StaticString,
         line: UInt
@@ -26,7 +26,7 @@ protocol Logging {
 
 extension Logging {
     func info(
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @escaping () -> String,
         file: StaticString = #fileID,
         function: StaticString = #function,
         line: UInt = #line
@@ -35,7 +35,7 @@ extension Logging {
     }
 
     func error(
-        _ message: @autoclosure () -> String,
+        _ message: @autoclosure @escaping () -> String,
         file: StaticString = #fileID,
         function: StaticString = #function,
         line: UInt = #line
@@ -46,7 +46,7 @@ extension Logging {
 
 struct BTLogger: Logging {
     func logInfo(
-        _ message: @autoclosure () -> String,
+        _ message: @escaping () -> String,
         file: StaticString,
         function: StaticString,
         line: UInt
@@ -54,7 +54,7 @@ struct BTLogger: Logging {
     }
 
     func logError(
-        _ message: @autoclosure () -> String,
+        _ message: @escaping () -> String,
         file: StaticString,
         function: StaticString,
         line: UInt
