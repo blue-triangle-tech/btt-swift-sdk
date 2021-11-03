@@ -23,7 +23,6 @@ class CrashReportManager: CrashReportManaging {
 
     init(
         _ configuration: CrashReportConfiguration,
-        log: @escaping (String) -> Void = { print($0) },
         logger: Logging,
         uploader: Uploading
     ) {
