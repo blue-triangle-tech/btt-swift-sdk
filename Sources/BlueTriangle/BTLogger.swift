@@ -133,3 +133,9 @@ final class BTLogger: Logging {
         logger.log(level: .error, message: message, file: file, function: function, line: line)
     }
 }
+
+extension BTLogger {
+    static let live: Logging = {
+        BTLogger()
+    }()
+}

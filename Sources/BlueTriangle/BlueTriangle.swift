@@ -47,7 +47,7 @@ final public class BlueTriangleConfiguration: NSObject {
     @objc public var crashTracking: CrashTracking = .none
 
     var makeLogger: () -> Logging = {
-        BTLogger()
+        BTLogger.live
     }
 
     var timerConfiguration: BTTimer.Configuration = .live
