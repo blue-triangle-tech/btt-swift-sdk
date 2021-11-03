@@ -93,7 +93,6 @@ extension Mock {
     ) -> Uploader.Configuration {
         Uploader.Configuration(
             queue: queue,
-            log: { print($0) },
             networking: { request in
                 Deferred {
                     Future { promise in
@@ -223,5 +222,18 @@ extension Mock {
         """
 {"pgTm":2000000,"AB":"MY_AB_TEST_ID","CN10":10.1,"CN8":8.8800000000000008,"CV13":"CV13","siteID":"MY_SITE_ID","CN9":9.9900000000000002,"CN18":18.18,"thisURL":"MY_URL","pageType":"MY_PAGE_TYPE","CN11":11.109999999999999,"campaign":null,"eventType":9,"CV14":"CV14","CV1":"CV1","CN19":19.190000000000001,"CN12":12.119999999999999,"CV2":"CV2","CV15":"CV15","CmpS":"MY_CAMPAIGN_SOURCE","txnName":"MY_SEGMENT_NAME","CV3":"CV3","EUOS":"\(os)","sID":999999999999999999,"CN13":13.130000000000001,"CV4":"CV4","CN20":20.199999999999999,"CV5":"CV5","CN1":1.1100000000000001,"CmpM":"MY_CAMPAIGN_MEDIUM","CN14":14.140000000000001,"nst":0,"navigationType":9,"CV6":"CV6","CN2":2.2200000000000002,"CV7":"CV7","CV10":"CV10","CN3":3.3300000000000001,"CmpN":"MY_CAMPAIGN_NAME","unloadEventStart":0,"CN15":15.15,"CV8":"CV8","CN4":4.4400000000000004,"wcd":0,"gID":888888888888888888,"RV":0,"CV9":"CV9","CV11":"CV11","CN5":5.5499999999999998,"domInteractive":1000000,"CN16":16.16,"bvzn":"Native App-\(appVersion)-\(os) \(osVersion)","CN6":6.6600000000000001,"referrer":"MY_REFERRING_URL","bv":0.51,"CV12":"CV12","CN7":7.7699999999999996,"CN17":17.170000000000002,"pageName":"MY_PAGE_NAME","DCTR":"MY_DATA_CENTER"}
 """
+    }
+}
+
+struct MockLogger: Logging {
+    var onInfo: (String) -> Void = { _ in }
+    var onError: (String) -> Void = { _ in }
+
+    func logInfo(_ message: @autoclosure () -> String, file: StaticString, function: StaticString, line: UInt) {
+        onInfo(message())
+    }
+
+    func logError(_ message: @autoclosure () -> String, file: StaticString, function: StaticString, line: UInt) {
+        onError(message())
     }
 }
