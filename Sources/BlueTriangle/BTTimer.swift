@@ -24,7 +24,7 @@ final public class BTTimer: NSObject {
     }
 
     private let lock = NSLock()
-    private let log: (String) -> Void
+    private let logger: Logging
     private let timeIntervalProvider: () -> TimeInterval
 
     @objc public var page: Page
@@ -41,10 +41,10 @@ final public class BTTimer: NSObject {
     }
 
     init(page: Page,
-         log: @escaping (String) -> Void,
+         logger: Logging,
          intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }) {
         self.page = page
-        self.log = log
+        self.logger = logger
         self.timeIntervalProvider = intervalProvider
     }
 
@@ -76,17 +76,17 @@ final public class BTTimer: NSObject {
                 endTime = timeIntervalProvider()
                 state = .ended
             case (.initial, .markInteractive):
-                log("Interactive time cannot be set until timer is started.")
+                logger.error("Interactive time cannot be set until timer is started.")
             case (.initial, .end):
-                log("Cannot end timer before it is started.")
+                logger.error("Cannot end timer before it is started.")
             case (.started, .start):
-                log("Start time already set.")
+                logger.error("Start time already set.")
             case (.interactive, .markInteractive):
-                log("Interactive time already set.")
+                logger.error("Interactive time already set.")
             case (.ended, .start), (.ended, .markInteractive), (.ended, .end):
-                log("Timer already ended.")
+                logger.error("Timer already ended.")
             default:
-                log("Invalid transition.")
+                logger.error("Invalid transition.")
             }
         }
     }
@@ -95,17 +95,15 @@ final public class BTTimer: NSObject {
 // MARK: - Supporting Types
 extension BTTimer {
     struct Configuration {
-        let logProvider: (String) -> Void
         let timeIntervalProvider: () -> TimeInterval
 
-        func timerFactory() -> (Page) -> BTTimer {
+        func makeTimerFactory(logger: Logging) -> (Page) -> BTTimer {
             { page in
-                BTTimer(page: page, log: logProvider, intervalProvider: timeIntervalProvider)
+                BTTimer(page: page, logger: logger, intervalProvider: timeIntervalProvider)
             }
         }
 
         static var live = Self(
-            logProvider: { print($0) }, // FIXME: add actual implementation
             timeIntervalProvider: { Date().timeIntervalSince1970 }
         )
     }

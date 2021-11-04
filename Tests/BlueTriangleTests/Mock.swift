@@ -108,7 +108,6 @@ extension Mock {
         intervalProvider: @escaping () -> TimeInterval
     ) ->  BTTimer.Configuration {
         BTTimer.Configuration(
-            logProvider: { print($0) },
             timeIntervalProvider: intervalProvider
         )
     }
