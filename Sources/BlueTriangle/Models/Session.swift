@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Session {
+struct Session: Equatable {
     let rv = 0
     let wcd = 0
     let eventType = 9

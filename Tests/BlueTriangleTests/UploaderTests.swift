@@ -20,7 +20,7 @@ final class UploaderTests: XCTestCase {
         let dataTaskPublisher: AnyPublisher<(data: Data, response: URLResponse), Error> = Deferred {
             Future { promise in
                 requestCount += 1
-                promise(.failure(TestError()))
+                promise(.failure(Mock.TestError()))
             }
         }.eraseToAnyPublisher()
 
@@ -57,7 +57,7 @@ final class UploaderTests: XCTestCase {
         let dataTaskPublisher: AnyPublisher<(data: Data, response: URLResponse), Error> = Deferred {
             Future { promise in
                 requestCount += 1
-                promise(.success(Self.successResponse))
+                promise(.success(Mock.urlSuccessResponse))
             }
         }.eraseToAnyPublisher()
 
@@ -97,9 +97,9 @@ final class UploaderTests: XCTestCase {
                 requestCount += 1
                 if requestCount < 3 {
                     errorCount += 1
-                    promise(.failure(TestError()))
+                    promise(.failure(Mock.TestError()))
                 } else {
-                    promise(.success(Self.successResponse))
+                    promise(.success(Mock.urlSuccessResponse))
                 }
             }
         }.eraseToAnyPublisher()
@@ -128,40 +128,58 @@ final class UploaderTests: XCTestCase {
         XCTAssertEqual(requestCount, 3)
         waitForExpectations(timeout: 1.0)
     }
-}
 
-// MARK: - Helpers
-extension BTUploaderTests {
-    typealias Response = (data: Data, response: HTTPURLResponse)
+    func testUploaderSubscriptionRemoval() throws {
+        let requestCount: Int = 10_000
+        let expectation = self.expectation(description: "Requests finished")
 
-    struct TestError: Error {}
+        var currentRequestCount = 0
+        let networking: Networking = { request in
+            Deferred {
+                Future { promise in
+                    currentRequestCount += 1
+                    promise(.success(Mock.successResponse))
+                }
+            }.eraseToAnyPublisher()
+        }
 
-    static let errorJSON = """
-          {
-            "error": "someError"
-          }
-          """.data(using: .utf8)!
+        var responseCount = 0
+        let log: (String) -> Void = { _ in
+            responseCount += 1
+            if responseCount == requestCount * 2 {
+                expectation.fulfill()
+            }
+        }
 
-    static let successJSON = """
-          {
-            "foo": "bar"
-          }
-          """.data(using: .utf8)!
+        let uploaderQueue = Mock.uploaderQueue
+        let uploader = Uploader(queue: uploaderQueue, log: log, networking: networking, retryConfiguration: Mock.retryConfiguration)
 
-    static func makeHTTPResponse(statusCode: Int) -> HTTPURLResponse {
-        HTTPURLResponse(url: "https://example.com",
-                        statusCode: statusCode,
-                        httpVersion: nil,
-                        headerFields: nil)!
+        let group = DispatchGroup()
+        DispatchQueue.global().async(group: group) {
+            for _ in 0 ..< requestCount {
+                uploader.send(request: Mock.request)
+            }
+        }
+
+        DispatchQueue.global().async(group: group) {
+            for _ in 0 ..< requestCount {
+                uploader.send(request: Mock.request)
+            }
+        }
+
+        group.notify(queue: .main) {
+            print("SubscriptionCount: \(uploader.subscriptionCount)")
+            XCTAssert(uploader.subscriptionCount > requestCount)
+        }
+
+        wait(for: [expectation], timeout: 5)
+        XCTAssertEqual(currentRequestCount, requestCount * 2)
+        XCTAssertEqual(responseCount, requestCount * 2)
+
+        let otherExpectation = self.expectation(description: "Allow completion")
+        otherExpectation.isInverted = true
+        wait(for: [otherExpectation], timeout: 2.0)
+
+        XCTAssertEqual(uploader.subscriptionCount, 0)
     }
-
-    static var successResponse = Response(
-        data: successJSON,
-        response: makeHTTPResponse(statusCode: 200)
-    )
-
-    static var errorResponse = Response(
-        data: errorJSON,
-        response: makeHTTPResponse(statusCode: 400)
-    )
 }

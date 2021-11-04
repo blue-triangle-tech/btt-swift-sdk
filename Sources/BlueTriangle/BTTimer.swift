@@ -24,18 +24,27 @@ final public class BTTimer: NSObject {
     }
 
     private let lock = NSLock()
+    private let log: (String) -> Void
     private let timeIntervalProvider: () -> TimeInterval
-    private let log: (String) -> Void = { _ in }
 
-    @objc public let page: Page
+    @objc public var page: Page
     @objc public private(set) var state: State = .initial
     @objc public private(set) var startTime: TimeInterval = 0.0
     @objc public private(set) var interactiveTime: TimeInterval = 0.0
     @objc public private(set) var endTime: TimeInterval = 0.0
 
+    var pageTimeInterval: PageTimeInterval {
+        PageTimeInterval(
+            startTime: startTime.milliseconds,
+            interactiveTime: interactiveTime.milliseconds,
+            pageTime: endTime.milliseconds - startTime.milliseconds)
+    }
+
     init(page: Page,
+         log: @escaping (String) -> Void,
          intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }) {
         self.page = page
+        self.log = log
         self.timeIntervalProvider = intervalProvider
     }
 
@@ -80,5 +89,24 @@ final public class BTTimer: NSObject {
                 log("Invalid transition.")
             }
         }
+    }
+}
+
+// MARK: - Supporting Types
+extension BTTimer {
+    struct Configuration {
+        let logProvider: (String) -> Void
+        let timeIntervalProvider: () -> TimeInterval
+
+        func timerFactory() -> (Page) -> BTTimer {
+            { page in
+                BTTimer(page: page, log: logProvider, intervalProvider: timeIntervalProvider)
+            }
+        }
+
+        static var live = Self(
+            logProvider: { print($0) }, // FIXME: add actual implementation
+            timeIntervalProvider: { Date().timeIntervalSince1970 }
+        )
     }
 }

@@ -12,18 +12,37 @@ protocol URLRequestConvertible {
 }
 
 struct Request: URLRequestConvertible {
+    typealias Parameters = [String: String]
     typealias Headers = [String: String]
 
     let method: HTTPMethod
 
     let url: URL
 
+    let parameters: Parameters?
+
     let headers: Headers?
 
     let body: Data?
 
+    init(method: HTTPMethod, url: URL, parameters: Parameters? = nil, headers: Headers? = nil, body: Data? = nil) {
+        self.method = method
+        self.url = url
+        self.parameters = parameters
+        self.headers = headers
+        self.body = body
+    }
+
     func asURLRequest() throws -> URLRequest {
-        var urlRequest = URLRequest(url: url)
+        var urlRequest: URLRequest
+        if let parameters = parameters, !parameters.isEmpty,
+           var components = URLComponents(url: url, resolvingAgainstBaseURL: true) {
+            components.queryItems = parameters.map { URLQueryItem(name: $0.0, value: $0.1) }
+            urlRequest = URLRequest(url: components.url!)
+        } else {
+            urlRequest = URLRequest(url: url)
+        }
+
         urlRequest.httpMethod = method.rawValue
 
         urlRequest.allHTTPHeaderFields = headers
@@ -39,12 +58,13 @@ extension Request {
     init<T: Encodable>(
         method: HTTPMethod = .post,
         url: URL,
+        parameters: Parameters? = nil,
         headers: Headers? = nil,
         model: T,
         encode: (T) throws -> Data = { try JSONEncoder().encode($0).base64EncodedData() }
     ) throws {
         let body = try encode(model)
-        self.init(method: method, url: url, headers: headers, body: body)
+        self.init(method: method, url: url, parameters: parameters, headers: headers, body: body)
     }
 }
 
