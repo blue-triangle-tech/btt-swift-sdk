@@ -101,6 +101,10 @@ final public class BlueTriangle: NSObject {
         configuration.uploaderConfiguration.makeUploader(logger: logger)
     }()
 
+    private static var timerFactory: (Page) -> BTTimer = {
+        configuration.timerConfiguration.makeTimerFactory(logger: logger)
+    }()
+
     public private(set) static var initialized = false
 
     private static var crashReportManager: CrashReportManaging?
@@ -125,7 +129,7 @@ final public class BlueTriangle: NSObject {
     public static func makeTimer(page: Page) -> BTTimer {
         lock.lock()
         precondition(initialized, "BlueTriangle must be initialized before sending timers.")
-        let timer = configuration.timerConfiguration.timerFactory()(page)
+        let timer = timerFactory(page)
         lock.unlock()
         return timer
     }
