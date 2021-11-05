@@ -136,6 +136,101 @@ final public class BlueTriangle: NSObject {
 
     private static var appEventObserver: AppEventObserver?
 
+    /// Blue Triangle Technologies-assigned site ID.
+    @objc public static var siteID: String {
+        get {
+            lock.sync { session.siteID }
+        }
+    }
+
+    /// Global User ID
+    @objc public static var globalUserID: Identifier {
+        get {
+            lock.sync { session.globalUserID }
+        }
+    }
+
+    /// Session ID.
+    @objc public static var sessionID: Identifier {
+        get {
+            lock.sync { session.sessionID }
+        }
+        set {
+            lock.sync { session.sessionID = newValue }
+        }
+    }
+
+    /// A/B testing identifier.
+    @objc public static var abTestID: String  {
+        get {
+            lock.sync { session.abTestID }
+        }
+        set {
+            lock.sync { session.abTestID = newValue }
+        }
+    }
+
+    /// Legacy campaign name.
+    @available(*, deprecated, message: "Use `campaignName` instead.")
+    @objc public static var campaign: String?  {
+        get {
+            lock.sync { session.campaign }
+        }
+        set {
+            lock.sync { session.campaign = newValue}
+        }
+    }
+
+    /// Campaign medium.
+    @objc public static var campaignMedium: String  {
+        get {
+            lock.sync { session.campaignMedium }
+        }
+        set {
+            lock.sync { session.campaignMedium = newValue }
+        }
+    }
+
+    /// Campaign name.
+    @objc public static var campaignName: String  {
+        get {
+            lock.sync { session.campaignName }
+        }
+        set {
+            lock.sync { session.campaignName = newValue }
+        }
+    }
+
+    /// Campaign source.
+    @objc public static var campaignSource: String  {
+        get {
+            lock.sync { session.campaignSource }
+        }
+        set {
+            lock.sync { session.campaignSource = newValue }
+        }
+    }
+
+    /// Data center.
+    @objc public static var dataCenter: String  {
+        get {
+            lock.sync { session.dataCenter }
+        }
+        set {
+            lock.sync { session.dataCenter = newValue }
+        }
+    }
+
+    /// Traffic segment.
+    @objc public static var trafficSegmentName: String  {
+        get {
+            lock.sync { session.trafficSegmentName }
+        }
+        set {
+            lock.sync { session.trafficSegmentName = newValue }
+        }
+    }
+
     @objc
     public static func configure(_ configure: (BlueTriangleConfiguration) -> Void) {
         lock.sync {
