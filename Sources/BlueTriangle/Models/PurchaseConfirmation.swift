@@ -19,12 +19,11 @@ final public class PurchaseConfirmation: NSObject {
     @objc public var orderNumber: String // `ONumBr`
 
     /// Order time and date.
-    @objc public var orderTime: TimeInterval // `orderTND`
+    @objc public var orderTime: TimeInterval = 0.0
 
-    @objc public init(cartValue: Decimal, orderNumber: String = "", orderTime: TimeInterval = 0.0) {
+    @objc public init(cartValue: Decimal, orderNumber: String = "") {
         self.cartValue = cartValue
         self.orderNumber = orderNumber
-        self.orderTime = orderTime
     }
 }
 

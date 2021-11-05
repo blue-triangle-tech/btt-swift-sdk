@@ -167,12 +167,13 @@ final public class BlueTriangle: NSObject {
     }
 
     @objc
-    public static func endTimer(_ timer: BTTimer) {
+    public static func endTimer(_ timer: BTTimer, purchaseConfirmation: PurchaseConfirmation? = nil) {
         timer.end()
+        purchaseConfirmation?.orderTime = timer.endTime
         let request: Request
         lock.lock()
         do {
-            request = try configuration.requestBuilder.builder(session, timer)
+            request = try configuration.requestBuilder.builder(session, timer, purchaseConfirmation)
             lock.unlock()
         } catch  {
             lock.unlock()
