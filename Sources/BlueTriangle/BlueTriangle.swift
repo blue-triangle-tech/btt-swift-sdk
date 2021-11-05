@@ -9,15 +9,36 @@ import Foundation
 
 final public class BlueTriangleConfiguration: NSObject {
     private var customCampaign: String?
+    private var customGlobalUserID: Identifier?
+    private var customSessionID: Identifier?
 
     /// Blue Triangle Technologies-assigned site ID.
     @objc public var siteID: String = ""
 
     /// Session ID.
-    @objc public var sessionID: Identifier = 0 // `sID`
+    @objc public var sessionID: Identifier {
+        get {
+            Identifier.random()
+        }
+        set {
+            customSessionID = newValue
+        }
+    }
 
     /// Global User ID
-    @objc public var globalUserID: Identifier = 0 // `gID`
+    @objc public var globalUserID: Identifier {
+        get {
+            var id = Identifier(UserDefaults.standard.integer(forKey: Constants.globalUserIDKey))
+            if id == 0 {
+                id = Identifier.random()
+                UserDefaults.standard.set(id, forKey: Constants.globalUserIDKey)
+            }
+            return id
+        }
+        set {
+            customGlobalUserID = newValue
+        }
+    }
 
     /// A/B testing identifier.
     @objc public var abTestID: String = "Default" // `AB`
@@ -75,8 +96,8 @@ extension BlueTriangleConfiguration {
 
     func makeSession() -> Session {
         Session(siteID: siteID,
-                globalUserID: globalUserID,
-                sessionID: sessionID,
+                globalUserID: customGlobalUserID ?? globalUserID,
+                sessionID: customSessionID ?? sessionID,
                 abTestID: abTestID,
                 campaign: customCampaign,
                 campaignMedium: campaignMedium,
@@ -92,6 +113,10 @@ final public class BlueTriangle: NSObject {
 
     private static let lock = NSLock()
     private static var configuration = BlueTriangleConfiguration()
+
+    private static var session: Session = {
+        configuration.makeSession()
+    }()
 
     private static var logger: Logging = {
         configuration.makeLogger()
@@ -147,7 +172,7 @@ final public class BlueTriangle: NSObject {
         let request: Request
         lock.lock()
         do {
-            request = try configuration.requestBuilder.builder(configuration.makeSession(), timer)
+            request = try configuration.requestBuilder.builder(session, timer)
             lock.unlock()
         } catch  {
             lock.unlock()
@@ -165,7 +190,7 @@ extension BlueTriangle {
                                                 uploader: uploader)
 
         appEventObserver = AppEventObserver(onLaunch: {
-            crashReportManager?.uploadReports(session: configuration.makeSession())
+            crashReportManager?.uploadReports(session: session)
         })
         appEventObserver?.configureNotifications()
     }
