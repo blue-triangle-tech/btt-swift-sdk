@@ -29,7 +29,7 @@ final public class CustomNumbers: NSObject {
     @objc public var cn19: Double
     @objc public var cn20: Double
 
-    public init(
+    @objc public init(
         cn1: Double = 0.0,
         cn2: Double = 0.0,
         cn3: Double = 0.0,
