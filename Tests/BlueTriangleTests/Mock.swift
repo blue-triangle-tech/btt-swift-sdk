@@ -74,10 +74,10 @@ extension Mock {
     }
 
     static func makeRequestBuilder(
-        onBuild: @escaping (Session, BTTimer) -> Void = { _, _ in }
+        onBuild: @escaping (Session, BTTimer, PurchaseConfirmation?) -> Void = { _, _, _ in }
     ) -> RequestBuilder {
-        RequestBuilder { session, timer in
-            onBuild(session, timer)
+        RequestBuilder { session, timer, purchaseConfirmation in
+            onBuild(session, timer, purchaseConfirmation)
             return Request(method: .post, url: "https://example.com")
         }
     }
@@ -173,8 +173,7 @@ extension Mock {
 
     static var purchaseConfirmation = PurchaseConfirmation(
         cartValue: 99.99,
-        orderNumber: "MY_ORDER_NUMBER",
-        orderTime: 0.0)
+        orderNumber: "MY_ORDER_NUMBER")
 
     static var header: Request.Headers = [
         "Host": "example.com",

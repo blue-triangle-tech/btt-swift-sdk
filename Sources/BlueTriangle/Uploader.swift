@@ -23,13 +23,13 @@ extension URLSession {
 }
 
 struct RequestBuilder {
-    let builder: (Session, BTTimer) throws -> Request
+    let builder: (Session, BTTimer, PurchaseConfirmation?) throws -> Request
 
-    static var live: Self = RequestBuilder { session, timer in
+    static var live: Self = RequestBuilder { session, timer, purchase in
         let model = TimerRequest(session: session,
                                  page: timer.page,
                                  timer: timer.pageTimeInterval,
-                                 purchaseConfirmation: nil)
+                                 purchaseConfirmation: purchase)
         return try Request(method: .post,
                            url: Constants.timerEndpoint,
                            headers: nil,
