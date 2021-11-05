@@ -41,28 +41,28 @@ final public class BlueTriangleConfiguration: NSObject {
     }
 
     /// A/B testing identifier.
-    @objc public var abTestID: String = "Default" // `AB`
+    @objc public var abTestID: String = "Default"
 
     /// Legacy campaign name.
     @available(*, deprecated, message: "Use `campaignName` instead.")
-    @objc public var campaign: String? = "" { // `campaign`
+    @objc public var campaign: String? = "" {
         didSet { customCampaign = campaign }
     }
 
     /// Campaign medium.
-    @objc public var campaignMedium: String = "" // `CmpM`
+    @objc public var campaignMedium: String = ""
 
     /// Campaign name.
-    @objc public var campaignName: String = "" // `CmpN`
+    @objc public var campaignName: String = ""
 
     /// Campaign source.
-    @objc public var campaignSource: String = "" // `CmpS`
+    @objc public var campaignSource: String = ""
 
     /// Data center.
-    @objc public var dataCenter: String = "Default" // `DCTR`
+    @objc public var dataCenter: String = "Default"
 
     /// Traffic segment.
-    @objc public var trafficSegmentName: String = "" // `txnName`
+    @objc public var trafficSegmentName: String = ""
 
     /// Crash Tracking Behavior.
     @objc public var crashTracking: CrashTracking = .none
