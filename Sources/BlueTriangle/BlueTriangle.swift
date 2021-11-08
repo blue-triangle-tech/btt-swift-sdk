@@ -8,6 +8,7 @@
 import Foundation
 
 final public class BlueTriangleConfiguration: NSObject {
+    private var customCampaign: String?
 
     /// Blue Triangle Technologies-assigned site ID.
     @objc public var siteID: String = ""
@@ -23,7 +24,9 @@ final public class BlueTriangleConfiguration: NSObject {
 
     /// Legacy campaign name.
     @available(*, deprecated, message: "Use `campaignName` instead.")
-    @objc public var campaign: String? = "" // `campaign`
+    @objc public var campaign: String? = "" { // `campaign`
+        didSet { customCampaign = campaign }
+    }
 
     /// Campaign medium.
     @objc public var campaignMedium: String = "" // `CmpM`
@@ -39,6 +42,30 @@ final public class BlueTriangleConfiguration: NSObject {
 
     /// Traffic segment.
     @objc public var trafficSegmentName: String = "" // `txnName`
+
+    var timerConfiguration: BTTimer.Configuration = .live
+
+    var uploaderConfiguration: Uploader.Configuration = .live
+
+    var requestBuilder: RequestBuilder = .live
+}
+
+// MARK: - Supporting Types
+extension BlueTriangleConfiguration {
+
+    func makeSession() -> Session {
+        Session(siteID: siteID,
+                globalUserID: globalUserID,
+                sessionID: sessionID,
+                abTestID: abTestID,
+                campaign: customCampaign,
+                campaignMedium: campaignMedium,
+                campaignName: campaignName,
+                campaignSource: campaignSource,
+                dataCenter: dataCenter,
+                trafficSegmentName: trafficSegmentName
+        )
+    }
 }
 
 final public class BlueTriangle: NSObject {
@@ -46,26 +73,33 @@ final public class BlueTriangle: NSObject {
     private static let lock = NSLock()
     private static var configuration = BlueTriangleConfiguration()
 
+    private static var uploader: Uploading = {
+        configuration.uploaderConfiguration.makeUploader()
+    }()
+
     public private(set) static var initialized = false
 
     @objc
     public static func configure(_ configure: (BlueTriangleConfiguration) -> Void) {
         lock.sync {
             precondition(!Self.initialized, "BlueTriangle can only be initialized once.")
+            initialized.toggle()
             configure(configuration)
-            Self.initialized = true
         }
     }
 
     @objc
     public static func makeTimer(page: Page) -> BTTimer {
-        let timer = BTTimer(page: page)
+        lock.lock()
+        precondition(initialized, "BlueTriangle must be initialized before sending timers.")
+        let timer = configuration.timerConfiguration.timerFactory()(page)
+        lock.unlock()
         return timer
     }
 
     @objc
     public static func startTimer(page: Page) -> BTTimer {
-        let timer = BTTimer(page: page)
+        let timer = makeTimer(page: page)
         timer.start()
         return timer
     }
@@ -73,6 +107,32 @@ final public class BlueTriangle: NSObject {
     @objc
     public static func endTimer(_ timer: BTTimer) {
         timer.end()
-        // ...
+        let request: Request
+        lock.lock()
+        do {
+            request = try configuration.requestBuilder.builder(configuration.makeSession(), timer)
+            lock.unlock()
+        } catch  {
+            lock.unlock()
+            print(error) // FIXME: add actual implementation
+            return
+        }
+        uploader.send(request: request)
+    }
+}
+
+extension BlueTriangle {
+    // Support for testing
+    @objc
+    static func reset() {
+        lock.sync {
+            configuration = BlueTriangleConfiguration()
+            initialized = false
+        }
+    }
+
+    @objc
+    static func prime() {
+        let _ = uploader
     }
 }

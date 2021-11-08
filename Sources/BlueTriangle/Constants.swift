@@ -10,7 +10,8 @@ import Foundation
 enum Constants {
     static let browserName = "Native App"
     static let globalUserIDKey = "com.bluetriangle.kGlobalUserIDUserDefault"
-    static let endpoint = "https://d.btttag.com/analytics.rcv"
+    static let timerEndpoint: URL = "https://d.btttag.com/analytics.rcv"
+    static let errorEndpoint: URL = "https://d.btttag.com/err.rcv"
 
     static let sessionTimeoutInMinutes = 30
     static let userSessionTimeoutInDays = 365

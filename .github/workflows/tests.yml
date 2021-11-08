@@ -1,0 +1,40 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  macos_tests:
+    name: macOS Tests (SwiftPM)
+    runs-on: macos-11
+    strategy:
+      matrix:
+        swift: ['5.5']
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build for macOS
+        run: swift build
+      - name: Run tests
+        run: swift test
+
+  xcode_tests:
+    name: ${{ matrix.platform }} Tests (Xcode)
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ['iOS']
+        scheme: ['blue-triangle']
+        device: ['iPhone 12']
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build for ${{ matrix.platform }}
+        run: xcodebuild build-for-testing -scheme spm-github-actions-test -destination "platform=${{ matrix.platform }} Simulator,OS=latest,name=${{ matrix.device }}" | xcpretty
+      - name: Run Tests
+        run: xcodebuild test-without-building -scheme ${{ matrix.scheme }} -destination "platform=${{ matrix.platform }} Simulator,OS=latest,name=${{ matrix.device }}" | xcpretty
