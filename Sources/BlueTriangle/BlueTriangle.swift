@@ -46,6 +46,10 @@ final public class BlueTriangleConfiguration: NSObject {
     /// Crash Tracking Behavior.
     @objc public var crashTracking: CrashTracking = .none
 
+    var makeLogger: () -> Logging = {
+        BTLogger.live
+    }
+
     var timerConfiguration: BTTimer.Configuration = .live
 
     var uploaderConfiguration: Uploader.Configuration = .live
@@ -89,8 +93,16 @@ final public class BlueTriangle: NSObject {
     private static let lock = NSLock()
     private static var configuration = BlueTriangleConfiguration()
 
+    private static var logger: Logging = {
+        configuration.makeLogger()
+    }()
+
     private static var uploader: Uploading = {
-        configuration.uploaderConfiguration.makeUploader()
+        configuration.uploaderConfiguration.makeUploader(logger: logger)
+    }()
+
+    private static var timerFactory: (Page) -> BTTimer = {
+        configuration.timerConfiguration.makeTimerFactory(logger: logger)
     }()
 
     public private(set) static var initialized = false
@@ -117,7 +129,7 @@ final public class BlueTriangle: NSObject {
     public static func makeTimer(page: Page) -> BTTimer {
         lock.lock()
         precondition(initialized, "BlueTriangle must be initialized before sending timers.")
-        let timer = configuration.timerConfiguration.timerFactory()(page)
+        let timer = timerFactory(page)
         lock.unlock()
         return timer
     }
@@ -139,7 +151,7 @@ final public class BlueTriangle: NSObject {
             lock.unlock()
         } catch  {
             lock.unlock()
-            print(error) // FIXME: add actual implementation
+            logger.error(error.localizedDescription)
             return
         }
         uploader.send(request: request)
@@ -149,7 +161,7 @@ final public class BlueTriangle: NSObject {
 extension BlueTriangle {
     static func configureCrashTracking(with crashConfiguration: CrashReportConfiguration) {
         crashReportManager = CrashReportManager(crashConfiguration,
-                                                log: { print($0) },
+                                                logger: logger,
                                                 uploader: uploader)
 
         appEventObserver = AppEventObserver(onLaunch: {

@@ -144,15 +144,26 @@ final class UploaderTests: XCTestCase {
         }
 
         var responseCount = 0
-        let log: (String) -> Void = { _ in
-            responseCount += 1
-            if responseCount == requestCount * 2 {
-                expectation.fulfill()
+        let logger = LoggerMock(
+            onInfo: { message in
+                responseCount += 1
+                if responseCount == requestCount * 2 {
+                    expectation.fulfill()
+                }
+            },
+            onError: { message in
+                responseCount += 1
+                if responseCount == requestCount * 2 {
+                    expectation.fulfill()
+                }
             }
-        }
+        )
 
         let uploaderQueue = Mock.uploaderQueue
-        let uploader = Uploader(queue: uploaderQueue, log: log, networking: networking, retryConfiguration: Mock.retryConfiguration)
+        let uploader = Uploader(queue: uploaderQueue,
+                                logger: logger,
+                                networking: networking,
+                                retryConfiguration: Mock.retryConfiguration)
 
         let group = DispatchGroup()
         DispatchQueue.global().async(group: group) {

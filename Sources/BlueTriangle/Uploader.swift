@@ -42,7 +42,7 @@ final class Uploader: Uploading {
 
     private let queue: DispatchQueue
 
-    private let log: (String) -> Void
+    private let logger: Logging
 
     private let networking: Networking
 
@@ -56,12 +56,12 @@ final class Uploader: Uploading {
 
     init(
         queue: DispatchQueue,
-        log: @escaping (String) -> Void,
+        logger: Logging,
         networking: @escaping Networking,
         retryConfiguration: RetryConfiguration<DispatchQueue>
     ) {
         self.queue = queue
-        self.log = log
+        self.logger = logger
         self.networking = networking
         self.retryConfiguration = retryConfiguration
     }
@@ -74,12 +74,12 @@ final class Uploader: Uploading {
             .sink(
                 receiveCompletion: { [weak self] completion in
                      if case .failure(let error) = completion {
-                         self?.log(error.localizedDescription)
+                         self?.logger.error(error.localizedDescription)
                      }
                     self?.removeSubscription(id: id)
                 },
                 receiveValue: { [weak self] value in
-                    self?.log("HTTP Status: \(value.response.statusCode)")
+                    self?.logger.info("HTTP Status: \(value.response.statusCode)")
                 }
             )
 
@@ -106,19 +106,17 @@ extension Uploader {
 
     struct Configuration {
         let queue: DispatchQueue
-        let log: (String) -> Void
         let networking: Networking
         let retryConfiguration: RetryConfiguration<DispatchQueue>
 
-        func makeUploader() -> Uploading {
-            Uploader(queue: queue, log: log, networking: networking, retryConfiguration: retryConfiguration)
+        func makeUploader(logger: Logging) -> Uploading {
+            Uploader(queue: queue, logger: logger, networking: networking, retryConfiguration: retryConfiguration)
         }
 
         static var live: Self {
             return Self(queue: DispatchQueue(label: "com.bluetriangle.uploader",
                                              qos: .userInitiated,
                                              autoreleaseFrequency: .workItem),
-                        log: { _ in },
                         networking: URLSession.live,
                         retryConfiguration: .init(maxRetry: 3,
                                                   initialDelay: 10.0,

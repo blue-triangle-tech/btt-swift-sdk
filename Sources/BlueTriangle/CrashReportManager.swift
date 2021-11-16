@@ -17,16 +17,16 @@ enum CrashReportConfiguration {
 
 class CrashReportManager: CrashReportManaging {
 
-    private let log: (String) -> Void
+    private let logger: Logging
 
     private let uploader: Uploading
 
     init(
         _ configuration: CrashReportConfiguration,
-        log: @escaping (String) -> Void = { print($0) },
+        logger: Logging,
         uploader: Uploading
     ) {
-        self.log = log
+        self.logger = logger
         self.uploader = uploader
         configureErrorHandling(configuration: configuration)
     }
@@ -51,7 +51,7 @@ class CrashReportManager: CrashReportManaging {
 
                 CrashReportPersistence.clear()
             } catch {
-                self?.log("Error building crash report request: \(error)")
+                self?.logger.error(error.localizedDescription)
             }
         }
     }
