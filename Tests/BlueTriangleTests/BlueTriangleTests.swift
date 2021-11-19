@@ -61,12 +61,12 @@ final class BlueTriangleTests: XCTestCase {
         }
 
         var finishedTimer: BTTimer!
-        let requestBuilder = RequestBuilder { session, timer in
+        let requestBuilder = RequestBuilder { session, timer, purchaseConfirmation in
             finishedTimer = timer
             let model = TimerRequest(session: session,
                                      page: timer.page,
                                      timer: timer.pageTimeInterval,
-                                     purchaseConfirmation: nil)
+                                     purchaseConfirmation: purchaseConfirmation)
 
             return try Request(method: .post,
                                url: Constants.timerEndpoint,

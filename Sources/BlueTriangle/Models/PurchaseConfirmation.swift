@@ -10,21 +10,20 @@ import Foundation
 final public class PurchaseConfirmation: NSObject {
 
     /// Used by server to deduplicate `PurchaseConfirmation`s.
-    internal var pageValue: Decimal = 0.0 // `pageValue`
+    internal var pageValue: Decimal = 0.0
 
     /// Purchase amount for purchase confirmation steps.
-    @objc public var cartValue: Decimal // `cartValue`
+    @objc public var cartValue: Decimal
 
     /// The Order Number from the purchase on purchase confirmation steps.
-    @objc public var orderNumber: String // `ONumBr`
+    @objc public var orderNumber: String
 
     /// Order time and date.
-    @objc public var orderTime: TimeInterval // `orderTND`
+    @objc public var orderTime: TimeInterval = 0.0
 
-    @objc public init(cartValue: Decimal, orderNumber: String = "", orderTime: TimeInterval = 0.0) {
+    @objc public init(cartValue: Decimal, orderNumber: String = "") {
         self.cartValue = cartValue
         self.orderNumber = orderNumber
-        self.orderTime = orderTime
     }
 }
 

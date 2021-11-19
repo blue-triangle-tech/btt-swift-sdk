@@ -46,7 +46,7 @@ struct TimerRequest: Encodable {
             try con.encode(purchaseConfirmation.pageValue , forKey: .pageValue)
             try con.encode(purchaseConfirmation.cartValue , forKey: .cartValue)
             try con.encode(purchaseConfirmation.orderNumber , forKey: .orderNumber)
-            try con.encode(purchaseConfirmation.orderTime , forKey: .orderTime)
+            try con.encode(purchaseConfirmation.orderTime.milliseconds , forKey: .orderTime)
         }
 
         // Timer
