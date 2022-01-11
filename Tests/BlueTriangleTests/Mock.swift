@@ -212,6 +212,14 @@ extension Mock {
         timer: Mock.timerInterval,
         purchaseConfirmation: Mock.purchaseConfirmation,
         performanceReport: nil)
+
+    static var performanceReport = PerformanceReport(
+        minCPU: 0.0,
+        maxCPU: 0.0,
+        avgCPU: 0.0,
+        minMemory: 0,
+        maxMemory: 0,
+        avgMemory: 0)
 }
 
 // MARK: - Request
@@ -234,5 +242,23 @@ struct LoggerMock: Logging {
 
     func logError(_ message: @autoclosure () -> String, file: StaticString, function: StaticString, line: UInt) {
         onError(message())
+    }
+}
+
+struct PerformanceMonitorMock: PerformanceMonitoring {
+    var report = Mock.performanceReport
+    var onStart: () -> Void = { }
+    var onEnd: () -> Void = { }
+
+    func start() {
+        onStart()
+    }
+
+    func end() {
+        onEnd()
+    }
+
+    func makeReport() -> PerformanceReport {
+        report
     }
 }

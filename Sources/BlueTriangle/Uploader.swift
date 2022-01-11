@@ -30,7 +30,7 @@ struct RequestBuilder {
                                  page: timer.page,
                                  timer: timer.pageTimeInterval,
                                  purchaseConfirmation: purchase,
-                                 performanceReport: nil)
+                                 performanceReport: timer.performanceReport)
         return try Request(method: .post,
                            url: Constants.timerEndpoint,
                            headers: nil,
