@@ -66,7 +66,8 @@ final class BlueTriangleTests: XCTestCase {
             let model = TimerRequest(session: session,
                                      page: timer.page,
                                      timer: timer.pageTimeInterval,
-                                     purchaseConfirmation: purchaseConfirmation)
+                                     purchaseConfirmation: purchaseConfirmation,
+                                     performanceReport: nil)
 
             return try Request(method: .post,
                                url: Constants.timerEndpoint,

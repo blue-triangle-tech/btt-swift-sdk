@@ -29,7 +29,8 @@ struct RequestBuilder {
         let model = TimerRequest(session: session,
                                  page: timer.page,
                                  timer: timer.pageTimeInterval,
-                                 purchaseConfirmation: purchase)
+                                 purchaseConfirmation: purchase,
+                                 performanceReport: nil)
         return try Request(method: .post,
                            url: Constants.timerEndpoint,
                            headers: nil,

@@ -210,7 +210,8 @@ extension Mock {
         session: Mock.session,
         page: Mock.page,
         timer: Mock.timerInterval,
-        purchaseConfirmation: Mock.purchaseConfirmation)
+        purchaseConfirmation: Mock.purchaseConfirmation,
+        performanceReport: nil)
 }
 
 // MARK: - Request
