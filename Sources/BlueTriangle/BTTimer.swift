@@ -26,6 +26,7 @@ final public class BTTimer: NSObject {
     private let lock = NSLock()
     private let logger: Logging
     private let timeIntervalProvider: () -> TimeInterval
+    private let performanceMonitor: PerformanceMonitoring?
 
     @objc public var page: Page
     @objc public private(set) var state: State = .initial
@@ -40,12 +41,18 @@ final public class BTTimer: NSObject {
             pageTime: endTime.milliseconds - startTime.milliseconds)
     }
 
+    var performanceReport: PerformanceReport? {
+        performanceMonitor?.makeReport()
+    }
+
     init(page: Page,
          logger: Logging,
-         intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }) {
+         intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 },
+         performanceMonitor: PerformanceMonitoring? = nil) {
         self.page = page
         self.logger = logger
         self.timeIntervalProvider = intervalProvider
+        self.performanceMonitor = performanceMonitor
     }
 
     @objc
@@ -68,12 +75,14 @@ final public class BTTimer: NSObject {
             switch (state, action) {
             case (.initial, .start):
                 startTime = timeIntervalProvider()
+                performanceMonitor?.start()
                 state = .started
             case (.started, .markInteractive):
                 interactiveTime = timeIntervalProvider()
                 state = .interactive
             case (.started, .end), (.interactive, .end):
                 endTime = timeIntervalProvider()
+                performanceMonitor?.end()
                 state = .ended
             case (.initial, .markInteractive):
                 logger.error("Interactive time cannot be set until timer is started.")
@@ -97,9 +106,15 @@ extension BTTimer {
     struct Configuration {
         let timeIntervalProvider: () -> TimeInterval
 
-        func makeTimerFactory(logger: Logging) -> (Page) -> BTTimer {
+        func makeTimerFactory(
+            logger: Logging,
+            performanceMonitorFactory: (() -> PerformanceMonitoring)? = nil
+        ) -> (Page) -> BTTimer {
             { page in
-                BTTimer(page: page, logger: logger, intervalProvider: timeIntervalProvider)
+                BTTimer(page: page,
+                        logger: logger,
+                        intervalProvider: timeIntervalProvider,
+                        performanceMonitor: performanceMonitorFactory?() ?? nil)
             }
         }
 

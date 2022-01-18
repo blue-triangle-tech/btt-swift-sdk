@@ -25,7 +25,7 @@ final public class BlueTriangleConfiguration: NSObject {
         }
     }
 
-    /// Global User ID
+    /// Global User ID.
     @objc public var globalUserID: Identifier {
         get {
             var id = Identifier(UserDefaults.standard.integer(forKey: Constants.globalUserIDKey))
@@ -64,8 +64,14 @@ final public class BlueTriangleConfiguration: NSObject {
     /// Traffic segment.
     @objc public var trafficSegmentName: String = ""
 
-    /// Crash Tracking Behavior.
+    /// Crash tracking behavior.
     @objc public var crashTracking: CrashTracking = .none
+
+    /// Performance monitoring behavior.
+    @objc public var monitorPerformance: Bool = false
+
+    /// Frequency at which app performance is sampled.
+    @objc public var performanceMonitorSampleRate: Millisecond = 1000
 
     var makeLogger: () -> Logging = {
         BTLogger.live
@@ -107,6 +113,11 @@ extension BlueTriangleConfiguration {
                 trafficSegmentName: trafficSegmentName
         )
     }
+
+    func makePerformanceMonitorFactory() -> (() -> PerformanceMonitoring)? {
+        // TODO: implement
+        nil
+    }
 }
 
 final public class BlueTriangle: NSObject {
@@ -127,7 +138,9 @@ final public class BlueTriangle: NSObject {
     }()
 
     private static var timerFactory: (Page) -> BTTimer = {
-        configuration.timerConfiguration.makeTimerFactory(logger: logger)
+        configuration.timerConfiguration.makeTimerFactory(
+            logger: logger,
+            performanceMonitorFactory: configuration.makePerformanceMonitorFactory())
     }()
 
     public private(set) static var initialized = false
