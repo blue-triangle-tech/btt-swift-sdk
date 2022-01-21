@@ -7,19 +7,6 @@
 
 import Foundation
 
-protocol ResourceUsageMeasuring {
-    static func cpu() -> Double
-    static func memory() -> UInt64
-}
-
-typealias ResourceUsageMeasurement = (cpu: Double, memory: UInt64)
-
-extension ResourceUsageMeasuring {
-    static func measure() -> ResourceUsageMeasurement {
-        (cpu: cpu(), memory: memory())
-    }
-}
-
 struct ResourceUsage: ResourceUsageMeasuring {
 
     static func cpu() -> Double {
