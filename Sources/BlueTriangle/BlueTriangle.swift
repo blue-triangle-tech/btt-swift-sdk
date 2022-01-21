@@ -71,7 +71,7 @@ final public class BlueTriangleConfiguration: NSObject {
     @objc public var monitorPerformance: Bool = false
 
     /// Frequency at which app performance is sampled.
-    @objc public var performanceMonitorSampleRate: Millisecond = 1000
+    @objc public var performanceMonitorSampleRate: TimeInterval = 1
 
     var makeLogger: () -> Logging = {
         BTLogger.live
@@ -82,6 +82,8 @@ final public class BlueTriangleConfiguration: NSObject {
     var uploaderConfiguration: Uploader.Configuration = .live
 
     var requestBuilder: RequestBuilder = .live
+
+    var performanceMonitorBuilder: PerformanceMonitorBuilder = .live
 }
 
 // MARK: - Supporting Types
@@ -115,8 +117,7 @@ extension BlueTriangleConfiguration {
     }
 
     func makePerformanceMonitorFactory() -> (() -> PerformanceMonitoring)? {
-        // TODO: implement
-        nil
+        performanceMonitorBuilder.builder(performanceMonitorSampleRate)
     }
 }
 
