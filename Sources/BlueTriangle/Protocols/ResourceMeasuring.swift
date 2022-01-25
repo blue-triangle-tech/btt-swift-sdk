@@ -12,10 +12,8 @@ protocol ResourceUsageMeasuring {
     static func memory() -> UInt64
 }
 
-typealias ResourceUsageMeasurement = (cpu: Double, memory: UInt64)
-
 extension ResourceUsageMeasuring {
     static func measure() -> ResourceUsageMeasurement {
-        (cpu: cpu(), memory: memory())
+        .init(cpuUsage: cpu(), memoryUsage: memory())
     }
 }
