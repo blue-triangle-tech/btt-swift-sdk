@@ -319,5 +319,6 @@ extension BlueTriangle {
     @objc
     static func prime() {
         let _ = uploader
+        let _ = makeTimer(page: .init(pageName: "TEST"))
     }
 }
