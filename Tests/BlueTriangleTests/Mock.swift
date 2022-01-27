@@ -262,3 +262,13 @@ struct PerformanceMonitorMock: PerformanceMonitoring {
         report
     }
 }
+
+struct ResourceUsageMock: ResourceUsageMeasuring {
+    static func cpu() -> Double {
+        0.25
+    }
+
+    static func memory() -> UInt64 {
+        100
+    }
+}

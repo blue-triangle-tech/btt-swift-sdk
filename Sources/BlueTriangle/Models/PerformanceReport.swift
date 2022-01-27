@@ -11,7 +11,17 @@ struct PerformanceReport: Codable {
     let minCPU: Float
     let maxCPU: Float
     let avgCPU: Float
-    let minMemory: Int
-    let maxMemory: Int
-    let avgMemory: Int
+    let minMemory: UInt64
+    let maxMemory: UInt64
+    let avgMemory: UInt64
+}
+
+extension PerformanceReport {
+    static let empty: Self = .init(
+        minCPU: 0.0,
+        maxCPU: 0.0,
+        avgCPU: 0.0,
+        minMemory: 0,
+        maxMemory: 0,
+        avgMemory: 0)
 }

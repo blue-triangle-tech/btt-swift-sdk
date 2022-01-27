@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ResourceUsage {
+struct ResourceUsage: ResourceUsageMeasuring {
 
     static func cpu() -> Double {
         var totalUsageOfCPU: Double = 0.0
