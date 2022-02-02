@@ -232,9 +232,14 @@ extension Mock {
     }
 }
 
-struct LoggerMock: Logging {
-    var onInfo: (String) -> Void = { _ in }
-    var onError: (String) -> Void = { _ in }
+class LoggerMock: Logging {
+    var onInfo: (String) -> Void
+    var onError: (String) -> Void
+
+    init(onInfo: @escaping (String) -> Void = { _ in }, onError: @escaping (String) -> Void = { _ in }) {
+        self.onInfo = onInfo
+        self.onError = onError
+    }
 
     func logInfo(_ message: @autoclosure () -> String, file: StaticString, function: StaticString, line: UInt) {
         onInfo(message())
@@ -243,12 +248,27 @@ struct LoggerMock: Logging {
     func logError(_ message: @autoclosure () -> String, file: StaticString, function: StaticString, line: UInt) {
         onError(message())
     }
+
+    func reset() {
+        onInfo = { _ in }
+        onError = { _ in }
+    }
 }
 
-struct PerformanceMonitorMock: PerformanceMonitoring {
-    var report = Mock.performanceReport
-    var onStart: () -> Void = { }
-    var onEnd: () -> Void = { }
+class PerformanceMonitorMock: PerformanceMonitoring {
+    var report: PerformanceReport
+    var onStart: () -> Void
+    var onEnd: () -> Void
+
+    init(
+        report: PerformanceReport = Mock.performanceReport,
+        onStart: @escaping () -> Void = { },
+        onEnd: @escaping () -> Void = { }
+    ) {
+        self.report = report
+        self.onStart = onStart
+        self.onEnd = onEnd
+    }
 
     func start() {
         onStart()
@@ -260,6 +280,12 @@ struct PerformanceMonitorMock: PerformanceMonitoring {
 
     func makeReport() -> PerformanceReport {
         report
+    }
+
+    func reset() {
+        report = Mock.performanceReport
+        onStart = { }
+        onEnd = { }
     }
 }
 
