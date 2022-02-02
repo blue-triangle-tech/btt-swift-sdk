@@ -111,6 +111,10 @@ extension Mock {
             timeIntervalProvider: intervalProvider
         )
     }
+
+    static func makePerformanceMonitor(timerInterval: TimeInterval) -> PerformanceMonitoring {
+        PerformanceMonitorMock()
+    }
 }
 
 // MARK: - Models
