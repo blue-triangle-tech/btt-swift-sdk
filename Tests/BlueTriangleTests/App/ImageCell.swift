@@ -5,6 +5,7 @@
 //  Copyright © 2022 Blue Triangle. All rights reserved.
 //
 
+#if os(iOS) || os(tvOS)
 import UIKit
 
 final class ImageCell: UICollectionViewCell {
@@ -77,3 +78,4 @@ final class ImageCell: UICollectionViewCell {
         }
     }
 }
+#endif

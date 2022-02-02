@@ -5,6 +5,7 @@
 //  Copyright © 2022 Blue Triangle. All rights reserved.
 //
 
+#if os(iOS) || os(tvOS)
 import Foundation
 import UIKit
 
@@ -168,3 +169,5 @@ extension NetworkClientMock {
                                                             imageSize: imageSize))
     }
 }
+
+#endif

@@ -5,12 +5,10 @@
 //  Copyright © 2022 Blue Triangle. All rights reserved.
 //
 
-import Foundation
 #if os(iOS) || os(tvOS)
+import Foundation
 import UIKit
-#endif
 
-@available(iOS 13.0, tvOS 7.0, *)
 final class DisplayLinkPerformanceMonitor: PerformanceMonitoring {
     public enum State {
         case initial
@@ -93,3 +91,4 @@ final class DisplayLinkPerformanceMonitor: PerformanceMonitoring {
     }
 }
 
+#endif
