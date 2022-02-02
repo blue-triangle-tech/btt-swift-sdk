@@ -105,7 +105,7 @@ final class BlueTriangleTests: XCTestCase {
                                      page: timer.page,
                                      timer: timer.pageTimeInterval,
                                      purchaseConfirmation: purchaseConfirmation,
-                                     performanceReport: nil)
+                                     performanceReport: timer.performanceReport)
 
             return try Request(method: .post,
                                url: Constants.timerEndpoint,
