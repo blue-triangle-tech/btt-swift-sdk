@@ -306,8 +306,8 @@ extension BlueTriangle {
     }
 }
 
+// MARK: - Test Support
 extension BlueTriangle {
-    // Support for testing
     @objc
     static func reset() {
         lock.sync {
@@ -320,5 +320,30 @@ extension BlueTriangle {
     static func prime() {
         let _ = uploader
         let _ = makeTimer(page: .init(pageName: "TEST"))
+    }
+
+    static func reconfigure(
+        configuration: BlueTriangleConfiguration = .init(),
+        session: Session? = nil,
+        logger: Logging? = nil,
+        uploader: Uploading? = nil,
+        timerFactory: ((Page) -> BTTimer)? = nil
+    ) {
+        lock.sync {
+            self.configuration = configuration
+            initialized = true
+            if let session = session {
+                self.session = session
+            }
+            if let logger = logger {
+                self.logger = logger
+            }
+            if let uploader = uploader {
+                self.uploader = uploader
+            }
+            if let timerFactory = timerFactory {
+                self.timerFactory = timerFactory
+            }
+        }
     }
 }

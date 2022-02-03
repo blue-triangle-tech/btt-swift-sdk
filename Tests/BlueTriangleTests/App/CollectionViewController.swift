@@ -5,8 +5,9 @@
 //  Copyright © 2022 Blue Triangle. All rights reserved.
 //
 
+#if os(iOS) || os(tvOS)
 import UIKit
-@testable import BlueTriangle
+import BlueTriangle
 
 typealias CollectionViewLayoutBuilder = () -> UICollectionViewLayout
 
@@ -157,3 +158,4 @@ final class CollectionViewController: UIViewController {
             })
     }
 }
+#endif

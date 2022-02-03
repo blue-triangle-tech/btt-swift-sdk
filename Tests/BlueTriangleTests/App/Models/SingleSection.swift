@@ -5,6 +5,7 @@
 //  Copyright © 2022 Blue Triangle. All rights reserved.
 //
 
+#if os(iOS) || os(tvOS)
 import UIKit
 
 /// Model for diffable data sources with a single section.
@@ -18,3 +19,5 @@ enum SingleSection: CaseIterable {
         return snapshot
     }
 }
+
+#endif
