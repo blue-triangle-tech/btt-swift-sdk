@@ -209,6 +209,126 @@ extension BlueTriangleTests {
         XCTAssertNotNil(finishedTimer)
         print(performanceMonitor.measurements)
         // ...
+
+        let base64Decoded = Data(base64Encoded: request.body!)!
+        let requestString = String(data: base64Decoded, encoding: .utf8)
+    }
+
+    @available(iOS 14.0, *)
+    func testTimerPerformanceMonitor() throws {
+        let performanceMonitor = TimerPerformanceMonitor(sampleInterval: 1/60,
+                                                         resourceUsage: ResourceUsage.self)
+
+        // Timer
+        let timerFactory: (Page) -> BTTimer = { page in
+            BTTimer(page: page,
+                    logger: Self.logger,
+                    intervalProvider: Self.timeIntervalProvider,
+                    performanceMonitor: performanceMonitor)
+        }
+
+        // Request Builder
+        var finishedTimer: BTTimer!
+        let requestBuilder = RequestBuilder { session, timer, purchaseConfirmation in
+            finishedTimer = timer
+            let model = TimerRequest(session: session,
+                                     page: timer.page,
+                                     timer: timer.pageTimeInterval,
+                                     purchaseConfirmation: purchaseConfirmation,
+                                     performanceReport: timer.performanceReport)
+
+            return try Request(method: .post,
+                               url: Constants.timerEndpoint,
+                               headers: nil,
+                               model: model)
+        }
+
+        // Uploader
+        let requestExpectation = self.expectation(description: "Request sent")
+        var request: Request!
+        Self.onSendRequest = { req in
+            request = req
+            requestExpectation.fulfill()
+        }
+
+        // Configure
+        let configuration = BlueTriangleConfiguration()
+        Mock.configureBlueTriangle(configuration: configuration)
+        configuration.requestBuilder = requestBuilder
+        BlueTriangle.reconfigure(configuration: configuration,
+                                 timerFactory: timerFactory)
+
+        // ViewController
+        let imageSize: CGSize = .init(width: 150, height: 150)
+        let delayStragegy: DelayGenerator.Strategy = .random((mean: 1, variation: 0.5))
+        let networkClient: NetworkClientMock = .makeClient(delayStrategy: delayStragegy,
+                                                           imageSize: imageSize)
+        let viewController = CollectionViewController(networkClient: networkClient)
+        viewController.viewDidLoad()
+
+        waitForExpectations(timeout: 10.0)
+
+        XCTAssertNotNil(finishedTimer)
+
+        let base64Decoded = Data(base64Encoded: request.body!)!
+        let requestString = String(data: base64Decoded, encoding: .utf8)
+    }
+
+    @available(iOS 14.0, *)
+    func testDispatchSourceTimerPerformanceMonitor() throws {
+        let performanceMonitor = DispatchSourceTimerPerformanceMonitor(sampleInterval: 1/60,
+                                                                       resourceUsage: ResourceUsage.self)
+
+        // Timer
+        let timerFactory: (Page) -> BTTimer = { page in
+            BTTimer(page: page,
+                    logger: Self.logger,
+                    intervalProvider: Self.timeIntervalProvider,
+                    performanceMonitor: performanceMonitor)
+        }
+
+        // Request Builder
+        var finishedTimer: BTTimer!
+        let requestBuilder = RequestBuilder { session, timer, purchaseConfirmation in
+            finishedTimer = timer
+            let model = TimerRequest(session: session,
+                                     page: timer.page,
+                                     timer: timer.pageTimeInterval,
+                                     purchaseConfirmation: purchaseConfirmation,
+                                     performanceReport: timer.performanceReport)
+
+            return try Request(method: .post,
+                               url: Constants.timerEndpoint,
+                               headers: nil,
+                               model: model)
+        }
+
+        // Uploader
+        let requestExpectation = self.expectation(description: "Request sent")
+        var request: Request!
+        Self.onSendRequest = { req in
+            request = req
+            requestExpectation.fulfill()
+        }
+
+        // Configure
+        let configuration = BlueTriangleConfiguration()
+        Mock.configureBlueTriangle(configuration: configuration)
+        configuration.requestBuilder = requestBuilder
+        BlueTriangle.reconfigure(configuration: configuration,
+                                 timerFactory: timerFactory)
+
+        // ViewController
+        let imageSize: CGSize = .init(width: 150, height: 150)
+        let delayStragegy: DelayGenerator.Strategy = .random((mean: 1, variation: 0.5))
+        let networkClient: NetworkClientMock = .makeClient(delayStrategy: delayStragegy,
+                                                           imageSize: imageSize)
+        let viewController = CollectionViewController(networkClient: networkClient)
+        viewController.viewDidLoad()
+
+        waitForExpectations(timeout: 10.0)
+
+        XCTAssertNotNil(finishedTimer)
     }
 }
 #endif
