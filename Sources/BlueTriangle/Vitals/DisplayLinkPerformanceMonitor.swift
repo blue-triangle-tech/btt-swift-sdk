@@ -23,6 +23,7 @@ final class DisplayLinkPerformanceMonitor: PerformanceMonitoring {
         case end
     }
 
+    private let minimumFrameRate: CFTimeInterval = 50
     private let minimumSampleInterval: CFTimeInterval
     private let resourceUsage: ResourceUsageMeasuring.Type
     private var displayLink: CADisplayLink!
@@ -34,7 +35,7 @@ final class DisplayLinkPerformanceMonitor: PerformanceMonitoring {
     init(
         minimumSampleInterval: CFTimeInterval,
         resourceUsage: ResourceUsageMeasuring.Type,
-        runLoop: RunLoop = .current,
+        runLoop: RunLoop = .main,
         mode: RunLoop.Mode = .common
     ) {
         self.minimumSampleInterval = minimumSampleInterval
@@ -78,7 +79,7 @@ final class DisplayLinkPerformanceMonitor: PerformanceMonitoring {
         guard displayLink.timestamp - lastSampleTimestamp > minimumSampleInterval else {
             return
         }
-        guard 1 / (displayLink.targetTimestamp - displayLink.timestamp) > 60 else {
+        guard 1 / (displayLink.targetTimestamp - displayLink.timestamp) > minimumFrameRate else {
             handle(.pause)
             return
         }
