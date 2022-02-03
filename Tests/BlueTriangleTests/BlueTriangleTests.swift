@@ -51,6 +51,7 @@ final class BlueTriangleTests: XCTestCase {
     func testOSInfo() {
         let os = Device.os
         let osVersion = Device.osVersion
+        let name = Device.name
 
         #if os(iOS)
         XCTAssertEqual(os, "iOS")
@@ -63,6 +64,7 @@ final class BlueTriangleTests: XCTestCase {
         #endif
 
         XCTAssertFalse(osVersion.isEmpty)
+        XCTAssertFalse(name.isEmpty)
     }
 
     func testFullTimer() throws {
