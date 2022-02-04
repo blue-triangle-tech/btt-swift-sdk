@@ -102,7 +102,6 @@ struct Persistence {
 
     func readData() -> Data? {
         guard let containerURL = containerURL, fileManager.fileExists(atPath: containerURL.path) else {
-            logger.error("Unable to locate file at \(containerURL?.path ?? "unknown path")")
             return nil
         }
         do {
