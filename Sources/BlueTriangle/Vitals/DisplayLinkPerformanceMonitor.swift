@@ -50,6 +50,12 @@ final class DisplayLinkPerformanceMonitor: PerformanceMonitoring {
         self.displayLink = displayLink
     }
 
+    deinit {
+        if state != .ended {
+            displayLink.invalidate()
+        }
+    }
+
     func start() {
         handle(.start)
     }
