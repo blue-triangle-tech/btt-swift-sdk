@@ -11,14 +11,17 @@ struct PerformanceMonitorBuilder {
     let builder: (TimeInterval) -> () -> PerformanceMonitoring
 
     static var live: Self = PerformanceMonitorBuilder { sampleInterval in
+        let actualSampleInterval = sampleInterval < Constants.minimumSampleInterval
+            ? Constants.minimumSampleInterval
+            : sampleInterval
         #if os(iOS) || os(tvOS)
         return {
-            return DisplayLinkPerformanceMonitor(minimumSampleInterval: .init(sampleInterval),
+            return DisplayLinkPerformanceMonitor(minimumSampleInterval: .init(actualSampleInterval),
                                                  resourceUsage: ResourceUsage.self)
         }
         #else
         return {
-            TimerPerformanceMonitor(sampleInterval: sampleInterval, resourceUsage: ResourceUsage.self)
+            TimerPerformanceMonitor(sampleInterval: actualSampleInterval, resourceUsage: ResourceUsage.self)
         }
         #endif
     }

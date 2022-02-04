@@ -114,7 +114,7 @@ extension BTTimer {
                 BTTimer(page: page,
                         logger: logger,
                         intervalProvider: timeIntervalProvider,
-                        performanceMonitor: performanceMonitorFactory?() ?? nil)
+                        performanceMonitor: performanceMonitorFactory?())
             }
         }
 

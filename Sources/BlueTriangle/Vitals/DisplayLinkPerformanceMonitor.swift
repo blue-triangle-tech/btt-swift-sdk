@@ -32,6 +32,10 @@ final class DisplayLinkPerformanceMonitor: PerformanceMonitoring {
     private(set) var measurements: [ResourceUsageMeasurement] = []
     private(set) var state: State = .initial
 
+    var measurementCount: Int {
+        measurements.count
+    }
+
     init(
         minimumSampleInterval: CFTimeInterval,
         resourceUsage: ResourceUsageMeasuring.Type,
@@ -44,6 +48,12 @@ final class DisplayLinkPerformanceMonitor: PerformanceMonitoring {
         displayLink.isPaused = true
         displayLink.add(to: runLoop, forMode: mode)
         self.displayLink = displayLink
+    }
+
+    deinit {
+        if state != .ended {
+            displayLink.invalidate()
+        }
     }
 
     func start() {

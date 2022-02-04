@@ -24,6 +24,10 @@ final class TimerPerformanceMonitor: PerformanceMonitoring {
     private(set) var measurements: [ResourceUsageMeasurement] = []
     private(set) var state: State = .initial
 
+    var measurementCount: Int {
+        measurements.count
+    }
+
     init(
         sampleInterval: TimeInterval,
         resourceUsage: ResourceUsageMeasuring.Type,

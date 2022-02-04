@@ -70,7 +70,8 @@ final public class BlueTriangleConfiguration: NSObject {
     /// Performance monitoring behavior.
     @objc public var monitorPerformance: Bool = false
 
-    /// Frequency at which app performance is sampled.
+    /// Controls the frequency at which app performance is sampled. `Constants.minimumSampleInterval` defines the
+    /// smallest allowed interval (one measurement every 1/60 of a second).
     @objc public var performanceMonitorSampleRate: TimeInterval = 1
 
     var makeLogger: () -> Logging = {
