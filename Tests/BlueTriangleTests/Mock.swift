@@ -263,6 +263,7 @@ class PerformanceMonitorMock: PerformanceMonitoring {
     var report: PerformanceReport
     var onStart: () -> Void
     var onEnd: () -> Void
+    var measurementCount: Int = 10
 
     init(
         report: PerformanceReport = Mock.performanceReport,
