@@ -12,6 +12,7 @@ struct TimerRequest: Encodable {
     let page: Page
     let timer: PageTimeInterval
     let purchaseConfirmation: PurchaseConfirmation?
+    let performanceReport: PerformanceReport?
 
     func encode(to enc: Encoder) throws {
         var con = enc.container(keyedBy: CodingKeys.self)
@@ -99,6 +100,15 @@ struct TimerRequest: Encodable {
             try con.encode(customNums.cn19, forKey: .cn19)
             try con.encode(customNums.cn20, forKey: .cn20)
         }
+
+        if let performanceReport = performanceReport {
+            try con.encode(performanceReport.minCPU, forKey: .minCPU)
+            try con.encode(performanceReport.maxCPU, forKey: .maxCPU)
+            try con.encode(performanceReport.avgCPU, forKey: .avgCPU)
+            try con.encode(performanceReport.minMemory, forKey: .minMemory)
+            try con.encode(performanceReport.maxMemory, forKey: .maxMemory)
+            try con.encode(performanceReport.avgMemory, forKey: .avgMemory)
+        }
     }
 
     enum CodingKeys: String, CodingKey {
@@ -174,5 +184,12 @@ struct TimerRequest: Encodable {
         case cn18 = "CN18"
         case cn19 = "CN19"
         case cn20 = "CN20"
+        // Performance Monitoring
+        case minCPU
+        case maxCPU
+        case avgCPU
+        case minMemory
+        case maxMemory
+        case avgMemory
     }
 }

@@ -25,7 +25,7 @@ final public class BlueTriangleConfiguration: NSObject {
         }
     }
 
-    /// Global User ID
+    /// Global User ID.
     @objc public var globalUserID: Identifier {
         get {
             var id = Identifier(UserDefaults.standard.integer(forKey: Constants.globalUserIDKey))
@@ -64,8 +64,15 @@ final public class BlueTriangleConfiguration: NSObject {
     /// Traffic segment.
     @objc public var trafficSegmentName: String = ""
 
-    /// Crash Tracking Behavior.
+    /// Crash tracking behavior.
     @objc public var crashTracking: CrashTracking = .none
+
+    /// Performance monitoring behavior.
+    @objc public var monitorPerformance: Bool = false
+
+    /// Controls the frequency at which app performance is sampled. `Constants.minimumSampleInterval` defines the
+    /// smallest allowed interval (one measurement every 1/60 of a second).
+    @objc public var performanceMonitorSampleRate: TimeInterval = 1
 
     var makeLogger: () -> Logging = {
         BTLogger.live
@@ -76,6 +83,8 @@ final public class BlueTriangleConfiguration: NSObject {
     var uploaderConfiguration: Uploader.Configuration = .live
 
     var requestBuilder: RequestBuilder = .live
+
+    var performanceMonitorBuilder: PerformanceMonitorBuilder = .live
 }
 
 // MARK: - Supporting Types
@@ -107,6 +116,10 @@ extension BlueTriangleConfiguration {
                 trafficSegmentName: trafficSegmentName
         )
     }
+
+    func makePerformanceMonitorFactory() -> (() -> PerformanceMonitoring)? {
+        performanceMonitorBuilder.builder(performanceMonitorSampleRate)
+    }
 }
 
 final public class BlueTriangle: NSObject {
@@ -127,7 +140,9 @@ final public class BlueTriangle: NSObject {
     }()
 
     private static var timerFactory: (Page) -> BTTimer = {
-        configuration.timerConfiguration.makeTimerFactory(logger: logger)
+        configuration.timerConfiguration.makeTimerFactory(
+            logger: logger,
+            performanceMonitorFactory: configuration.makePerformanceMonitorFactory())
     }()
 
     public private(set) static var initialized = false
@@ -292,8 +307,8 @@ extension BlueTriangle {
     }
 }
 
+// MARK: - Test Support
 extension BlueTriangle {
-    // Support for testing
     @objc
     static func reset() {
         lock.sync {
@@ -305,5 +320,31 @@ extension BlueTriangle {
     @objc
     static func prime() {
         let _ = uploader
+        let _ = makeTimer(page: .init(pageName: "TEST"))
+    }
+
+    static func reconfigure(
+        configuration: BlueTriangleConfiguration = .init(),
+        session: Session? = nil,
+        logger: Logging? = nil,
+        uploader: Uploading? = nil,
+        timerFactory: ((Page) -> BTTimer)? = nil
+    ) {
+        lock.sync {
+            self.configuration = configuration
+            initialized = true
+            if let session = session {
+                self.session = session
+            }
+            if let logger = logger {
+                self.logger = logger
+            }
+            if let uploader = uploader {
+                self.uploader = uploader
+            }
+            if let timerFactory = timerFactory {
+                self.timerFactory = timerFactory
+            }
+        }
     }
 }

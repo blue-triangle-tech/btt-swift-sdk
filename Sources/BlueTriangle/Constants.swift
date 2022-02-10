@@ -13,6 +13,7 @@ enum Constants {
     static let timerEndpoint: URL = "https://d.btttag.com/analytics.rcv"
     static let errorEndpoint: URL = "https://d.btttag.com/err.rcv"
 
+    static let minimumSampleInterval: TimeInterval = 1/60
     static let sessionTimeoutInMinutes = 30
     static let userSessionTimeoutInDays = 365
 
