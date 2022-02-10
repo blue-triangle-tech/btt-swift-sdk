@@ -77,7 +77,8 @@ class CrashReportManager: CrashReportManaging {
         let model = TimerRequest(session: session,
                                  page: page,
                                  timer: timer,
-                                 purchaseConfirmation: nil)
+                                 purchaseConfirmation: nil,
+                                 performanceReport: nil)
 
         return try Request(method: .post,
                            url: Constants.timerEndpoint,
