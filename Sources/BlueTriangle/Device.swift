@@ -46,9 +46,17 @@ enum Device {
         #if os(iOS) || os(tvOS)
         return UIDevice.current.name
         #elseif os(watchOS)
-        return "" // FIXME: implement
+        return WKInterfaceDevice.current().model
         #elseif os(macOS)
-        return "" // FIXME: implement
+        return platform()
         #endif
+    }
+
+    private static func platform() -> String {
+        var size = 0
+        sysctlbyname("hw.model", nil, &size, nil, 0)
+        var model = [CChar](repeating: 0,  count: size)
+        sysctlbyname("hw.model", &model, &size, nil, 0)
+        return String(cString: model)
     }
 }
