@@ -7,19 +7,20 @@
 
 import Foundation
 
+@objcMembers
 final public class CustomVariables: NSObject {
-    @objc public var cv1: String?
-    @objc public var cv2: String?
-    @objc public var cv3: String?
-    @objc public var cv4: String?
-    @objc public var cv5: String?
-    @objc public var cv11: String?
-    @objc public var cv12: String?
-    @objc public var cv13: String?
-    @objc public var cv14: String?
-    @objc public var cv15: String?
+    public var cv1: String?
+    public var cv2: String?
+    public var cv3: String?
+    public var cv4: String?
+    public var cv5: String?
+    public var cv11: String?
+    public var cv12: String?
+    public var cv13: String?
+    public var cv14: String?
+    public var cv15: String?
 
-    @objc public init(
+    public init(
         cv1: String?,
         cv2: String?,
         cv3: String?,

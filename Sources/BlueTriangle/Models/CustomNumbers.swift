@@ -7,29 +7,30 @@
 
 import Foundation
 
+@objcMembers
 final public class CustomNumbers: NSObject {
-    @objc public var cn1: Double
-    @objc public var cn2: Double
-    @objc public var cn3: Double
-    @objc public var cn4: Double
-    @objc public var cn5: Double
-    @objc public var cn6: Double
-    @objc public var cn7: Double
-    @objc public var cn8: Double
-    @objc public var cn9: Double
-    @objc public var cn10: Double
-    @objc public var cn11: Double
-    @objc public var cn12: Double
-    @objc public var cn13: Double
-    @objc public var cn14: Double
-    @objc public var cn15: Double
-    @objc public var cn16: Double
-    @objc public var cn17: Double
-    @objc public var cn18: Double
-    @objc public var cn19: Double
-    @objc public var cn20: Double
+    public var cn1: Double
+    public var cn2: Double
+    public var cn3: Double
+    public var cn4: Double
+    public var cn5: Double
+    public var cn6: Double
+    public var cn7: Double
+    public var cn8: Double
+    public var cn9: Double
+    public var cn10: Double
+    public var cn11: Double
+    public var cn12: Double
+    public var cn13: Double
+    public var cn14: Double
+    public var cn15: Double
+    public var cn16: Double
+    public var cn17: Double
+    public var cn18: Double
+    public var cn19: Double
+    public var cn20: Double
 
-    @objc public init(
+    public init(
         cn1: Double = 0.0,
         cn2: Double = 0.0,
         cn3: Double = 0.0,
