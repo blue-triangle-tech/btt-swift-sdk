@@ -39,6 +39,7 @@
         config.dataCenter = @"MY_DATA_CENTER";
         config.trafficSegmentName = @"MY_TRAFFIC_SEGMENT";
         config.crashTracking = CrashTrackingNsException;
+        config.performanceMonitorSampleRate = 1.5;
     }];
 
     // Timer
