@@ -142,6 +142,7 @@ final public class BlueTriangle: NSObject {
             performanceMonitorFactory: configuration.makePerformanceMonitorFactory())
     }()
 
+    /// A Boolean value indicating whether the SDK has been initialized.
     public private(set) static var initialized = false
 
     private static var crashReportManager: CrashReportManaging?
@@ -155,7 +156,7 @@ final public class BlueTriangle: NSObject {
         }
     }
 
-    /// Global User ID
+    /// Global User ID.
     @objc public static var globalUserID: Identifier {
         get {
             lock.sync { session.globalUserID }

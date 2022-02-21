@@ -7,6 +7,8 @@
 
 import Foundation
 
+/// Custom numeric data that is collected from the page, aggregated, and ultimately
+/// appears on your trend graphs in the Blue Triangle portal.
 @objcMembers
 final public class CustomNumbers: NSObject {
     public var cn1: Double

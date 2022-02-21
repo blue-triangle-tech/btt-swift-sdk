@@ -7,6 +7,8 @@
 
 import Foundation
 
+/// Custom textual data that is collected from the page, aggregated, and ultimately
+/// appears in the list of filter options in the Blue Triangle portal.
 @objcMembers
 final public class CustomCategories: NSObject {
     public var cv6: String?
