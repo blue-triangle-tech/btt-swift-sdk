@@ -74,6 +74,10 @@ final public class BlueTriangleConfiguration: NSObject {
     /// smallest allowed interval (one measurement every 1/60 of a second).
     @objc public var performanceMonitorSampleRate: TimeInterval = 1
 
+    /// Percentage of sessions for which network calls will be captured. A value of `0.05`
+    /// means that 5% of sessions will be tracked.
+    @objc public var networkSampleRate: Double = 0.05
+
     var makeLogger: () -> Logging = {
         BTLogger.live
     }
@@ -144,6 +148,10 @@ final public class BlueTriangle: NSObject {
             logger: logger,
             performanceMonitorFactory: configuration.makePerformanceMonitorFactory())
     }()
+
+    private static var shouldCaptureRequests: Bool {
+        .random(probability: configuration.networkSampleRate)
+    }
 
     public private(set) static var initialized = false
 
