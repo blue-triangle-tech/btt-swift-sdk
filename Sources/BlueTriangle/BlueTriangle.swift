@@ -308,19 +308,18 @@ final public class BlueTriangle: NSObject {
 // MARK: - Network Capture
 extension BlueTriangle {
     @usableFromInline
-    static func startInternalTimer() -> InternalTimer? {
-        // TODO: do we still need to use sync?
+    static func startRequestTimer() -> InternalTimer? {
         guard shouldCaptureRequests else {
             return nil
         }
-        // TODO: use builder
         var timer = InternalTimer(logger: logger,
                                   intervalProvider: configuration.timerConfiguration.timeIntervalProvider)
         timer.start()
         return timer
     }
 
-    static func sendTimer(_ timer: InternalTimer) {
+    @usableFromInline
+    static func captureRequest(timer: InternalTimer, data: Data?, response: URLResponse?) {
         guard shouldCaptureRequests else {
             return
         }
@@ -328,6 +327,7 @@ extension BlueTriangle {
     }
 }
 
+// MARK: - Crash Reporting
 extension BlueTriangle {
     static func configureCrashTracking(with crashConfiguration: CrashReportConfiguration) {
         crashReportManager = CrashReportManager(crashConfiguration,
