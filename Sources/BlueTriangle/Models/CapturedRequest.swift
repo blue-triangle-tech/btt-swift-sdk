@@ -8,7 +8,7 @@
 import Foundation
 
 struct CapturedRequest: Encodable {
-    enum InitiatorType: String {
+    enum InitiatorType: String, Encodable {
         /// CSS
         case css
         /// HTML
@@ -26,6 +26,7 @@ struct CapturedRequest: Encodable {
         /// XMLHttpRequest
         case xmlHttpRequest = "xmlhttprequest"
 
+        // TODO: complete / expand
         init(pathExtension: String) {
             switch pathExtension {
             case "css":
@@ -37,7 +38,7 @@ struct CapturedRequest: Encodable {
             case "xml":
                 self = .xmlHttpRequest
             default:
-                return .other
+                self = .other
             }
         }
     }
