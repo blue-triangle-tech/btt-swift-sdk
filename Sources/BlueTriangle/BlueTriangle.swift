@@ -157,6 +157,8 @@ final public class BlueTriangle: NSObject {
 
     private static var crashReportManager: CrashReportManaging?
 
+    private static var capturedRequestCollector: CapturedRequestCollecting?
+
     private static var appEventObserver: AppEventObserver?
 
     /// Blue Triangle Technologies-assigned site ID.
@@ -273,6 +275,7 @@ final public class BlueTriangle: NSObject {
         lock.lock()
         precondition(initialized, "BlueTriangle must be initialized before sending timers.")
         let timer = timerFactory(page)
+        // If network capture is enabled, also pass this to network capture thing
         lock.unlock()
         return timer
     }
@@ -299,6 +302,29 @@ final public class BlueTriangle: NSObject {
             return
         }
         uploader.send(request: request)
+    }
+}
+
+// MARK: - Network Capture
+extension BlueTriangle {
+    @usableFromInline
+    static func startInternalTimer() -> InternalTimer? {
+        // TODO: do we still need to use sync?
+        guard shouldCaptureRequests else {
+            return nil
+        }
+        // TODO: use builder
+        var timer = InternalTimer(logger: logger,
+                                  intervalProvider: configuration.timerConfiguration.timeIntervalProvider)
+        timer.start()
+        return timer
+    }
+
+    static func sendTimer(_ timer: InternalTimer) {
+        guard shouldCaptureRequests else {
+            return
+        }
+        // ...
     }
 }
 
