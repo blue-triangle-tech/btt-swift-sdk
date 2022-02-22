@@ -323,7 +323,7 @@ extension BlueTriangle {
         guard shouldCaptureRequests else {
             return
         }
-        // ...
+        capturedRequestCollector?.collect(timer: timer, data: data, response: response)
     }
 }
 
