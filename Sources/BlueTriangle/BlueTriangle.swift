@@ -74,6 +74,10 @@ final public class BlueTriangleConfiguration: NSObject {
     /// smallest allowed interval (one measurement every 1/60 of a second).
     @objc public var performanceMonitorSampleRate: TimeInterval = 1
 
+    /// Percentage of sessions for which network calls will be captured. A value of `0.05`
+    /// means that 5% of sessions will be tracked.
+    @objc public var networkSampleRate: Double = 0.05
+
     var makeLogger: () -> Logging = {
         BTLogger.live
     }
@@ -145,9 +149,15 @@ final public class BlueTriangle: NSObject {
             performanceMonitorFactory: configuration.makePerformanceMonitorFactory())
     }()
 
+    private static var shouldCaptureRequests: Bool {
+        .random(probability: configuration.networkSampleRate)
+    }
+
     public private(set) static var initialized = false
 
     private static var crashReportManager: CrashReportManaging?
+
+    private static var capturedRequestCollector: CapturedRequestCollecting?
 
     private static var appEventObserver: AppEventObserver?
 
@@ -265,6 +275,7 @@ final public class BlueTriangle: NSObject {
         lock.lock()
         precondition(initialized, "BlueTriangle must be initialized before sending timers.")
         let timer = timerFactory(page)
+        // If network capture is enabled, also pass this to network capture thing
         lock.unlock()
         return timer
     }
@@ -294,6 +305,29 @@ final public class BlueTriangle: NSObject {
     }
 }
 
+// MARK: - Network Capture
+extension BlueTriangle {
+    @usableFromInline
+    static func startRequestTimer() -> InternalTimer? {
+        guard shouldCaptureRequests else {
+            return nil
+        }
+        var timer = InternalTimer(logger: logger,
+                                  intervalProvider: configuration.timerConfiguration.timeIntervalProvider)
+        timer.start()
+        return timer
+    }
+
+    @usableFromInline
+    static func captureRequest(timer: InternalTimer, data: Data?, response: URLResponse?) {
+        guard shouldCaptureRequests else {
+            return
+        }
+        capturedRequestCollector?.collect(timer: timer, data: data, response: response)
+    }
+}
+
+// MARK: - Crash Reporting
 extension BlueTriangle {
     static func configureCrashTracking(with crashConfiguration: CrashReportConfiguration) {
         crashReportManager = CrashReportManager(crashConfiguration,
