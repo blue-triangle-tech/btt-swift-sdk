@@ -67,9 +67,6 @@ final public class BlueTriangleConfiguration: NSObject {
     /// Crash tracking behavior.
     @objc public var crashTracking: CrashTracking = .none
 
-    /// Performance monitoring behavior.
-    @objc public var monitorPerformance: Bool = false
-
     /// Controls the frequency at which app performance is sampled. `Constants.minimumSampleInterval` defines the
     /// smallest allowed interval (one measurement every 1/60 of a second).
     @objc public var performanceMonitorSampleRate: TimeInterval = 1
@@ -153,6 +150,7 @@ final public class BlueTriangle: NSObject {
         .random(probability: configuration.networkSampleRate)
     }
 
+    /// A Boolean value indicating whether the SDK has been initialized.
     public private(set) static var initialized = false
 
     private static var crashReportManager: CrashReportManaging?
@@ -168,7 +166,7 @@ final public class BlueTriangle: NSObject {
         }
     }
 
-    /// Global User ID
+    /// Global User ID.
     @objc public static var globalUserID: Identifier {
         get {
             lock.sync { session.globalUserID }
