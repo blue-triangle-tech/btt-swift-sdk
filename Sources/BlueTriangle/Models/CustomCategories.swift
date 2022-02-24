@@ -7,14 +7,17 @@
 
 import Foundation
 
+/// Custom textual data that is collected from the page, aggregated, and ultimately
+/// appears in the list of filter options in the Blue Triangle portal.
+@objcMembers
 final public class CustomCategories: NSObject {
-    @objc public var cv6: String?
-    @objc public var cv7: String?
-    @objc public var cv8: String?
-    @objc public var cv9: String?
-    @objc public var cv10: String?
+    public var cv6: String?
+    public var cv7: String?
+    public var cv8: String?
+    public var cv9: String?
+    public var cv10: String?
 
-    @objc public init(
+    public init(
         cv6: String?,
         cv7: String?,
         cv8: String?,

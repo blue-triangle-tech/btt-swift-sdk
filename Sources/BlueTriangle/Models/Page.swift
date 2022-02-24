@@ -7,32 +7,38 @@
 
 import Foundation
 
-// TODO: use more appropriate name for mobile context
+@objcMembers
 final public class Page: NSObject {
 
-    /// Brand Value, Optional static monetary amount assigned to a step in the user’s path
-    /// signing up for a credit card is a zero dollar transaction, but has business value.
-    @objc public var brandValue: Decimal // `bv`
+    /// A static monetary amount assigned to a step in the user’s path. Signing up for a
+    /// credit card, for example, is a zero-dollar transaction that nevertheless has
+    /// business value.
+    public var brandValue: Decimal
 
     /// Name of page.
-    @objc public var pageName: String // `pageName`
+    public var pageName: String
 
     /// Page or content grouping designation.
-    @objc public var pageType: String // `pageType`
+    public var pageType: String
 
     /// Referring URL.
-    @objc public var referringURL: String // `RefURL`
+    public var referringURL: String
 
-    /// Description
-    @objc public var url: String
+    /// URL.
+    public var url: String
 
-    @objc public var customVariables: CustomVariables?
+    /// Custom textual data that is relevant to individual views but is not aggregated.
+    public var customVariables: CustomVariables?
 
-    @objc public var customCategories: CustomCategories?
+    /// Custom textual data that is aggregated and appears in the list of filter options
+    /// in the Blue Triangle portal.
+    public var customCategories: CustomCategories?
 
-    @objc public var customNumbers: CustomNumbers?
+    /// Custom numeric data that is aggregated and will appear on your trend graphs in
+    /// the Blue Triangle portal.
+    public var customNumbers: CustomNumbers?
 
-    @objc public init(
+    public init(
         pageName: String,
         brandValue: Decimal = 0.0,
         pageType: String = "Main Group",

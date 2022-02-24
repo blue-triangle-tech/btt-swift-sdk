@@ -40,11 +40,18 @@ final class BlueTriangleTests: XCTestCase {
         BlueTriangle.prime()
         BlueTriangle.reset()
     }
-    
+
+    override class func tearDown() {
+        BlueTriangle.reset()
+    }
+
     override func tearDown() {
         Self.onSendRequest = { _ in }
         Self.timeIntervals = []
-        BlueTriangle.reset()
+        BlueTriangle.reconfigure(session: Mock.session,
+                                 timerFactory: { BTTimer(page: $0,
+                                                         logger: Self.logger,
+                                                         intervalProvider: Self.timeIntervalProvider) })
         super.tearDown()
     }
 
@@ -210,7 +217,6 @@ extension BlueTriangleTests {
 
         XCTAssertNotNil(finishedTimer)
         print(performanceMonitor.measurements)
-        // ...
 
         let base64Decoded = Data(base64Encoded: request.body!)!
         let requestString = String(data: base64Decoded, encoding: .utf8)
