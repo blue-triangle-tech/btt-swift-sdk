@@ -22,6 +22,7 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
         requestBuilder: CapturedRequestBuilder,
         uploader: Uploading
     ) {
+        self.queue = queue
         self.logger = logger
         self.timerManager = timerManager
         self.requestBuilder = requestBuilder
