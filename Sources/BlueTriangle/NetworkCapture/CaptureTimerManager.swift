@@ -108,6 +108,7 @@ private extension CaptureTimerManager {
         case (.active, .pause):
             timer?.cancel()
             timer = nil
+            state = .inactive
         }
     }
 }
