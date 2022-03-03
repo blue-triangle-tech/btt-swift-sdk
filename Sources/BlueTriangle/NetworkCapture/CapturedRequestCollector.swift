@@ -8,18 +8,39 @@
 import Foundation
 
 final class CapturedRequestCollector: CapturedRequestCollecting {
+    private let queue: DispatchQueue
     private let logger: Logging
+    private var timerManager: CaptureTimerManaging
     private let requestBuilder: CapturedRequestBuilder
     private let uploader: Uploading
     private var requests: [CapturedRequest] = []
 
-    init(logger: Logging, requestBuilder: CapturedRequestBuilder, uploader: Uploading) {
+    init(
+        queue: DispatchQueue,
+        logger: Logging,
+        timerManager: CaptureTimerManaging,
+        requestBuilder: CapturedRequestBuilder,
+        uploader: Uploading
+    ) {
         self.logger = logger
+        self.timerManager = timerManager
         self.requestBuilder = requestBuilder
         self.uploader = uploader
+        self.timerManager.handler = { [weak self] in
+            self?.timerFired()
+        }
+    }
+
+    func start(page: Page) {
+        timerManager.start()
+        // ...
     }
 
     func collect(timer: InternalTimer, data: Data?, response: URLResponse?) {
+        // ...
+    }
+
+    func timerFired() {
         // ...
     }
 
