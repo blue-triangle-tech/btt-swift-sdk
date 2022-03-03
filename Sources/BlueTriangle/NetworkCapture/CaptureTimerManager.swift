@@ -8,7 +8,7 @@
 import Foundation
 
 final class CaptureTimerManager: CaptureTimerManaging {
-    enum State {
+    enum State: Equatable {
         case inactive
         case active(span: Int)
 
@@ -29,20 +29,22 @@ final class CaptureTimerManager: CaptureTimerManaging {
     }
 
     private let timerFlags: DispatchSource.TimerFlags = []
-    private let leeway: DispatchTimeInterval = .seconds(1)
+    private let timerLeeway: DispatchTimeInterval
     private let queue: DispatchQueue
     private let configuration: NetworkCaptureConfiguration
     private var timer: DispatchSourceTimer?
-    private var state: State = .inactive
+    private(set) var state: State = .inactive
     var handler: () -> Void
 
     init(
         queue: DispatchQueue,
         configuration: NetworkCaptureConfiguration,
+        timerLeeway: DispatchTimeInterval = .seconds(1),
         handler: @escaping () -> Void = { }
     ) {
         self.queue = queue
         self.configuration = configuration
+        self.timerLeeway = timerLeeway
         self.handler = handler
     }
 
@@ -64,7 +66,7 @@ final class CaptureTimerManager: CaptureTimerManaging {
 private extension CaptureTimerManager {
     func makeTimer(delay: TimeInterval) -> DispatchSourceTimer {
         let timer = DispatchSource.makeTimerSource(flags: timerFlags, queue: queue)
-        timer.schedule(deadline: .now() + delay, leeway: leeway)
+        timer.schedule(deadline: .now() + delay, leeway: timerLeeway)
         timer.setEventHandler { [weak self] in
             self?.handle(.fire)
         }
