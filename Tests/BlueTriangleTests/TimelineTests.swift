@@ -115,29 +115,6 @@ final class TimelineTests: XCTestCase {
         XCTAssertEqual(timeline.count, 0)
         XCTAssertNil(timeline.current)
     }
-
-    func testNodeFor() throws {
-        var timeline = Timeline<RequestSpan>(capacity: 5, intervalProvider: Self.timeIntervalProvider)
-        pageNames.map { RequestSpan(Page(pageName: $0)) }.forEach { timeline.insert($0) }
-
-        let nodeBeforeHead = timeline.value(for: 999)
-        XCTAssertNil(nodeBeforeHead)
-
-        let nodeAtHead = timeline.value(for: 1000)
-        XCTAssertEqual(nodeAtHead?.page.pageName, "page_1")
-
-        let nodeAfterHead = timeline.value(for: 1001)
-        XCTAssertEqual(nodeAfterHead?.page.pageName, "page_1")
-
-        let nodeBeforeTail = timeline.value(for: 4999)
-        XCTAssertEqual(nodeBeforeTail?.page.pageName, "page_4")
-
-        let nodeAtTail = timeline.value(for: 5001)
-        XCTAssertEqual(nodeAtTail?.page.pageName, "page_5")
-
-        let nodeAfterTail = timeline.value(for: 5001)
-        XCTAssertEqual(nodeAfterTail?.page.pageName, "page_5")
-    }
 }
 
 // MARK: - Performance
