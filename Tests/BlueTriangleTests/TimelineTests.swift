@@ -119,10 +119,10 @@ final class TimelineTests: XCTestCase {
 
 // MARK: - Performance
 extension TimelineTests {
-    /// MacBook Pro (13-inch, M1, 2020) - macOS 11.6.4 - 1.029 sec for 100_000 pages
-    /// average: 1.029
-    /// relative standard deviation: 1.817%
-    /// values: [1.082314, 1.025249, 1.019529, 1.026180, 1.030145, 1.036990, 1.018182, 1.014735, 1.017959, 1.022860]
+    /// MacBook Pro (13-inch, M1, 2020) - macOS 11.6.4 - 0.866 sec for 100_000 pages
+    /// average: 0.866
+    /// relative standard deviation: 1.088%
+    /// values: [0.893464, 0.861452, 0.859019, 0.865981, 0.863099, 0.864539, 0.861907, 0.864205, 0.861393, 0.862474]
     func testPerformance() throws {
         let totalPageCount: Int = 100_000
         let currentTimeOffsets: [Millisecond] = [-6543, 100, 200, 300, 400, -1234, -2345, -3456, 500, -4567]

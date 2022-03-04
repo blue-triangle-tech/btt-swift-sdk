@@ -6,34 +6,29 @@
 //
 
 import Foundation
+import DequeModule
 
-struct Timeline<T> {
+struct Timeline<T: Equatable> {
     final class Span {
         let startTime: Millisecond
         var value: T
 
-        var next: Span?
-        weak var previous: Span?
-
-        init(startTime: Millisecond, value: T, previous: Span? = nil) {
+        init(startTime: Millisecond, value: T) {
             self.startTime = startTime
             self.value = value
-            self.previous = previous
         }
     }
 
-    private let intervalProvider: () -> TimeInterval
     let capacity: Int
-    private(set) var count: Int = 0
-    private var head: Span?
-    private var tail: Span?
+    private let intervalProvider: () -> TimeInterval
+    private var storage = Deque<Span>()
 
-    var current: T? {
-        tail?.value
+    var count: Int {
+        storage.count
     }
 
-    var isEmpty: Bool {
-        head == nil
+    var current: T? {
+        storage.last?.value
     }
 
     init(capacity: Int = 5, intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }) {
@@ -44,75 +39,53 @@ struct Timeline<T> {
 
     @discardableResult
     mutating func insert(_ value: T) -> T? {
-        insert(value: value)
-        return count > capacity ? pop() : nil
-    }
-
-    func updateValue(for startTime: Millisecond, transform: (inout T) -> Void) {
-        guard let span = span(for: startTime) else {
-            return
-        }
-        transform(&span.value)
-    }
-
-    func updateCurrent(transform: (inout T) -> Void) {
-        guard let tail = tail else {
-            return
-        }
-        transform(&tail.value)
-    }
-
-    func value(for startTime: Millisecond) -> T? {
-        span(for: startTime)?.value
-    }
-
-    @discardableResult
-    mutating func pop() -> T? {
-        guard !isEmpty else {
-            return nil
-        }
-
-        defer {
-            head = head?.next
-            if isEmpty {
-                tail = nil
-            }
-        }
-        count -= 1
-        return head?.value
-    }
-}
-
-private extension Timeline {
-    private func span(for startTime: Millisecond) -> Span? {
-        var span = tail
-        while span != nil {
-            if span!.startTime <= startTime {
-                return span
-            }
-            span = span?.previous
+        storage.append(Span(startTime: intervalProvider().milliseconds, value: value))
+        if storage.count > capacity {
+            return storage.popFirst()?.value
         }
         return nil
     }
 
-    private mutating func insert(value: T) {
-        let new = Span(startTime: intervalProvider().milliseconds, value: value, previous: tail)
-        if isEmpty {
-            head = new
+    mutating func updateValue(for startTime: Millisecond, transform: (inout T) -> Void) {
+        guard !storage.isEmpty else {
+            return
         }
+        var currentIndex = storage.count - 1
+        repeat {
+            if storage[currentIndex].startTime <= startTime {
+                transform(&storage[currentIndex].value)
+                return
+            }
+            currentIndex -= 1
+        } while currentIndex >= 0
+    }
 
-        tail?.next = new
-        tail = new
+    mutating func updateCurrent(transform: (inout T) -> Void) {
+        guard !storage.isEmpty else {
+            return
+        }
+        transform(&storage.last!.value)
+    }
 
-        count += 1
+    @discardableResult
+    mutating func pop() -> T? {
+        storage.popFirst()?.value
     }
 }
 
-extension Timeline where T == RequestSpan {
-    func resetTail() -> RequestSpan? {
-        defer {
-            tail?.value.requests = []
+// MARK: - Test Support
+extension Timeline {
+    func value(for startTime: Millisecond) -> T? {
+        guard !storage.isEmpty else {
+            return nil
         }
-        return tail?.value
+        var currentIndex = storage.count - 1
+        repeat {
+            if storage[currentIndex].startTime <= startTime {
+                return storage[currentIndex].value
+            }
+            currentIndex -= 1
+        } while currentIndex >= 0
+        return nil
     }
 }
