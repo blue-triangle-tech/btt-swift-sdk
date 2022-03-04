@@ -8,12 +8,12 @@
 import Foundation
 
 final class CapturedRequestCollector: CapturedRequestCollecting {
+    private var storage = Timeline<RequestSpan>()
     private let queue: DispatchQueue
     private let logger: Logging
     private var timerManager: CaptureTimerManaging
     private let requestBuilder: CapturedRequestBuilder
     private let uploader: Uploading
-    private var requests: [CapturedRequest] = []
 
     init(
         queue: DispatchQueue,
