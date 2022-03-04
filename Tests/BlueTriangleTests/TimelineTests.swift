@@ -27,7 +27,7 @@ extension TimelineTests {
     /// average: 1.029
     /// relative standard deviation: 1.817%
     /// values: [1.082314, 1.025249, 1.019529, 1.026180, 1.030145, 1.036990, 1.018182, 1.014735, 1.017959, 1.022860]
-    func testPerformanceOther() throws {
+    func testPerformance() throws {
         let totalPageCount: Int = 100_000
         let currentTimeOffsets: [Millisecond] = [-6543, 100, 200, 300, 400, -1234, -2345, -3456, 500, -4567]
 
