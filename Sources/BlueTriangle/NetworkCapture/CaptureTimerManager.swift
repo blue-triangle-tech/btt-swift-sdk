@@ -54,8 +54,8 @@ final class CaptureTimerManager: CaptureTimerManaging {
     }
 }
 
-private extension CaptureTimerManager {
-    func makeTimer(delay: TimeInterval) -> DispatchSourceTimer {
+ extension CaptureTimerManager {
+    private func makeTimer(delay: TimeInterval) -> DispatchSourceTimer {
         let timer = DispatchSource.makeTimerSource(flags: timerFlags, queue: queue)
         timer.schedule(deadline: .now() + delay, leeway: timerLeeway)
         timer.setEventHandler { [weak self] in
@@ -64,7 +64,7 @@ private extension CaptureTimerManager {
         return timer
     }
 
-    func handle(_ action: Action) {
+    private func handle(_ action: Action) {
         switch (state, action) {
         case (.inactive, .start):
             timer = makeTimer(delay: configuration.initialSpanDuration)
