@@ -11,18 +11,9 @@ final class CaptureTimerManager: CaptureTimerManaging {
     enum State: Equatable {
         case inactive
         case active(span: Int)
-
-        var span: Int {
-            switch self {
-            case .inactive:
-                return 0
-            case .active(let span):
-                return span
-            }
-        }
     }
 
-    enum Action {
+    private enum Action {
         case start
         case pause
         case fire
