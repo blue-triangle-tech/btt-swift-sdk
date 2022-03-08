@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct CapturedRequest: Encodable {
-    enum InitiatorType: String, Encodable {
+struct CapturedRequest: Encodable, Equatable {
+    enum InitiatorType: String, Encodable, Equatable {
         /// CSS
         case css
         /// HTML

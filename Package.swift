@@ -14,10 +14,18 @@ let package = Package(
             name: "BlueTriangle",
             targets: ["BlueTriangle"])
     ],
+    dependencies: [
+      .package(
+        url: "https://github.com/apple/swift-collections.git",
+        .upToNextMajor(from: "1.0.0")
+      )
+    ],
     targets: [
         .target(
             name: "BlueTriangle",
-            dependencies: []),
+            dependencies: [
+              .product(name: "Collections", package: "swift-collections")
+            ]),
         .testTarget(
             name: "BlueTriangleTests",
             dependencies: ["BlueTriangle"]),
