@@ -89,9 +89,6 @@ final class CaptureTimerManager: CaptureTimerManaging {
                 state = .inactive
             }
         case (.inactive, .fire):
-            #if DEBUG
-            print("\(#function) - Unanticipated timer fire.")
-            #endif
             timer?.cancel()
             timer = nil
         case (.inactive, .pause):
