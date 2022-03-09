@@ -305,6 +305,11 @@ final public class BlueTriangle: NSObject {
 
 // MARK: - Network Capture
 extension BlueTriangle {
+    @objc
+    public static func startSpan(page: Page) {
+        capturedRequestCollector?.start(page: page)
+    }
+
     @usableFromInline
     static func startRequestTimer() -> InternalTimer? {
         guard shouldCaptureRequests else {

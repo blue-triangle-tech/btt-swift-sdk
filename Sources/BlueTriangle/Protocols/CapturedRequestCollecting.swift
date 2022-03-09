@@ -8,5 +8,6 @@
 import Foundation
 
 protocol CapturedRequestCollecting {
+    func start(page: Page)
     func collect(timer: InternalTimer, data: Data?, response: URLResponse?)
 }
