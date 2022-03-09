@@ -28,25 +28,55 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
         self.requestBuilder = requestBuilder
         self.uploader = uploader
         self.timerManager.handler = { [weak self] in
-            self?.timerFired()
+            self?.batchCapturedRequests()
         }
     }
 
     func start(page: Page) {
-        timerManager.start()
-        // ...
+        queue.async(flags: .barrier) {
+            self.timerManager.start()
+            let currentSpan = self.storage.batchCurrentRequests()
+            let poppedSpan = self.storage.insert(.init(page))
+
+            self.queue.async {
+                if let current = currentSpan {
+                    self.upload(current)
+                }
+                if let popped = poppedSpan, popped.value.isNotEmpty {
+                    self.upload(popped)
+                }
+            }
+        }
     }
 
     func collect(timer: InternalTimer, data: Data?, response: URLResponse?) {
-        // ...
+        let capturedRequest = CapturedRequest(timer: timer, response: response)
+        queue.async(flags: .barrier) {
+            self.storage.updateValue(for: timer.startTime.milliseconds) { span in
+                span.insert(capturedRequest)
+            }
+        }
     }
 
-    func timerFired() {
-        // ...
+    func batchCapturedRequests() {
+        queue.async(flags: .barrier) {
+            if let currentSpan = self.storage.batchCurrentRequests() {
+                // ?
+                self.queue.async {
+                    self.upload(currentSpan)
+                }
+            } else {
+                print("Empty span")
+            }
+        }
     }
 
-    func uploadCapturedRequests(session: Session, page: Page, pageTimeInterval: PageTimeInterval)throws {
-        let request = try requestBuilder.build(session, page, pageTimeInterval, requests)
-        uploader.send(request: request)
+    private func upload(_ span: (Millisecond, RequestSpan)) {
+        do {
+            let request = try requestBuilder.build(span.0, span.1)
+            uploader.send(request: request)
+        } catch {
+            logger.error("Error building request: \(error.localizedDescription)")
+        }
     }
 }
