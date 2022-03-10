@@ -71,9 +71,9 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
         }
     }
 
-    private func upload(_ span: (Millisecond, RequestSpan)) {
+    private func upload(_ span: (Millisecond, Millisecond, RequestSpan)) {
         do {
-            let request = try requestBuilder.build(span.0, span.1)
+            let request = try requestBuilder.build(span.0, span.1, span.2)
             uploader.send(request: request)
         } catch {
             logger.error("Error building request: \(error.localizedDescription)")

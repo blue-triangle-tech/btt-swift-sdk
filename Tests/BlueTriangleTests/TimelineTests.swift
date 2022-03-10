@@ -72,7 +72,7 @@ final class TimelineTests: XCTestCase {
         // Insert additional span
         let popped = timeline.insert(RequestSpan(Page(pageName: pageNames.last!)))!
         XCTAssertEqual(timeline.count, capacity)
-        XCTAssertEqual(popped.page.pageName, pageNames.first!)
+        XCTAssertEqual(popped.value.page.pageName, pageNames.first!)
     }
 
     func testUpdateValue() throws {

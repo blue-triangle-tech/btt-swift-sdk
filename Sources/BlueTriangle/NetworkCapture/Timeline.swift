@@ -9,18 +9,19 @@ import Foundation
 import DequeModule
 
 struct Timeline<T: Equatable> {
-    typealias TimedValue = (startTime: Millisecond, value: T)
+    typealias TimedValue = (startTime: Millisecond, endTime: Millisecond, value: T)
 
-    final class Span {
+    private final class Span {
         let startTime: Millisecond
         var value: T
-        var timedValue: TimedValue {
-            (startTime: startTime, value: value)
-        }
 
         init(startTime: Millisecond, value: T) {
             self.startTime = startTime
             self.value = value
+        }
+
+        func makeTimedValue(ending: Millisecond) -> TimedValue {
+            (startTime: startTime, endTime: ending, value: value)
         }
     }
 
@@ -44,9 +45,10 @@ struct Timeline<T: Equatable> {
 
     @discardableResult
     mutating func insert(_ value: T) -> TimedValue? {
-        storage.append(Span(startTime: intervalProvider().milliseconds, value: value))
+        let now = intervalProvider().milliseconds
+        storage.append(Span(startTime: now, value: value))
         if storage.count > capacity {
-            return storage.popFirst()?.timedValue
+            return storage.popFirst()?.makeTimedValue(ending: now)
         }
         return nil
     }
@@ -102,7 +104,7 @@ extension Timeline where T == RequestSpan {
             defer {
                 last.value.requests = []
             }
-            return last.timedValue
+            return last.makeTimedValue(ending: intervalProvider().milliseconds)
         }
         return nil
     }
