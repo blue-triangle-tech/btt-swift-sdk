@@ -65,8 +65,6 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
                 self.queue.async {
                     self.upload(currentSpan)
                 }
-            } else {
-                print("Empty span")
             }
         }
     }
@@ -77,6 +75,38 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
             uploader.send(request: request)
         } catch {
             logger.error("Error building request: \(error.localizedDescription)")
+        }
+    }
+}
+
+// MARK: - Supporting Types
+extension CapturedRequestCollector {
+    struct Configuration {
+        let queue: DispatchQueue
+        let timerManagingProvider: (NetworkCaptureConfiguration) -> CaptureTimerManaging
+
+        func makeRequestCollector(
+            logger: Logging,
+            networkCaptureConfiguration: NetworkCaptureConfiguration,
+            requestBuilder: CapturedRequestBuilder,
+            uploader: Uploading
+        ) -> CapturedRequestCollector {
+            let timerManager = timerManagingProvider(networkCaptureConfiguration)
+            return CapturedRequestCollector(queue: queue,
+                                            logger: logger,
+                                            timerManager: timerManager,
+                                            requestBuilder: requestBuilder,
+                                            uploader: uploader)
+        }
+
+        static var live: Self {
+            let queue = DispatchQueue(label: "com.bluetriangle.network-capture",
+                                      qos: .userInitiated,
+                                      autoreleaseFrequency: .workItem)
+
+            return Configuration(queue: queue) { configuration in
+                CaptureTimerManager(queue: queue, configuration: configuration)
+            }
         }
     }
 }
