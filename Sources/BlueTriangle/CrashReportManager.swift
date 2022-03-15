@@ -107,6 +107,6 @@ class CrashReportManager: CrashReportManaging {
         return try Request(method: .post,
                            url: Constants.errorEndpoint,
                            parameters: params,
-                           model: crashReport)
+                           model: [crashReport])
     }
 }
