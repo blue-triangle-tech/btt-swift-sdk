@@ -98,7 +98,10 @@ class CrashReportManager: CrashReportManaging {
             "DCTR": session.dataCenter,
             "CmpN": session.campaignName,
             "CmpM": Constants.crashID,
-            "CmpS": session.campaignSource
+            "CmpS": session.campaignSource,
+            "os": "iOS",
+            "browser": "Native App",
+            "device": "Mobile"
         ]
 
         return try Request(method: .post,
