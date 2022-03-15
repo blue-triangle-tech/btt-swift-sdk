@@ -99,9 +99,9 @@ class CrashReportManager: CrashReportManaging {
             "CmpN": session.campaignName,
             "CmpM": Constants.crashID,
             "CmpS": session.campaignSource,
-            "os": "iOS",
-            "browser": "Native App",
-            "device": "Mobile"
+            "os": Constants.osParameter,
+            "browser": Constants.browserName,
+            "device": Constants.deviceParameter
         ]
 
         return try Request(method: .post,

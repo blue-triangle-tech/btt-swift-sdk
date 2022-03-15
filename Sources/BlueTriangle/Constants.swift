@@ -9,6 +9,8 @@ import Foundation
 
 enum Constants {
     static let browserName = "Native App"
+    static let deviceParameter = "Mobile"
+    static let osParameter = "iOS"
     static let globalUserIDKey = "com.bluetriangle.kGlobalUserIDUserDefault"
     static let timerEndpoint: URL = "https://d.btttag.com/analytics.rcv"
     static let errorEndpoint: URL = "https://d.btttag.com/err.rcv"
