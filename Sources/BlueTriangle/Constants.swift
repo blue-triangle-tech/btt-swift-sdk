@@ -18,7 +18,7 @@ enum Constants {
     static let userSessionTimeoutInDays = 365
 
     // Crash Tracking
-    static let crashID = "iOS%20Crash"
+    static let crashID = "iOS Crash"
     static let eTp = "NativeAppCrash"
     static let crashReportFilename = "com.bluetriangle.crash"
     static let crashReportLineSeparator = "~~"
