@@ -133,7 +133,7 @@ struct TimerRequest: Encodable {
         case brandValue = "bv"
         case pageName
         case pageType
-        case referringURL = "referrer"
+        case referringURL = "RefURL"
         case url = "thisURL"
         // Timer
         // case timeOnPage = "top"
