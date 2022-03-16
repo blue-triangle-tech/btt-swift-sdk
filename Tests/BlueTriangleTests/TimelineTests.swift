@@ -125,7 +125,7 @@ extension TimelineTests {
     /// values: [0.893464, 0.861452, 0.859019, 0.865981, 0.863099, 0.864539, 0.861907, 0.864205, 0.861393, 0.862474]
     func testPerformance() throws {
         let totalPageCount: Int = 100_000
-        let currentTimeOffsets: [Millisecond] = [-6543, 100, 200, 300, 400, -1234, -2345, -3456, 500, -4567]
+        let currentTimeOffsets: [TimeInterval] = [-6.543, 0.100, 0.200, 0.300, 0.400, -1.234, -2.345, -3.456, 0.500, -4.567]
 
         var currentTime: TimeInterval = 0.0
         var pageCount: Int = 0
@@ -135,9 +135,9 @@ extension TimelineTests {
             return Page(pageName: "Page \(pageCount)")
         }
 
-        func makeCapturedRequest(offset: Millisecond) -> CapturedRequest {
+        func makeCapturedRequest(offset: TimeInterval) -> CapturedRequest {
             var request = Mock.capturedRequest
-            request.startTime = currentTime.milliseconds + offset
+            request.startTime = (currentTime + offset).milliseconds
             return request
         }
 
@@ -151,7 +151,7 @@ extension TimelineTests {
                 let _ = timeline.insert(.init(makePage()))
 
                 for offset in currentTimeOffsets {
-                    let startTime = currentTime.milliseconds + offset
+                    let startTime = currentTime + offset
                     timeline.updateValue(for: startTime) { span in
                         let request = makeCapturedRequest(offset: offset)
                         span.insert(request)

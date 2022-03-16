@@ -9,18 +9,18 @@ import Foundation
 import DequeModule
 
 struct Timeline<T: Equatable> {
-    typealias TimedValue = (startTime: Millisecond, endTime: Millisecond, value: T)
+    typealias TimedValue = (startTime: TimeInterval, endTime: TimeInterval, value: T)
 
     private final class Span {
-        let startTime: Millisecond
+        let startTime: TimeInterval
         var value: T
 
-        init(startTime: Millisecond, value: T) {
+        init(startTime: TimeInterval, value: T) {
             self.startTime = startTime
             self.value = value
         }
 
-        func makeTimedValue(ending: Millisecond) -> TimedValue {
+        func makeTimedValue(ending: TimeInterval) -> TimedValue {
             (startTime: startTime, endTime: ending, value: value)
         }
     }
@@ -45,7 +45,7 @@ struct Timeline<T: Equatable> {
 
     @discardableResult
     mutating func insert(_ value: T) -> TimedValue? {
-        let now = intervalProvider().milliseconds
+        let now = intervalProvider()
         storage.append(Span(startTime: now, value: value))
         if storage.count > capacity {
             return storage.popFirst()?.makeTimedValue(ending: now)
@@ -53,7 +53,7 @@ struct Timeline<T: Equatable> {
         return nil
     }
 
-    mutating func updateValue(for startTime: Millisecond, transform: (inout T) -> Void) {
+    mutating func updateValue(for startTime: TimeInterval, transform: (inout T) -> Void) {
         guard !storage.isEmpty else {
             return
         }
@@ -82,7 +82,7 @@ struct Timeline<T: Equatable> {
 
 // MARK: - Test Support
 extension Timeline {
-    func value(for startTime: Millisecond) -> T? {
+    func value(for startTime: TimeInterval) -> T? {
         guard !storage.isEmpty else {
             return nil
         }
@@ -104,7 +104,7 @@ extension Timeline where T == RequestSpan {
             defer {
                 last.value.requests = []
             }
-            return last.makeTimedValue(ending: intervalProvider().milliseconds)
+            return last.makeTimedValue(ending: intervalProvider())
         }
         return nil
     }
