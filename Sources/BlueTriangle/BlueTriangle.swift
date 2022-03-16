@@ -177,6 +177,16 @@ final public class BlueTriangle: NSObject {
         }
     }
 
+    /// Boolean value indicating whether user is a returning visitor.
+    @objc public static var isReturningVisitor: Bool {
+        get {
+            lock.sync { session.isReturningVisitor }
+        }
+        set {
+            lock.sync { session.isReturningVisitor = newValue }
+        }
+    }
+
     /// A/B testing identifier.
     @objc public static var abTestID: String  {
         get {
@@ -194,7 +204,7 @@ final public class BlueTriangle: NSObject {
             lock.sync { session.campaign }
         }
         set {
-            lock.sync { session.campaign = newValue}
+            lock.sync { session.campaign = newValue }
         }
     }
 
