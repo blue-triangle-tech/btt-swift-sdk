@@ -10,7 +10,7 @@ import Foundation
 @usableFromInline
 struct InternalTimer {
 
-    enum State: Int {
+    enum State {
         case initial
         case started
         case ended
