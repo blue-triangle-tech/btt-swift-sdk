@@ -358,7 +358,8 @@ extension BlueTriangle {
         session: Session? = nil,
         logger: Logging? = nil,
         uploader: Uploading? = nil,
-        timerFactory: ((Page) -> BTTimer)? = nil
+        timerFactory: ((Page) -> BTTimer)? = nil,
+        requestCollector: CapturedRequestCollecting? = nil
     ) {
         lock.sync {
             self.configuration = configuration
@@ -375,6 +376,7 @@ extension BlueTriangle {
             if let timerFactory = timerFactory {
                 self.timerFactory = timerFactory
             }
+            self.capturedRequestCollector = requestCollector
         }
     }
 }
