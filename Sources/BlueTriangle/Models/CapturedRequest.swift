@@ -52,16 +52,40 @@ struct CapturedRequest: Encodable, Equatable {
     var url: String
     /// Name of the file.
     var file: String?
-    /// Reuest start time.
+    /// Request start time.
     var startTime: Millisecond
+    /// Request end time.
+    var endTime: Millisecond
     /// Request duration.
     var duration: Millisecond
     /// The type of field being returned.
     var initiatorType: InitiatorType
     /// Compressed size of content.
-    var decodedBodySize: Int
+    var decodedBodySize: Int64
     /// Decompressed size of content.
-    var encodedBodySize: Int
+    var encodedBodySize: Int64
+}
+
+extension CapturedRequest {
+    init(timer: InternalTimer, response: URLResponse?) {
+        let hostComponents = response?.url?.host?.split(separator: ".") ?? []
+
+        if hostComponents.count > 2 {
+            self.domain = hostComponents.dropFirst().joined(separator: ".")
+        } else {
+            self.domain = response?.url?.host ?? ""
+        }
+
+        self.host = hostComponents.first != nil ? String(hostComponents.first!) : ""
+        self.url = response?.url?.absoluteString ?? ""
+        self.file = response?.url?.lastPathComponent ?? ""
+        self.startTime = timer.relativeStartTime.milliseconds
+        self.endTime = timer.relativeEndTime.milliseconds
+        self.duration = timer.endTime.milliseconds - timer.startTime.milliseconds
+        self.initiatorType = .init(pathExtension: response?.url?.pathExtension ?? "")
+        self.decodedBodySize = 0
+        self.encodedBodySize = response?.expectedContentLength ?? 0
+    }
 }
 
 // MARK: - Supporting Types
@@ -69,11 +93,21 @@ extension CapturedRequest {
     enum CodingKeys: String, CodingKey {
         case entryType = "e"
         case domain = "dmn"
+        case host = "h"
+        case url = "URL"
         case file = "f"
+        case startTime = "sT"
+        case endTime = "rE"
         case duration = "d"
         case initiatorType = "i"
-        case host = "h"
         case decodedBodySize = "dz"
-        case encodedBodySize = "Ez"
+        case encodedBodySize = "ez"
+    }
+}
+
+// MARK: - CustomStringConvertible
+extension CapturedRequest: CustomStringConvertible {
+    var description: String {
+        "CapturedRequest(url: \(url), startTime: \(startTime))"
     }
 }

@@ -16,7 +16,7 @@ struct InternalTimer {
         case ended
     }
 
-    enum Action {
+    private enum Action {
         case start
         case end
     }
@@ -24,14 +24,25 @@ struct InternalTimer {
     private let timeIntervalProvider: () -> TimeInterval
     private let logger: Logging
 
+    let offset: TimeInterval
     private(set) var state: State = .initial
     private(set) var startTime: TimeInterval = 0.0
     private(set) var endTime: TimeInterval = 0.0
 
+    var relativeStartTime: TimeInterval {
+        startTime - offset
+    }
+
+    var relativeEndTime: TimeInterval {
+        endTime - offset
+    }
+
     init(logger: Logging,
+         offset: TimeInterval = 0.0,
          intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }
     ) {
         self.logger = logger
+        self.offset = offset
         self.timeIntervalProvider = intervalProvider
     }
 

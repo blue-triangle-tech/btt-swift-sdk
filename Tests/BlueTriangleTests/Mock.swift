@@ -231,6 +231,7 @@ extension Mock {
         url: "https://d33wubrfki0l68.cloudfront.net/f50c058607f066d0231c1fe6753eac79f17ea447/e6748/static/logo-cw.f6eaf6dc.png",
         file: "logo-cw.f6eaf6dc.png",
         startTime: 132,
+        endTime: 184,
         duration: 52,
         initiatorType: .image,
         decodedBodySize: 0,
