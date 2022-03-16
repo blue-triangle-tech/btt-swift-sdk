@@ -9,6 +9,6 @@ import Foundation
 
 extension Bool {
     var smallInt: Int {
-        Int(truncating: self)
+        self ? 1 : 0
     }
 }
