@@ -18,7 +18,7 @@ struct TimerRequest: Encodable {
         var con = enc.container(keyedBy: CodingKeys.self)
 
         // Session
-        try con.encode(session.rv, forKey: .rv)
+        try con.encode(session.isReturningVisitor.smallInt, forKey: .rv)
         try con.encode(session.wcd, forKey: .wcd)
         try con.encode(session.eventType, forKey: .eventType)
         try con.encode(session.navigationType, forKey: .navigationType)
