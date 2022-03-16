@@ -25,18 +25,16 @@ final class CaptureTimerManager: CaptureTimerManaging {
     private let configuration: NetworkCaptureConfiguration
     private var timer: DispatchSourceTimer?
     private(set) var state: State = .inactive
-    var handler: () -> Void
+    var handler: (() -> Void)?
 
     init(
         queue: DispatchQueue,
         configuration: NetworkCaptureConfiguration,
-        timerLeeway: DispatchTimeInterval = .seconds(1),
-        handler: @escaping () -> Void = { }
+        timerLeeway: DispatchTimeInterval = .seconds(1)
     ) {
         self.queue = queue
         self.configuration = configuration
         self.timerLeeway = timerLeeway
-        self.handler = handler
     }
 
     deinit {
@@ -58,7 +56,7 @@ final class CaptureTimerManager: CaptureTimerManaging {
     private func makeTimer(delay: TimeInterval) -> DispatchSourceTimer {
         let timer = DispatchSource.makeTimerSource(flags: timerFlags, queue: queue)
         timer.schedule(deadline: .now() + delay, leeway: timerLeeway)
-        timer.setEventHandler { [weak self] in
+        timer.setEventHandler(flags: .barrier) { [weak self] in
             self?.handle(.fire)
         }
         return timer
@@ -76,7 +74,7 @@ final class CaptureTimerManager: CaptureTimerManaging {
             timer?.activate()
             state = .active(span: 1)
         case (.active(let span), .fire):
-            handler()
+            handler?()
             let nextSpan = span + 1
             if nextSpan <= configuration.spanCount {
                 timer = makeTimer(delay: configuration.subsequentSpanDuration)
