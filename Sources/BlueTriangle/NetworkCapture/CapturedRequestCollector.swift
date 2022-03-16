@@ -65,7 +65,7 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
     func collect(timer: InternalTimer, data: Data?, response: URLResponse?) {
         let capturedRequest = CapturedRequest(timer: timer, response: response)
         queue.async(flags: .barrier) {
-            self.storage.updateValue(for: timer.startTime.milliseconds) { span in
+            self.storage.updateValue(for: timer.startTime) { span in
                 span.insert(capturedRequest)
             }
         }
@@ -82,9 +82,9 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
         }
     }
 
-    private func upload(_ span: (Millisecond, Millisecond, RequestSpan)) {
+    private func upload(_ span: (TimeInterval, TimeInterval, RequestSpan)) {
         do {
-            let request = try requestBuilder.build(span.0, span.1, span.2)
+            let request = try requestBuilder.build(span.0.milliseconds, span.1.milliseconds, span.2)
             uploader.send(request: request)
         } catch {
             logger.error("Error building request: \(error.localizedDescription)")
