@@ -83,6 +83,8 @@ final public class BlueTriangleConfiguration: NSObject {
 
     var uploaderConfiguration: Uploader.Configuration = .live
 
+    var capturedRequestCollectorConfiguration: CapturedRequestCollector.Configuration = .live
+
     var requestBuilder: RequestBuilder = .live
 
     var performanceMonitorBuilder: PerformanceMonitorBuilder = .live
@@ -155,7 +157,17 @@ final public class BlueTriangle: NSObject {
 
     private static var crashReportManager: CrashReportManaging?
 
-    private static var capturedRequestCollector: CapturedRequestCollecting?
+    private static var capturedRequestCollector: CapturedRequestCollecting? = {
+        if Bool.random(probability: configuration.networkSampleRate) {
+            return configuration.capturedRequestCollectorConfiguration.makeRequestCollector(
+                logger: logger,
+                networkCaptureConfiguration: .standard,
+                requestBuilder: CapturedRequestBuilder.makeBuilder { session },
+                uploader: uploader)
+        } else {
+            return nil
+        }
+    }()
 
     private static var appEventObserver: AppEventObserver?
 
