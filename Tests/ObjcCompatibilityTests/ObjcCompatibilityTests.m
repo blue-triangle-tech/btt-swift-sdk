@@ -62,6 +62,10 @@
     [timer end];
 
     [BlueTriangle endTimer:timer purchaseConfirmation:purchaseConfirmation];
+
+    BTTimer *timer2 = [BlueTriangle makeTimerWithPage:page];
+
+    [BlueTriangle endTimer:timer2 purchaseConfirmation:nil];
 }
 
 @end
