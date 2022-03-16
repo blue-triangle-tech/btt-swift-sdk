@@ -312,20 +312,13 @@ extension BlueTriangle {
 
     @usableFromInline
     static func startRequestTimer() -> InternalTimer? {
-        guard shouldCaptureRequests else {
-            return nil
-        }
-        var timer = InternalTimer(logger: logger,
-                                  intervalProvider: configuration.timerConfiguration.timeIntervalProvider)
-        timer.start()
+        var timer = capturedRequestCollector?.makeTimer()
+        timer?.start()
         return timer
     }
 
     @usableFromInline
     static func captureRequest(timer: InternalTimer, data: Data?, response: URLResponse?) {
-        guard shouldCaptureRequests else {
-            return
-        }
         capturedRequestCollector?.collect(timer: timer, data: data, response: response)
     }
 }
