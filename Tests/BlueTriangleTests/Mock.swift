@@ -197,6 +197,7 @@ extension Mock {
         siteID: "MY_SITE_ID",
         globalUserID: Mock.globalUserID,
         sessionID: Mock.sessionID,
+        isReturningVisitor: true,
         abTestID: "MY_AB_TEST_ID",
         campaign: "MY_CAMPAIGN",
         campaignMedium: "MY_CAMPAIGN_MEDIUM",
