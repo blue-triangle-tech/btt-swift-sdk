@@ -118,9 +118,9 @@ struct TimerRequest: Encodable {
 
     enum CodingKeys: String, CodingKey {
         // Additional
-        case os
-        case device
         case browser
+        case device
+        case os
         // Session
         case rv = "RV"
         case wcd
