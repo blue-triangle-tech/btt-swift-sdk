@@ -17,8 +17,7 @@ struct CapturedRequestBuilder {
         isNewUser: Bool,
         pageType: String,
         pageName: String,
-        startTime: Millisecond,
-        pageTime: Millisecond
+        startTime: Millisecond
     ) -> Request.Parameters {
         [
             "siteID": siteID,
@@ -27,7 +26,6 @@ struct CapturedRequestBuilder {
             "txnName": trafficSegment,
             "sessionID": String(sessionID),
             "WCDtt": "c",
-            "pgTm": String(pageTime),
             "NVSTR": isNewUser.smallIntString,
             "pageType": pageType,
             // FIXME: replace strings with pending `Constant` additions from master
@@ -51,8 +49,7 @@ struct CapturedRequestBuilder {
                 isNewUser: isNewUser,
                 pageType: requestSpan.page.pageType,
                 pageName: requestSpan.page.pageName,
-                startTime: startTime,
-                pageTime: pageTime - startTime
+                startTime: startTime
             )
 
             return try Request(method: .post,
