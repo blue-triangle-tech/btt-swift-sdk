@@ -72,3 +72,21 @@ struct InternalTimer {
         }
     }
 }
+
+// MARK: - CustomStringConvertible
+extension InternalTimer.State: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .initial: return ".initial"
+        case .started: return ".started"
+        case .ended: return ".ended"
+        }
+    }
+}
+
+extension InternalTimer: CustomStringConvertible {
+    @usableFromInline
+    var description: String {
+        "InternalTimer(offset: \(offset), state: \(state), startTime: \(startTime), endTime: \(endTime)"
+    }
+}

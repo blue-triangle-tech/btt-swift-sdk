@@ -109,3 +109,22 @@ extension Timeline where T == RequestSpan {
         return nil
     }
 }
+
+extension Timeline.Span where T == RequestSpan {
+    var count: Int {
+        value.requests.count
+    }
+}
+
+// MARK: - CustomStringConvertible
+extension Timeline: CustomStringConvertible {
+    var description: String {
+        storage.description
+    }
+}
+
+extension Timeline.Span: CustomStringConvertible {
+    var description: String {
+        "<Timeline.Span - \(startTime) - \(value)>"
+    }
+}
