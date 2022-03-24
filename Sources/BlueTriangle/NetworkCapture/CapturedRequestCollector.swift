@@ -38,8 +38,9 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
     }
 
     func start(page: Page) {
-        queue.async(flags: .barrier) {
-            self.timerManager.start()
+        self.spanStartTime = self.timeIntervalProvider()
+        self.timerManager.start()
+        queue.sync(flags: .barrier) {
             let currentSpan = self.storage.batchCurrentRequests()
             let poppedSpan = self.storage.insert(.init(page))
 
@@ -64,20 +65,21 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
 
     func collect(timer: InternalTimer, data: Data?, response: URLResponse?) {
         let capturedRequest = CapturedRequest(timer: timer, response: response)
-        queue.async(flags: .barrier) {
+        queue.sync {
             self.storage.updateValue(for: timer.startTime) { span in
                 span.insert(capturedRequest)
             }
         }
     }
 
-    func batchCapturedRequests() {
-        queue.async(flags: .barrier) {
-            if let currentSpan = self.storage.batchCurrentRequests() {
-                // ?
-                self.queue.async {
-                    self.upload(currentSpan)
-                }
+    /// Upload current requests if there are any.
+    ///
+    /// - Important: This method mutates `storage` and is not thread-safe.
+    ///   You must call it from `queue` .
+    private func batchCapturedRequests() {
+        if let currentSpan = self.storage.batchCurrentRequests() {
+            self.queue.async {
+                self.upload(currentSpan)
             }
         }
     }
@@ -116,7 +118,7 @@ extension CapturedRequestCollector {
 
         static var live: Self {
             let queue = DispatchQueue(label: "com.bluetriangle.network-capture",
-                                      qos: .userInitiated,
+                                      qos: .utility,
                                       autoreleaseFrequency: .workItem)
             return Configuration(queue: queue, timeIntervalProvider: { Date().timeIntervalSince1970 }) { configuration in
                 CaptureTimerManager(queue: queue, configuration: configuration)
