@@ -90,20 +90,23 @@ class CrashReportManager: CrashReportManaging {
             "siteID": session.siteID,
             "nStart": String(crashReport.time),
             "pageName": "\(Constants.crashID)-\(Device.name)",
-            "txnName": Constants.crashID,
+            "txnName": session.trafficSegmentName,
             "sessionID": String(session.sessionID),
             "pgTm": "0",
             "pageType": Device.name,
             "AB": session.abTestID,
             "DCTR": session.dataCenter,
             "CmpN": session.campaignName,
-            "CmpM": Constants.crashID,
-            "CmpS": session.campaignSource
+            "CmpM": session.campaignMedium,
+            "CmpS": session.campaignSource,
+            "os": Constants.os,
+            "browser": Constants.browser,
+            "device": Constants.device
         ]
 
         return try Request(method: .post,
                            url: Constants.errorEndpoint,
                            parameters: params,
-                           model: crashReport)
+                           model: [crashReport])
     }
 }

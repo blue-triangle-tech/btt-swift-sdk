@@ -8,7 +8,6 @@
 import Foundation
 
 struct Session: Equatable {
-    let rv = 0
     let wcd = 0
     let eventType = 9
     let navigationType = 9
@@ -23,6 +22,9 @@ struct Session: Equatable {
 
     /// Session ID.
     var sessionID: Identifier
+
+    /// Boolean value indicating whether user is a returning visitor.
+    var isReturningVisitor: Bool
 
     /// A/B testing identifier.
     var abTestID: String
