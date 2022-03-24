@@ -17,6 +17,11 @@ struct TimerRequest: Encodable {
     func encode(to enc: Encoder) throws {
         var con = enc.container(keyedBy: CodingKeys.self)
 
+        // Additional
+        try con.encode(Constants.browser, forKey: .browser)
+        try con.encode(Constants.device, forKey: .device)
+        try con.encode(Constants.os, forKey: .os)
+
         // Session
         try con.encode(session.isReturningVisitor.smallInt, forKey: .rv)
         try con.encode(session.wcd, forKey: .wcd)
@@ -112,6 +117,10 @@ struct TimerRequest: Encodable {
     }
 
     enum CodingKeys: String, CodingKey {
+        // Additional
+        case browser
+        case device
+        case os
         // Session
         case rv = "RV"
         case wcd
