@@ -11,7 +11,7 @@ import DequeModule
 struct Timeline<T: Equatable> {
     typealias TimedValue = (startTime: TimeInterval, endTime: TimeInterval, value: T)
 
-    private final class Span {
+    final class Span {
         let startTime: TimeInterval
         var value: T
 
