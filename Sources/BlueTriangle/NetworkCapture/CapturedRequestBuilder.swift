@@ -30,7 +30,7 @@ struct CapturedRequestBuilder {
             "pageType": pageType,
             // FIXME: replace strings with pending `Constant` additions from master
             "os": "iOS",
-            "browser": Constants.browserName,
+            "browser": Constants.browser,
             "device": "Mobile"
         ]
     }
