@@ -15,7 +15,7 @@ import WatchKit
 enum Device {
 
     static var bvzn: String {
-        "\(Constants.browserName)-\(Bundle.main.releaseVersionNumber ?? "0.0")-\(os) \(osVersion)"
+        "\(Constants.browser)-\(Bundle.main.releaseVersionNumber ?? "0.0")-\(os) \(osVersion)"
     }
 
     static var os: String {

@@ -40,6 +40,9 @@ final public class BlueTriangleConfiguration: NSObject {
         }
     }
 
+    /// Boolean value indicating whether user is a returning visitor.
+    @objc var isReturningVisitor: Bool = false
+
     /// A/B testing identifier.
     @objc public var abTestID: String = "Default"
 
@@ -108,6 +111,7 @@ extension BlueTriangleConfiguration {
         Session(siteID: siteID,
                 globalUserID: customGlobalUserID ?? globalUserID,
                 sessionID: customSessionID ?? sessionID,
+                isReturningVisitor: isReturningVisitor,
                 abTestID: abTestID,
                 campaign: customCampaign,
                 campaignMedium: campaignMedium,
@@ -183,6 +187,16 @@ final public class BlueTriangle: NSObject {
         }
     }
 
+    /// Boolean value indicating whether user is a returning visitor.
+    @objc public static var isReturningVisitor: Bool {
+        get {
+            lock.sync { session.isReturningVisitor }
+        }
+        set {
+            lock.sync { session.isReturningVisitor = newValue }
+        }
+    }
+
     /// A/B testing identifier.
     @objc public static var abTestID: String  {
         get {
@@ -200,7 +214,7 @@ final public class BlueTriangle: NSObject {
             lock.sync { session.campaign }
         }
         set {
-            lock.sync { session.campaign = newValue}
+            lock.sync { session.campaign = newValue }
         }
     }
 
