@@ -101,6 +101,7 @@ class CrashReportManager: CrashReportManaging {
             "CmpS": session.campaignSource,
             "os": Constants.os,
             "browser": Constants.browser,
+            "browserVersion": Device.bvzn,
             "device": Constants.device
         ]
 
