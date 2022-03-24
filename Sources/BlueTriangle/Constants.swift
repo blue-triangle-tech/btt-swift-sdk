@@ -8,7 +8,9 @@
 import Foundation
 
 enum Constants {
-    static let browserName = "Native App"
+    static let browser = "Native App"
+    static let device = "Mobile"
+    static let os = "iOS"
     static let globalUserIDKey = "com.bluetriangle.kGlobalUserIDUserDefault"
     static let timerEndpoint: URL = "https://d.btttag.com/analytics.rcv"
     static let errorEndpoint: URL = "https://d.btttag.com/err.rcv"
@@ -18,7 +20,7 @@ enum Constants {
     static let userSessionTimeoutInDays = 365
 
     // Crash Tracking
-    static let crashID = "iOS%20Crash"
+    static let crashID = "iOS Crash"
     static let eTp = "NativeAppCrash"
     static let crashReportFilename = "com.bluetriangle.crash"
     static let crashReportLineSeparator = "~~"
