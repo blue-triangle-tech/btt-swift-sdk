@@ -45,21 +45,21 @@ final class TimelineTests: XCTestCase {
     func testValueForBefore() throws {
         var timeline = Timeline<RequestSpan>(capacity: 5, intervalProvider: Self.timeIntervalProvider)
         timeline.insert(RequestSpan(Mock.page))
-        let value = timeline.value(for: 999)
+        let value = timeline.value(for: 0.999)
         XCTAssertNil(value)
     }
 
     func testValueFor() throws {
         var timeline = Timeline<RequestSpan>(capacity: 5, intervalProvider: Self.timeIntervalProvider)
         timeline.insert(RequestSpan(Mock.page))
-        let value = timeline.value(for: 1000)!
+        let value = timeline.value(for: 1.0)!
         XCTAssertEqual(value.page, Mock.page)
     }
 
     func testValueForAfter() throws {
         var timeline = Timeline<RequestSpan>(capacity: 5, intervalProvider: Self.timeIntervalProvider)
         timeline.insert(RequestSpan(Mock.page))
-        let value = timeline.value(for: 2000)!
+        let value = timeline.value(for: 2.0)!
         XCTAssertEqual(value.page, Mock.page)
     }
 
@@ -82,7 +82,7 @@ final class TimelineTests: XCTestCase {
         let page2 = Page(pageName: pageNames[1])
         timeline.insert(RequestSpan(page2))
 
-        timeline.updateValue(for: 1050) { $0.insert(Mock.capturedRequest) }
+        timeline.updateValue(for: 1.05) { $0.insert(Mock.capturedRequest) }
         let updated = timeline.pop()!
 
         XCTAssertEqual(updated.page, page1)
