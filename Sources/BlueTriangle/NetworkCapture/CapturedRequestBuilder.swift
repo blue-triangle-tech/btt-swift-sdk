@@ -28,25 +28,20 @@ struct CapturedRequestBuilder {
             "WCDtt": "c",
             "NVSTR": isNewUser.smallIntString,
             "pageType": pageType,
-            // FIXME: replace strings with pending `Constant` additions from master
-            "os": "iOS",
+            "os": Constants.os,
             "browser": Constants.browser,
-            "device": "Mobile"
+            "device": Constants.device
         ]
     }
 
     static func makeBuilder(sessionProvider: @escaping () -> Session) -> Self {
         .init { startTime, pageTime, requestSpan in
             let session = sessionProvider()
-
-            // FIXME: use pending Session.isReturningVisitor property from master
-            let isNewUser: Bool = false
-
             let parameters = CapturedRequestBuilder.makeParameters(
                 siteID: session.siteID,
                 sessionID: String(session.sessionID),
                 trafficSegment: session.trafficSegmentName,
-                isNewUser: isNewUser,
+                isNewUser: !session.isReturningVisitor,
                 pageType: requestSpan.page.pageType,
                 pageName: requestSpan.page.pageName,
                 startTime: startTime
