@@ -40,7 +40,7 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
     func start(page: Page) {
         self.spanStartTime = self.timeIntervalProvider()
         self.timerManager.start()
-        queue.sync(flags: .barrier) {
+        queue.sync {
             let currentSpan = self.storage.batchCurrentRequests()
             let poppedSpan = self.storage.insert(.init(page))
 
