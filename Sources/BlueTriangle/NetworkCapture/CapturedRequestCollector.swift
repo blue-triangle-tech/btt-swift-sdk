@@ -17,7 +17,7 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
     private let uploader: Uploading
     private var spanStartTime: TimeInterval?
 
-    init(
+    convenience init(
         queue: DispatchQueue,
         logger: Logging,
         timerManager: CaptureTimerManaging,
@@ -25,7 +25,26 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
         requestBuilder: CapturedRequestBuilder,
         uploader: Uploading
     ) {
-        self.storage = Timeline<RequestSpan>(intervalProvider: timeIntervalProvider)
+        self.init(
+            storage: Timeline<RequestSpan>(intervalProvider: timeIntervalProvider),
+            queue: queue,
+            logger: logger,
+            timerManager: timerManager,
+            timeIntervalProvider: timeIntervalProvider,
+            requestBuilder: requestBuilder,
+            uploader: uploader)
+    }
+
+    init(
+        storage: Timeline<RequestSpan>,
+        queue: DispatchQueue,
+        logger: Logging,
+        timerManager: CaptureTimerManaging,
+        timeIntervalProvider: @escaping () -> TimeInterval,
+        requestBuilder: CapturedRequestBuilder,
+        uploader: Uploading
+    ) {
+        self.storage = storage
         self.queue = queue
         self.logger = logger
         self.timerManager = timerManager
