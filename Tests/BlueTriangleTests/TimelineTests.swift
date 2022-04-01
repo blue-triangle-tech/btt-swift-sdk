@@ -82,11 +82,11 @@ final class TimelineTests: XCTestCase {
         let page2 = Page(pageName: pageNames[1])
         timeline.insert(RequestSpan(page2))
 
-        timeline.updateValue(for: 1.05) { $0.insert(Mock.capturedRequest) }
+        timeline.updateValue(for: 1.05) { $0.insert(Mock.makeCapturedRequest()) }
         let updated = timeline.pop()!
 
         XCTAssertEqual(updated.page, page1)
-        XCTAssertEqual(updated.requests, [Mock.capturedRequest])
+        XCTAssertEqual(updated.requests, [Mock.makeCapturedRequest()])
     }
 
     func testUpdateCurrent() throws {
@@ -94,12 +94,12 @@ final class TimelineTests: XCTestCase {
         timeline.insert(RequestSpan(Mock.page))
 
         timeline.updateCurrent { span in
-            span.insert(Mock.capturedRequest)
+            span.insert(Mock.makeCapturedRequest())
         }
 
         let updated = timeline.current!
         XCTAssertEqual(updated.page, Mock.page)
-        XCTAssertEqual(updated.requests, [Mock.capturedRequest])
+        XCTAssertEqual(updated.requests, [Mock.makeCapturedRequest()])
     }
 
     func testPop() throws {
@@ -136,7 +136,7 @@ extension TimelineTests {
         }
 
         func makeCapturedRequest(offset: TimeInterval) -> CapturedRequest {
-            var request = Mock.capturedRequest
+            var request = Mock.makeCapturedRequest()
             request.startTime = (currentTime + offset).milliseconds
             return request
         }

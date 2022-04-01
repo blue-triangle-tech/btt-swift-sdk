@@ -194,7 +194,7 @@ class RequestCollectorTests: XCTestCase {
         let expectedEndTime: Millisecond = 1310
         let expectedPage = Mock.page
         let expectedRequests: [CapturedRequest] = [
-            Mock.capturedRequest
+            Mock.makeCapturedRequest()
         ]
 
         XCTAssertEqual(startTime, expectedStartTime)

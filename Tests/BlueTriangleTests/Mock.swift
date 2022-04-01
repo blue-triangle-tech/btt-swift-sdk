@@ -233,17 +233,23 @@ extension Mock {
         avgMemory: 0)
 
     static let capturedRequestURLString = "https://d33wubrfki0l68.cloudfront.net/f50c058607f066d0231c1fe6753eac79f17ea447/e6748/static/logo-cw.f6eaf6dc.png"
-    static var capturedRequest = CapturedRequest(
-        domain: "cloudfront.net",
-        host: "d33wubrfki0l68",
-        url: capturedRequestURLString,
-        file: "logo-cw.f6eaf6dc.png",
-        startTime: 100,
-        endTime: 200,
-        duration: 100,
-        initiatorType: .image,
-        decodedBodySize: 0,
-        encodedBodySize: 100)
+
+    static func makeCapturedRequest(
+        startTime: Millisecond = 100,
+        endTime: Millisecond = 200
+    ) -> CapturedRequest {
+        CapturedRequest(
+            domain: "cloudfront.net",
+            host:  "d33wubrfki0l68",
+            url: capturedRequestURLString,
+            file: "logo-cw.f6eaf6dc.png",
+            startTime: startTime,
+            endTime: endTime,
+            duration: endTime - startTime,
+            initiatorType: .image,
+            decodedBodySize: 0,
+            encodedBodySize: 100)
+    }
 }
 
 // MARK: - Request
