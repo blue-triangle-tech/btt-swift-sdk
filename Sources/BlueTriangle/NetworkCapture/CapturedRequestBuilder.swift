@@ -8,7 +8,7 @@
 import Foundation
 
 struct CapturedRequestBuilder {
-    let build: (Millisecond, Millisecond, RequestSpan) throws -> Request
+    let build: (Millisecond, RequestSpan) throws -> Request
 
     static func makeParameters(
         siteID: String,
@@ -35,7 +35,7 @@ struct CapturedRequestBuilder {
     }
 
     static func makeBuilder(sessionProvider: @escaping () -> Session) -> Self {
-        .init { startTime, pageTime, requestSpan in
+        .init { startTime, requestSpan in
             let session = sessionProvider()
             let parameters = CapturedRequestBuilder.makeParameters(
                 siteID: session.siteID,

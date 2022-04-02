@@ -21,7 +21,7 @@ class RequestCollectorTests: XCTestCase {
                                      qos: .userInitiated,
                                      autoreleaseFrequency: .workItem)
 
-    static var requestBuilder: CapturedRequestBuilder = .init { _, _, _ in
+    static var requestBuilder: CapturedRequestBuilder = .init { _, _ in
         return Request(method: .post, url: Constants.capturedRequestEndpoint)
     }
 
@@ -135,12 +135,10 @@ class RequestCollectorTests: XCTestCase {
 
         // Request Builder
         var startTime: Millisecond!
-        var endTime: Millisecond!
         var requestSpan: RequestSpan!
         let requestExpectation = expectation(description: "Request built")
-        let requestBuilder: CapturedRequestBuilder = .init { start, end, span in
+        let requestBuilder: CapturedRequestBuilder = .init { start, span in
             startTime = start
-            endTime = end
             requestSpan = span
 
             requestExpectation.fulfill()
@@ -194,7 +192,6 @@ class RequestCollectorTests: XCTestCase {
         ]
 
         XCTAssertEqual(startTime, expectedStartTime)
-        XCTAssertEqual(endTime, expectedEndTime)
         XCTAssertEqual(requestSpan.page, expectedPage)
         XCTAssertEqual(requestSpan.requests, expectedRequests)
     }
@@ -230,12 +227,10 @@ class RequestCollectorTests: XCTestCase {
 
         // Request Builder
         var startTime: Millisecond!
-        var endTime: Millisecond!
         var requestSpan: RequestSpan!
         let requestExpectation = expectation(description: "Request built")
-        let requestBuilder: CapturedRequestBuilder = .init { start, end, span in
+        let requestBuilder: CapturedRequestBuilder = .init { start, span in
             startTime = start
-            endTime = end
             requestSpan = span
 
             requestExpectation.fulfill()
@@ -292,7 +287,6 @@ class RequestCollectorTests: XCTestCase {
         ]
 
         XCTAssertEqual(startTime, expectedStartTime)
-        XCTAssertEqual(endTime, expectedEndTime)
         XCTAssertEqual(requestSpan.page, expectedPage)
         XCTAssertEqual(requestSpan.requests, expectedRequests)
     }
@@ -326,12 +320,10 @@ class RequestCollectorTests: XCTestCase {
 
         // Request Builder
         var startTime: Millisecond!
-        var endTime: Millisecond!
         var requestSpan: RequestSpan!
         let requestExpectation = expectation(description: "Request built")
-        let requestBuilder: CapturedRequestBuilder = .init { start, end, span in
+        let requestBuilder: CapturedRequestBuilder = .init { start, span in
             startTime = start
-            endTime = end
             requestSpan = span
 
             requestExpectation.fulfill()
@@ -377,14 +369,12 @@ class RequestCollectorTests: XCTestCase {
         waitForExpectations(timeout: 1.0)
 
         let expectedStartTime: Millisecond = 1010
-        let expectedEndTime: Millisecond = 2010
         let expectedPage = Mock.page
         let expectedRequests: [CapturedRequest] = [
             Mock.makeCapturedRequest(endTime: 200)
         ]
 
         XCTAssertEqual(startTime, expectedStartTime)
-        XCTAssertEqual(endTime, expectedEndTime)
         XCTAssertEqual(requestSpan.page, expectedPage)
         XCTAssertEqual(requestSpan.requests, expectedRequests)
     }
