@@ -103,9 +103,9 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
         }
     }
 
-    private func upload(_ span: (TimeInterval, TimeInterval, RequestSpan)) {
+    private func upload(_ span: (TimeInterval, RequestSpan)) {
         do {
-            let request = try requestBuilder.build(span.0.milliseconds, span.2)
+            let request = try requestBuilder.build(span.0.milliseconds, span.1)
             uploader.send(request: request)
         } catch {
             logger.error("Error building request: \(error.localizedDescription)")
