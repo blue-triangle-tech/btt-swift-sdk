@@ -56,7 +56,7 @@ final class CaptureTimerManager: CaptureTimerManaging {
     private func makeTimer(delay: TimeInterval) -> DispatchSourceTimer {
         let timer = DispatchSource.makeTimerSource(flags: timerFlags, queue: queue)
         timer.schedule(deadline: .now() + delay, leeway: timerLeeway)
-        timer.setEventHandler(flags: .barrier) { [weak self] in
+        timer.setEventHandler { [weak self] in
             self?.handle(.fire)
         }
         return timer
