@@ -11,10 +11,17 @@ import XCTest
 
 class RequestCollectorTests: XCTestCase {
     static var uploaderQueue: DispatchQueue = Mock.uploaderQueue
+
+    static var timelineTimeIntervals: [TimeInterval] = []
+    static var timelineIntervalProvider: () -> TimeInterval = {
+        timelineTimeIntervals.popLast() ?? 0
+    }
+
     static var timeIntervals: [TimeInterval] = []
     static var timeIntervalProvider: () -> TimeInterval = {
         timeIntervals.popLast() ?? 0
     }
+
     static var logger: LoggerMock = .init()
 
     static var queue = DispatchQueue(label: "com.bluetriangle.network-capture",
@@ -108,6 +115,15 @@ class RequestCollectorTests: XCTestCase {
     }
 
     func testSpanUploadAfterNewSpan() throws {
+        Self.timelineTimeIntervals = [
+            // Insert span 2
+            1.32,
+            // batchCurrentRequests for span 1
+            1.31,
+            // Insert span 1
+            1.01,
+        ]
+
         Self.timeIntervals = [
             // Start span 2
             1.3,
@@ -119,19 +135,7 @@ class RequestCollectorTests: XCTestCase {
             1.0
         ]
 
-        // Timeline
-        var timelineIntervals: [TimeInterval] = [
-            // Insert span 2
-            1.32,
-            // batchCurrentRequests for span 1
-            1.31,
-            // Insert span 1
-            1.01,
-        ]
-        let timelineIntervalProvider: () -> TimeInterval = {
-            timelineIntervals.popLast() ?? 0
-        }
-        let timeline = Timeline<RequestSpan>(capacity: 2, intervalProvider: timelineIntervalProvider)
+        let timeline = Timeline<RequestSpan>(capacity: 2, intervalProvider: Self.timelineIntervalProvider)
 
         // Request Builder
         var startTime: Millisecond!
@@ -185,7 +189,6 @@ class RequestCollectorTests: XCTestCase {
         wait(for: [requestExpectation, uploadExpectation], timeout: 1.0)
 
         let expectedStartTime: Millisecond = 1010
-        let expectedEndTime: Millisecond = 1310
         let expectedPage = Mock.page
         let expectedRequests: [CapturedRequest] = [
             Mock.makeCapturedRequest()
@@ -197,6 +200,15 @@ class RequestCollectorTests: XCTestCase {
     }
 
     func testSpanPoppingSpan() throws {
+        Self.timelineTimeIntervals = [
+            // Insert span 3
+            3.01,
+            // Insert span 2
+            2.01,
+            // Insert span 1
+            1.01,
+        ]
+
         Self.timeIntervals = [
             // Start span 3 + pop
             3.0,
@@ -211,19 +223,7 @@ class RequestCollectorTests: XCTestCase {
             1.0
         ]
 
-        // Timeline
-        var timelineIntervals: [TimeInterval] = [
-            // Insert span 3
-            3.01,
-            // Insert span 2
-            2.01,
-            // Insert span 1
-            1.01,
-        ]
-        let timelineIntervalProvider: () -> TimeInterval = {
-            timelineIntervals.popLast() ?? 0
-        }
-        let timeline = Timeline<RequestSpan>(capacity: 2, intervalProvider: timelineIntervalProvider)
+        let timeline = Timeline<RequestSpan>(capacity: 2, intervalProvider: Self.timelineIntervalProvider)
 
         // Request Builder
         var startTime: Millisecond!
@@ -280,7 +280,6 @@ class RequestCollectorTests: XCTestCase {
         wait(for: [requestExpectation, uploadExpectation], timeout: 1.0)
 
         let expectedStartTime: Millisecond = 1010
-        let expectedEndTime: Millisecond = 3010
         let expectedPage = Mock.page
         let expectedRequests: [CapturedRequest] = [
             Mock.makeCapturedRequest(endTime: 1500)
@@ -292,6 +291,13 @@ class RequestCollectorTests: XCTestCase {
     }
 
     func testBatchCapturedRequests() {
+        Self.timelineTimeIntervals = [
+            // Batch requests
+            2.01,
+            // Insert span 1
+            1.01
+        ]
+
         Self.timeIntervals = [
             // End timer1
             1.2,
@@ -301,17 +307,7 @@ class RequestCollectorTests: XCTestCase {
             1.0
         ]
 
-        // Timeline
-        var timelineIntervals: [TimeInterval] = [
-            // Batch requests
-            2.01,
-            // Insert span 1
-            1.01
-        ]
-        let timelineIntervalProvider: () -> TimeInterval = {
-            timelineIntervals.popLast() ?? 0
-        }
-        let timeline = Timeline<RequestSpan>(capacity: 2, intervalProvider: timelineIntervalProvider)
+        let timeline = Timeline<RequestSpan>(capacity: 2, intervalProvider: Self.timelineIntervalProvider)
 
         let timerStartExpectation = expectation(description: "Timer started")
         let timerManager = CaptureTimerManagerMock(onStart: {
