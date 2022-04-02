@@ -15,7 +15,10 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
     private let timeIntervalProvider: () -> TimeInterval
     private let requestBuilder: CapturedRequestBuilder
     private let uploader: Uploading
-    private var spanStartTime: TimeInterval?
+    private var currentTimer: BTTimer?
+    private var spanStartTime: TimeInterval? {
+        currentTimer?.startTime
+    }
 
     convenience init(
         queue: DispatchQueue,
@@ -56,12 +59,18 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
         }
     }
 
-    func start(page: Page) {
-        self.spanStartTime = self.timeIntervalProvider()
-        self.timerManager.start()
+    func start(timer: BTTimer, upload: (BTTimer) -> Void) {
+        if let previousTimer = currentTimer {
+            previousTimer.end()
+            upload(previousTimer)
+        }
+        currentTimer = timer
+        currentTimer?.start()
+        timerManager.start()
+
         queue.sync {
             let currentSpan = self.storage.batchCurrentRequests()
-            let poppedSpan = self.storage.insert(.init(page))
+            let poppedSpan = self.storage.insert(.init(timer.page))
 
             self.queue.async {
                 if let current = currentSpan {
