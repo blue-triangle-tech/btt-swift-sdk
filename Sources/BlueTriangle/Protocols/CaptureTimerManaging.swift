@@ -8,7 +8,7 @@
 import Foundation
 
 protocol CaptureTimerManaging {
-    var handler: () -> Void { get set }
+    var handler: (() -> Void)? { get set }
 
     func start()
     func cancel()

@@ -61,6 +61,12 @@ extension Mock {
                       autoreleaseFrequency: .workItem)
     }
 
+    static var requestCollectorQueue: DispatchQueue {
+        DispatchQueue(label: "com.bluetriangle.network-capture",
+                      qos: .utility,
+                      autoreleaseFrequency: .workItem)
+    }
+
     static func configureBlueTriangle(configuration config: BlueTriangleConfiguration) {
         config.siteID = "MY_SITE_ID"
         config.sessionID = Mock.sessionID
@@ -226,16 +232,24 @@ extension Mock {
         maxMemory: 0,
         avgMemory: 0)
 
-    static var capturedRequest = CapturedRequest(
-        domain: "cloudfront.net",
-        host: "d33wubrfki0l68",
-        url: "https://d33wubrfki0l68.cloudfront.net/f50c058607f066d0231c1fe6753eac79f17ea447/e6748/static/logo-cw.f6eaf6dc.png",
-        file: "logo-cw.f6eaf6dc.png",
-        startTime: 132,
-        duration: 52,
-        initiatorType: .image,
-        decodedBodySize: 0,
-        encodedBodySize: 0)
+    static let capturedRequestURLString = "https://d33wubrfki0l68.cloudfront.net/f50c058607f066d0231c1fe6753eac79f17ea447/e6748/static/logo-cw.f6eaf6dc.png"
+
+    static func makeCapturedRequest(
+        startTime: Millisecond = 100,
+        endTime: Millisecond = 200
+    ) -> CapturedRequest {
+        CapturedRequest(
+            domain: "cloudfront.net",
+            host:  "d33wubrfki0l68",
+            url: capturedRequestURLString,
+            file: "logo-cw.f6eaf6dc.png",
+            startTime: startTime,
+            endTime: endTime,
+            duration: endTime - startTime,
+            initiatorType: .image,
+            decodedBodySize: 0,
+            encodedBodySize: 100)
+    }
 }
 
 // MARK: - Request
@@ -313,5 +327,45 @@ struct ResourceUsageMock: ResourceUsageMeasuring {
 
     static func memory() -> UInt64 {
         100
+    }
+}
+
+class CaptureTimerManagerMock: CaptureTimerManaging {
+    var onStart: () -> Void
+    var onCancel: () -> Void
+    var handler: (() -> Void)?
+
+    init(
+        onStart: @escaping () -> Void = {},
+        onCancel: @escaping () -> Void = {},
+        handler: @escaping () -> Void  = {}
+    ) {
+        self.onStart = onStart
+        self.onCancel = onCancel
+        self.handler = handler
+    }
+
+    func start() {
+        onStart()
+    }
+
+    func cancel() {
+        onCancel()
+    }
+
+    func fireTimer() {
+        handler?()
+    }
+}
+
+struct UploaderMock: Uploading {
+    var onSend: (Request) -> Void = { _ in }
+
+    init(onSend: @escaping (Request) -> Void = { _ in }) {
+        self.onSend = onSend
+    }
+
+    func send(request: Request) {
+        onSend(request)
     }
 }

@@ -8,5 +8,7 @@
 import Foundation
 
 protocol CapturedRequestCollecting {
+    func start(page: Page)
+    func makeTimer() -> InternalTimer? 
     func collect(timer: InternalTimer, data: Data?, response: URLResponse?)
 }

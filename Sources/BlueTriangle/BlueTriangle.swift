@@ -86,6 +86,8 @@ final public class BlueTriangleConfiguration: NSObject {
 
     var uploaderConfiguration: Uploader.Configuration = .live
 
+    var capturedRequestCollectorConfiguration: CapturedRequestCollector.Configuration = .live
+
     var requestBuilder: RequestBuilder = .live
 
     var performanceMonitorBuilder: PerformanceMonitorBuilder = .live
@@ -159,7 +161,17 @@ final public class BlueTriangle: NSObject {
 
     private static var crashReportManager: CrashReportManaging?
 
-    private static var capturedRequestCollector: CapturedRequestCollecting?
+    private static var capturedRequestCollector: CapturedRequestCollecting? = {
+        if Bool.random(probability: configuration.networkSampleRate) {
+            return configuration.capturedRequestCollectorConfiguration.makeRequestCollector(
+                logger: logger,
+                networkCaptureConfiguration: .standard,
+                requestBuilder: CapturedRequestBuilder.makeBuilder { session },
+                uploader: uploader)
+        } else {
+            return nil
+        }
+    }()
 
     private static var appEventObserver: AppEventObserver?
 
@@ -319,22 +331,20 @@ final public class BlueTriangle: NSObject {
 
 // MARK: - Network Capture
 extension BlueTriangle {
+    @objc
+    public static func startSpan(page: Page) {
+        capturedRequestCollector?.start(page: page)
+    }
+
     @usableFromInline
     static func startRequestTimer() -> InternalTimer? {
-        guard shouldCaptureRequests else {
-            return nil
-        }
-        var timer = InternalTimer(logger: logger,
-                                  intervalProvider: configuration.timerConfiguration.timeIntervalProvider)
-        timer.start()
+        var timer = capturedRequestCollector?.makeTimer()
+        timer?.start()
         return timer
     }
 
     @usableFromInline
     static func captureRequest(timer: InternalTimer, data: Data?, response: URLResponse?) {
-        guard shouldCaptureRequests else {
-            return
-        }
         capturedRequestCollector?.collect(timer: timer, data: data, response: response)
     }
 }
@@ -374,7 +384,8 @@ extension BlueTriangle {
         session: Session? = nil,
         logger: Logging? = nil,
         uploader: Uploading? = nil,
-        timerFactory: ((Page) -> BTTimer)? = nil
+        timerFactory: ((Page) -> BTTimer)? = nil,
+        requestCollector: CapturedRequestCollecting? = nil
     ) {
         lock.sync {
             self.configuration = configuration
@@ -391,6 +402,7 @@ extension BlueTriangle {
             if let timerFactory = timerFactory {
                 self.timerFactory = timerFactory
             }
+            self.capturedRequestCollector = requestCollector
         }
     }
 }

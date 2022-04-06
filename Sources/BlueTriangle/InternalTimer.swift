@@ -10,13 +10,13 @@ import Foundation
 @usableFromInline
 struct InternalTimer {
 
-    enum State: Int {
+    enum State {
         case initial
         case started
         case ended
     }
 
-    enum Action {
+    private enum Action {
         case start
         case end
     }
@@ -24,14 +24,25 @@ struct InternalTimer {
     private let timeIntervalProvider: () -> TimeInterval
     private let logger: Logging
 
+    let offset: TimeInterval
     private(set) var state: State = .initial
     private(set) var startTime: TimeInterval = 0.0
     private(set) var endTime: TimeInterval = 0.0
 
+    var relativeStartTime: TimeInterval {
+        startTime - offset
+    }
+
+    var relativeEndTime: TimeInterval {
+        endTime - offset
+    }
+
     init(logger: Logging,
+         offset: TimeInterval = 0.0,
          intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }
     ) {
         self.logger = logger
+        self.offset = offset
         self.timeIntervalProvider = intervalProvider
     }
 
@@ -59,5 +70,23 @@ struct InternalTimer {
         case (.ended, .start), (.ended, .end):
             logger.error("Timer already ended.")
         }
+    }
+}
+
+// MARK: - CustomStringConvertible
+extension InternalTimer.State: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .initial: return ".initial"
+        case .started: return ".started"
+        case .ended: return ".ended"
+        }
+    }
+}
+
+extension InternalTimer: CustomStringConvertible {
+    @usableFromInline
+    var description: String {
+        "InternalTimer(offset: \(offset), state: \(state), startTime: \(startTime), endTime: \(endTime)"
     }
 }

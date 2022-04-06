@@ -8,7 +8,7 @@
 import Foundation
 
 struct CapturedRequestBuilder {
-    let build: (Session, Page, PageTimeInterval, [CapturedRequest]) throws -> Request
+    let build: (Millisecond, RequestSpan) throws -> Request
 
     static func makeParameters(
         siteID: String,
@@ -17,8 +17,7 @@ struct CapturedRequestBuilder {
         isNewUser: Bool,
         pageType: String,
         pageName: String,
-        startTime: Millisecond,
-        pageTime: Millisecond
+        startTime: Millisecond
     ) -> Request.Parameters {
         [
             "siteID": siteID,
@@ -27,29 +26,31 @@ struct CapturedRequestBuilder {
             "txnName": trafficSegment,
             "sessionID": String(sessionID),
             "WCDtt": "c",
-            "pgTm": String(pageTime),
             "NVSTR": isNewUser.smallIntString,
-            "pageType": pageType
+            "pageType": pageType,
+            "os": Constants.os,
+            "browser": Constants.browser,
+            "device": Constants.device
         ]
     }
 
-    static var live: Self = CapturedRequestBuilder { session, page, interval, model in
-        // TOOD: handle `isNewUser`; ask Joel if it should be part of `Session`
-        let isNewUser = false
+    static func makeBuilder(sessionProvider: @escaping () -> Session) -> Self {
+        .init { startTime, requestSpan in
+            let session = sessionProvider()
+            let parameters = CapturedRequestBuilder.makeParameters(
+                siteID: session.siteID,
+                sessionID: String(session.sessionID),
+                trafficSegment: session.trafficSegmentName,
+                isNewUser: !session.isReturningVisitor,
+                pageType: requestSpan.page.pageType,
+                pageName: requestSpan.page.pageName,
+                startTime: startTime
+            )
 
-        let parameters = makeParameters(
-            siteID: session.siteID,
-            sessionID: String(session.sessionID),
-            trafficSegment: session.trafficSegmentName,
-            isNewUser: isNewUser,
-            pageType: page.pageType,
-            pageName: page.pageName,
-            startTime: interval.startTime,
-            pageTime: interval.pageTime)
-
-        return try Request(method: .post,
-                           url: Constants.capturedRequestEndpoint,
-                           parameters: parameters,
-                           model: model)
+            return try Request(method: .post,
+                               url: Constants.capturedRequestEndpoint,
+                               parameters: parameters,
+                               model: requestSpan.requests)
+        }
     }
 }

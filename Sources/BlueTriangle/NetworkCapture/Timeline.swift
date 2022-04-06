@@ -9,13 +9,19 @@ import Foundation
 import DequeModule
 
 struct Timeline<T: Equatable> {
+    typealias TimedValue = (startTime: TimeInterval, value: T)
+
     final class Span {
-        let startTime: Millisecond
+        let startTime: TimeInterval
         var value: T
 
-        init(startTime: Millisecond, value: T) {
+        init(startTime: TimeInterval, value: T) {
             self.startTime = startTime
             self.value = value
+        }
+
+        func makeTimedValue() -> TimedValue {
+            (startTime: startTime, value: value)
         }
     }
 
@@ -38,15 +44,16 @@ struct Timeline<T: Equatable> {
     }
 
     @discardableResult
-    mutating func insert(_ value: T) -> T? {
-        storage.append(Span(startTime: intervalProvider().milliseconds, value: value))
+    mutating func insert(_ value: T) -> TimedValue? {
+        let now = intervalProvider()
+        storage.append(Span(startTime: now, value: value))
         if storage.count > capacity {
-            return storage.popFirst()?.value
+            return storage.popFirst()?.makeTimedValue()
         }
         return nil
     }
 
-    mutating func updateValue(for startTime: Millisecond, transform: (inout T) -> Void) {
+    mutating func updateValue(for startTime: TimeInterval, transform: (inout T) -> Void) {
         guard !storage.isEmpty else {
             return
         }
@@ -75,7 +82,7 @@ struct Timeline<T: Equatable> {
 
 // MARK: - Test Support
 extension Timeline {
-    func value(for startTime: Millisecond) -> T? {
+    func value(for startTime: TimeInterval) -> T? {
         guard !storage.isEmpty else {
             return nil
         }
@@ -87,5 +94,37 @@ extension Timeline {
             currentIndex -= 1
         } while currentIndex >= 0
         return nil
+    }
+}
+
+// MARK: - Helpers
+extension Timeline where T == RequestSpan {
+    mutating func batchCurrentRequests() -> TimedValue? {
+        if let last = storage.last, last.value.isNotEmpty {
+            defer {
+                last.value.requests = []
+            }
+            return last.makeTimedValue()
+        }
+        return nil
+    }
+}
+
+extension Timeline.Span where T == RequestSpan {
+    var count: Int {
+        value.requests.count
+    }
+}
+
+// MARK: - CustomStringConvertible
+extension Timeline: CustomStringConvertible {
+    var description: String {
+        storage.description
+    }
+}
+
+extension Timeline.Span: CustomStringConvertible {
+    var description: String {
+        "<Timeline.Span - \(startTime) - \(value)>"
     }
 }

@@ -32,3 +32,10 @@ struct RequestSpan: Equatable {
         return requests
     }
 }
+
+// MARK: - CustomStringConvertible
+extension RequestSpan: CustomStringConvertible {
+    var description: String {
+        "RequestSpan(pageName: \(page.pageName), requestCount: \(requests.count)"
+    }
+}
