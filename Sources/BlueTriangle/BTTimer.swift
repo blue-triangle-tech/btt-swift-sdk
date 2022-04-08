@@ -33,6 +33,12 @@ final public class BTTimer: NSObject {
     @objc public private(set) var startTime: TimeInterval = 0.0
     @objc public private(set) var interactiveTime: TimeInterval = 0.0
     @objc public private(set) var endTime: TimeInterval = 0.0
+    @objc public var hasEnded: Bool {
+        switch state {
+        case .ended: return true
+        default: return false
+        }
+    }
 
     var pageTimeInterval: PageTimeInterval {
         PageTimeInterval(
@@ -93,7 +99,7 @@ final public class BTTimer: NSObject {
             case (.interactive, .markInteractive):
                 logger.error("Interactive time already set.")
             case (.ended, .start), (.ended, .markInteractive), (.ended, .end):
-                logger.error("Timer already ended.")
+                return
             default:
                 logger.error("Invalid transition.")
             }

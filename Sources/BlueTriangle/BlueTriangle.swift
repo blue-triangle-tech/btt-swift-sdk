@@ -331,9 +331,20 @@ final public class BlueTriangle: NSObject {
 
 // MARK: - Network Capture
 extension BlueTriangle {
+    @discardableResult
     @objc
-    public static func startSpan(page: Page) {
-        capturedRequestCollector?.start(page: page)
+    public static func startSpan(page: Page) -> BTTimer {
+        let timer = makeTimer(page: page)
+        lock.lock()
+        capturedRequestCollector?.start(timer: timer) { timer in
+            lock.lock()
+            defer {
+                lock.unlock()
+            }
+            return try configuration.requestBuilder.builder(session, timer, nil)
+        }
+        lock.unlock()
+        return timer
     }
 
     @usableFromInline

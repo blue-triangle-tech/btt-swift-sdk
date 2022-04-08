@@ -9,20 +9,52 @@ import Foundation
 
 struct CapturedRequest: Encodable, Equatable {
     enum InitiatorType: String, Encodable, Equatable {
+        /// Audio
+        case audio
+        /// Beacon
+        case beacon
         /// CSS
         case css
+        /// Embed
+        case embed
+        /// EventSource
+        case eventSource = "eventsource"
+        /// Fetch
+        case fetch
         /// HTML
         case html
+        /// Icon
+        case icon
         /// IFrame
         case iFrame = "iframe"
         /// Image
         case image = "img"
+        /// Input
+        case input
+        /// Internal
+        case `internal`
+        /// JSON
+        case json
         /// Link
         case link
+        /// Object
+        case object
         /// Other
         case other
+        /// Preflight
+        case preflight
         /// Javascript
         case script
+        /// Subdocument
+        case subdocument
+        /// Track
+        case track
+        /// Use
+        case use
+        /// Video
+        case video
+        /// ViolationReport
+        case violationReport = "violationreport"
         /// XMLHttpRequest
         case xmlHttpRequest = "xmlhttprequest"
 
@@ -37,6 +69,14 @@ struct CapturedRequest: Encodable, Equatable {
                 self = .script
             case "xml":
                 self = .xmlHttpRequest
+            default:
+                self = .other
+            }
+        }
+
+        // TODO: complete / expand
+        init(contentType: String) {
+            switch contentType {
             default:
                 self = .other
             }
