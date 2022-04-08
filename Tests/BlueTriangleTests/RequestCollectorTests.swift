@@ -93,7 +93,7 @@ class RequestCollectorTests: XCTestCase {
         let spanTimer = Self.makeSpanTimer()
         spanTimer.start()
 
-        collector.start(timer: spanTimer) { _ in }
+        collector.start(timer: spanTimer) { _ in Mock.request }
 
         let timer1 = collector.makeTimer()
         let timer2 = collector.makeTimer()
@@ -124,12 +124,12 @@ class RequestCollectorTests: XCTestCase {
 
         // Span 1
         let spanTimer1 = Self.makeSpanTimer()
-        collector.start(timer: spanTimer1) { _ in }
+        collector.start(timer: spanTimer1) { _ in Mock.request }
         let timer1 = collector.makeTimer()
 
         // Span 2
         let spanTimer2 = Self.makeSpanTimer(page: .init(pageName: "Page 2"))
-        collector.start(timer: spanTimer2) { _ in }
+        collector.start(timer: spanTimer2) { _ in Mock.request }
         let timer2 = collector.makeTimer()
 
         let expectedOffset1: TimeInterval = 1.0
@@ -177,9 +177,13 @@ class RequestCollectorTests: XCTestCase {
         }
 
         // Uploader
+        var uploadCount = 0
         let uploadExpectation = expectation(description: "Request sent")
         let uploader = UploaderMock { req in
-            uploadExpectation.fulfill()
+            uploadCount += 1
+            if uploadCount == 2 {
+                uploadExpectation.fulfill()
+            }
         }
 
         // Collector
@@ -194,7 +198,7 @@ class RequestCollectorTests: XCTestCase {
 
         // Span 1
         let spanTimer1 = Self.makeSpanTimer()
-        collector.start(timer: spanTimer1) { _ in }
+        collector.start(timer: spanTimer1) { _ in Mock.request }
 
         // Make request
         var timer1: InternalTimer! = collector.makeTimer()
@@ -213,7 +217,7 @@ class RequestCollectorTests: XCTestCase {
 
         // Span 2
         let spanTimer2 = Self.makeSpanTimer(page: .init(pageName: "Page 2"))
-        collector.start(timer: spanTimer2) { _ in }
+        collector.start(timer: spanTimer2) { _ in Mock.request }
 
         wait(for: [requestExpectation, uploadExpectation], timeout: 1.0)
 
@@ -252,16 +256,23 @@ class RequestCollectorTests: XCTestCase {
 
         // Span 1
         let spanTimer1 = Self.makeSpanTimer(page: Mock.page)
-        collector.start(timer: spanTimer1) { _ in }
+        collector.start(timer: spanTimer1) { _ in Mock.request }
+
+        // Make request
+        var timer1: InternalTimer! = collector.makeTimer()
+        timer1.start()
+        timer1.end()
+        collector.collect(timer: timer1, data: Data(), response: Mock.makeHTTPResponse(statusCode: 200))
 
         // Span 2
         let spanTimer2 = Self.makeSpanTimer(page: .init(pageName: "Page 2"))
 
         var timerToUpload: BTTimer!
-        let timerExpectation = expectation(description: "")
+        let timerExpectation = expectation(description: "Timer upload")
         collector.start(timer: spanTimer2) { timer in
             timerToUpload = timer
             timerExpectation.fulfill()
+            return Mock.request
         }
 
         waitForExpectations(timeout: 1.0)
@@ -332,7 +343,8 @@ class RequestCollectorTests: XCTestCase {
 
         // Span 1
         let spanTimer1 = Self.makeSpanTimer()
-        collector.start(timer: spanTimer1) { _ in }
+        collector.start(timer: spanTimer1) { _ in Mock.request }
+
 
         // Make request
         var timer1: InternalTimer! = collector.makeTimer()
@@ -340,7 +352,7 @@ class RequestCollectorTests: XCTestCase {
 
         // Span 2
         let spanTimer2 = Self.makeSpanTimer(page: .init(pageName: "Page 2"))
-        collector.start(timer: spanTimer2) { _ in }
+        collector.start(timer: spanTimer2) { _ in Mock.request }
 
         // Receive response
         timer1.end()
@@ -355,7 +367,7 @@ class RequestCollectorTests: XCTestCase {
 
         // Span 3
         let spanTimer3 = Self.makeSpanTimer(page: .init(pageName: "Page 3"))
-        collector.start(timer: spanTimer3) { _ in }
+        collector.start(timer: spanTimer3) { _ in Mock.request }
 
         wait(for: [requestExpectation, uploadExpectation], timeout: 1.0)
 
@@ -427,7 +439,7 @@ class RequestCollectorTests: XCTestCase {
 
         // Span 1
         let spanTimer1 = Self.makeSpanTimer()
-        collector.start(timer: spanTimer1) { _ in }
+        collector.start(timer: spanTimer1) { _ in Mock.request }
 
         // Make request
         var timer1: InternalTimer! = collector.makeTimer()

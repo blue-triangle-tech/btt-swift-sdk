@@ -335,23 +335,15 @@ extension BlueTriangle {
     @objc
     public static func startSpan(page: Page) -> BTTimer {
         let timer = makeTimer(page: page)
-        var request: Request?
-
         lock.lock()
         capturedRequestCollector?.start(timer: timer) { timer in
-            do {
-                request = try configuration.requestBuilder.builder(session, timer, nil)
-            } catch  {
-                logger.error(error.localizedDescription)
+            lock.lock()
+            defer {
+                lock.unlock()
             }
+            return try configuration.requestBuilder.builder(session, timer, nil)
         }
         lock.unlock()
-
-        defer {
-            if let request = request {
-                uploader.send(request: request)
-            }
-        }
         return timer
     }
 
