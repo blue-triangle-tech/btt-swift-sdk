@@ -358,6 +358,11 @@ extension BlueTriangle {
     static func captureRequest(timer: InternalTimer, data: Data?, response: URLResponse?) {
         capturedRequestCollector?.collect(timer: timer, data: data, response: response)
     }
+
+    @usableFromInline
+    static func captureRequest(timer: InternalTimer, tuple: (Data, URLResponse)) {
+        capturedRequestCollector?.collect(timer: timer, data: tuple.0, response: tuple.1)
+    }
 }
 
 // MARK: - Crash Reporting
