@@ -7,10 +7,6 @@
 
 import Foundation
 
-protocol FileLocation {
-    var containerURL: URL? { get }
-}
-
 enum UserLocation: FileLocation {
     public typealias PathComponent = String
 

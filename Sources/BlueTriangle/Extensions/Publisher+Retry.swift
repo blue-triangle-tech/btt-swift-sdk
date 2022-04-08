@@ -85,3 +85,17 @@ extension Publisher {
         : initialDelay * S.SchedulerTimeType.Stride.seconds(pow(1 + delayMultiplier, Double(currentAttempt - 1)))
     }
 }
+
+// MARK: - Publisher+RetryConfiguration
+extension Publisher {
+    func retry<S: Scheduler>(
+        _ configuration: Uploader.RetryConfiguration<S>,
+        scheduler: S
+    ) -> AnyPublisher<Output, Failure> {
+        retry(retries: configuration.maxRetry,
+              initialDelay: configuration.initialDelay,
+              delayMultiplier: configuration.delayMultiplier,
+              shouldRetry: configuration.shouldRetry,
+              scheduler: scheduler)
+    }
+}

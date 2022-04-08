@@ -8,19 +8,7 @@
 import Foundation
 import Combine
 
-protocol Uploading {
-    func send(request: Request)
-}
-
 typealias Networking = (Request) -> AnyPublisher<HTTPResponse<Data>, NetworkError>
-
-extension URLSession {
-    static var live: Networking {
-        let configuration = URLSessionConfiguration.default
-        let session = URLSession(configuration: configuration)
-        return session.dataTaskPublisher
-    }
-}
 
 struct RequestBuilder {
     let builder: (Session, BTTimer, PurchaseConfirmation?) throws -> Request
@@ -124,19 +112,5 @@ extension Uploader {
                                                   delayMultiplier: 1.0,
                                                   shouldRetry: nil))
         }
-    }
-}
-
-// MARK: - Publisher+RetryConfiguration
-extension Publisher {
-    func retry<S: Scheduler>(
-        _ configuration: Uploader.RetryConfiguration<S>,
-        scheduler: S
-    ) -> AnyPublisher<Output, Failure> {
-        retry(retries: configuration.maxRetry,
-              initialDelay: configuration.initialDelay,
-              delayMultiplier: configuration.delayMultiplier,
-              shouldRetry: configuration.shouldRetry,
-              scheduler: scheduler)
     }
 }

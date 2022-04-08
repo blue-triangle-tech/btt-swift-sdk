@@ -7,10 +7,6 @@
 
 import Foundation
 
-protocol CrashReportManaging {
-    func uploadReports(session: Session)
-}
-
 enum CrashReportConfiguration {
     case nsException
 }
