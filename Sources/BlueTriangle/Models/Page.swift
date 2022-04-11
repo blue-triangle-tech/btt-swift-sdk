@@ -7,9 +7,9 @@
 
 import Foundation
 
+/// An object describing a user interaction.
 @objcMembers
 final public class Page: NSObject {
-
     /// A static monetary amount assigned to a step in the user’s path. Signing up for a
     /// credit card, for example, is a zero-dollar transaction that nevertheless has
     /// business value.
@@ -38,6 +38,16 @@ final public class Page: NSObject {
     /// the Blue Triangle portal.
     public var customNumbers: CustomNumbers?
 
+    /// Creates a page describing a user interaction.
+    /// - Parameters:
+    ///   - pageName: Name of the page.
+    ///   - brandValue: A monetary amount assigned to a step in the user's path.
+    ///   - pageType: Page or content grouping designation.
+    ///   - referringURL: Referring URL.
+    ///   - url: URL.
+    ///   - customVariables: Custom textual data that is relevant to individual views.
+    ///   - customCategories: Custom textual data that is relevant to aggregate views.
+    ///   - customNumbers: Custom numeric data that is relevant to aggregate views.
     public init(
         pageName: String,
         brandValue: Decimal = 0.0,

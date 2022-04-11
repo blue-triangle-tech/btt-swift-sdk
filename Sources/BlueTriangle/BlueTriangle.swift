@@ -123,6 +123,7 @@ extension BlueTriangleConfiguration {
     }
 }
 
+/// The entry point for interacting with the Blue Triangle SDK.
 final public class BlueTriangle: NSObject {
 
     private static let lock = NSLock()
@@ -258,6 +259,8 @@ final public class BlueTriangle: NSObject {
         }
     }
 
+    /// `configure` is a one-time configuration function to set session-level properties.
+    /// - Parameter configure: A closure that ...
     @objc
     public static func configure(_ configure: (BlueTriangleConfiguration) -> Void) {
         lock.sync {
@@ -272,6 +275,14 @@ final public class BlueTriangle: NSObject {
         }
     }
 
+    /// Creates a timer timer to measure the duration of a user interaction.
+    ///
+    /// The returned timer is not running. Call `start()` before passing to `endTimer(_:purchaseConfirmation:)`.
+    ///
+    /// - note: `configure(_:)` must be called before attempting to create a timer.
+    ///
+    /// - Parameter page: An object providing information about the user interaction being timed.
+    /// - Returns: The new timer.
     @objc
     public static func makeTimer(page: Page) -> BTTimer {
         lock.lock()
@@ -281,6 +292,12 @@ final public class BlueTriangle: NSObject {
         return timer
     }
 
+    /// Creates a running timer to measure the duration of a user interaction.
+    ///
+    /// - note: `configure(_:)` must be called before attempting to start a timer.
+    ///
+    /// - Parameter page: An object providing information about the user interaction being timed.
+    /// - Returns: The running timer.
     @objc
     public static func startTimer(page: Page) -> BTTimer {
         let timer = makeTimer(page: page)
@@ -288,6 +305,10 @@ final public class BlueTriangle: NSObject {
         return timer
     }
 
+    /// End a timer and upload it to Blue Triangle for processing.
+    /// - Parameters:
+    ///   - timer: The timer to upload.
+    ///   - purchaseConfirmation: An object describing
     @objc
     public static func endTimer(_ timer: BTTimer, purchaseConfirmation: PurchaseConfirmation? = nil) {
         timer.end()
