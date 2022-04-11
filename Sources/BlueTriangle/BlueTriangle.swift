@@ -258,7 +258,10 @@ final public class BlueTriangle: NSObject {
             lock.sync { session.trafficSegmentName = newValue }
         }
     }
+}
 
+// MARK: - Configuration
+extension BlueTriangle {
     /// `configure` is a one-time configuration function to set session-level properties.
     /// - Parameter configure: A closure that ...
     @objc
@@ -275,6 +278,35 @@ final public class BlueTriangle: NSObject {
         }
     }
 
+    // We want to allow multiple configurations for testing
+    internal static func reconfigure(
+        configuration: BlueTriangleConfiguration = .init(),
+        session: Session? = nil,
+        logger: Logging? = nil,
+        uploader: Uploading? = nil,
+        timerFactory: ((Page) -> BTTimer)? = nil
+    ) {
+        lock.sync {
+            self.configuration = configuration
+            initialized = true
+            if let session = session {
+                self.session = session
+            }
+            if let logger = logger {
+                self.logger = logger
+            }
+            if let uploader = uploader {
+                self.uploader = uploader
+            }
+            if let timerFactory = timerFactory {
+                self.timerFactory = timerFactory
+            }
+        }
+    }
+}
+
+// MARK: - Timer
+public extension BlueTriangle {
     /// Creates a timer timer to measure the duration of a user interaction.
     ///
     /// The returned timer is not running. Call `start()` before passing to `endTimer(_:purchaseConfirmation:)`.
@@ -284,7 +316,7 @@ final public class BlueTriangle: NSObject {
     /// - Parameter page: An object providing information about the user interaction being timed.
     /// - Returns: The new timer.
     @objc
-    public static func makeTimer(page: Page) -> BTTimer {
+    static func makeTimer(page: Page) -> BTTimer {
         lock.lock()
         precondition(initialized, "BlueTriangle must be initialized before sending timers.")
         let timer = timerFactory(page)
@@ -299,7 +331,7 @@ final public class BlueTriangle: NSObject {
     /// - Parameter page: An object providing information about the user interaction being timed.
     /// - Returns: The running timer.
     @objc
-    public static func startTimer(page: Page) -> BTTimer {
+    static func startTimer(page: Page) -> BTTimer {
         let timer = makeTimer(page: page)
         timer.start()
         return timer
@@ -310,7 +342,7 @@ final public class BlueTriangle: NSObject {
     ///   - timer: The timer to upload.
     ///   - purchaseConfirmation: An object describing
     @objc
-    public static func endTimer(_ timer: BTTimer, purchaseConfirmation: PurchaseConfirmation? = nil) {
+    static func endTimer(_ timer: BTTimer, purchaseConfirmation: PurchaseConfirmation? = nil) {
         timer.end()
         purchaseConfirmation?.orderTime = timer.endTime
         let request: Request
@@ -327,6 +359,7 @@ final public class BlueTriangle: NSObject {
     }
 }
 
+// MARK: - Crash Tracking
 extension BlueTriangle {
     static func configureCrashTracking(with crashConfiguration: CrashReportConfiguration) {
         crashReportManager = CrashReportManager(crashConfiguration,
@@ -354,30 +387,5 @@ extension BlueTriangle {
     static func prime() {
         let _ = uploader
         let _ = makeTimer(page: .init(pageName: "TEST"))
-    }
-
-    static func reconfigure(
-        configuration: BlueTriangleConfiguration = .init(),
-        session: Session? = nil,
-        logger: Logging? = nil,
-        uploader: Uploading? = nil,
-        timerFactory: ((Page) -> BTTimer)? = nil
-    ) {
-        lock.sync {
-            self.configuration = configuration
-            initialized = true
-            if let session = session {
-                self.session = session
-            }
-            if let logger = logger {
-                self.logger = logger
-            }
-            if let uploader = uploader {
-                self.uploader = uploader
-            }
-            if let timerFactory = timerFactory {
-                self.timerFactory = timerFactory
-            }
-        }
     }
 }
