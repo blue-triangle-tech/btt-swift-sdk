@@ -87,22 +87,23 @@ public extension URLSession {
 public extension URLSession {
     /// Returns a publisher that wraps a URL session data task for a given URL request.
     /// - Parameter request: The URL request for which to create a data task.
-    func btDataTaskPublisher(for request: URLRequest) -> URLSession.DataTaskPublisher {
+    func btDataTaskPublisher(for request: URLRequest) -> AnyPublisher<(data: Data, response: URLResponse), URLError> {
         let timer = BlueTriangle.startRequestTimer()
         return dataTaskPublisher(for: request)
             .handleEvents(
                 receiveOutput: { data, response in
                     if var timer = timer {
                         timer.end()
-                        BlueTriangle.captureRequest(timer: timer, tuple: asyncTuple)
+                        BlueTriangle.captureRequest(timer: timer, tuple: (data, response))
                     }
                 }
             )
+            .eraseToAnyPublisher()
     }
 
     /// Returns a publisher that wraps a URL session data task for a given URL.
     /// - Parameter url: The URL for which to create a data task.
-    func dataTaskPublisher(for url: URL) -> URLSession.DataTaskPublisher {
+    func dataTaskPublisher(for url: URL) -> AnyPublisher<(data: Data, response: URLResponse), URLError> {
         btDataTaskPublisher(for: .init(url: url))
     }
 }
