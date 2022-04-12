@@ -43,6 +43,10 @@ struct Timeline<T: Equatable> {
         self.intervalProvider = intervalProvider
     }
 
+    /// Inserts a new value at the end of the timeline. If this insertion would result in the timeline holding more than
+    /// `capacity` values, pop its first item to maintain `capacity` and return a corresponding `TimedValue`.
+    /// - Parameter value: The value to insert at the end of the timeline.
+    /// - Returns: `TimedValue` corresponding to the first value if it is popped to maintain `capacity`.
     @discardableResult
     mutating func insert(_ value: T) -> TimedValue? {
         let now = intervalProvider()

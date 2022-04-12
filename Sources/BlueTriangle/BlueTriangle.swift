@@ -299,7 +299,6 @@ final public class BlueTriangle: NSObject {
         lock.lock()
         precondition(initialized, "BlueTriangle must be initialized before sending timers.")
         let timer = timerFactory(page)
-        // If network capture is enabled, also pass this to network capture thing
         lock.unlock()
         return timer
     }
@@ -357,6 +356,11 @@ extension BlueTriangle {
     @usableFromInline
     static func captureRequest(timer: InternalTimer, data: Data?, response: URLResponse?) {
         capturedRequestCollector?.collect(timer: timer, data: data, response: response)
+    }
+
+    @usableFromInline
+    static func captureRequest(timer: InternalTimer, tuple: (Data, URLResponse)) {
+        capturedRequestCollector?.collect(timer: timer, data: tuple.0, response: tuple.1)
     }
 }
 
