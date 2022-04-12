@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Combine
 
 // MARK: - Adding Data Tasks to a Session
 public extension URLSession {
@@ -79,5 +80,29 @@ public extension URLSession {
         delegate: URLSessionTaskDelegate? = nil
     ) async throws -> (Data, URLResponse) {
         try await btData(for: URLRequest(url: url), delegate: delegate)
+    }
+}
+
+// MARK: - Performing Tasks as a Combine Publisher
+public extension URLSession {
+    /// Returns a publisher that wraps a URL session data task for a given URL request.
+    /// - Parameter request: The URL request for which to create a data task.
+    func btDataTaskPublisher(for request: URLRequest) -> URLSession.DataTaskPublisher {
+        let timer = BlueTriangle.startRequestTimer()
+        return dataTaskPublisher(for: request)
+            .handleEvents(
+                receiveOutput: { data, response in
+                    if var timer = timer {
+                        timer.end()
+                        BlueTriangle.captureRequest(timer: timer, tuple: asyncTuple)
+                    }
+                }
+            )
+    }
+
+    /// Returns a publisher that wraps a URL session data task for a given URL.
+    /// - Parameter url: The URL for which to create a data task.
+    func dataTaskPublisher(for url: URL) -> URLSession.DataTaskPublisher {
+        btDataTaskPublisher(for: .init(url: url))
     }
 }
