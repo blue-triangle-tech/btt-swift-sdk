@@ -299,7 +299,6 @@ final public class BlueTriangle: NSObject {
         lock.lock()
         precondition(initialized, "BlueTriangle must be initialized before sending timers.")
         let timer = timerFactory(page)
-        // If network capture is enabled, also pass this to network capture thing
         lock.unlock()
         return timer
     }
