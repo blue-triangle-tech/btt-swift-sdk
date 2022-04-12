@@ -13,7 +13,7 @@ typealias Networking = (Request) -> AnyPublisher<HTTPResponse<Data>, NetworkErro
 struct RequestBuilder {
     let builder: (Session, BTTimer, PurchaseConfirmation?) throws -> Request
 
-    static var live: Self = RequestBuilder { session, timer, purchase in
+    static let live = RequestBuilder { session, timer, purchase in
         let model = TimerRequest(session: session,
                                  page: timer.page,
                                  timer: timer.pageTimeInterval,
@@ -102,15 +102,15 @@ extension Uploader {
             Uploader(queue: queue, logger: logger, networking: networking, retryConfiguration: retryConfiguration)
         }
 
-        static var live: Self {
-            return Self(queue: DispatchQueue(label: "com.bluetriangle.uploader",
-                                             qos: .userInitiated,
-                                             autoreleaseFrequency: .workItem),
-                        networking: URLSession.live,
-                        retryConfiguration: .init(maxRetry: 3,
-                                                  initialDelay: 10.0,
-                                                  delayMultiplier: 1.0,
-                                                  shouldRetry: nil))
-        }
+        static let live = Self(
+            queue: DispatchQueue(label: "com.bluetriangle.uploader",
+                                 qos: .userInitiated,
+                                 autoreleaseFrequency: .workItem),
+            networking: URLSession.live,
+            retryConfiguration: .init(maxRetry: 3,
+                                      initialDelay: 10.0,
+                                      delayMultiplier: 1.0,
+                                      shouldRetry: nil))
+
     }
 }

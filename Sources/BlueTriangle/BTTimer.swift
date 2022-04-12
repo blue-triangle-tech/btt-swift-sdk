@@ -139,7 +139,7 @@ extension BTTimer {
             }
         }
 
-        static var live = Self(
+        static let live = Self(
             timeIntervalProvider: { Date().timeIntervalSince1970 }
         )
     }

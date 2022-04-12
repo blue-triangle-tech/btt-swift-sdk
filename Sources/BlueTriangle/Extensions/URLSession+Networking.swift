@@ -8,9 +8,9 @@
 import Foundation
 
 extension URLSession {
-    static var live: Networking {
+    static let live: Networking = {
         let configuration = URLSessionConfiguration.default
         let session = URLSession(configuration: configuration)
         return session.dataTaskPublisher
-    }
+    }()
 }
