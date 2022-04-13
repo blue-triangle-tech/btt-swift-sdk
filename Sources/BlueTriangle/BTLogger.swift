@@ -17,16 +17,6 @@ fileprivate extension OSLog {
     }
 }
 
-protocol SystemLogging {
-    func log(
-        level: OSLogType,
-        message: @escaping () -> String,
-        file: StaticString,
-        function: StaticString,
-        line: UInt
-    )
-}
-
 struct OSLogWrapper: SystemLogging {
     private let logger: OSLog
 
@@ -61,44 +51,6 @@ struct LoggerWrapper: SystemLogging {
         line: UInt
     ) {
         logger.log(level: level, "\(function):\(line) - \(message())")
-    }
-}
-
-// MARK: - Logging
-
-protocol Logging {
-    func logInfo(
-        _ message: @escaping () -> String,
-        file: StaticString,
-        function: StaticString,
-        line: UInt
-    )
-
-    func logError(
-        _ message: @escaping () -> String,
-        file: StaticString,
-        function: StaticString,
-        line: UInt
-    )
-}
-
-extension Logging {
-    func info(
-        _ message: @autoclosure @escaping () -> String,
-        file: StaticString = #fileID,
-        function: StaticString = #function,
-        line: UInt = #line
-    ) {
-        logInfo(message, file: file, function: function, line: line)
-    }
-
-    func error(
-        _ message: @autoclosure @escaping () -> String,
-        file: StaticString = #fileID,
-        function: StaticString = #function,
-        line: UInt = #line
-    ) {
-        logError(message, file: file, function: function, line: line)
     }
 }
 

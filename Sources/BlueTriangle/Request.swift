@@ -7,10 +7,6 @@
 
 import Foundation
 
-protocol URLRequestConvertible {
-    func asURLRequest() throws -> URLRequest
-}
-
 struct Request: URLRequestConvertible {
     typealias Parameters = [String: String]
     typealias Headers = [String: String]

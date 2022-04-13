@@ -7,17 +7,22 @@
 
 import Foundation
 
+/// An object that measures the duration of a user interaction.
 final public class BTTimer: NSObject {
-
+    /// Describes the state of a timer.
     @objc
     public enum State: Int {
+        /// Timer has not yet been started.
         case initial
+        /// Timer has been started.
         case started
+        /// Timer has been marked interactive.
         case interactive
+        /// Timer has been ended.
         case ended
     }
 
-    enum Action {
+    private enum Action {
         case start
         case markInteractive
         case end
@@ -28,10 +33,21 @@ final public class BTTimer: NSObject {
     private let timeIntervalProvider: () -> TimeInterval
     private let performanceMonitor: PerformanceMonitoring?
 
+    /// An object describing the user interaction measured by the timer.
     @objc public var page: Page
+
+    /// The state of the timer.
     @objc public private(set) var state: State = .initial
+
+    /// The epoch timer interval at which the timer was started. The default value is
+    /// `0.0`.
     @objc public private(set) var startTime: TimeInterval = 0.0
+
+    /// The epoch time interval at which the timer was marked interactive. The default
+    /// value is `0.0`.
     @objc public private(set) var interactiveTime: TimeInterval = 0.0
+
+    /// The epoch time interval at which the timer was ended. The default value is `0.0`.
     @objc public private(set) var endTime: TimeInterval = 0.0
     @objc public var hasEnded: Bool {
         switch state {
@@ -61,16 +77,21 @@ final public class BTTimer: NSObject {
         self.performanceMonitor = performanceMonitor
     }
 
+    /// Start the timer if not already started. If already started, will log an error.
     @objc
     public func start() {
         handle(.start)
     }
 
+    /// Mark the timer interactive at current time if the timer has been started and not
+    /// already marked interactive. If the timer has not been started yet, log an error.
+    /// If the timer has already been marked interactive, log an error.
     @objc
     public func markInteractive() {
         handle(.markInteractive)
     }
 
+    /// End the timer.
     @objc
     public func end() {
         handle(.end)
@@ -124,7 +145,7 @@ extension BTTimer {
             }
         }
 
-        static var live = Self(
+        static let live = Self(
             timeIntervalProvider: { Date().timeIntervalSince1970 }
         )
     }
