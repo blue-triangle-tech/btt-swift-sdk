@@ -10,7 +10,7 @@ import Foundation
 struct PerformanceMonitorBuilder {
     let builder: (TimeInterval) -> () -> PerformanceMonitoring
 
-    static var live: Self = PerformanceMonitorBuilder { sampleInterval in
+    static let live: Self = PerformanceMonitorBuilder { sampleInterval in
         let actualSampleInterval = sampleInterval < Constants.minimumSampleInterval
             ? Constants.minimumSampleInterval
             : sampleInterval
