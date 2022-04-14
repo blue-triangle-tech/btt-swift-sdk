@@ -8,15 +8,13 @@
 import Foundation
 
 extension URLResponse {
-    var headerFields: [String: String]? {
-        guard let httpResponse = self as? HTTPURLResponse else {
-            return nil
-        }
-        return httpResponse.allHeaderFields as? [String: String]
-    }
-
     var contentType: CapturedRequest.InitiatorType.ContentType? {
-        guard let contentTypeString = headerFields?["Content-Type"] else {
+        guard let httpResponse = self as? HTTPURLResponse,
+              let contentTypeValue = httpResponse.value(forHTTPHeaderField: "Content-Type"),
+              let contentTypeString = contentTypeValue.split(separator: ";")
+                .first?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased() else {
             return nil
         }
         return .init(rawValue: contentTypeString)
