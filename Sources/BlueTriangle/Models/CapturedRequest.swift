@@ -57,30 +57,6 @@ struct CapturedRequest: Encodable, Equatable {
         case violationReport = "violationreport"
         /// XMLHttpRequest
         case xmlHttpRequest = "xmlhttprequest"
-
-        // TODO: complete / expand
-        init(pathExtension: String) {
-            switch pathExtension {
-            case "css":
-                self = .css
-            case "jpeg", "jpg", "png", "tif", "tiff":
-                self = .image
-            case "js":
-                self = .script
-            case "xml":
-                self = .xmlHttpRequest
-            default:
-                self = .other
-            }
-        }
-
-        // TODO: complete / expand
-        init(contentType: String) {
-            switch contentType {
-            default:
-                self = .other
-            }
-        }
     }
 
     let entryType = "resource"
@@ -106,23 +82,162 @@ struct CapturedRequest: Encodable, Equatable {
     var encodedBodySize: Int64
 }
 
+extension CapturedRequest.InitiatorType {
+    enum ContentType: String, Equatable {
+        // MARK: Application
+        case javaArchive = "application/java-archive"
+        case ediX12 = "application/EDI-X12"
+        case edifact = "application/EDIFACT"
+        case javascriptApplication = "application/javascript"
+        case octetStream = "application/octet-stream"
+        case ogg = "application/ogg"
+        case pdf = "application/pdf"
+        case xhtmlXML = "application/xhtml+xml"
+        case flash = "application/x-shockwave-flash"
+        case json = "application/json"
+        case ldJSON = "application/ld+json"
+        case xmlApplication = "application/xml"
+        case zip = "application/zip"
+        case formURLEncoded = "application/x-www-form-urlencoded"
+
+        // MARK: Audio
+        case mpegAudio = "audio/mpeg"
+        case wmaAudio = "audio/x-ms-wma"
+        case realAudio = "audio/vnd.rn-realaudio"
+        case wav = "audio/x-wav"
+
+        // MARK: Image
+        case gif = "image/gif"
+        case jpeg = "image/jpeg"
+        case png = "image/png"
+        case tiff = "image/tiff"
+        case microsoftIcon = "image/vnd.microsoft.icon"
+        case xIcon = "image/x-icon"
+        case djvu = "image/vnd.djvu"
+        case svgXML = "image/svg+xml"
+
+        // MARK: Text
+        case css = "text/css"
+        case csv = "text/csv"
+        case html = "text/html"
+        case javascriptText = "text/javascript"
+        case plain = "text/plain"
+        case xmlText = "text/xml"
+
+        // MARK: Video
+        case mpegVideo = "video/mpeg"
+        case mp4 = "video/mp4"
+        case quicktime = "video/quicktime"
+        case wmvVideo = "video/x-ms-wmv"
+        case msvideo = "video/x-msvideo"
+        case flv = "video/x-flv"
+        case webm = "video/webm"
+    }
+
+    init(contentType: ContentType) {
+        switch contentType {
+        // MARK: Application
+        case .javaArchive:
+            self = .other
+        case .ediX12:
+            self = .other
+        case .edifact:
+            self = .other
+        case .javascriptApplication, .javascriptText:
+            self = .script
+        case .octetStream:
+            self = .other
+        case .ogg:
+            self = .other
+        case .pdf:
+            self = .other
+        case .xhtmlXML:
+            self = .other
+        case .flash:
+            self = .other
+        case .json, .ldJSON:
+            self = .json
+        case .xmlApplication:
+            self = .other
+        case .zip:
+            self = .other
+        case .formURLEncoded:
+            self = .other
+        // MARK: Audio
+        case .mpegAudio, .wmaAudio, .realAudio, .wav:
+            self = .audio
+        // MARK: Image
+        case .gif, .jpeg, .png, .tiff, .djvu, .svgXML:
+            self = .image
+        case .microsoftIcon, .xIcon:
+            self = .icon
+        // MARK: Text
+        case .css:
+            self = .css
+        case .csv:
+            self = .other
+        case .html:
+            self = .other
+        case .plain:
+            self = .other
+        case .xmlText:
+            self = .other
+        // MARK: Video
+        case .mpegVideo, .mp4, .quicktime, .wmvVideo, .msvideo, .flv, .webm:
+            self = .video
+        }
+    }
+}
+
+extension CapturedRequest.InitiatorType {
+    enum PathExtension: String, Equatable {
+        case css
+        case jpeg
+        case jpg
+        case js
+        case png
+        case tif
+        case tiff
+        case xml
+    }
+
+    init(pathExtension: PathExtension) {
+        switch pathExtension {
+        case .css:
+            self = .css
+        case .jpeg, .jpg, .png, .tif, .tiff:
+            self = .image
+        case .js:
+            self = .script
+        case .xml:
+            self = .xmlHttpRequest
+        }
+    }
+}
+
 extension CapturedRequest {
     init(timer: InternalTimer, response: URLResponse?) {
         let hostComponents = response?.url?.host?.split(separator: ".") ?? []
-
+        self.host = hostComponents.first != nil ? String(hostComponents.first!) : ""
         if hostComponents.count > 2 {
             self.domain = hostComponents.dropFirst().joined(separator: ".")
         } else {
             self.domain = response?.url?.host ?? ""
         }
 
-        self.host = hostComponents.first != nil ? String(hostComponents.first!) : ""
+        if let contentType = response?.contentType {
+            self.initiatorType = .init(contentType: contentType)
+        } else if let pathExtension = response?.pathExtension {
+            self.initiatorType = .init(pathExtension: pathExtension)
+        } else {
+            self.initiatorType = .other
+        }
+
         self.url = response?.url?.absoluteString ?? ""
         self.file = response?.url?.lastPathComponent ?? ""
         self.startTime = timer.relativeStartTime.milliseconds
         self.endTime = timer.relativeEndTime.milliseconds
         self.duration = timer.endTime.milliseconds - timer.startTime.milliseconds
-        self.initiatorType = .init(pathExtension: response?.url?.pathExtension ?? "")
         self.decodedBodySize = 0
         self.encodedBodySize = response?.expectedContentLength ?? 0
     }
