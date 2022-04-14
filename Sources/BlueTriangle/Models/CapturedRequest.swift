@@ -177,7 +177,7 @@ extension CapturedRequest.InitiatorType {
         case .csv:
             self = .other
         case .html:
-            self = .other
+            self = .html
         case .plain:
             self = .other
         case .xmlText:
