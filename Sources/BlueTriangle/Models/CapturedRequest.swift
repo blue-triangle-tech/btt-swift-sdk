@@ -56,7 +56,7 @@ struct CapturedRequest: Encodable, Equatable {
         /// ViolationReport
         case violationReport = "violationreport"
         /// XMLHttpRequest
-        case xmlHttpRequest = "xmlhttprequest"
+        case xhr = "xmlhttprequest"
     }
 
     let entryType = "resource"
@@ -210,7 +210,7 @@ extension CapturedRequest.InitiatorType {
         case .js:
             self = .script
         case .xml:
-            self = .xmlHttpRequest
+            self = .xhr
         }
     }
 }
