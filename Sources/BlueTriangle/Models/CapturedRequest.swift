@@ -83,55 +83,8 @@ struct CapturedRequest: Encodable, Equatable {
 }
 
 extension CapturedRequest.InitiatorType {
-    enum ContentType: String, Equatable {
-        // MARK: Application
-        case javaArchive = "application/java-archive"
-        case ediX12 = "application/EDI-X12"
-        case edifact = "application/EDIFACT"
-        case javascriptApplication = "application/javascript"
-        case octetStream = "application/octet-stream"
-        case ogg = "application/ogg"
-        case pdf = "application/pdf"
-        case xhtmlXML = "application/xhtml+xml"
-        case flash = "application/x-shockwave-flash"
-        case json = "application/json"
-        case ldJSON = "application/ld+json"
-        case xmlApplication = "application/xml"
-        case zip = "application/zip"
-        case formURLEncoded = "application/x-www-form-urlencoded"
 
-        // MARK: Audio
-        case mpegAudio = "audio/mpeg"
-        case wmaAudio = "audio/x-ms-wma"
-        case realAudio = "audio/vnd.rn-realaudio"
-        case wav = "audio/x-wav"
 
-        // MARK: Image
-        case gif = "image/gif"
-        case jpeg = "image/jpeg"
-        case png = "image/png"
-        case tiff = "image/tiff"
-        case microsoftIcon = "image/vnd.microsoft.icon"
-        case xIcon = "image/x-icon"
-        case djvu = "image/vnd.djvu"
-        case svgXML = "image/svg+xml"
-
-        // MARK: Text
-        case css = "text/css"
-        case csv = "text/csv"
-        case html = "text/html"
-        case javascriptText = "text/javascript"
-        case plain = "text/plain"
-        case xmlText = "text/xml"
-
-        // MARK: Video
-        case mpegVideo = "video/mpeg"
-        case mp4 = "video/mp4"
-        case quicktime = "video/quicktime"
-        case wmvVideo = "video/x-ms-wmv"
-        case msvideo = "video/x-msvideo"
-        case flv = "video/x-flv"
-        case webm = "video/webm"
     }
 
     init(contentType: ContentType) {
