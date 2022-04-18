@@ -27,11 +27,15 @@ enum Mock {
           }
           """.data(using: .utf8)!
 
-    static func makeHTTPResponse(statusCode: Int) -> HTTPURLResponse {
-        HTTPURLResponse(url: "https://example.com",
+    static func makeHTTPResponse(
+        url: URL = "https://example.com",
+        statusCode: Int = 200,
+        headerFields: [String: String]? = nil
+    ) -> HTTPURLResponse {
+        HTTPURLResponse(url: url,
                         statusCode: statusCode,
                         httpVersion: nil,
-                        headerFields: nil)!
+                        headerFields: headerFields)!
     }
 
     static var successResponse = HTTPResponse<Data>(
