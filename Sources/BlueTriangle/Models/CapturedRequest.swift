@@ -97,6 +97,7 @@ extension CapturedRequest.InitiatorType {
 }
 
 extension CapturedRequest.InitiatorType {
+    // swiftlint:disable identifier_name
     enum PathExtension: String, Equatable, CaseIterable {
         case css
         case html
@@ -108,6 +109,7 @@ extension CapturedRequest.InitiatorType {
         case tiff
         case xml
     }
+    // swiftlint:enable identifier_name
 
     init?(_ pathExtension: PathExtension) {
         switch pathExtension {
