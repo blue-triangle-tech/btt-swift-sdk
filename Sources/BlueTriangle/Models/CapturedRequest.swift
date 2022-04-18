@@ -8,55 +8,27 @@
 import Foundation
 
 struct CapturedRequest: Encodable, Equatable {
+    /// Representation of field type.
     enum InitiatorType: String, Encodable, Equatable {
-        /// Audio
+        // Unprocessed IANA media types (excludes `application` and `text`)
         case audio
-        /// Beacon
-        case beacon
-        /// CSS
-        case css
-        /// Embed
-        case embed
-        /// EventSource
-        case eventSource = "eventsource"
-        /// Fetch
-        case fetch
-        /// HTML
-        case html
-        /// Icon
-        case icon
-        /// IFrame
-        case iFrame = "iframe"
-        /// Image
-        case image = "img"
-        /// Input
-        case input
-        /// Internal
-        case `internal`
-        /// JSON
-        case json
-        /// Link
-        case link
-        /// Object
-        case object
-        /// Other
-        case other
-        /// Preflight
-        case preflight
-        /// Javascript
-        case script
-        /// Subdocument
-        case subdocument
-        /// Track
-        case track
-        /// Use
-        case use
-        /// Video
+        case example
+        case font
+        case image
+        case message
+        case model
+        case multipart
         case video
-        /// ViolationReport
-        case violationReport = "violationreport"
-        /// XMLHttpRequest
-        case xhr = "xmlhttprequest"
+        // Derived from IANA media subtypes
+        case css
+        case csv
+        case html
+        case javascript
+        case json
+        case xml
+        case zip
+        // Fallback
+        case other
     }
 
     let entryType = "resource"
@@ -83,68 +55,51 @@ struct CapturedRequest: Encodable, Equatable {
 }
 
 extension CapturedRequest.InitiatorType {
-
-
-    }
-
-    init(contentType: ContentType) {
-        switch contentType {
-        // MARK: Application
-        case .javaArchive:
-            self = .other
-        case .ediX12:
-            self = .other
-        case .edifact:
-            self = .other
-        case .javascriptApplication, .javascriptText:
-            self = .script
-        case .octetStream:
-            self = .other
-        case .ogg:
-            self = .other
-        case .pdf:
-            self = .other
-        case .xhtmlXML:
-            self = .other
-        case .flash:
-            self = .other
-        case .json, .ldJSON:
-            self = .json
-        case .xmlApplication:
-            self = .other
-        case .zip:
-            self = .other
-        case .formURLEncoded:
-            self = .other
-        // MARK: Audio
-        case .mpegAudio, .wmaAudio, .realAudio, .wav:
-            self = .audio
-        // MARK: Image
-        case .gif, .jpeg, .png, .tiff, .djvu, .svgXML:
-            self = .image
-        case .microsoftIcon, .xIcon:
-            self = .icon
-        // MARK: Text
-        case .css:
-            self = .css
-        case .csv:
-            self = .other
-        case .html:
-            self = .html
-        case .plain:
-            self = .other
-        case .xmlText:
-            self = .other
-        // MARK: Video
-        case .mpegVideo, .mp4, .quicktime, .wmvVideo, .msvideo, .flv, .webm:
-            self = .video
+    init?(_ contentType: HTTPURLResponse.ContentType) {
+        switch contentType.mediaType {
+        case .application:
+            guard let suffix = contentType.mediaSubtype.split(separator: "+").last,
+                  let subtype = MediaSubtype(rawValue: String(suffix)) else {
+                return nil
+            }
+            self.init(subtype)
+        case .text:
+            guard let subtype = MediaSubtype(rawValue: contentType.mediaSubtype) else {
+                return nil
+            }
+            self.init(subtype)
+        default:
+            self.init(contentType.mediaType)
         }
     }
 }
 
 extension CapturedRequest.InitiatorType {
-    enum PathExtension: String, Equatable {
+    init?(_ mediaType: HTTPURLResponse.MediaType) {
+        self.init(rawValue: mediaType.rawValue)
+    }
+}
+
+extension CapturedRequest.InitiatorType {
+    enum MediaSubtype: String, Equatable, CaseIterable {
         case css
+        case csv
+        case html
+        case javascript
+        case json
+        case xml
+        case zip
+    }
+
+    init?(_ mediaSubtype: MediaSubtype) {
+        self.init(rawValue: mediaSubtype.rawValue)
+    }
+}
+
+extension CapturedRequest.InitiatorType {
+    enum PathExtension: String, Equatable, CaseIterable {
+        case css
+        case html
         case jpeg
         case jpg
         case js
@@ -154,16 +109,18 @@ extension CapturedRequest.InitiatorType {
         case xml
     }
 
-    init(pathExtension: PathExtension) {
+    init?(_ pathExtension: PathExtension) {
         switch pathExtension {
         case .css:
             self = .css
+        case .html:
+            self = .html
         case .jpeg, .jpg, .png, .tif, .tiff:
             self = .image
         case .js:
-            self = .script
+            self = .javascript
         case .xml:
-            self = .xhr
+            self = .xml
         }
     }
 }
@@ -178,10 +135,11 @@ extension CapturedRequest {
             self.domain = response?.url?.host ?? ""
         }
 
-        if let contentType = response?.contentType {
-            self.initiatorType = .init(contentType: contentType)
-        } else if let pathExtension = response?.pathExtension {
-            self.initiatorType = .init(pathExtension: pathExtension)
+        if let httpResponse = response as? HTTPURLResponse, let contentType = httpResponse.contentType {
+            self.initiatorType = .init(contentType) ?? .other
+        } else if let pathExtensionString = response?.url?.pathExtension,
+                  let pathExtension = InitiatorType.PathExtension(rawValue: pathExtensionString) {
+            self.initiatorType = .init(pathExtension) ?? .other
         } else {
             self.initiatorType = .other
         }
