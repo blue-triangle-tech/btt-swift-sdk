@@ -8,79 +8,27 @@
 import Foundation
 
 struct CapturedRequest: Encodable, Equatable {
+    /// Representation of field type.
     enum InitiatorType: String, Encodable, Equatable {
-        /// Audio
+        // Unprocessed IANA media types (excludes `application` and `text`)
         case audio
-        /// Beacon
-        case beacon
-        /// CSS
-        case css
-        /// Embed
-        case embed
-        /// EventSource
-        case eventSource = "eventsource"
-        /// Fetch
-        case fetch
-        /// HTML
-        case html
-        /// Icon
-        case icon
-        /// IFrame
-        case iFrame = "iframe"
-        /// Image
-        case image = "img"
-        /// Input
-        case input
-        /// Internal
-        case `internal`
-        /// JSON
-        case json
-        /// Link
-        case link
-        /// Object
-        case object
-        /// Other
-        case other
-        /// Preflight
-        case preflight
-        /// Javascript
-        case script
-        /// Subdocument
-        case subdocument
-        /// Track
-        case track
-        /// Use
-        case use
-        /// Video
+        case example
+        case font
+        case image
+        case message
+        case model
+        case multipart
         case video
-        /// ViolationReport
-        case violationReport = "violationreport"
-        /// XMLHttpRequest
-        case xmlHttpRequest = "xmlhttprequest"
-
-        // TODO: complete / expand
-        init(pathExtension: String) {
-            switch pathExtension {
-            case "css":
-                self = .css
-            case "jpeg", "jpg", "png", "tif", "tiff":
-                self = .image
-            case "js":
-                self = .script
-            case "xml":
-                self = .xmlHttpRequest
-            default:
-                self = .other
-            }
-        }
-
-        // TODO: complete / expand
-        init(contentType: String) {
-            switch contentType {
-            default:
-                self = .other
-            }
-        }
+        // Derived from IANA media subtypes
+        case css
+        case csv
+        case html
+        case javascript
+        case json
+        case xml
+        case zip
+        // Fallback
+        case other
     }
 
     let entryType = "resource"
@@ -106,23 +54,103 @@ struct CapturedRequest: Encodable, Equatable {
     var encodedBodySize: Int64
 }
 
+extension CapturedRequest.InitiatorType {
+    init?(_ contentType: HTTPURLResponse.ContentType) {
+        switch contentType.mediaType {
+        case .application:
+            guard let suffix = contentType.mediaSubtype.split(separator: "+").last,
+                  let subtype = MediaSubtype(rawValue: String(suffix)) else {
+                return nil
+            }
+            self.init(subtype)
+        case .text:
+            guard let subtype = MediaSubtype(rawValue: contentType.mediaSubtype) else {
+                return nil
+            }
+            self.init(subtype)
+        default:
+            self.init(contentType.mediaType)
+        }
+    }
+}
+
+extension CapturedRequest.InitiatorType {
+    init?(_ mediaType: HTTPURLResponse.MediaType) {
+        self.init(rawValue: mediaType.rawValue)
+    }
+}
+
+extension CapturedRequest.InitiatorType {
+    enum MediaSubtype: String, Equatable, CaseIterable {
+        case css
+        case csv
+        case html
+        case javascript
+        case json
+        case xml
+        case zip
+    }
+
+    init?(_ mediaSubtype: MediaSubtype) {
+        self.init(rawValue: mediaSubtype.rawValue)
+    }
+}
+
+extension CapturedRequest.InitiatorType {
+    // swiftlint:disable identifier_name
+    enum PathExtension: String, Equatable, CaseIterable {
+        case css
+        case html
+        case jpeg
+        case jpg
+        case js
+        case png
+        case tif
+        case tiff
+        case xml
+    }
+    // swiftlint:enable identifier_name
+
+    init?(_ pathExtension: PathExtension) {
+        switch pathExtension {
+        case .css:
+            self = .css
+        case .html:
+            self = .html
+        case .jpeg, .jpg, .png, .tif, .tiff:
+            self = .image
+        case .js:
+            self = .javascript
+        case .xml:
+            self = .xml
+        }
+    }
+}
+
 extension CapturedRequest {
     init(timer: InternalTimer, response: URLResponse?) {
         let hostComponents = response?.url?.host?.split(separator: ".") ?? []
-
+        self.host = hostComponents.first != nil ? String(hostComponents.first!) : ""
         if hostComponents.count > 2 {
             self.domain = hostComponents.dropFirst().joined(separator: ".")
         } else {
             self.domain = response?.url?.host ?? ""
         }
 
-        self.host = hostComponents.first != nil ? String(hostComponents.first!) : ""
+        if let httpResponse = response as? HTTPURLResponse, let contentType = httpResponse.contentType {
+            self.initiatorType = .init(contentType) ?? .other
+        } else if let pathExtensionString = response?.url?.pathExtension,
+                  let pathExtension = InitiatorType.PathExtension(rawValue: pathExtensionString) {
+            self.initiatorType = .init(pathExtension) ?? .other
+        } else {
+            self.initiatorType = .other
+        }
+
         self.url = response?.url?.absoluteString ?? ""
         self.file = response?.url?.lastPathComponent ?? ""
         self.startTime = timer.relativeStartTime.milliseconds
         self.endTime = timer.relativeEndTime.milliseconds
         self.duration = timer.endTime.milliseconds - timer.startTime.milliseconds
-        self.initiatorType = .init(pathExtension: response?.url?.pathExtension ?? "")
         self.decodedBodySize = 0
         self.encodedBodySize = response?.expectedContentLength ?? 0
     }
