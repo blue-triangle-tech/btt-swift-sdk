@@ -16,12 +16,20 @@ public extension URLSession {
     ///   - completionHandler: The completion handler to call when the load request is complete. This handler is executed on the delegate queue.
     /// - Returns: The new session data task.
     @discardableResult
-    @inlinable
+    @objc(btDataTaskWithURL:completionHandler:)
     func btDataTask(
         with url: URL,
         completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void
     ) -> URLSessionDataTask {
-        btDataTask(with: URLRequest(url: url), completionHandler: completionHandler)
+        let timer = BlueTriangle.startRequestTimer()
+        return dataTask(with: URLRequest(url: url)) { data, response, error in
+            if var timer = timer {
+                timer.end()
+                BlueTriangle.captureRequest(timer: timer, data: data, response: response)
+            }
+
+            completionHandler(data, response, error)
+        }
     }
 
     /// Creates a task that retrieves the contents of a URL based on the specified URL request object, and calls a handler upon completion.
@@ -30,7 +38,7 @@ public extension URLSession {
     ///   - completionHandler: The completion handler to call when the load request is complete. This handler is executed on the delegate queue.
     /// - Returns: The new session data task.
     @discardableResult
-    @inlinable
+    @objc(btDataTaskWithRequest:completionHandler:)
     func btDataTask(
         with request: URLRequest,
         completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void

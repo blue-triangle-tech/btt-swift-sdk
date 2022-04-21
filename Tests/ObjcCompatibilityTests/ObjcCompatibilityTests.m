@@ -40,6 +40,7 @@
         config.trafficSegmentName = @"MY_TRAFFIC_SEGMENT";
         config.crashTracking = CrashTrackingNsException;
         config.performanceMonitorSampleRate = 1.5;
+        config.networkSampleRate = 1.0;
     }];
 
     // Timer
@@ -66,6 +67,18 @@
     BTTimer *timer2 = [BlueTriangle makeTimerWithPage:page];
 
     [BlueTriangle endTimer:timer2 purchaseConfirmation:nil];
+
+    // Network Capture
+    BTTimer *spanTimer = [BlueTriangle startSpanWithPage:page];
+
+    NSURLSession *session = [NSURLSession sharedSession];
+
+    NSURL *url = [NSURL URLWithString:@"http://www.example.com"];
+    NSURLSessionDataTask *taskWithURL = [session btDataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error){}];
+
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:url];
+    [urlRequest setHTTPMethod:@"GET"];
+    NSURLSessionDataTask *taskWithRequest = [session btDataTaskWithRequest:urlRequest completionHandler:^(NSData *data, NSURLResponse *response, NSError *error){}];
 }
 
 @end
