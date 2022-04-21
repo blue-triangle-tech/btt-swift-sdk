@@ -90,7 +90,7 @@ The Blue Triangle SDK offers `bt`-prefixed versions of common `URLSession` metho
 | `URLSession.data(for:delegate:)`               | `URLSession.btData(for:delegate:)`               |
 | `URLSession.dataTaskPublisher(for:)`           | `URLSession.btDataTaskPublisher(for:)`           |
 
-After this initial call to `startSpan(page:)`, there will always be one active span with which new requests make via one of the `bt`-prefixed `URLSession` methods are associated. Unlike the `BTTimer` instance returned from `makeTimer(page:)` and `startTimer(page:)`, the timer instance returned from `startSpan(page:)` does not need to be retained and passed to `endTimer(_:purchaseConfirmation)`. If the current span's timer has not already sent to Blue Triangle, it will automatically be ended and uploaded when a new span is started:
+After this initial call to `startSpan(page:)`, there will always be one active span with which new requests make via one of the `bt`-prefixed `URLSession` methods are associated. Unlike the `BTTimer` instance returned from `makeTimer(page:)` and `startTimer(page:)`, the timer instance returned from `startSpan(page:)` does not need to be retained and passed to `endTimer(_:purchaseConfirmation)`. If the current span's timer has not already sent to Blue Triangle, it will be ended automatically and uploaded when a new span is started:
 
 ```swift
 // `spanTimer` is ended and uploaded to Blue Triangle
@@ -103,3 +103,5 @@ let newSpanTimer = BlueTriangle.startSpan(page: Page(pageName: "ANOTHER_PAGE"))
 // Optional
 BlueTriangle.endTimer(newSpanTimer)
 ```
+
+A span continues to be active until a new one is started even if its timer has been ended.
