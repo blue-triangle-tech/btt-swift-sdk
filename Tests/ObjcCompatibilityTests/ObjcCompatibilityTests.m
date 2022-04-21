@@ -33,7 +33,6 @@
         config.isReturningVisitor = YES;
         config.abTestID = @"";
         config.abTestID = @"MY_AB_TEST_ID";
-        config.campaign = @"MY_CAMPAIGN";
         config.campaignMedium = @"MY_CAMPAIGN_MEDIUM";
         config.campaignName = @"MY_CAMPAIGN_NAME";
         config.campaignSource = @"MY_CAMPAIGN_SOURCE";
