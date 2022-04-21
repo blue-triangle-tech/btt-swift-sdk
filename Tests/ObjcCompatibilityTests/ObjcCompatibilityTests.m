@@ -30,6 +30,7 @@
         config.siteID = @"MY_SITE_ID";
         config.sessionID = 1111;
         config.globalUserID = 2222;
+        config.isReturningVisitor = YES;
         config.abTestID = @"";
         config.abTestID = @"MY_AB_TEST_ID";
         config.campaign = @"MY_CAMPAIGN";
