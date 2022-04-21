@@ -10,7 +10,6 @@ import Combine
 @testable import BlueTriangle
 
 final class BlueTriangleTests: XCTestCase {
-
     static var uploaderQueue: DispatchQueue = Mock.uploaderQueue
     static var onSendRequest: (Request) -> Void = { _ in }
 

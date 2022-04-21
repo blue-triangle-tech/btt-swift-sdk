@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// Configuration object for the Blue Triangle SDK.
 final public class BlueTriangleConfiguration: NSObject {
     private var customCampaign: String?
     private var customGlobalUserID: Identifier?
@@ -41,7 +42,7 @@ final public class BlueTriangleConfiguration: NSObject {
     }
 
     /// Boolean value indicating whether user is a returning visitor.
-    @objc var isReturningVisitor: Bool = false
+    @objc public var isReturningVisitor: Bool = false
 
     /// A/B testing identifier.
     @objc public var abTestID: String = "Default"
@@ -98,7 +99,9 @@ extension BlueTriangleConfiguration {
 
     @objc
     public enum CrashTracking: Int {
+        /// Disable crash tracking.
         case none
+        /// Report NSExceptions.
         case nsException
 
         var configuration: CrashReportConfiguration? {
@@ -285,7 +288,7 @@ final public class BlueTriangle: NSObject {
 // MARK: - Configuration
 extension BlueTriangle {
     /// `configure` is a one-time configuration function to set session-level properties.
-    /// - Parameter configure: A closure that ...
+    /// - Parameter configure: A closure that enables mutation of the Blue Triangle SDK configuration.
     @objc
     public static func configure(_ configure: (BlueTriangleConfiguration) -> Void) {
         lock.sync {
@@ -364,7 +367,7 @@ public extension BlueTriangle {
     /// End a timer and upload it to Blue Triangle for processing.
     /// - Parameters:
     ///   - timer: The timer to upload.
-    ///   - purchaseConfirmation: An object describing
+    ///   - purchaseConfirmation: An object describing a purchase confirmation interaction.
     @objc
     static func endTimer(_ timer: BTTimer, purchaseConfirmation: PurchaseConfirmation? = nil) {
         timer.end()
@@ -385,6 +388,12 @@ public extension BlueTriangle {
 
 // MARK: - Network Capture
 extension BlueTriangle {
+    /// Starts a span for network capture.
+    ///
+    /// - note: `configure(_:)` must be called before attempting to start a span.
+    ///
+    /// - Parameter page: An object providing information about the user interaction being timed.
+    /// - Returns: The running timer.
     @discardableResult
     @objc
     public static func startSpan(page: Page) -> BTTimer {
