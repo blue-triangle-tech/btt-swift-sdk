@@ -85,6 +85,7 @@ URLSession.shared.btDataTask(with: URL(string: "https://example.com")!) { data, 
 The Blue Triangle SDK offers `bt`-prefixed versions of common `URLSession` methods:
 
 | Standard                                       | Network Capture                                  |
+| :--                                            | :--                                              |     
 | `URLSession.dataTask(with:completionHandler:)` | `URLSession.btDataTask(with:completionHandler:)` |
 | `URLSession.data(for:delegate:)`               | `URLSession.btData(for:delegate:)`               |
 | `URLSession.dataTaskPublisher(for:)`           | `URLSession.btDataTaskPublisher(for:)`           |
