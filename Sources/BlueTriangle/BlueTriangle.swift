@@ -42,7 +42,7 @@ final public class BlueTriangleConfiguration: NSObject {
     }
 
     /// Boolean value indicating whether user is a returning visitor.
-    @objc var isReturningVisitor: Bool = false
+    @objc public var isReturningVisitor: Bool = false
 
     /// A/B testing identifier.
     @objc public var abTestID: String = "Default"
