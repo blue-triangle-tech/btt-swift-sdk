@@ -156,7 +156,7 @@ extension BlueTriangleTests {
 
         let base64Decoded = Data(base64Encoded: request.body!)!
         let requestString = String(data: base64Decoded, encoding: .utf8)
-        let expectedString = Mock.makeRequestJSON(
+        let expectedString = Mock.makeTimerRequestJSON(
             appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
             os: Device.os,
             osVersion: Device.osVersion)
@@ -243,12 +243,86 @@ extension BlueTriangleTests {
 
         let base64Decoded = Data(base64Encoded: request.body!)!
         let requestString = String(data: base64Decoded, encoding: .utf8)
-        let expectedString = Mock.makeRequestJSON(
+        let expectedString = Mock.makeTimerRequestJSON(
             appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
             os: Device.os,
             osVersion: Device.osVersion)
 
         XCTAssertEqual(requestString, expectedString)
+    }
+}
+
+// MARK: - Network Capture
+extension BlueTriangleTests {
+    func testNetworkCapture() {
+        Self.timeIntervals = [
+            // BTTimer.end()
+            5.0,
+            // InternalTimer.end()
+            4.0,
+            // InternalTimer.start()
+            3.0,
+            // Timeline.insert()
+            2.0,
+            // BTTimer.start()
+            1.0
+        ]
+
+        // Timer
+        let timerFactory: (Page) -> BTTimer = { page in
+            BTTimer(page: page,
+                    logger: Self.logger,
+                    intervalProvider: Self.timeIntervalProvider,
+                    performanceMonitor: PerformanceMonitorMock())
+        }
+
+        // Uploader
+        var capturedRequest: Request!
+        var requestCount = 0
+        let requestExpectation = self.expectation(description: "Request sent")
+        let uploader = UploaderMock { req in
+            requestCount += 1
+            switch requestCount {
+            case 1:
+                break
+            case 2:
+                capturedRequest = req
+                requestExpectation.fulfill()
+            default:
+                XCTFail("Unexpected request count")
+            }
+        }
+
+        // Configure
+        let configuration = BlueTriangleConfiguration()
+        Mock.configureBlueTriangle(configuration: configuration)
+
+        let requestCollector = Mock.makeRequestCollectorConfiguration(timeIntervalProvider: Self.timeIntervalProvider)
+            .makeRequestCollector(
+                logger: Self.logger,
+                networkCaptureConfiguration: .standard,
+                requestBuilder: .makeBuilder { Mock.session },
+                uploader: uploader)
+
+        BlueTriangle.reconfigure(
+            configuration: configuration,
+            uploader: uploader,
+            timerFactory: timerFactory,
+            requestCollector: requestCollector)
+
+        let _ = BlueTriangle.startSpan(page: Mock.page)
+
+        let url: URL = "https://example.com/foo.json"
+        let exp = expectation(description: "Requests completed")
+        URLSession(configuration: .mock).btDataTask(with: url) { _, _, _ in exp.fulfill() }.resume()
+        wait(for: [exp], timeout: 1.0)
+
+        BlueTriangle.startSpan(page: Mock.page)
+
+        wait(for: [requestExpectation], timeout: 1.0)
+
+        let capturedRequestString = String(data: Data(base64Encoded: capturedRequest.body!)!, encoding: .utf8)
+        XCTAssertEqual(capturedRequestString, Mock.capturedRequestJSON)
     }
 }
 
@@ -433,4 +507,3 @@ extension BlueTriangleTests {
     }
 }
 #endif
-
