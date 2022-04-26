@@ -4,10 +4,10 @@ Blue Triangle analytics SDK for iOS.
 
 ## Overview
 
-<!--@START_MENU_TOKEN@-->Text<!--@END_MENU_TOKEN@-->
+Use `BlueTriangle` to send analytics data to the Blue Triangle portal.
 
 ## Topics
 
-### <!--@START_MENU_TOKEN@-->Group<!--@END_MENU_TOKEN@-->
+### Essentials
 
-- <!--@START_MENU_TOKEN@-->``Symbol``<!--@END_MENU_TOKEN@-->
+- <doc:BTTimer>
