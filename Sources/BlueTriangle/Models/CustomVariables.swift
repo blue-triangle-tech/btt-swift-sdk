@@ -8,8 +8,10 @@
 import Foundation
 
 /// Custom textual data that is related to individual views but does not need to be seen
-/// at a larger, aggregate scale. This is similar to `CustomCategories` but they're not
-/// aggregated and do not appear as filter options.
+/// at a larger, aggregate scale.
+///
+/// This is similar to ``CustomCategories`` but they're not aggregated and do not appear
+/// as filter options in the Blue Triangle portal.
 @objcMembers
 final public class CustomVariables: NSObject {
     /// Custom variable for data collection use.

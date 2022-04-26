@@ -15,7 +15,7 @@ final public class PurchaseConfirmation: NSObject {
     /// Purchase amount for purchase confirmation steps.
     @objc public var cartValue: Decimal
 
-    /// The Order Number from the purchase on purchase confirmation steps.
+    /// The order number from the purchase on purchase confirmation steps.
     @objc public var orderNumber: String
 
     /// Order time and date.

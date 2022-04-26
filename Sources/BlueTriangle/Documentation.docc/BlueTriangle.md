@@ -4,7 +4,7 @@ Blue Triangle analytics SDK for iOS.
 
 ## Overview
 
-Use `BlueTriangle` to send analytics data to the Blue Triangle portal.
+Use ``BlueTriangle/BlueTriangle`` to send analytics data to the Blue Triangle portal.
 
 ## Topics
 

@@ -71,8 +71,9 @@ final public class BlueTriangleConfiguration: NSObject {
     /// Crash tracking behavior.
     @objc public var crashTracking: CrashTracking = .none
 
-    /// Controls the frequency at which app performance is sampled. `Constants.minimumSampleInterval` defines the
-    /// smallest allowed interval (one measurement every 1/60 of a second).
+    /// Controls the frequency at which app performance is sampled.
+    ///
+    /// The smallest allowed interval is one measurement every 1/60 of a second.
     @objc public var performanceMonitorSampleRate: TimeInterval = 1
 
     var makeLogger: () -> Logging = {
