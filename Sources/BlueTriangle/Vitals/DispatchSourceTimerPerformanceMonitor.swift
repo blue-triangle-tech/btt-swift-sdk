@@ -27,6 +27,7 @@ final class DispatchSourceTimerPerformanceMonitor: PerformanceMonitoring {
 
     private lazy var timer: DispatchSourceTimer = {
         let queue = DispatchQueue.global(qos: queueQoS)
+        // swiftlint:disable:next identifier_name
         let t = DispatchSource.makeTimerSource(flags: timerSourceFlags, queue: queue)
         t.schedule(deadline: .now(), repeating: sampleInterval, leeway: leeway)
         t.setEventHandler(handler: { [weak self] in

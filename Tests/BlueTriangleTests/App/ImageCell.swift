@@ -49,7 +49,7 @@ final class ImageCell: UICollectionViewCell {
             imageView.leadingAnchor.constraint(equalTo: leadingAnchor),
             imageView.topAnchor.constraint(equalTo: topAnchor),
             imageView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            imageView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            imageView.bottomAnchor.constraint(equalTo: bottomAnchor)
         ])
     }
 

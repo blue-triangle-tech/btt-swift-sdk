@@ -159,16 +159,12 @@ final public class BlueTriangle: NSObject {
 
     /// Blue Triangle Technologies-assigned site ID.
     @objc public static var siteID: String {
-        get {
-            lock.sync { session.siteID }
-        }
+        lock.sync { session.siteID }
     }
 
     /// Global User ID.
     @objc public static var globalUserID: Identifier {
-        get {
-            lock.sync { session.globalUserID }
-        }
+        lock.sync { session.globalUserID }
     }
 
     /// Session ID.
@@ -192,7 +188,7 @@ final public class BlueTriangle: NSObject {
     }
 
     /// A/B testing identifier.
-    @objc public static var abTestID: String  {
+    @objc public static var abTestID: String {
         get {
             lock.sync { session.abTestID }
         }
@@ -203,7 +199,7 @@ final public class BlueTriangle: NSObject {
 
     /// Legacy campaign name.
     @available(*, deprecated, message: "Use `campaignName` instead.")
-    @objc public static var campaign: String?  {
+    @objc public static var campaign: String? {
         get {
             lock.sync { session.campaign }
         }
@@ -213,7 +209,7 @@ final public class BlueTriangle: NSObject {
     }
 
     /// Campaign medium.
-    @objc public static var campaignMedium: String  {
+    @objc public static var campaignMedium: String {
         get {
             lock.sync { session.campaignMedium }
         }
@@ -223,7 +219,7 @@ final public class BlueTriangle: NSObject {
     }
 
     /// Campaign name.
-    @objc public static var campaignName: String  {
+    @objc public static var campaignName: String {
         get {
             lock.sync { session.campaignName }
         }
@@ -233,7 +229,7 @@ final public class BlueTriangle: NSObject {
     }
 
     /// Campaign source.
-    @objc public static var campaignSource: String  {
+    @objc public static var campaignSource: String {
         get {
             lock.sync { session.campaignSource }
         }
@@ -243,7 +239,7 @@ final public class BlueTriangle: NSObject {
     }
 
     /// Data center.
-    @objc public static var dataCenter: String  {
+    @objc public static var dataCenter: String {
         get {
             lock.sync { session.dataCenter }
         }
@@ -253,7 +249,7 @@ final public class BlueTriangle: NSObject {
     }
 
     /// Traffic segment.
-    @objc public static var trafficSegmentName: String  {
+    @objc public static var trafficSegmentName: String {
         get {
             lock.sync { session.trafficSegmentName }
         }
@@ -353,7 +349,7 @@ public extension BlueTriangle {
         do {
             request = try configuration.requestBuilder.builder(session, timer, purchaseConfirmation)
             lock.unlock()
-        } catch  {
+        } catch {
             lock.unlock()
             logger.error(error.localizedDescription)
             return
@@ -388,7 +384,7 @@ extension BlueTriangle {
 
     @objc
     static func prime() {
-        let _ = uploader
-        let _ = makeTimer(page: .init(pageName: "TEST"))
+        _ = uploader
+        _ = makeTimer(page: .init(pageName: "TEST"))
     }
 }

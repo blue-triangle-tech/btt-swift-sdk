@@ -14,6 +14,7 @@ struct TimerRequest: Encodable {
     let purchaseConfirmation: PurchaseConfirmation?
     let performanceReport: PerformanceReport?
 
+    // swiftlint:disable:next function_body_length
     func encode(to enc: Encoder) throws {
         var con = enc.container(keyedBy: CodingKeys.self)
 
@@ -49,10 +50,10 @@ struct TimerRequest: Encodable {
 
         // PurchaseConfirmation
         if let purchaseConfirmation = purchaseConfirmation {
-            try con.encode(purchaseConfirmation.pageValue , forKey: .pageValue)
-            try con.encode(purchaseConfirmation.cartValue , forKey: .cartValue)
-            try con.encode(purchaseConfirmation.orderNumber , forKey: .orderNumber)
-            try con.encode(purchaseConfirmation.orderTime.milliseconds , forKey: .orderTime)
+            try con.encode(purchaseConfirmation.pageValue, forKey: .pageValue)
+            try con.encode(purchaseConfirmation.cartValue, forKey: .cartValue)
+            try con.encode(purchaseConfirmation.orderNumber, forKey: .orderNumber)
+            try con.encode(purchaseConfirmation.orderTime.milliseconds, forKey: .orderTime)
         }
 
         // Timer
@@ -122,6 +123,7 @@ struct TimerRequest: Encodable {
         case device
         case os
         // Session
+        // swiftlint:disable:next identifier_name
         case rv = "RV"
         case wcd
         case eventType

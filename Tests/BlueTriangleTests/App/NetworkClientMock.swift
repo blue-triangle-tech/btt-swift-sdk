@@ -9,6 +9,7 @@
 import Foundation
 import UIKit
 
+// swiftlint:disable identifier_name
 public func compose <A, B, C>(_ f: @escaping (A) -> B, _ g: @escaping (B) -> C) -> (A) -> C {
     return { x in g(f(x)) }
 }

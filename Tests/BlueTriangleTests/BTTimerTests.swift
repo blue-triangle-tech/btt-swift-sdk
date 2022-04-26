@@ -19,7 +19,7 @@ final class BTTimerTests: XCTestCase {
         var timeIntervals = [
             expectedEndTime,
             expectedInteractiveTime,
-            expectedStartTime,
+            expectedStartTime
         ]
 
         let timerConfiguration = Mock.makeTimerConfiguration {
@@ -53,7 +53,7 @@ final class BTTimerTests: XCTestCase {
         var timeIntervals = [
             expectedEndTime,
             expectedInteractiveTime,
-            expectedStartTime,
+            expectedStartTime
         ]
 
         let timerConfiguration = Mock.makeTimerConfiguration {

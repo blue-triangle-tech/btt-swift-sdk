@@ -25,15 +25,16 @@ final public class PurchaseConfirmation: NSObject {
     /// - Parameters:
     ///   - cartValue: Purchase amount.
     ///   - orderNumber: Order number.
-    @objc public init(cartValue: Decimal, orderNumber: String = "") {
+    @objc
+    public init(cartValue: Decimal, orderNumber: String = "") {
         self.cartValue = cartValue
         self.orderNumber = orderNumber
     }
 }
 
 // MARK: - Equatable
-extension PurchaseConfirmation {
-    public static func == (lhs: PurchaseConfirmation, rhs: PurchaseConfirmation) -> Bool {
+public extension PurchaseConfirmation {
+    static func == (lhs: PurchaseConfirmation, rhs: PurchaseConfirmation) -> Bool {
         return lhs.cartValue == rhs.cartValue
         && (lhs.orderNumber == rhs.orderNumber
             || (rhs.orderTime <= lhs.orderTime + TimeInterval.day
