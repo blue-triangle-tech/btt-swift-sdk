@@ -7,6 +7,7 @@
 
 protocol PerformanceMonitoring {
     var measurementCount: Int { get }
+
     func start()
     func end()
     func makeReport() -> PerformanceReport

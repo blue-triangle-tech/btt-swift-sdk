@@ -6,28 +6,29 @@
 //
 
 import Foundation
-
-import Foundation
 #if os(iOS) || os(tvOS)
 import UIKit.UIApplication
-let LaunchNotification = UIApplication.didFinishLaunchingNotification
-let ActiveNotification = UIApplication.didBecomeActiveNotification
-let BackgroundNotification = UIApplication.didEnterBackgroundNotification
-let TerminateNotification = UIApplication.willTerminateNotification
+
+let launchNotification = UIApplication.didFinishLaunchingNotification
+let activeNotification = UIApplication.didBecomeActiveNotification
+let backgroundNotification = UIApplication.didEnterBackgroundNotification
+let terminateNotification = UIApplication.willTerminateNotification
 #elseif os(watchOS)
 import WatchKit.WKExtension
+
 @available(watchOS 7.0, *)
-let LaunchNotification = WKExtension.applicationDidFinishLaunchingNotification
+let launchNotification = WKExtension.applicationDidFinishLaunchingNotification
 @available(watchOS 7.0, *)
-let ActiveNotification = WKExtension.applicationDidBecomeActiveNotification
+let activeNotification = WKExtension.applicationDidBecomeActiveNotification
 @available(watchOS 7.0, *)
-let BackgroundNotification = WKExtension.applicationDidEnterBackgroundNotification
+let backgroundNotification = WKExtension.applicationDidEnterBackgroundNotification
 #elseif os(macOS)
 import AppKit.NSApplication
-let LaunchNotification = NSApplication.didFinishLaunchingNotification
-let ActiveNotification = NSApplication.didBecomeActiveNotification
-let BackgroundNotification = NSApplication.willResignActiveNotification
-let TerminateNotification = NSApplication.willTerminateNotification
+
+let launchNotification = NSApplication.didFinishLaunchingNotification
+let activeNotification = NSApplication.didBecomeActiveNotification
+let backgroundNotification = NSApplication.willResignActiveNotification
+let terminateNotification = NSApplication.willTerminateNotification
 #endif
 
 class AppEventObserver {
@@ -58,28 +59,32 @@ class AppEventObserver {
             return
         }
         #endif
-        center.addObserver(self, selector: #selector(onDidFinishLaunching(_:)), name: LaunchNotification, object: nil)
-        center.addObserver(self, selector: #selector(onDidBecomeActive(_:)), name: ActiveNotification, object: nil)
-        center.addObserver(self, selector: #selector(onDidEnterBackground), name: BackgroundNotification, object: nil)
+        center.addObserver(self, selector: #selector(onDidFinishLaunching(_:)), name: launchNotification, object: nil)
+        center.addObserver(self, selector: #selector(onDidBecomeActive(_:)), name: activeNotification, object: nil)
+        center.addObserver(self, selector: #selector(onDidEnterBackground), name: backgroundNotification, object: nil)
 
         #if !os(watchOS)
-        center.addObserver(self, selector: #selector(onWillTerminate(_:)), name: TerminateNotification, object: nil)
+        center.addObserver(self, selector: #selector(onWillTerminate(_:)), name: terminateNotification, object: nil)
         #endif
     }
 
-    @objc func onDidFinishLaunching(_ notification: NSNotification) {
+    @objc
+    func onDidFinishLaunching(_ notification: NSNotification) {
         onLaunch?()
     }
 
-    @objc func onDidBecomeActive(_ notification: NSNotification) {
+    @objc
+    func onDidBecomeActive(_ notification: NSNotification) {
         onActive?()
     }
 
-    @objc func onDidEnterBackground(_ notification: NSNotification) {
+    @objc
+    func onDidEnterBackground(_ notification: NSNotification) {
         onBackground?()
     }
 
-    @objc func onWillTerminate(_ notification: NSNotification) {
+    @objc
+    func onWillTerminate(_ notification: NSNotification) {
         onTermination?()
     }
 }

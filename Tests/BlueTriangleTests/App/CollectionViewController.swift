@@ -118,7 +118,7 @@ final class CollectionViewController: UIViewController {
     // MARK: - CollectionView
 
     private func makeCellRegistration() -> CellRegistration {
-        CellRegistration { [weak self] cell, indexPath, photo in
+        CellRegistration { [weak self] cell, _, photo in
             self?.configure(cell: cell, with: photo)
         }
     }
@@ -149,7 +149,7 @@ final class CollectionViewController: UIViewController {
         let cellRegistration = makeCellRegistration()
         return UICollectionViewDiffableDataSource(
             collectionView: collectionView,
-            cellProvider: { [weak self] collectionView, indexPath, item in
+            cellProvider: { collectionView, indexPath, item in
                 collectionView.dequeueConfiguredReusableCell(
                     using: cellRegistration,
                     for: indexPath,

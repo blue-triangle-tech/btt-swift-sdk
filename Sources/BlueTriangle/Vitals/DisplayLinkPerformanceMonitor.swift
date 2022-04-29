@@ -85,7 +85,8 @@ final class DisplayLinkPerformanceMonitor: PerformanceMonitoring {
         }
     }
 
-    @objc private func step(displayLink: CADisplayLink) {
+    @objc
+    private func step(displayLink: CADisplayLink) {
         guard displayLink.timestamp - lastSampleTimestamp > minimumSampleInterval else {
             return
         }

@@ -10,9 +10,10 @@ import Foundation
 /// An object describing a user interaction.
 @objcMembers
 final public class Page: NSObject {
-    /// A static monetary amount assigned to a step in the user’s path. Signing up for a
-    /// credit card, for example, is a zero-dollar transaction that nevertheless has
-    /// business value.
+    /// A static monetary amount assigned to a step in the user’s path.
+    ///
+    /// Signing up for a credit card, for example, is a zero-dollar transaction that
+    /// nevertheless has business value.
     public var brandValue: Decimal
 
     /// Name of page.

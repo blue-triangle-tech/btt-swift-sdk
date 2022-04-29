@@ -15,7 +15,7 @@ final public class PurchaseConfirmation: NSObject {
     /// Purchase amount for purchase confirmation steps.
     @objc public var cartValue: Decimal
 
-    /// The Order Number from the purchase on purchase confirmation steps.
+    /// The order number from the purchase on purchase confirmation steps.
     @objc public var orderNumber: String
 
     /// Order time and date.
@@ -25,15 +25,16 @@ final public class PurchaseConfirmation: NSObject {
     /// - Parameters:
     ///   - cartValue: Purchase amount.
     ///   - orderNumber: Order number.
-    @objc public init(cartValue: Decimal, orderNumber: String = "") {
+    @objc
+    public init(cartValue: Decimal, orderNumber: String = "") {
         self.cartValue = cartValue
         self.orderNumber = orderNumber
     }
 }
 
 // MARK: - Equatable
-extension PurchaseConfirmation {
-    public static func == (lhs: PurchaseConfirmation, rhs: PurchaseConfirmation) -> Bool {
+public extension PurchaseConfirmation {
+    static func == (lhs: PurchaseConfirmation, rhs: PurchaseConfirmation) -> Bool {
         return lhs.cartValue == rhs.cartValue
         && (lhs.orderNumber == rhs.orderNumber
             || (rhs.orderTime <= lhs.orderTime + TimeInterval.day

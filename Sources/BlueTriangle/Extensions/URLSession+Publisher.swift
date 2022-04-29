@@ -32,6 +32,7 @@ enum NetworkError: Error {
     public static func wrap(_ error: Error) -> NetworkError {
         switch error {
         case is NetworkError:
+            // swiftlint:disable:next force_cast
             return error as! NetworkError
         case is DecodingError:
             return .decoding(error: error)

@@ -11,12 +11,28 @@ import Foundation
 /// appears in the list of filter options in the Blue Triangle portal.
 @objcMembers
 final public class CustomCategories: NSObject {
+    /// Custom category for data collection use.
     public var cv6: String?
+
+    /// Custom category for data collection use.
     public var cv7: String?
+
+    /// Custom category for data collection use.
     public var cv8: String?
+
+    /// Custom category for data collection use.
     public var cv9: String?
+    
+    /// Custom category for data collection use.
     public var cv10: String?
 
+    /// Creates custom categories describing a user interaction.
+    /// - Parameters:
+    ///   - cv6: Custom category for data collection use.
+    ///   - cv7: Custom category for data collection use.
+    ///   - cv8: Custom category for data collection use.
+    ///   - cv9: Custom category for data collection use.
+    ///   - cv10: Custom category for data collection use.
     public init(
         cv6: String?,
         cv7: String?,

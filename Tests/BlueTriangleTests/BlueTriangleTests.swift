@@ -9,6 +9,7 @@ import XCTest
 import Combine
 @testable import BlueTriangle
 
+// swiftlint:disable function_body_length
 final class BlueTriangleTests: XCTestCase {
     static var uploaderQueue: DispatchQueue = Mock.uploaderQueue
     static var onSendRequest: (Request) -> Void = { _ in }
@@ -30,11 +31,7 @@ final class BlueTriangleTests: XCTestCase {
             configuration.uploaderConfiguration = Mock.makeUploaderConfiguration(queue: uploaderQueue) { request in
                 onSendRequest(request)
             }
-            configuration.performanceMonitorBuilder = PerformanceMonitorBuilder { sampleInterval in
-                {
-                    performanceMonitor
-                }
-            }
+            configuration.performanceMonitorBuilder = PerformanceMonitorBuilder { _ in { performanceMonitor } }
         }
         BlueTriangle.prime()
         BlueTriangle.reset()
@@ -173,7 +170,7 @@ extension BlueTriangleTests {
         Self.timeIntervals = [
             expectedEndTime,
             expectedInteractiveTime,
-            expectedStartTime,
+            expectedStartTime
         ]
 
         // Performance Monitor
@@ -391,7 +388,7 @@ extension BlueTriangleTests {
 
     @available(iOS 14.0, *)
     func testTimerPerformanceMonitor() throws {
-        let performanceMonitor = TimerPerformanceMonitor(sampleInterval: 1/60,
+        let performanceMonitor = TimerPerformanceMonitor(sampleInterval: 1 / 60,
                                                          resourceUsage: ResourceUsage.self)
 
         // Timer
@@ -451,7 +448,7 @@ extension BlueTriangleTests {
 
     @available(iOS 14.0, *)
     func testDispatchSourceTimerPerformanceMonitor() throws {
-        let performanceMonitor = DispatchSourceTimerPerformanceMonitor(sampleInterval: 1/60,
+        let performanceMonitor = DispatchSourceTimerPerformanceMonitor(sampleInterval: 1 / 60,
                                                                        resourceUsage: ResourceUsage.self)
 
         // Timer

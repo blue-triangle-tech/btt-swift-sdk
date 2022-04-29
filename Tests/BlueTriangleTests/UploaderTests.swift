@@ -38,7 +38,7 @@ final class UploaderTests: XCTestCase {
                 case .failure:
                     failureExpectation.fulfill()
                 }
-            }, receiveValue: { value in
+            }, receiveValue: { _ in
                 XCTFail("Unexpected value")
             })
             .store(in: &cancellables)
@@ -76,7 +76,7 @@ final class UploaderTests: XCTestCase {
                 case .failure:
                     XCTFail("Unexpected failure")
                 }
-            }, receiveValue: { value in
+            }, receiveValue: { _ in
                 valueExpectation.fulfill()
             })
             .store(in: &cancellables)
@@ -119,7 +119,7 @@ final class UploaderTests: XCTestCase {
                 case .failure:
                     XCTFail("Unexpected failure")
                 }
-            }, receiveValue: { value in
+            }, receiveValue: { _ in
                 valueExpectation.fulfill()
             })
             .store(in: &cancellables)
@@ -134,7 +134,7 @@ final class UploaderTests: XCTestCase {
         let expectation = self.expectation(description: "Requests finished")
 
         var currentRequestCount = 0
-        let networking: Networking = { request in
+        let networking: Networking = { _ in
             Deferred {
                 Future { promise in
                     currentRequestCount += 1
@@ -145,13 +145,13 @@ final class UploaderTests: XCTestCase {
 
         var responseCount = 0
         let logger = LoggerMock(
-            onInfo: { message in
+            onInfo: { _ in
                 responseCount += 1
                 if responseCount == requestCount * 2 {
                     expectation.fulfill()
                 }
             },
-            onError: { message in
+            onError: { _ in
                 responseCount += 1
                 if responseCount == requestCount * 2 {
                     expectation.fulfill()
