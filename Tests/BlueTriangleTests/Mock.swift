@@ -9,6 +9,8 @@ import Foundation
 import Combine
 @testable import BlueTriangle
 
+// swiftlint:disable line_length
+
 // MARK: - Response
 enum Mock {
     typealias Response = (data: Data, response: HTTPURLResponse)
@@ -89,7 +91,7 @@ extension Mock {
 
     static func makeUploaderConfiguration(
         queue: DispatchQueue,
-        onSend: @escaping (Request) -> Void = {_ in }
+        onSend: @escaping (Request) -> Void = { _ in }
     ) -> Uploader.Configuration {
         Uploader.Configuration(
             queue: queue,
@@ -106,7 +108,7 @@ extension Mock {
 
     static func makeTimerConfiguration(
         intervalProvider: @escaping () -> TimeInterval
-    ) ->  BTTimer.Configuration {
+    ) -> BTTimer.Configuration {
         BTTimer.Configuration(
             timeIntervalProvider: intervalProvider
         )

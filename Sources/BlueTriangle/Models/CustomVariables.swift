@@ -8,21 +8,54 @@
 import Foundation
 
 /// Custom textual data that is related to individual views but does not need to be seen
-/// at a larger, aggregate scale. This is similar to `CustomCategories` but they're not
-/// aggregated and do not appear as filter options.
+/// at a larger, aggregate scale.
+///
+/// This is similar to ``CustomCategories`` but they're not aggregated and do not appear
+/// as filter options in the Blue Triangle portal.
 @objcMembers
 final public class CustomVariables: NSObject {
+    /// Custom variable for data collection use.
     public var cv1: String?
+
+    /// Custom variable for data collection use.
     public var cv2: String?
+
+    /// Custom variable for data collection use.
     public var cv3: String?
+
+    /// Custom variable for data collection use.
     public var cv4: String?
+
+    /// Custom variable for data collection use.
     public var cv5: String?
+
+    /// Custom variable for data collection use.
     public var cv11: String?
+
+    /// Custom variable for data collection use.
     public var cv12: String?
+
+    /// Custom variable for data collection use.
     public var cv13: String?
+
+    /// Custom variable for data collection use.
     public var cv14: String?
+
+    /// Custom variable for data collection use.
     public var cv15: String?
 
+    /// Creates custom variables describing a user interaction.
+    /// - Parameters:
+    ///   - cv1: Custom variable for data collection use.
+    ///   - cv2: Custom variable for data collection use.
+    ///   - cv3: Custom variable for data collection use.
+    ///   - cv4: Custom variable for data collection use.
+    ///   - cv5: Custom variable for data collection use.
+    ///   - cv11: Custom variable for data collection use.
+    ///   - cv12: Custom variable for data collection use.
+    ///   - cv13: Custom variable for data collection use.
+    ///   - cv14: Custom variable for data collection use.
+    ///   - cv15: Custom variable for data collection use.
     public init(
         cv1: String?,
         cv2: String?,

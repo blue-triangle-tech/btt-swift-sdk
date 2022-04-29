@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// An 18-digit identifier.
 public typealias Identifier = UInt64
 
 extension Identifier {

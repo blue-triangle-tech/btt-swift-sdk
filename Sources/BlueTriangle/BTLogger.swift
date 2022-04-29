@@ -12,6 +12,7 @@ import os.log
 
 // https://stackoverflow.com/a/62488271/4472195
 fileprivate extension OSLog {
+    // swiftlint:disable:next identifier_name
     func callAsFunction(_ s: String) {
         os_log("%{public}s", log: self, s)
     }

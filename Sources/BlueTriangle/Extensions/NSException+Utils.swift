@@ -10,7 +10,7 @@ import Foundation
 extension NSException {
     var bttCrashReportMessage: String {
         debugDescription.components(separatedBy: .newlines)
-            .filter { $0.count > 0 }
+            .filter { !$0.isEmpty }
             .joined(separator: Constants.crashReportLineSeparator)
     }
 }

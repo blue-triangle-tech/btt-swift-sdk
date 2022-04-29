@@ -10,7 +10,7 @@ import Foundation
 extension TimeInterval {
 
     var milliseconds: Millisecond {
-        Millisecond((self*1000).rounded())
+        Millisecond((self * 1000).rounded())
     }
 
     static var day: TimeInterval {

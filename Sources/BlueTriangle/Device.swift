@@ -55,7 +55,7 @@ enum Device {
     private static func platform() -> String {
         var size = 0
         sysctlbyname("hw.model", nil, &size, nil, 0)
-        var model = [CChar](repeating: 0,  count: size)
+        var model = [CChar](repeating: 0, count: size)
         sysctlbyname("hw.model", &model, &size, nil, 0)
         return String(cString: model)
     }

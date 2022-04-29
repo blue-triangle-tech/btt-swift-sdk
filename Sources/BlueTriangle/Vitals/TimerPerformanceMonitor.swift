@@ -47,7 +47,7 @@ final class TimerPerformanceMonitor: PerformanceMonitoring {
 
         cancellable = Timer.publish(every: sampleInterval, on: runLoop, in: mode)
             .autoconnect()
-            .sink() { [weak self] _ in
+            .sink { [weak self] _ in
                 self?.sample()
             }
         sample()

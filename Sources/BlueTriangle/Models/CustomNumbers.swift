@@ -11,27 +11,88 @@ import Foundation
 /// appears on your trend graphs in the Blue Triangle portal.
 @objcMembers
 final public class CustomNumbers: NSObject {
+    /// Custom number for data collection use.
     public var cn1: Double
+
+    /// Custom number for data collection use.
     public var cn2: Double
+
+    /// Custom number for data collection use.
     public var cn3: Double
+
+    /// Custom number for data collection use.
     public var cn4: Double
+
+    /// Custom number for data collection use.
     public var cn5: Double
+
+    /// Custom number for data collection use.
     public var cn6: Double
+
+    /// Custom number for data collection use.
     public var cn7: Double
+
+    /// Custom number for data collection use.
     public var cn8: Double
+
+    /// Custom number for data collection use.
     public var cn9: Double
+
+    /// Custom number for data collection use.
     public var cn10: Double
+
+    /// Custom number for data collection use.
     public var cn11: Double
+
+    /// Custom number for data collection use.
     public var cn12: Double
+
+    /// Custom number for data collection use.
     public var cn13: Double
+
+    /// Custom number for data collection use.
     public var cn14: Double
+
+    /// Custom number for data collection use.
     public var cn15: Double
+
+    /// Custom number for data collection use.
     public var cn16: Double
+
+    /// Custom number for data collection use.
     public var cn17: Double
+
+    /// Custom number for data collection use.
     public var cn18: Double
+
+    /// Custom number for data collection use.
     public var cn19: Double
+
+    /// Custom number for data collection use.
     public var cn20: Double
 
+    /// Creates custom numbers for describing a user interaction.
+    /// - Parameters:
+    ///   - cn1: Custom number for data collection use.
+    ///   - cn2: Custom number for data collection use.
+    ///   - cn3: Custom number for data collection use.
+    ///   - cn4: Custom number for data collection use.
+    ///   - cn5: Custom number for data collection use.
+    ///   - cn6: Custom number for data collection use.
+    ///   - cn7: Custom number for data collection use.
+    ///   - cn8: Custom number for data collection use.
+    ///   - cn9: Custom number for data collection use.
+    ///   - cn10: Custom number for data collection use.
+    ///   - cn11: Custom number for data collection use.
+    ///   - cn12: Custom number for data collection use.
+    ///   - cn13: Custom number for data collection use.
+    ///   - cn14: Custom number for data collection use.
+    ///   - cn15: Custom number for data collection use.
+    ///   - cn16: Custom number for data collection use.
+    ///   - cn17: Custom number for data collection use.
+    ///   - cn18: Custom number for data collection use.
+    ///   - cn19: Custom number for data collection use.
+    ///   - cn20: Custom number for data collection use.
     public init(
         cn1: Double = 0.0,
         cn2: Double = 0.0,
