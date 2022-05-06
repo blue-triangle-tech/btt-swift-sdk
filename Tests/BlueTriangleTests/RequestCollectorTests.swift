@@ -75,7 +75,7 @@ class RequestCollectorTests: XCTestCase {
         let timer = collector.makeTimer()
         XCTAssertNil(timer)
     }
-
+    /* Disable to get project to compile after removal of `InternalTimer.offset`; much larger changes forthcoming
     func testMakeTimerAfterSpanStart() throws {
         Self.spanTimeIntervals = [
             1.0
@@ -137,7 +137,7 @@ class RequestCollectorTests: XCTestCase {
         XCTAssertEqual(timer1?.offset, expectedOffset1)
         XCTAssertEqual(timer2?.offset, expectedOffset2)
     }
-
+     */
     func testSpanUploadAfterNewSpan() throws {
         Self.spanTimeIntervals = [
             // Start span 2
