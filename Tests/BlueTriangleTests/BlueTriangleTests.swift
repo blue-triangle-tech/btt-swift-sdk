@@ -47,6 +47,11 @@ final class BlueTriangleTests: XCTestCase {
     static var onSendRequest: (Request) -> Void = { _ in }
     static let uploader = UploaderMock { onSendRequest($0) }
 
+    override class func tearDown() {
+        super.tearDown()
+        BlueTriangle.reset()
+    }
+
     override func setUp() {
         super.setUp()
         Self.timeIntervals = []
