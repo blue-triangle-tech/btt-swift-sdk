@@ -54,7 +54,7 @@
     NSNumber *cartValue = [NSNumber numberWithDouble:10.99];
     PurchaseConfirmation *purchaseConfirmation = [[PurchaseConfirmation alloc] initWithCartValue:cartValue.decimalValue orderNumber:@"MY_ORDER_NUMBER"];
 
-    BTTimer *timer = [BlueTriangle makeTimerWithPage:page];
+    BTTimer *timer = [BlueTriangle makeTimerWithPage:page timerType:TimerTypeMain];
 
     [timer start];
 
@@ -64,7 +64,7 @@
 
     [BlueTriangle endTimer:timer purchaseConfirmation:purchaseConfirmation];
 
-    BTTimer *timer2 = [BlueTriangle makeTimerWithPage:page];
+    BTTimer *timer2 = [BlueTriangle makeTimerWithPage:page timerType:TimerTypeSecondary];
 
     [BlueTriangle endTimer:timer2 purchaseConfirmation:nil];
 

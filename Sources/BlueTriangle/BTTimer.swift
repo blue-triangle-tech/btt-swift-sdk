@@ -9,6 +9,15 @@ import Foundation
 
 /// An object that measures the duration of a user interaction.
 final public class BTTimer: NSObject {
+    /// Describes the timer type.
+    @objc
+    public enum TimerType: Int {
+        /// A timer used to measure primary user interactions and captured network requests.
+        case main
+        /// A timer used to measure user interactions of secondary importance.
+        case secondary
+    }
+
     /// Describes the state of a timer.
     @objc
     public enum State: Int {
@@ -32,6 +41,9 @@ final public class BTTimer: NSObject {
     private let logger: Logging
     private let timeIntervalProvider: () -> TimeInterval
     private let performanceMonitor: PerformanceMonitoring?
+
+    /// The type of the timer.
+    @objc public let type: TimerType
 
     /// An object describing the user interaction measured by the timer.
     @objc public var page: Page
@@ -72,10 +84,12 @@ final public class BTTimer: NSObject {
     }
 
     init(page: Page,
+         type: TimerType = .main,
          logger: Logging,
          intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 },
          performanceMonitor: PerformanceMonitoring? = nil) {
         self.page = page
+        self.type = type
         self.logger = logger
         self.timeIntervalProvider = intervalProvider
         self.performanceMonitor = performanceMonitor
@@ -144,8 +158,8 @@ extension BTTimer {
         func makeTimerFactory(
             logger: Logging,
             performanceMonitorFactory: (() -> PerformanceMonitoring)? = nil
-        ) -> (Page) -> BTTimer {
-            { page in
+        ) -> (Page, BTTimer.TimerType) -> BTTimer {
+            { page, timerType in
                 BTTimer(page: page,
                         logger: logger,
                         intervalProvider: timeIntervalProvider,

@@ -46,6 +46,7 @@ final class BlueTriangleTests: XCTestCase {
         Self.timeIntervals = []
         BlueTriangle.reconfigure(session: Mock.session,
                                  timerFactory: { BTTimer(page: $0,
+                                                         type: $1,
                                                          logger: Self.logger,
                                                          intervalProvider: Self.timeIntervalProvider) })
         super.tearDown()
@@ -99,8 +100,9 @@ extension BlueTriangleTests {
                                                         onEnd: { performanceEndExpectation.fulfill() })
 
         // Timer
-        let timerFactory: (Page) -> BTTimer = { page in
+        let timerFactory: (Page, BTTimer.TimerType) -> BTTimer = { page, timerType in
             BTTimer(page: page,
+                    type: timerType,
                     logger: Self.logger,
                     intervalProvider: Self.timeIntervalProvider,
                     performanceMonitor: performanceMonitor)
@@ -187,8 +189,9 @@ extension BlueTriangleTests {
                                                         onEnd: { performanceEndExpectation.fulfill() })
 
         // Timer
-        let timerFactory: (Page) -> BTTimer = { page in
+        let timerFactory: (Page, BTTimer.TimerType) -> BTTimer = { page, timerType in
             BTTimer(page: page,
+                    type: timerType,
                     logger: Self.logger,
                     intervalProvider: Self.timeIntervalProvider,
                     performanceMonitor: performanceMonitor)
@@ -266,8 +269,9 @@ extension BlueTriangleTests {
         ]
 
         // Timer
-        let timerFactory: (Page) -> BTTimer = { page in
+        let timerFactory: (Page, BTTimer.TimerType) -> BTTimer = { page, timerType in
             BTTimer(page: page,
+                    type: timerType,
                     logger: Self.logger,
                     intervalProvider: Self.timeIntervalProvider,
                     performanceMonitor: PerformanceMonitorMock())

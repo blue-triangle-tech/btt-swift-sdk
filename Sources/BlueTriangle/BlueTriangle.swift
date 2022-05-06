@@ -151,7 +151,7 @@ final public class BlueTriangle: NSObject {
         configuration.uploaderConfiguration.makeUploader(logger: logger)
     }()
 
-    private static var timerFactory: (Page) -> BTTimer = {
+    private static var timerFactory: (Page, BTTimer.TimerType) -> BTTimer = {
         configuration.timerConfiguration.makeTimerFactory(
             logger: logger,
             performanceMonitorFactory: configuration.makePerformanceMonitorFactory())
@@ -306,7 +306,7 @@ extension BlueTriangle {
         session: Session? = nil,
         logger: Logging? = nil,
         uploader: Uploading? = nil,
-        timerFactory: ((Page) -> BTTimer)? = nil,
+        timerFactory: ((Page, BTTimer.TimerType) -> BTTimer)? = nil,
         requestCollector: CapturedRequestCollecting? = nil
     ) {
         lock.sync {
@@ -337,13 +337,15 @@ public extension BlueTriangle {
     ///
     /// - note: `configure(_:)` must be called before attempting to create a timer.
     ///
-    /// - Parameter page: An object providing information about the user interaction being timed.
+    /// - Parameters:
+    ///   - page: An object providing information about the user interaction being timed.
+    ///   - timerType: The type of timer.
     /// - Returns: The new timer.
     @objc
-    static func makeTimer(page: Page) -> BTTimer {
+    static func makeTimer(page: Page, timerType: BTTimer.TimerType = .main) -> BTTimer {
         lock.lock()
         precondition(initialized, "BlueTriangle must be initialized before sending timers.")
-        let timer = timerFactory(page)
+        let timer = timerFactory(page, timerType)
         lock.unlock()
         return timer
     }
@@ -352,11 +354,13 @@ public extension BlueTriangle {
     ///
     /// - note: `configure(_:)` must be called before attempting to start a timer.
     ///
-    /// - Parameter page: An object providing information about the user interaction being timed.
+    /// - Parameters:
+    ///   - page: An object providing information about the user interaction being timed.
+    ///   - timerType: The type of timer.
     /// - Returns: The running timer.
     @objc
-    static func startTimer(page: Page) -> BTTimer {
-        let timer = makeTimer(page: page)
+    static func startTimer(page: Page, timerType: BTTimer.TimerType = .main) -> BTTimer {
+        let timer = makeTimer(page: page, timerType: timerType)
         timer.start()
         return timer
     }
