@@ -459,10 +459,4 @@ extension BlueTriangle {
             initialized = false
         }
     }
-
-    @objc
-    static func prime() {
-        _ = uploader
-        _ = makeTimer(page: .init(pageName: "TEST"))
-    }
 }
