@@ -40,6 +40,7 @@ final public class BTTimer: NSObject {
     private let lock = NSLock()
     private let logger: Logging
     private let timeIntervalProvider: () -> TimeInterval
+    private let onStart: (TimerType, Page, TimeInterval) -> Void
     private let performanceMonitor: PerformanceMonitoring?
 
     /// The type of the timer.
@@ -87,11 +88,13 @@ final public class BTTimer: NSObject {
          type: TimerType = .main,
          logger: Logging,
          intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 },
+         onStart: @escaping (TimerType, Page, TimeInterval) -> Void = { _, _, _ in },
          performanceMonitor: PerformanceMonitoring? = nil) {
         self.page = page
         self.type = type
         self.logger = logger
         self.timeIntervalProvider = intervalProvider
+        self.onStart = onStart
         self.performanceMonitor = performanceMonitor
     }
 
@@ -126,6 +129,7 @@ final public class BTTimer: NSObject {
                 startTime = timeIntervalProvider()
                 performanceMonitor?.start()
                 state = .started
+                onStart(type, page, startTime)
             case (.started, .markInteractive):
                 interactiveTime = timeIntervalProvider()
                 state = .interactive
@@ -157,12 +161,14 @@ extension BTTimer {
 
         func makeTimerFactory(
             logger: Logging,
+            onStart: @escaping (TimerType, Page, TimeInterval) -> Void = BlueTriangle.timerDidStart(_:page:startTime:),
             performanceMonitorFactory: (() -> PerformanceMonitoring)? = nil
         ) -> (Page, BTTimer.TimerType) -> BTTimer {
             { page, timerType in
                 BTTimer(page: page,
                         logger: logger,
                         intervalProvider: timeIntervalProvider,
+                        onStart: onStart,
                         performanceMonitor: performanceMonitorFactory?())
             }
         }

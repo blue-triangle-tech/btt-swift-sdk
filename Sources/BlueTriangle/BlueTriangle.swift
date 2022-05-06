@@ -411,6 +411,13 @@ extension BlueTriangle {
         return timer
     }
 
+    static func timerDidStart(_ type: BTTimer.TimerType, page: Page, startTime: TimeInterval) {
+        guard case .main = type else {
+            return
+        }
+        // TODO: replace the main timer used for network capture
+    }
+
     @usableFromInline
     static func startRequestTimer() -> InternalTimer? {
         var timer = capturedRequestCollector?.makeTimer()
