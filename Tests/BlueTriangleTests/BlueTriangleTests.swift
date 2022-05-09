@@ -11,44 +11,67 @@ import Combine
 
 // swiftlint:disable function_body_length
 final class BlueTriangleTests: XCTestCase {
-    static var uploaderQueue: DispatchQueue = Mock.uploaderQueue
-    static var onSendRequest: (Request) -> Void = { _ in }
-
     static var timeIntervals: [TimeInterval] = []
     static var timeIntervalProvider: () -> TimeInterval = {
         timeIntervals.popLast() ?? 0
     }
-    static var logger: LoggerMock = .init()
-    static var performanceMonitor: PerformanceMonitoring = PerformanceMonitorMock()
 
-    override class func setUp() {
-        super.setUp()
-        BlueTriangle.configure { configuration in
-            configuration.makeLogger = {
-                logger
-            }
-            configuration.timerConfiguration = .init(timeIntervalProvider: timeIntervalProvider)
-            configuration.uploaderConfiguration = Mock.makeUploaderConfiguration(queue: uploaderQueue) { request in
-                onSendRequest(request)
-            }
-            configuration.performanceMonitorBuilder = PerformanceMonitorBuilder { _ in { performanceMonitor } }
-        }
-        BlueTriangle.prime()
-        BlueTriangle.reset()
+    static let logger = LoggerMock()
+    static let performanceMonitor = PerformanceMonitorMock()
+
+    static var onMakeTimer: (Page) -> Void = { _ in }
+    static let timerFactory: (Page) -> BTTimer = { page in
+        onMakeTimer(page)
+        return BTTimer(
+            page: page,
+            logger: logger,
+            intervalProvider: timeIntervalProvider,
+            performanceMonitor: performanceMonitor)
     }
+
+    static var onBuildRequest: (Session, BTTimer, PurchaseConfirmation?) throws -> Void = { _, _, _ in }
+    static let requestBuilder = RequestBuilder { session, timer, purchaseConfirmation in
+        try onBuildRequest(session, timer, purchaseConfirmation)
+        let model = TimerRequest(session: session,
+                                 page: timer.page,
+                                 timer: timer.pageTimeInterval,
+                                 purchaseConfirmation: purchaseConfirmation,
+                                 performanceReport: timer.performanceReport)
+
+        return try Request(method: .post,
+                           url: Constants.timerEndpoint,
+                           headers: nil,
+                           model: model)
+    }
+
+    static var onSendRequest: (Request) -> Void = { _ in }
+    static let uploader = UploaderMock { onSendRequest($0) }
 
     override class func tearDown() {
+        super.tearDown()
         BlueTriangle.reset()
     }
 
-    override func tearDown() {
-        Self.onSendRequest = { _ in }
+    override func setUp() {
+        super.setUp()
         Self.timeIntervals = []
-        BlueTriangle.reconfigure(session: Mock.session,
-                                 timerFactory: { BTTimer(page: $0,
-                                                         logger: Self.logger,
-                                                         intervalProvider: Self.timeIntervalProvider) })
-        super.tearDown()
+        Self.logger.reset()
+        Self.performanceMonitor.reset()
+        Self.onMakeTimer = { _ in }
+        Self.onBuildRequest = { _, _, _ in }
+        Self.onSendRequest = { _ in }
+
+        let configuration = BlueTriangleConfiguration()
+        Mock.configureBlueTriangle(configuration: configuration)
+        configuration.requestBuilder = Self.requestBuilder
+
+        BlueTriangle.reconfigure(
+            configuration: configuration,
+            logger: Self.logger,
+            uploader: Self.uploader,
+            timerFactory: Self.timerFactory,
+            requestCollector: nil
+        )
     }
 
     func testOSInfo() {
@@ -94,32 +117,15 @@ extension BlueTriangleTests {
                                                minMemory: 10000000,
                                                maxMemory: 100000000,
                                                avgMemory: 50000000)
-        let performanceMonitor = PerformanceMonitorMock(report: expectedReport,
-                                                        onStart: { performanceStartExpectation.fulfill() },
-                                                        onEnd: { performanceEndExpectation.fulfill() })
 
-        // Timer
-        let timerFactory: (Page) -> BTTimer = { page in
-            BTTimer(page: page,
-                    logger: Self.logger,
-                    intervalProvider: Self.timeIntervalProvider,
-                    performanceMonitor: performanceMonitor)
-        }
+        Self.performanceMonitor.report = expectedReport
+        Self.performanceMonitor.onStart = { performanceStartExpectation.fulfill() }
+        Self.performanceMonitor.onEnd = { performanceEndExpectation.fulfill() }
 
         // Request Builder
         var finishedTimer: BTTimer!
-        let requestBuilder = RequestBuilder { session, timer, purchaseConfirmation in
+        Self.onBuildRequest = { _, timer, _ in
             finishedTimer = timer
-            let model = TimerRequest(session: session,
-                                     page: timer.page,
-                                     timer: timer.pageTimeInterval,
-                                     purchaseConfirmation: purchaseConfirmation,
-                                     performanceReport: timer.performanceReport)
-
-            return try Request(method: .post,
-                               url: Constants.timerEndpoint,
-                               headers: nil,
-                               model: model)
         }
 
         // Uploader
@@ -129,13 +135,6 @@ extension BlueTriangleTests {
             request = req
             requestExpectation.fulfill()
         }
-
-        // Configure
-        let configuration = BlueTriangleConfiguration()
-        Mock.configureBlueTriangle(configuration: configuration)
-        configuration.requestBuilder = requestBuilder
-        BlueTriangle.reconfigure(configuration: configuration,
-                                 timerFactory: timerFactory)
 
         let timer = BlueTriangle.makeTimer(page: Mock.page)
         XCTAssertEqual(timer.state, expectedInitialState)
@@ -182,32 +181,15 @@ extension BlueTriangleTests {
                                                minMemory: 10000000,
                                                maxMemory: 100000000,
                                                avgMemory: 50000000)
-        let performanceMonitor = PerformanceMonitorMock(report: expectedReport,
-                                                        onStart: { performanceStartExpectation.fulfill() },
-                                                        onEnd: { performanceEndExpectation.fulfill() })
 
-        // Timer
-        let timerFactory: (Page) -> BTTimer = { page in
-            BTTimer(page: page,
-                    logger: Self.logger,
-                    intervalProvider: Self.timeIntervalProvider,
-                    performanceMonitor: performanceMonitor)
-        }
+        Self.performanceMonitor.report = expectedReport
+        Self.performanceMonitor.onStart = { performanceStartExpectation.fulfill() }
+        Self.performanceMonitor.onEnd = { performanceEndExpectation.fulfill() }
 
         // Request Builder
         var finishedTimer: BTTimer!
-        let requestBuilder = RequestBuilder { session, timer, purchaseConfirmation in
+        Self.onBuildRequest = { _, timer, _ in
             finishedTimer = timer
-            let model = TimerRequest(session: session,
-                                     page: timer.page,
-                                     timer: timer.pageTimeInterval,
-                                     purchaseConfirmation: purchaseConfirmation,
-                                     performanceReport: timer.performanceReport)
-
-            return try Request(method: .post,
-                               url: Constants.timerEndpoint,
-                               headers: nil,
-                               model: model)
         }
 
         // Uploader
@@ -217,13 +199,6 @@ extension BlueTriangleTests {
             request = req
             requestExpectation.fulfill()
         }
-
-        // Configure
-        let configuration = BlueTriangleConfiguration()
-        Mock.configureBlueTriangle(configuration: configuration)
-        configuration.requestBuilder = requestBuilder
-        BlueTriangle.reconfigure(configuration: configuration,
-                                 timerFactory: timerFactory)
 
         let timer = BlueTriangle.startTimer(page: Mock.page)
         XCTAssertEqual(timer.state, expectedInitialState)
@@ -340,18 +315,8 @@ extension BlueTriangleTests {
 
         // Request Builder
         var finishedTimer: BTTimer!
-        let requestBuilder = RequestBuilder { session, timer, purchaseConfirmation in
+        Self.onBuildRequest = {  _, timer, _ in
             finishedTimer = timer
-            let model = TimerRequest(session: session,
-                                     page: timer.page,
-                                     timer: timer.pageTimeInterval,
-                                     purchaseConfirmation: purchaseConfirmation,
-                                     performanceReport: timer.performanceReport)
-
-            return try Request(method: .post,
-                               url: Constants.timerEndpoint,
-                               headers: nil,
-                               model: model)
         }
 
         // Uploader
@@ -365,7 +330,7 @@ extension BlueTriangleTests {
         // Configure
         let configuration = BlueTriangleConfiguration()
         Mock.configureBlueTriangle(configuration: configuration)
-        configuration.requestBuilder = requestBuilder
+        configuration.requestBuilder = Self.requestBuilder
         BlueTriangle.reconfigure(configuration: configuration,
                                  timerFactory: timerFactory)
 
@@ -401,18 +366,8 @@ extension BlueTriangleTests {
 
         // Request Builder
         var finishedTimer: BTTimer!
-        let requestBuilder = RequestBuilder { session, timer, purchaseConfirmation in
+        Self.onBuildRequest = {  _, timer, _ in
             finishedTimer = timer
-            let model = TimerRequest(session: session,
-                                     page: timer.page,
-                                     timer: timer.pageTimeInterval,
-                                     purchaseConfirmation: purchaseConfirmation,
-                                     performanceReport: timer.performanceReport)
-
-            return try Request(method: .post,
-                               url: Constants.timerEndpoint,
-                               headers: nil,
-                               model: model)
         }
 
         // Uploader
@@ -426,7 +381,7 @@ extension BlueTriangleTests {
         // Configure
         let configuration = BlueTriangleConfiguration()
         Mock.configureBlueTriangle(configuration: configuration)
-        configuration.requestBuilder = requestBuilder
+        configuration.requestBuilder = Self.requestBuilder
         BlueTriangle.reconfigure(configuration: configuration,
                                  timerFactory: timerFactory)
 
@@ -461,32 +416,20 @@ extension BlueTriangleTests {
 
         // Request Builder
         var finishedTimer: BTTimer!
-        let requestBuilder = RequestBuilder { session, timer, purchaseConfirmation in
+        Self.onBuildRequest = {  _, timer, _ in
             finishedTimer = timer
-            let model = TimerRequest(session: session,
-                                     page: timer.page,
-                                     timer: timer.pageTimeInterval,
-                                     purchaseConfirmation: purchaseConfirmation,
-                                     performanceReport: timer.performanceReport)
-
-            return try Request(method: .post,
-                               url: Constants.timerEndpoint,
-                               headers: nil,
-                               model: model)
         }
 
         // Uploader
         let requestExpectation = self.expectation(description: "Request sent")
-        var request: Request!
         Self.onSendRequest = { req in
-            request = req
             requestExpectation.fulfill()
         }
 
         // Configure
         let configuration = BlueTriangleConfiguration()
         Mock.configureBlueTriangle(configuration: configuration)
-        configuration.requestBuilder = requestBuilder
+        configuration.requestBuilder = Self.requestBuilder
         BlueTriangle.reconfigure(configuration: configuration,
                                  timerFactory: timerFactory)
 

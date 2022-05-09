@@ -43,7 +43,7 @@ class CaptureTimerManagerTests: XCTestCase {
     }
 
     func testStartFromActive() throws {
-        let queue = DispatchQueue.main
+        let queue = Mock.uploaderQueue
         let configuration = NetworkCaptureConfiguration(
             spanCount: 2,
             initialSpanDuration: 0.3,
@@ -79,7 +79,7 @@ class CaptureTimerManagerTests: XCTestCase {
     }
 
     func testCancelFromActive() throws {
-        let queue = DispatchQueue.main
+        let queue = Mock.uploaderQueue
         let configuration = NetworkCaptureConfiguration(
             spanCount: 10,
             initialSpanDuration: 0.2,
