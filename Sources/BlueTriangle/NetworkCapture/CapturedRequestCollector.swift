@@ -93,7 +93,7 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
             logger.error("Unable to make timer before first call to `start(page:)`.")
             return nil
         }
-        return InternalTimer(logger: logger, offset: spanStartTime, intervalProvider: timeIntervalProvider)
+        return InternalTimer(logger: logger, intervalProvider: timeIntervalProvider)
     }
 
     func collect(timer: InternalTimer, data: Data?, response: URLResponse?) {

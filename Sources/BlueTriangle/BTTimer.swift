@@ -9,6 +9,15 @@ import Foundation
 
 /// An object that measures the duration of a user interaction.
 final public class BTTimer: NSObject {
+    /// Describes the timer type.
+    @objc
+    public enum TimerType: Int {
+        /// A timer used to measure primary user interactions and identify captured network requests.
+        case main
+        /// A timer used to measure user interactions of secondary importance.
+        case secondary
+    }
+
     /// Describes the state of a timer.
     @objc
     public enum State: Int {
@@ -31,7 +40,11 @@ final public class BTTimer: NSObject {
     private let lock = NSLock()
     private let logger: Logging
     private let timeIntervalProvider: () -> TimeInterval
+    private let onStart: (TimerType, Page, TimeInterval) -> Void
     private let performanceMonitor: PerformanceMonitoring?
+
+    /// The type of the timer.
+    @objc public let type: TimerType
 
     /// An object describing the user interaction measured by the timer.
     @objc public var page: Page
@@ -72,12 +85,16 @@ final public class BTTimer: NSObject {
     }
 
     init(page: Page,
+         type: TimerType = .main,
          logger: Logging,
          intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 },
+         onStart: @escaping (TimerType, Page, TimeInterval) -> Void = { _, _, _ in },
          performanceMonitor: PerformanceMonitoring? = nil) {
         self.page = page
+        self.type = type
         self.logger = logger
         self.timeIntervalProvider = intervalProvider
+        self.onStart = onStart
         self.performanceMonitor = performanceMonitor
     }
 
@@ -112,6 +129,7 @@ final public class BTTimer: NSObject {
                 startTime = timeIntervalProvider()
                 performanceMonitor?.start()
                 state = .started
+                onStart(type, page, startTime)
             case (.started, .markInteractive):
                 interactiveTime = timeIntervalProvider()
                 state = .interactive
@@ -143,12 +161,14 @@ extension BTTimer {
 
         func makeTimerFactory(
             logger: Logging,
+            onStart: @escaping (TimerType, Page, TimeInterval) -> Void = BlueTriangle.timerDidStart(_:page:startTime:),
             performanceMonitorFactory: (() -> PerformanceMonitoring)? = nil
-        ) -> (Page) -> BTTimer {
-            { page in
+        ) -> (Page, BTTimer.TimerType) -> BTTimer {
+            { page, timerType in
                 BTTimer(page: page,
                         logger: logger,
                         intervalProvider: timeIntervalProvider,
+                        onStart: onStart,
                         performanceMonitor: performanceMonitorFactory?())
             }
         }

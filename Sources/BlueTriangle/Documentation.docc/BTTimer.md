@@ -4,14 +4,14 @@ Create timers to measure responses to user interactions.
 
 ## Overview
 
-Initialize a ``Page`` object with your page properties and pass it to ``BlueTriangle/BlueTriangle/startTimer(page:)`` to receive a running timer instance.
+To measure the duration of a user interaction, initialize a ``Page`` object describing that interation and pass it to ``BlueTriangle/BlueTriangle/startTimer(page:timerType:)`` to receive a running timer instance.
 
 ```swift
 let page = Page(pageName: "MY_PAGE")
 let timer = BlueTriangle.startTimer(page: page)
 ```
 
-If you need to defer the start of the timer, pass your ``Page`` instance to ``BlueTriangle/BlueTriangle/makeTimer(page:)`` and call the timer's ``start()`` method when you are ready to start timing:
+If you need to defer the start of the timer, use ``BlueTriangle/BlueTriangle/makeTimer(page:timerType:)`` and call the returned timer's ``start()`` method when you are ready to start timing:
 
 ```swift
 let page = Page(pageName: "MY_PAGE")

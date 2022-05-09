@@ -19,11 +19,12 @@ final class BlueTriangleTests: XCTestCase {
     static let logger = LoggerMock()
     static let performanceMonitor = PerformanceMonitorMock()
 
-    static var onMakeTimer: (Page) -> Void = { _ in }
-    static let timerFactory: (Page) -> BTTimer = { page in
-        onMakeTimer(page)
+    static var onMakeTimer: (Page, BTTimer.TimerType) -> Void = { _, _ in }
+    static let timerFactory: (Page, BTTimer.TimerType) -> BTTimer = { page, timerType in
+        onMakeTimer(page, timerType)
         return BTTimer(
             page: page,
+            type: timerType,
             logger: logger,
             intervalProvider: timeIntervalProvider,
             performanceMonitor: performanceMonitor)
@@ -57,7 +58,7 @@ final class BlueTriangleTests: XCTestCase {
         Self.timeIntervals = []
         Self.logger.reset()
         Self.performanceMonitor.reset()
-        Self.onMakeTimer = { _ in }
+        Self.onMakeTimer = { _, _ in }
         Self.onBuildRequest = { _, _, _ in }
         Self.onSendRequest = { _ in }
 
@@ -241,8 +242,9 @@ extension BlueTriangleTests {
         ]
 
         // Timer
-        let timerFactory: (Page) -> BTTimer = { page in
+        let timerFactory: (Page, BTTimer.TimerType) -> BTTimer = { page, timerType in
             BTTimer(page: page,
+                    type: timerType,
                     logger: Self.logger,
                     intervalProvider: Self.timeIntervalProvider,
                     performanceMonitor: PerformanceMonitorMock())

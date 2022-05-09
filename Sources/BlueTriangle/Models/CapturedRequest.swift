@@ -148,8 +148,8 @@ extension CapturedRequest {
 
         self.url = response?.url?.absoluteString ?? ""
         self.file = response?.url?.lastPathComponent ?? ""
-        self.startTime = timer.relativeStartTime.milliseconds
-        self.endTime = timer.relativeEndTime.milliseconds
+        self.startTime = timer.startTime.milliseconds
+        self.endTime = timer.endTime.milliseconds
         self.duration = timer.endTime.milliseconds - timer.startTime.milliseconds
         self.decodedBodySize = 0
         self.encodedBodySize = response?.expectedContentLength ?? 0
