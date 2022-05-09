@@ -31,14 +31,14 @@ BlueTriangle.configure { config in
 
 ### Timers
 
-Initialize a `Page` object with your page properties and pass it to `BlueTriangle.startTimer(page:)` to receive a running timer instance.
+To measure the duration of a user interaction, initialize a `Page` object describing that interaction and pass it to `BlueTriangle.startTimer(page:timerType)` to receive a running timer instance.
 
 ```swift
 let page = Page(pageName: "MY_PAGE")
 let timer = BlueTriangle.startTimer(page: page)
 ```
 
-If you need to defer the start of the timer, pass your `Page` instance to `BlueTriangle.makeTimer(page:)` and call the timer's `start()` method when you are ready to start timing:
+If you need to defer the start of the timer, pass your `Page` instance to `BlueTriangle.makeTimer(page:timerType)` and call the timer's `start()` method when you are ready to start timing:
 
 ```swift
 let page = Page(pageName: "MY_PAGE")
