@@ -154,7 +154,7 @@ extension CapturedRequestCollector {
                                       qos: .utility,
                                       autoreleaseFrequency: .workItem)
             return Configuration(queue: queue, timeIntervalProvider: { Date().timeIntervalSince1970 }) { configuration in
-                CaptureTimerManager(queue: queue, configuration: configuration)
+                CaptureTimerManager(configuration: configuration)
             }
         }
     }

@@ -16,10 +16,7 @@ class CaptureTimerManagerTests: XCTestCase {
         subsequentSpanDuration: 0.1)
 
     func testStartFromInactive() throws {
-        let manager = CaptureTimerManager(
-            queue: Mock.uploaderQueue,
-            configuration: Self.configuration,
-            timerLeeway: Self.timerLeeway)
+        let manager = CaptureTimerManager(configuration: Self.configuration)
 
         let expectedFireCount = Self.configuration.spanCount
         let fireExpectation = expectation(description: "Timer fired twice.")
@@ -49,11 +46,7 @@ class CaptureTimerManagerTests: XCTestCase {
             initialSpanDuration: 0.3,
             subsequentSpanDuration: 0.1)
 
-        let manager = CaptureTimerManager(
-            queue: queue,
-            configuration: configuration,
-            timerLeeway: Self.timerLeeway)
-
+        let manager = CaptureTimerManager(configuration: configuration)
 
         let excessiveFireExpectation = expectation(description: "Fire count exceeded spanCount.")
         excessiveFireExpectation.isInverted = true
@@ -69,7 +62,11 @@ class CaptureTimerManagerTests: XCTestCase {
         manager.start()
 
         queue.asyncAfter(deadline: .now() + 0.1) {
-            XCTAssertEqual(manager.state, .active(span: 1))
+            guard case let .active(_, span) = manager.state else {
+                XCTFail("Unexpected manager state")
+                return
+            }
+            XCTAssertEqual(span, 1)
             XCTAssertEqual(fireCount, 0)
             manager.start()
         }
@@ -85,11 +82,7 @@ class CaptureTimerManagerTests: XCTestCase {
             initialSpanDuration: 0.2,
             subsequentSpanDuration: 0.1)
 
-        let manager = CaptureTimerManager(
-            queue: queue,
-            configuration: configuration,
-            timerLeeway: Self.timerLeeway)
-
+        let manager = CaptureTimerManager(configuration: configuration)
 
         let fireExpectation = expectation(description: "Timer fired.")
         fireExpectation.isInverted = true
@@ -100,7 +93,11 @@ class CaptureTimerManagerTests: XCTestCase {
         manager.start()
 
         queue.asyncAfter(deadline: .now() + 0.1) {
-            XCTAssertEqual(manager.state, .active(span: 1))
+            guard case let .active(_, span) = manager.state else {
+                XCTFail("Unexpected manager state")
+                return
+            }
+            XCTAssertEqual(span, 1)
             manager.cancel()
             XCTAssertEqual(manager.state, .inactive)
         }

@@ -10,7 +10,7 @@ import Foundation
 final class CaptureTimerManager: CaptureTimerManaging {
     enum State: Equatable {
         case inactive
-        case active(span: Int)
+        case active(task: Task<Void, Error>, span: Int)
     }
 
     private enum Action {
@@ -19,27 +19,22 @@ final class CaptureTimerManager: CaptureTimerManaging {
         case fire
     }
 
-    private let timerFlags: DispatchSource.TimerFlags = []
-    private let timerLeeway: DispatchTimeInterval
-    private let queue: DispatchQueue
     private let configuration: NetworkCaptureConfiguration
-    private var timer: DispatchSourceTimer?
+    private let taskPriority: TaskPriority
     private(set) var state: State = .inactive
     var handler: (() -> Void)?
 
     init(
-        queue: DispatchQueue,
         configuration: NetworkCaptureConfiguration,
-        timerLeeway: DispatchTimeInterval = .seconds(1)
+        taskPriority: TaskPriority = .low
     ) {
-        self.queue = queue
         self.configuration = configuration
-        self.timerLeeway = timerLeeway
+        self.taskPriority = taskPriority
     }
 
     deinit {
-        if case .active = state {
-            timer?.cancel()
+        if case let .active(task, _) = state {
+            task.cancel()
         }
     }
 
@@ -53,47 +48,38 @@ final class CaptureTimerManager: CaptureTimerManaging {
 }
 
  extension CaptureTimerManager {
-    private func makeTimer(delay: TimeInterval) -> DispatchSourceTimer {
-        let timer = DispatchSource.makeTimerSource(flags: timerFlags, queue: queue)
-        timer.schedule(deadline: .now() + delay, leeway: timerLeeway)
-        timer.setEventHandler { [weak self] in
-            self?.handle(.fire)
+    private func makeTask(delay: TimeInterval) -> Task<Void, Error> {
+        Task(priority: taskPriority) {
+            try await Task.sleep(nanoseconds: delay.nanoseconds)
+            handle(.fire)
         }
-        return timer
     }
 
     private func handle(_ action: Action) {
         switch (state, action) {
         case (.inactive, .start):
-            timer = makeTimer(delay: configuration.initialSpanDuration)
-            timer?.activate()
-            state = .active(span: 1)
-        case (.active, .start):
-            timer?.cancel()
-            timer = makeTimer(delay: configuration.initialSpanDuration)
-            timer?.activate()
-            state = .active(span: 1)
-        case (.active(let span), .fire):
+            let task = makeTask(delay: configuration.initialSpanDuration)
+            state = .active(task: task, span: 1)
+        case let (.active(task, _), .start):
+            task.cancel()
+            let newTask = makeTask(delay: configuration.initialSpanDuration)
+            state = .active(task: newTask, span: 1)
+            return
+        case let (.active(_, span), .fire):
             handler?()
             let nextSpan = span + 1
             if nextSpan <= configuration.spanCount {
-                timer = makeTimer(delay: configuration.subsequentSpanDuration)
-                timer?.activate()
-                state = .active(span: nextSpan)
+                let newTask = makeTask(delay: configuration.subsequentSpanDuration)
+                state = .active(task: newTask, span: nextSpan)
             } else {
-                // Timer should not be active, but cancel to be safe.
-                timer?.cancel()
-                timer = nil
                 state = .inactive
             }
         case (.inactive, .fire):
-            timer?.cancel()
-            timer = nil
+            return
         case (.inactive, .pause):
             return
-        case (.active, .pause):
-            timer?.cancel()
-            timer = nil
+        case let (.active(timer, _), .pause):
+            timer.cancel()
             state = .inactive
         }
     }
