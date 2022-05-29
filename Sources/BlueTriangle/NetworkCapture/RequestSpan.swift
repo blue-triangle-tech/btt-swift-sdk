@@ -9,19 +9,21 @@ import Foundation
 
 struct RequestSpan: Equatable {
     let page: Page
+    let startTime: Millisecond
     var requests: [CapturedRequest]
 
     var isNotEmpty: Bool {
         !requests.isEmpty
     }
 
-    init(_ page: Page, requests: [CapturedRequest] = []) {
+    init(page: Page, startTime: Millisecond, requests: [CapturedRequest] = []) {
         self.page = page
+        self.startTime = startTime
         self.requests = requests
     }
 
-    mutating func insert(_ request: CapturedRequest) {
-        requests.append(request)
+    mutating func insert(timer: InternalTimer, response: URLResponse?) {
+        requests.append(CapturedRequest(timer: timer, relativeTo: startTime, response: response))
     }
 
     mutating func batchRequests() -> [CapturedRequest]? {
