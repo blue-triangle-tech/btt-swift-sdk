@@ -318,6 +318,8 @@ extension BlueTriangle {
         logger: Logging? = nil,
         uploader: Uploading? = nil,
         timerFactory: ((Page, BTTimer.TimerType) -> BTTimer)? = nil,
+        shouldCaptureRequests: Bool? = nil,
+        internalTimerFactory: (() -> InternalTimer)? = nil,
         requestCollector: CapturedRequestCollecting? = nil
     ) {
         lock.sync {
@@ -334,6 +336,12 @@ extension BlueTriangle {
             }
             if let timerFactory = timerFactory {
                 self.timerFactory = timerFactory
+            }
+            if let shouldCaptureRequests = shouldCaptureRequests {
+                self.shouldCaptureRequests = shouldCaptureRequests
+            }
+            if let internalTimerFactory = internalTimerFactory {
+                self.internalTimerFactory = internalTimerFactory
             }
             self.capturedRequestCollector = requestCollector
         }

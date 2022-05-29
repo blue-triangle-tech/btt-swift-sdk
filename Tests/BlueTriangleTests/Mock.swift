@@ -41,6 +41,14 @@ enum Mock {
                         headerFields: headerFields)!
     }
 
+    static func makeCapturedResponse(expectedContentLength: Int = 100) -> HTTPURLResponse {
+        HTTPURLResponse(
+            url: URL(string: Mock.capturedRequestURLString)!,
+            mimeType: nil,
+            expectedContentLength: expectedContentLength,
+            textEncodingName: nil)
+    }
+
     static var successResponse = HTTPResponse<Data>(
         value: successJSON,
         response: makeHTTPResponse(statusCode: 200))
