@@ -48,7 +48,7 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
         requestCollection = RequestCollection(page: page, startTime: startTime.milliseconds)
         timerManager.start()
 
-        if let collection = previousCollection {
+        if let collection = previousCollection, collection.isNotEmpty {
             upload(startTime: collection.startTime, page: collection.page, requests: collection.requests)
         }
     }
