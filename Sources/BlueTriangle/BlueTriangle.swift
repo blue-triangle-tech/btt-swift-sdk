@@ -173,12 +173,17 @@ final public class BlueTriangle: NSObject {
     private static var crashReportManager: CrashReportManaging?
 
     private static var capturedRequestCollector: CapturedRequestCollecting? = {
-        if Bool.random(probability: configuration.networkSampleRate) {
-            return configuration.capturedRequestCollectorConfiguration.makeRequestCollector(
+        if shouldCaptureRequests {
+            let collector = configuration.capturedRequestCollectorConfiguration.makeRequestCollector(
                 logger: logger,
                 networkCaptureConfiguration: .standard,
-                requestBuilder: CapturedRequestBuilder.makeBuilder { session },
+                requestBuilder: CapturedRequestBuilder.makeBuilder { session }, // TODO: does this work if session is mutated?
                 uploader: uploader)
+
+            Task {
+                await collector.configure()
+            }
+            return collector
         } else {
             return nil
         }
@@ -395,33 +400,14 @@ public extension BlueTriangle {
 
 // MARK: - Network Capture
 extension BlueTriangle {
-    /// Starts a span for network capture.
-    ///
-    /// - note: `configure(_:)` must be called before attempting to start a span.
-    ///
-    /// - Parameter page: An object providing information about the user interaction being timed.
-    /// - Returns: The running timer.
-    @discardableResult
-    @objc
-    public static func startSpan(page: Page) -> BTTimer {
-        let timer = makeTimer(page: page)
-        lock.lock()
-        capturedRequestCollector?.start(timer: timer) { timer in
-            lock.lock()
-            defer {
-                lock.unlock()
-            }
-            return try configuration.requestBuilder.builder(session, timer, nil)
-        }
-        lock.unlock()
-        return timer
-    }
-
     static func timerDidStart(_ type: BTTimer.TimerType, page: Page, startTime: TimeInterval) {
         guard case .main = type else {
             return
         }
-        // TODO: replace the main timer used for network capture
+
+        Task {
+            await capturedRequestCollector?.start(page: page, startTime: startTime)
+        }
     }
 
     @usableFromInline
@@ -436,12 +422,16 @@ extension BlueTriangle {
 
     @usableFromInline
     static func captureRequest(timer: InternalTimer, data: Data?, response: URLResponse?) {
-        capturedRequestCollector?.collect(timer: timer, data: data, response: response)
+        Task {
+            await capturedRequestCollector?.collect(timer: timer, response: response)
+        }
     }
 
     @usableFromInline
     static func captureRequest(timer: InternalTimer, tuple: (Data, URLResponse)) {
-        capturedRequestCollector?.collect(timer: timer, data: tuple.0, response: tuple.1)
+        Task {
+            await capturedRequestCollector?.collect(timer: timer, response: tuple.1)
+        }
     }
 }
 

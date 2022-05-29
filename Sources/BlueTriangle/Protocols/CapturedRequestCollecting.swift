@@ -8,6 +8,6 @@
 import Foundation
 
 protocol CapturedRequestCollecting {
-    func start(timer: BTTimer, timerRequestBuilder: @escaping (BTTimer) throws -> Request)
-    func collect(timer: InternalTimer, data: Data?, response: URLResponse?)
+    func start(page: Page, startTime: TimeInterval) async
+    func collect(timer: InternalTimer, response: URLResponse?) async
 }

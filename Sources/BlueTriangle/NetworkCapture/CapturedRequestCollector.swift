@@ -7,122 +7,79 @@
 
 import Foundation
 
-final class CapturedRequestCollector: CapturedRequestCollecting {
-    private var storage: Timeline<RequestSpan>
-    private let queue: DispatchQueue
+actor CapturedRequestCollector: CapturedRequestCollecting {
     private let logger: Logging
     private var timerManager: CaptureTimerManaging
     private let timeIntervalProvider: () -> TimeInterval
     private let requestBuilder: CapturedRequestBuilder
     private let uploader: Uploading
-    private var currentTimer: BTTimer?
-    private var spanStartTime: TimeInterval? {
-        currentTimer?.startTime
-    }
-
-    convenience init(
-        queue: DispatchQueue,
-        logger: Logging,
-        timerManager: CaptureTimerManaging,
-        timeIntervalProvider: @escaping () -> TimeInterval,
-        requestBuilder: CapturedRequestBuilder,
-        uploader: Uploading
-    ) {
-        self.init(
-            storage: Timeline<RequestSpan>(intervalProvider: timeIntervalProvider),
-            queue: queue,
-            logger: logger,
-            timerManager: timerManager,
-            timeIntervalProvider: timeIntervalProvider,
-            requestBuilder: requestBuilder,
-            uploader: uploader)
-    }
+    private var requestCollection: RequestCollection?
+    private(set) var hasBeenConfigured: Bool = false
 
     init(
-        storage: Timeline<RequestSpan>,
-        queue: DispatchQueue,
         logger: Logging,
         timerManager: CaptureTimerManaging,
         timeIntervalProvider: @escaping () -> TimeInterval,
         requestBuilder: CapturedRequestBuilder,
         uploader: Uploading
     ) {
-        self.storage = storage
-        self.queue = queue
         self.logger = logger
         self.timerManager = timerManager
         self.timeIntervalProvider = timeIntervalProvider
         self.requestBuilder = requestBuilder
         self.uploader = uploader
-        self.timerManager.handler = { [weak self] in
-            self?.batchCapturedRequests()
-        }
     }
 
-    func start(timer: BTTimer, timerRequestBuilder: @escaping (BTTimer) throws -> Request) {
-        let previousTimer = currentTimer
-        previousTimer?.end()
+    func configure() {
+        guard !hasBeenConfigured else { return }
+        timerManager.handler = { [weak self] in
+            self?.batchRequests()
+        }
+        hasBeenConfigured = true
+    }
 
-        currentTimer = timer
-        currentTimer?.start()
+    deinit {
+        timerManager.cancel()
+    }
+
+    func start(page: Page, startTime: TimeInterval) {
+        timerManager.cancel()
+        let previousCollection = requestCollection
+        requestCollection = RequestCollection(page: page, startTime: startTime.milliseconds)
         timerManager.start()
 
-        queue.sync {
-            let currentSpan = self.storage.batchCurrentRequests()
-            let poppedSpan = self.storage.insert(.init(timer.page))
-
-            self.queue.async {
-                if let current = currentSpan, let timer = previousTimer {
-                    do {
-                        let timerRequest = try timerRequestBuilder(timer)
-                        self.uploader.send(request: timerRequest)
-                        self.upload(current)
-                    } catch {
-                        self.logger.error(error.localizedDescription)
-                    }
-                }
-                if let popped = poppedSpan, popped.value.isNotEmpty {
-                    self.upload(popped)
-                }
-            }
+        if let collection = previousCollection {
+            upload(startTime: collection.startTime, page: collection.page, requests: collection.requests)
         }
     }
 
-    func makeTimer() -> InternalTimer? {
-        guard let spanStartTime = spanStartTime else {
-            logger.error("Unable to make timer before first call to `start(page:)`.")
-            return nil
-        }
-        return InternalTimer(logger: logger, intervalProvider: timeIntervalProvider)
+    func collect(timer: InternalTimer, response: URLResponse?) {
+        requestCollection?.insert(timer: timer, response: response)
     }
 
-    func collect(timer: InternalTimer, data: Data?, response: URLResponse?) {
-        let capturedRequest = CapturedRequest(timer: timer, response: response)
-        queue.sync {
-            self.storage.updateValue(for: timer.startTime) { span in
-                span.insert(capturedRequest)
-            }
+    // Use `nonisolated` to enable capture by timerManager handler.
+    nonisolated private func batchRequests() {
+        Task {
+            await self.batchCapturedRequests()
         }
     }
 
-    /// Upload current requests if there are any.
-    ///
-    /// - Important: This method mutates `storage` and is not thread-safe.
-    ///   You must call it from `queue` .
     private func batchCapturedRequests() {
-        if let currentSpan = self.storage.batchCurrentRequests() {
-            self.queue.async {
-                self.upload(currentSpan)
-            }
+        guard let requests = requestCollection?.batchRequests(), let timer = requestCollection else {
+            return
         }
+
+        upload(startTime: timer.startTime, page: timer.page, requests: requests)
     }
 
-    private func upload(_ span: (TimeInterval, RequestSpan)) {
-        do {
-            let request = try requestBuilder.build(span.0.milliseconds, span.1)
-            uploader.send(request: request)
-        } catch {
-            logger.error("Error building request: \(error.localizedDescription)")
+    private func upload(startTime: Millisecond, page: Page, requests: [CapturedRequest]) {
+        Task.detached(priority: .background) {
+            do {
+                let request = try self.requestBuilder.build(startTime, page, requests)
+                self.uploader.send(request: request)
+            } catch {
+                self.logger.error("Error building request: \(error.localizedDescription)")
+            }
         }
     }
 }
@@ -130,7 +87,6 @@ final class CapturedRequestCollector: CapturedRequestCollecting {
 // MARK: - Supporting Types
 extension CapturedRequestCollector {
     struct Configuration {
-        let queue: DispatchQueue
         let timeIntervalProvider: () -> TimeInterval
         let timerManagingProvider: (NetworkCaptureConfiguration) -> CaptureTimerManaging
 
@@ -141,19 +97,15 @@ extension CapturedRequestCollector {
             uploader: Uploading
         ) -> CapturedRequestCollector {
             let timerManager = timerManagingProvider(networkCaptureConfiguration)
-            return CapturedRequestCollector(queue: queue,
-                                            logger: logger,
-                                            timerManager: timerManager,
-                                            timeIntervalProvider: timeIntervalProvider,
-                                            requestBuilder: requestBuilder,
-                                            uploader: uploader)
+            return CapturedRequestCollector(logger: logger,
+                                                 timerManager: timerManager,
+                                                 timeIntervalProvider: timeIntervalProvider,
+                                                 requestBuilder: requestBuilder,
+                                                 uploader: uploader)
         }
 
         static var live: Self {
-            let queue = DispatchQueue(label: "com.bluetriangle.network-capture",
-                                      qos: .utility,
-                                      autoreleaseFrequency: .workItem)
-            return Configuration(queue: queue, timeIntervalProvider: { Date().timeIntervalSince1970 }) { configuration in
+            return Configuration(timeIntervalProvider: { Date().timeIntervalSince1970 }) { configuration in
                 CaptureTimerManager(configuration: configuration)
             }
         }
