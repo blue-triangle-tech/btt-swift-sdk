@@ -132,13 +132,9 @@ extension Mock {
     }
 
     static func makeRequestCollectorConfiguration(
-        queue: DispatchQueue = Self.requestCollectorQueue,
-        timeIntervalProvider: @escaping () -> TimeInterval,
         timerManagingProvider: @escaping (NetworkCaptureConfiguration) -> CaptureTimerManaging = { _ in CaptureTimerManagerMock() }
     ) -> CapturedRequestCollector.Configuration {
-        .init(queue: queue,
-              timeIntervalProvider: timeIntervalProvider,
-              timerManagingProvider: timerManagingProvider)
+        .init(timerManagingProvider: timerManagingProvider)
     }
 }
 

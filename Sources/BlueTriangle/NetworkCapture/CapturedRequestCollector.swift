@@ -10,7 +10,6 @@ import Foundation
 actor CapturedRequestCollector: CapturedRequestCollecting {
     private let logger: Logging
     private var timerManager: CaptureTimerManaging
-    private let timeIntervalProvider: () -> TimeInterval
     private let requestBuilder: CapturedRequestBuilder
     private let uploader: Uploading
     private var requestCollection: RequestCollection?
@@ -19,13 +18,11 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
     init(
         logger: Logging,
         timerManager: CaptureTimerManaging,
-        timeIntervalProvider: @escaping () -> TimeInterval,
         requestBuilder: CapturedRequestBuilder,
         uploader: Uploading
     ) {
         self.logger = logger
         self.timerManager = timerManager
-        self.timeIntervalProvider = timeIntervalProvider
         self.requestBuilder = requestBuilder
         self.uploader = uploader
     }
@@ -87,7 +84,6 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
 // MARK: - Supporting Types
 extension CapturedRequestCollector {
     struct Configuration {
-        let timeIntervalProvider: () -> TimeInterval
         let timerManagingProvider: (NetworkCaptureConfiguration) -> CaptureTimerManaging
 
         func makeRequestCollector(
@@ -99,13 +95,12 @@ extension CapturedRequestCollector {
             let timerManager = timerManagingProvider(networkCaptureConfiguration)
             return CapturedRequestCollector(logger: logger,
                                                  timerManager: timerManager,
-                                                 timeIntervalProvider: timeIntervalProvider,
                                                  requestBuilder: requestBuilder,
                                                  uploader: uploader)
         }
 
         static var live: Self {
-            return Configuration(timeIntervalProvider: { Date().timeIntervalSince1970 }) { configuration in
+            return Configuration { configuration in
                 CaptureTimerManager(configuration: configuration)
             }
         }
