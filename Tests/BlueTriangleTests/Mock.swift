@@ -61,16 +61,9 @@ enum Mock {
 
 // MARK: - Configuration
 extension Mock {
-
     static var uploaderQueue: DispatchQueue {
         DispatchQueue(label: "com.bluetriangle.uploader",
                       qos: .userInitiated,
-                      autoreleaseFrequency: .workItem)
-    }
-
-    static var requestCollectorQueue: DispatchQueue {
-        DispatchQueue(label: "com.bluetriangle.network-capture",
-                      qos: .utility,
                       autoreleaseFrequency: .workItem)
     }
 
@@ -143,7 +136,6 @@ extension Mock {
 
 // MARK: - Models
 extension Mock {
-
     static var customCategories = CustomCategories(
         cv6: "CV6",
         cv7: "CV7",
