@@ -10,18 +10,6 @@ import XCTest
 @testable import BlueTriangle
 
 class RequestCollectorTests: XCTestCase {
-    static var uploaderQueue: DispatchQueue = Mock.uploaderQueue
-
-    static var spanTimeIntervals: [TimeInterval] = []
-    static var spanIntervalProvider: () -> TimeInterval = {
-        spanTimeIntervals.popLast() ?? 0
-    }
-
-    static var timelineTimeIntervals: [TimeInterval] = []
-    static var timelineIntervalProvider: () -> TimeInterval = {
-        timelineTimeIntervals.popLast() ?? 0
-    }
-
     static var timeIntervals: [TimeInterval] = []
     static var timeIntervalProvider: () -> TimeInterval = {
         timeIntervals.popLast() ?? 0
@@ -29,11 +17,7 @@ class RequestCollectorTests: XCTestCase {
 
     static var logger: LoggerMock = .init()
 
-    static var queue = DispatchQueue(label: "com.bluetriangle.network-capture",
-                                     qos: .userInitiated,
-                                     autoreleaseFrequency: .workItem)
-
-    static var requestBuilder: CapturedRequestBuilder = .init { _, _ in
+    static var requestBuilder: CapturedRequestBuilder = .init { _, _, _ in
         return Request(method: .post, url: Constants.capturedRequestEndpoint)
     }
 
@@ -55,435 +39,276 @@ class RequestCollectorTests: XCTestCase {
 
     override func tearDown() {
         super.tearDown()
-        Self.spanTimeIntervals = []
-        Self.timelineTimeIntervals = []
         Self.timeIntervals = []
     }
 
-    // MARK: -
+    func testTimerManagerCalls() async throws {
+        let timerManager = CaptureTimerManagerMock()
 
-    func testMakeTimerBeforeSpanStart() throws {
-        let collector = CapturedRequestCollector(
-            storage: Timeline<RequestSpan>(),
-            queue: Mock.requestCollectorQueue,
-            logger: Self.logger,
-            timerManager: CaptureTimerManagerMock(),
-            timeIntervalProvider: Self.timeIntervalProvider,
-            requestBuilder: Self.requestBuilder,
-            uploader: UploaderMock())
-
-        let timer = collector.makeTimer()
-        XCTAssertNil(timer)
-    }
-    /* Disable to get project to compile after removal of `InternalTimer.offset`; much larger changes forthcoming
-    func testMakeTimerAfterSpanStart() throws {
-        Self.spanTimeIntervals = [
-            1.0
-        ]
-
-        let collector = CapturedRequestCollector(
-            storage: Timeline<RequestSpan>(),
-            queue: Mock.requestCollectorQueue,
-            logger: Self.logger,
-            timerManager: CaptureTimerManagerMock(),
-            timeIntervalProvider: Self.timeIntervalProvider,
-            requestBuilder: Self.requestBuilder,
-            uploader: UploaderMock())
-
-        let spanTimer = Self.makeSpanTimer()
-        spanTimer.start()
-
-        collector.start(timer: spanTimer) { _ in Mock.request }
-
-        let timer1 = collector.makeTimer()
-        let timer2 = collector.makeTimer()
-
-        let expectedOffset: TimeInterval = 1.0
-        XCTAssertEqual(timer1?.offset, expectedOffset)
-        XCTAssertEqual(timer2?.offset, expectedOffset)
-    }
-
-    func testMakeTimerAfterMultipleSpanStarts() throws {
-        Self.spanTimeIntervals = [
-            // Start spanTimer2
-            1.2,
-            // End spanTimer1
-            1.1,
-            // Start spanTimer1
-            1.0
-        ]
-
-        let collector = CapturedRequestCollector(
-            storage: Timeline<RequestSpan>(),
-            queue: Mock.requestCollectorQueue,
-            logger: Self.logger,
-            timerManager: CaptureTimerManagerMock(),
-            timeIntervalProvider: Self.timeIntervalProvider,
-            requestBuilder: Self.requestBuilder,
-            uploader: UploaderMock())
-
-        // Span 1
-        let spanTimer1 = Self.makeSpanTimer()
-        collector.start(timer: spanTimer1) { _ in Mock.request }
-        let timer1 = collector.makeTimer()
-
-        // Span 2
-        let spanTimer2 = Self.makeSpanTimer(page: .init(pageName: "Page 2"))
-        collector.start(timer: spanTimer2) { _ in Mock.request }
-        let timer2 = collector.makeTimer()
-
-        let expectedOffset1: TimeInterval = 1.0
-        let expectedOffset2: TimeInterval = 1.2
-        XCTAssertEqual(timer1?.offset, expectedOffset1)
-        XCTAssertEqual(timer2?.offset, expectedOffset2)
-    }
-     */
-    func testSpanUploadAfterNewSpan() throws {
-        XCTExpectFailure("Refactoring network capture")
-
-        Self.spanTimeIntervals = [
-            // Start span 2
-            1.3,
-            // Start span 1
-            1.0
-        ]
-
-        Self.timelineTimeIntervals = [
-            // Insert span 2
-            1.32,
-            // batchCurrentRequests for span 1
-            1.31,
-            // Insert span 1
-            1.01,
-        ]
-
-        Self.timeIntervals = [
-            // End timer1
-            1.2,
-            // Start timer1
-            1.1
-        ]
-
-        let timeline = Timeline<RequestSpan>(capacity: 2, intervalProvider: Self.timelineIntervalProvider)
-
-        // Request Builder
-        var startTime: Millisecond!
-        var requestSpan: RequestSpan!
-        let requestExpectation = expectation(description: "Request built")
-        let requestBuilder: CapturedRequestBuilder = .init { start, span in
-            startTime = start
-            requestSpan = span
-
-            requestExpectation.fulfill()
-            return Request(method: .post, url: Constants.capturedRequestEndpoint)
+        var cancelExpectation: XCTestExpectation? = expectation(description: "Timer Manager Cancelled")
+        timerManager.onCancel = {
+            cancelExpectation?.fulfill()
         }
 
-        // Uploader
-        var uploadCount = 0
-        let uploadExpectation = expectation(description: "Request sent")
-        let uploader = UploaderMock { req in
-            uploadCount += 1
-            if uploadCount == 2 {
-                uploadExpectation.fulfill()
-            }
+        let startExpectation = expectation(description: "Timer Manager Started")
+        timerManager.onStart = {
+            startExpectation.fulfill()
         }
 
-        // Collector
         let collector = CapturedRequestCollector(
-            storage: timeline,
-            queue: Mock.requestCollectorQueue,
-            logger: Self.logger,
-            timerManager: CaptureTimerManagerMock(),
-            timeIntervalProvider: Self.timeIntervalProvider,
-            requestBuilder: requestBuilder,
-            uploader: uploader)
-
-        // Span 1
-        let spanTimer1 = Self.makeSpanTimer()
-        collector.start(timer: spanTimer1) { _ in Mock.request }
-
-        // Make request
-        var timer1: InternalTimer! = collector.makeTimer()
-        timer1.start()
-
-        // Receive response
-        timer1.end()
-        let data = Data()
-        let response = HTTPURLResponse(
-            url: URL(string: Mock.capturedRequestURLString)!,
-            mimeType: nil,
-            expectedContentLength: 100,
-            textEncodingName: nil)
-
-        collector.collect(timer: timer1, data: data, response: response)
-
-        // Span 2
-        let spanTimer2 = Self.makeSpanTimer(page: .init(pageName: "Page 2"))
-        collector.start(timer: spanTimer2) { _ in Mock.request }
-
-        wait(for: [requestExpectation, uploadExpectation], timeout: 1.0)
-
-        let expectedStartTime: Millisecond = 1010
-        let expectedPage = Mock.page
-        let expectedRequests: [CapturedRequest] = [
-            Mock.makeCapturedRequest()
-        ]
-
-        XCTAssertEqual(startTime, expectedStartTime)
-        XCTAssertEqual(requestSpan.page, expectedPage)
-        XCTAssertEqual(requestSpan.requests, expectedRequests)
-    }
-
-    func testTimerUpload() throws {
-        Self.spanTimeIntervals = [
-            // Start spanTimer2
-            2.01,
-            // End spanTimer1
-            2.0,
-            // Start spanTimer1
-            1.0
-        ]
-
-        let timeline = Timeline<RequestSpan>(intervalProvider: Self.timelineIntervalProvider)
-
-        // Collector
-        let collector = CapturedRequestCollector(
-            storage: timeline,
-            queue: Mock.requestCollectorQueue,
-            logger: Self.logger,
-            timerManager: CaptureTimerManagerMock(),
-            timeIntervalProvider: Self.timeIntervalProvider,
-            requestBuilder: Self.requestBuilder,
-            uploader: UploaderMock())
-
-        // Span 1
-        let spanTimer1 = Self.makeSpanTimer(page: Mock.page)
-        collector.start(timer: spanTimer1) { _ in Mock.request }
-
-        // Make request
-        var timer1: InternalTimer! = collector.makeTimer()
-        timer1.start()
-        timer1.end()
-        collector.collect(timer: timer1, data: Data(), response: Mock.makeHTTPResponse(statusCode: 200))
-
-        // Span 2
-        let spanTimer2 = Self.makeSpanTimer(page: .init(pageName: "Page 2"))
-
-        var timerToUpload: BTTimer!
-        let timerExpectation = expectation(description: "Timer upload")
-        collector.start(timer: spanTimer2) { timer in
-            timerToUpload = timer
-            timerExpectation.fulfill()
-            return Mock.request
-        }
-
-        waitForExpectations(timeout: 1.0)
-
-        let expectedStartTime: TimeInterval = 1.0
-        let expectedEndTime: TimeInterval = 2.0
-
-        XCTAssertEqual(timerToUpload.page, Mock.page)
-        XCTAssertEqual(timerToUpload.startTime, expectedStartTime)
-        XCTAssertEqual(timerToUpload.endTime, expectedEndTime)
-    }
-
-    func testSpanPoppingSpan() throws {
-        XCTExpectFailure("Refactoring network capture")
-
-        Self.spanTimeIntervals = [
-            // Start span 3 + pop
-            3.0,
-            // Start span 2
-            2.0,
-            // Start span 1
-            1.0
-        ]
-
-        Self.timelineTimeIntervals = [
-            // Insert span 3
-            3.01,
-            // Insert span 2
-            2.01,
-            // Insert span 1
-            1.01,
-        ]
-
-        Self.timeIntervals = [
-            // End timer1
-            2.5,
-            // Start timer1
-            1.1
-        ]
-
-        let timeline = Timeline<RequestSpan>(capacity: 2, intervalProvider: Self.timelineIntervalProvider)
-
-        // Request Builder
-        var startTime: Millisecond!
-        var requestSpan: RequestSpan!
-        let requestExpectation = expectation(description: "Request built")
-        let requestBuilder: CapturedRequestBuilder = .init { start, span in
-            startTime = start
-            requestSpan = span
-
-            requestExpectation.fulfill()
-            return Request(method: .post, url: Constants.capturedRequestEndpoint)
-        }
-
-        // Uploader
-        let uploadExpectation = expectation(description: "Request sent")
-        let uploader = UploaderMock { req in
-            uploadExpectation.fulfill()
-        }
-
-        // Collector
-        let collector = CapturedRequestCollector(
-            storage: timeline,
-            queue: Mock.requestCollectorQueue,
-            logger: Self.logger,
-            timerManager: CaptureTimerManagerMock(),
-            timeIntervalProvider: Self.timeIntervalProvider,
-            requestBuilder: requestBuilder,
-            uploader: uploader)
-
-        // Span 1
-        let spanTimer1 = Self.makeSpanTimer()
-        collector.start(timer: spanTimer1) { _ in Mock.request }
-
-
-        // Make request
-        var timer1: InternalTimer! = collector.makeTimer()
-        timer1.start()
-
-        // Span 2
-        let spanTimer2 = Self.makeSpanTimer(page: .init(pageName: "Page 2"))
-        collector.start(timer: spanTimer2) { _ in Mock.request }
-
-        // Receive response
-        timer1.end()
-        let data = Data()
-        let response = HTTPURLResponse(
-            url: URL(string: Mock.capturedRequestURLString)!,
-            mimeType: nil,
-            expectedContentLength: 100,
-            textEncodingName: nil)
-
-        collector.collect(timer: timer1, data: data, response: response)
-
-        // Span 3
-        let spanTimer3 = Self.makeSpanTimer(page: .init(pageName: "Page 3"))
-        collector.start(timer: spanTimer3) { _ in Mock.request }
-
-        wait(for: [requestExpectation, uploadExpectation], timeout: 1.0)
-
-        let expectedStartTime: Millisecond = 1010
-        let expectedPage = Mock.page
-        let expectedRequests: [CapturedRequest] = [
-            Mock.makeCapturedRequest(endTime: 1500)
-        ]
-
-        XCTAssertEqual(startTime, expectedStartTime)
-        XCTAssertEqual(requestSpan.page, expectedPage)
-        XCTAssertEqual(requestSpan.requests, expectedRequests)
-    }
-
-    func testBatchCapturedRequests() {
-        XCTExpectFailure("Refactoring network capture")
-
-        Self.spanTimeIntervals = [
-            // Start span 1
-            1.0
-        ]
-
-        Self.timelineTimeIntervals = [
-            // Batch requests
-            2.01,
-            // Insert span 1
-            1.01
-        ]
-
-        Self.timeIntervals = [
-            // End timer1
-            1.2,
-            // Start timer1
-            1.1
-        ]
-
-        let timeline = Timeline<RequestSpan>(capacity: 2, intervalProvider: Self.timelineIntervalProvider)
-
-        let timerStartExpectation = expectation(description: "Timer started")
-        let timerManager = CaptureTimerManagerMock(onStart: {
-            timerStartExpectation.fulfill()
-        })
-
-        // Request Builder
-        var startTime: Millisecond!
-        var requestSpan: RequestSpan!
-        let requestExpectation = expectation(description: "Request built")
-        let requestBuilder: CapturedRequestBuilder = .init { start, span in
-            startTime = start
-            requestSpan = span
-
-            requestExpectation.fulfill()
-            return Request(method: .post, url: Constants.capturedRequestEndpoint)
-        }
-
-        // Uploader
-        let uploadExpectation = expectation(description: "Request sent")
-        let uploader = UploaderMock { req in
-            uploadExpectation.fulfill()
-        }
-
-        // Collector
-        let collector = CapturedRequestCollector(
-            storage: timeline,
-            queue: Mock.requestCollectorQueue,
             logger: Self.logger,
             timerManager: timerManager,
-            timeIntervalProvider: Self.timeIntervalProvider,
+            requestBuilder: Self.requestBuilder,
+            uploader: UploaderMock())
+        await collector.configure()
+
+        await collector.start(page: Mock.page, startTime: 1.0)
+
+        wait(for: [cancelExpectation!], timeout: 0.1)
+        wait(for: [startExpectation], timeout: 0.1)
+        // Accommodate timer manager cancel on deinit
+        cancelExpectation = nil
+    }
+
+    func testUploadAfterStart() async throws {
+        var actualStartTime: Millisecond!
+        var actualPage: Page!
+        var actualRequests: [CapturedRequest]!
+        let requestExpectation = expectation(description: "Request Built")
+        let requestBuilder: CapturedRequestBuilder = .init { startTime, page, requests in
+            actualStartTime = startTime
+            actualPage = page
+            actualRequests = requests
+            requestExpectation.fulfill()
+            return Request(method: .post, url: Constants.capturedRequestEndpoint)
+        }
+
+        let uploadExpectation = expectation(description: "Captured Requests uploaded")
+        let uploader = UploaderMock { request in
+            uploadExpectation.fulfill()
+        }
+
+        let collector = CapturedRequestCollector(
+            logger: Self.logger,
+            timerManager: CaptureTimerManagerMock(),
             requestBuilder: requestBuilder,
             uploader: uploader)
+        await collector.configure()
 
-        // Span 1
-        let spanTimer1 = Self.makeSpanTimer()
-        collector.start(timer: spanTimer1) { _ in Mock.request }
-
-        // Make request
-        var timer1: InternalTimer! = collector.makeTimer()
-        timer1.start()
-
-        // Receive response
-        timer1.end()
-        let data = Data()
-        let response = HTTPURLResponse(
-            url: URL(string: Mock.capturedRequestURLString)!,
-            mimeType: nil,
-            expectedContentLength: 100,
-            textEncodingName: nil)
-        collector.collect(timer: timer1, data: data, response: response)
-
-        // Batch requests
-        timerManager.handler?()
-
-        waitForExpectations(timeout: 1.0)
-
-        let expectedStartTime: Millisecond = 1010
+        // Start BTTimer
         let expectedPage = Mock.page
-        let expectedRequests: [CapturedRequest] = [
-            Mock.makeCapturedRequest(endTime: 200)
-        ]
+        let expectedStartTime = 0.9
+        await collector.start(page: expectedPage, startTime: expectedStartTime)
 
-        XCTAssertEqual(startTime, expectedStartTime)
-        XCTAssertEqual(requestSpan.page, expectedPage)
-        XCTAssertEqual(requestSpan.requests, expectedRequests)
+        // Start / End Request
+        var requestTimer = InternalTimer(logger: Self.logger, intervalProvider: Self.timeIntervalProvider)
+        requestTimer.start()
+        requestTimer.end()
+        let response = Mock.makeCapturedResponse()
+        await collector.collect(timer: requestTimer, response: response)
+
+        // Start another timer
+        await collector.start(page: Page(pageName: "Another_Page"), startTime: 2.0)
+
+        wait(for: [requestExpectation, uploadExpectation], timeout: 1.0)
+
+        XCTAssertEqual(actualStartTime, expectedStartTime.milliseconds)
+        XCTAssertEqual(actualPage, expectedPage)
+        XCTAssertEqual(actualRequests, [Mock.makeCapturedRequest()])
     }
-}
 
-extension RequestCollectorTests {
-    static func makeSpanTimer(page: Page = Mock.page) -> BTTimer {
-        BTTimer(
-           page: page,
-           logger: logger,
-           intervalProvider: spanIntervalProvider,
-           performanceMonitor: nil)
+    func testUploadEmptyAfterStart() async throws {
+        let requestExpectation = expectation(description: "Request Built")
+        requestExpectation.isInverted = true
+        let requestBuilder: CapturedRequestBuilder = .init { startTime, page, requests in
+            requestExpectation.fulfill()
+            return Request(method: .post, url: Constants.capturedRequestEndpoint)
+        }
+
+        let uploadExpectation = expectation(description: "Captured Requests uploaded")
+        uploadExpectation.isInverted = true
+        let uploader = UploaderMock { request in
+            uploadExpectation.fulfill()
+        }
+
+        let collector = CapturedRequestCollector(
+            logger: Self.logger,
+            timerManager: CaptureTimerManagerMock(),
+            requestBuilder: requestBuilder,
+            uploader: uploader)
+        await collector.configure()
+
+        // Start BTTimer
+        await collector.start(page: Mock.page, startTime: 0.9)
+
+        // Start another timer
+        await collector.start(page: Page(pageName: "Another_Page"), startTime: 2.0)
+
+        wait(for: [requestExpectation, uploadExpectation], timeout: 1.0)
+    }
+
+    func testTimerManagerHandlerBatches() async throws {
+        var actualStartTime: Millisecond!
+        var actualPage: Page!
+        var actualRequests: [CapturedRequest]!
+        let requestExpectation = expectation(description: "Request Built")
+        let requestBuilder: CapturedRequestBuilder = .init { startTime, page, requests in
+            actualStartTime = startTime
+            actualPage = page
+            actualRequests = requests
+            requestExpectation.fulfill()
+            return Request(method: .post, url: Constants.capturedRequestEndpoint)
+        }
+
+        let uploadExpectation = expectation(description: "Captured Requests uploaded")
+        let uploader = UploaderMock { request in
+            uploadExpectation.fulfill()
+        }
+
+        let timerManager = CaptureTimerManagerMock()
+        let collector = CapturedRequestCollector(
+            logger: Self.logger,
+            timerManager: timerManager,
+            requestBuilder: requestBuilder,
+            uploader: uploader)
+        await collector.configure()
+
+        // Start BTTimer
+        let expectedPage = Mock.page
+        let expectedStartTime = 0.9
+        await collector.start(page: expectedPage, startTime: expectedStartTime)
+
+        // Capture Request
+        var requestTimer = InternalTimer(logger: Self.logger, intervalProvider: Self.timeIntervalProvider)
+        requestTimer.start()
+        requestTimer.end()
+        let response = Mock.makeCapturedResponse()
+        await collector.collect(timer: requestTimer, response: response)
+
+        timerManager.fireTimer()
+
+        try await Task.sleep(nanoseconds: 1.0.nanoseconds)
+        wait(for: [requestExpectation, uploadExpectation], timeout: 1.0)
+
+        XCTAssertEqual(actualStartTime, expectedStartTime.milliseconds)
+        XCTAssertEqual(actualPage, expectedPage)
+        XCTAssertEqual(actualRequests, [Mock.makeCapturedRequest()])
+    }
+
+    func testTimerManagerHandlerEmptyBatches() async throws {
+        let requestExpectation = expectation(description: "Request Built")
+        requestExpectation.isInverted = true
+        let requestBuilder: CapturedRequestBuilder = .init { startTime, page, requests in
+            requestExpectation.fulfill()
+            return Request(method: .post, url: Constants.capturedRequestEndpoint)
+        }
+
+        let uploadExpectation = expectation(description: "Captured Requests uploaded")
+        uploadExpectation.isInverted = true
+        let uploader = UploaderMock { request in
+            uploadExpectation.fulfill()
+        }
+
+        let timerManager = CaptureTimerManagerMock()
+        let collector = CapturedRequestCollector(
+            logger: Self.logger,
+            timerManager: timerManager,
+            requestBuilder: requestBuilder,
+            uploader: uploader)
+        await collector.configure()
+
+        // Start BTTimer
+        let expectedPage = Mock.page
+        let expectedStartTime = 0.9
+        await collector.start(page: expectedPage, startTime: expectedStartTime)
+
+        timerManager.fireTimer()
+
+        try await Task.sleep(nanoseconds: 1.0.nanoseconds)
+        wait(for: [requestExpectation, uploadExpectation], timeout: 1.0)
+    }
+
+    func testRequestBuilderError() async throws {
+        struct TestError: Error { }
+
+        let logErrorExpectation = expectation(description: "Error Logged")
+        let logger = LoggerMock(onError: { _ in
+            logErrorExpectation.fulfill()
+        })
+
+        let requestBuilder: CapturedRequestBuilder = .init { startTime, page, requests in
+            throw TestError()
+        }
+
+        let timerManager = CaptureTimerManagerMock()
+        let collector = CapturedRequestCollector(
+            logger: logger,
+            timerManager: timerManager,
+            requestBuilder: requestBuilder,
+            uploader: UploaderMock())
+        await collector.configure()
+
+        // Start BTTimer
+        await collector.start(page: Mock.page, startTime: 0.9)
+
+        // Start / End Request
+        var requestTimer = InternalTimer(logger: Self.logger, intervalProvider: Self.timeIntervalProvider)
+        requestTimer.start()
+        requestTimer.end()
+        let response = Mock.makeCapturedResponse()
+        await collector.collect(timer: requestTimer, response: response)
+
+        await collector.start(page: Page(pageName: "Another_Page"), startTime: 2.0)
+
+        wait(for: [logErrorExpectation], timeout: 0.5)
+    }
+
+    func testMultipleConfigureCalls() async throws {
+        var actualStartTime: Millisecond!
+        var actualPage: Page!
+        var actualRequests: [CapturedRequest]!
+        let requestExpectation = expectation(description: "Request Built")
+        let requestBuilder: CapturedRequestBuilder = .init { startTime, page, requests in
+            actualStartTime = startTime
+            actualPage = page
+            actualRequests = requests
+            requestExpectation.fulfill()
+            return Request(method: .post, url: Constants.capturedRequestEndpoint)
+        }
+
+        let uploadExpectation = expectation(description: "Captured Requests uploaded")
+        let uploader = UploaderMock { request in
+            uploadExpectation.fulfill()
+        }
+
+        let timerManager = CaptureTimerManagerMock()
+        let collector = CapturedRequestCollector(
+            logger: Self.logger,
+            timerManager: timerManager,
+            requestBuilder: requestBuilder,
+            uploader: uploader)
+        await collector.configure()
+        await collector.configure()
+
+        // Start BTTimer
+        let expectedPage = Mock.page
+        let expectedStartTime = 0.9
+        await collector.start(page: expectedPage, startTime: expectedStartTime)
+
+        // Capture Request
+        var requestTimer = InternalTimer(logger: Self.logger, intervalProvider: Self.timeIntervalProvider)
+        requestTimer.start()
+        requestTimer.end()
+        let response = Mock.makeCapturedResponse()
+        await collector.collect(timer: requestTimer, response: response)
+
+        timerManager.fireTimer()
+
+        try await Task.sleep(nanoseconds: 1.0.nanoseconds)
+        wait(for: [requestExpectation, uploadExpectation], timeout: 1.0)
+
+        XCTAssertEqual(actualStartTime, expectedStartTime.milliseconds)
+        XCTAssertEqual(actualPage, expectedPage)
+        XCTAssertEqual(actualRequests, [Mock.makeCapturedRequest()])
     }
 }
