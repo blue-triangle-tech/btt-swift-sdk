@@ -9,6 +9,5 @@ import Foundation
 
 protocol CapturedRequestCollecting {
     func start(timer: BTTimer, timerRequestBuilder: @escaping (BTTimer) throws -> Request)
-    func makeTimer() -> InternalTimer? 
     func collect(timer: InternalTimer, data: Data?, response: URLResponse?)
 }

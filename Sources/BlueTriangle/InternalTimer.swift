@@ -79,3 +79,18 @@ extension InternalTimer: CustomStringConvertible {
         "InternalTimer(state: \(state), startTime: \(startTime), endTime: \(endTime))"
     }
 }
+
+// MARK: - Supporting Types
+extension InternalTimer {
+    struct Configuration {
+        let timeIntervalProvider: () -> TimeInterval
+
+        func makeTimerFactory(logger: Logging) -> () -> InternalTimer {
+            { InternalTimer(logger: logger, intervalProvider: timeIntervalProvider) }
+        }
+
+        static let live = Self(
+            timeIntervalProvider: { Date().timeIntervalSince1970 }
+        )
+    }
+}

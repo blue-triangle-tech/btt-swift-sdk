@@ -86,6 +86,8 @@ final public class BlueTriangleConfiguration: NSObject {
 
     var timerConfiguration: BTTimer.Configuration = .live
 
+    var internalTimerConfiguration: InternalTimer.Configuration = .live
+
     var uploaderConfiguration: Uploader.Configuration = .live
 
     var capturedRequestCollectorConfiguration: CapturedRequestCollector.Configuration = .live
@@ -155,6 +157,10 @@ final public class BlueTriangle: NSObject {
         configuration.timerConfiguration.makeTimerFactory(
             logger: logger,
             performanceMonitorFactory: configuration.makePerformanceMonitorFactory())
+    }()
+
+    private static var internalTimerFactory: () -> InternalTimer = {
+        configuration.internalTimerConfiguration.makeTimerFactory(logger: logger)
     }()
 
     private static var shouldCaptureRequests: Bool = {
@@ -420,8 +426,11 @@ extension BlueTriangle {
 
     @usableFromInline
     static func startRequestTimer() -> InternalTimer? {
-        var timer = capturedRequestCollector?.makeTimer()
-        timer?.start()
+        guard shouldCaptureRequests else {
+            return nil
+        }
+        var timer = internalTimerFactory()
+        timer.start()
         return timer
     }
 
