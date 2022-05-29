@@ -1,5 +1,5 @@
 //
-//  RequestSpan.swift
+//  RequestCollection.swift
 //
 //  Created by Mathew Gacy on 3/3/22.
 //  Copyright © 2022 Blue Triangle. All rights reserved.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct RequestSpan: Equatable {
+struct RequestCollection: Equatable {
     let page: Page
     let startTime: Millisecond
     var requests: [CapturedRequest]
@@ -36,8 +36,8 @@ struct RequestSpan: Equatable {
 }
 
 // MARK: - CustomStringConvertible
-extension RequestSpan: CustomStringConvertible {
+extension RequestCollection: CustomStringConvertible {
     var description: String {
-        "RequestSpan(pageName: \(page.pageName), requestCount: \(requests.count)"
+        "RequestCollection(pageName: \(page.pageName), requestCount: \(requests.count)"
     }
 }
