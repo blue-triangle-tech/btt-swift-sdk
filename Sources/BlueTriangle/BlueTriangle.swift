@@ -157,9 +157,9 @@ final public class BlueTriangle: NSObject {
             performanceMonitorFactory: configuration.makePerformanceMonitorFactory())
     }()
 
-    private static var shouldCaptureRequests: Bool {
+    private static var shouldCaptureRequests: Bool = {
         .random(probability: configuration.networkSampleRate)
-    }
+    }()
 
     /// A Boolean value indicating whether the SDK has been initialized.
     public private(set) static var initialized = false
