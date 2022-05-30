@@ -177,7 +177,7 @@ final public class BlueTriangle: NSObject {
             let collector = configuration.capturedRequestCollectorConfiguration.makeRequestCollector(
                 logger: logger,
                 networkCaptureConfiguration: .standard,
-                requestBuilder: CapturedRequestBuilder.makeBuilder { session }, // TODO: does this work if session is mutated?
+                requestBuilder: CapturedRequestBuilder.makeBuilder { session },
                 uploader: uploader)
 
             Task {
