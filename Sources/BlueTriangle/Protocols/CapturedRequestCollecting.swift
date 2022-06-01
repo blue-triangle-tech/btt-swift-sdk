@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol CapturedRequestCollecting {
-    func start(page: Page, startTime: TimeInterval) async
-    func collect(timer: InternalTimer, response: URLResponse?) async
+protocol CapturedRequestCollecting: Actor {
+    func start(page: Page, startTime: TimeInterval)
+    func collect(timer: InternalTimer, response: URLResponse?)
 }
