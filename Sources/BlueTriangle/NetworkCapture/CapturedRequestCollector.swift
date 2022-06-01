@@ -62,11 +62,11 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
     }
 
     private func batchCapturedRequests() {
-        guard let requests = requestCollection?.batchRequests(), let timer = requestCollection else {
+        guard let requests = requestCollection?.batchRequests(), let collection = requestCollection else {
             return
         }
 
-        upload(startTime: timer.startTime, page: timer.page, requests: requests)
+        upload(startTime: collection.startTime, page: collection.page, requests: requests)
     }
 
     private func upload(startTime: Millisecond, page: Page, requests: [CapturedRequest]) {
