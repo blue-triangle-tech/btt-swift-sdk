@@ -10,6 +10,7 @@ import Foundation
 struct CapturedRequestBuilder {
     let build: (Millisecond, Page, [CapturedRequest]) throws -> Request
 
+    // swiftlint:disable:next function_parameter_count
     static func makeParameters(
         siteID: String,
         sessionID: String,

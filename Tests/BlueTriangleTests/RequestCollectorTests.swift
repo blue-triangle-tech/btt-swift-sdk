@@ -84,7 +84,7 @@ class RequestCollectorTests: XCTestCase {
         }
 
         let uploadExpectation = expectation(description: "Captured Requests uploaded")
-        let uploader = UploaderMock { request in
+        let uploader = UploaderMock { _ in
             uploadExpectation.fulfill()
         }
 
@@ -120,14 +120,14 @@ class RequestCollectorTests: XCTestCase {
     func testUploadEmptyAfterStart() async throws {
         let requestExpectation = expectation(description: "Request Built")
         requestExpectation.isInverted = true
-        let requestBuilder: CapturedRequestBuilder = .init { startTime, page, requests in
+        let requestBuilder: CapturedRequestBuilder = .init { _, _, _ in
             requestExpectation.fulfill()
             return Request(method: .post, url: Constants.capturedRequestEndpoint)
         }
 
         let uploadExpectation = expectation(description: "Captured Requests uploaded")
         uploadExpectation.isInverted = true
-        let uploader = UploaderMock { request in
+        let uploader = UploaderMock { _ in
             uploadExpectation.fulfill()
         }
 
@@ -161,7 +161,7 @@ class RequestCollectorTests: XCTestCase {
         }
 
         let uploadExpectation = expectation(description: "Captured Requests uploaded")
-        let uploader = UploaderMock { request in
+        let uploader = UploaderMock { _ in
             uploadExpectation.fulfill()
         }
 
@@ -198,14 +198,14 @@ class RequestCollectorTests: XCTestCase {
     func testTimerManagerHandlerEmptyBatches() async throws {
         let requestExpectation = expectation(description: "Request Built")
         requestExpectation.isInverted = true
-        let requestBuilder: CapturedRequestBuilder = .init { startTime, page, requests in
+        let requestBuilder: CapturedRequestBuilder = .init { _, _, _ in
             requestExpectation.fulfill()
             return Request(method: .post, url: Constants.capturedRequestEndpoint)
         }
 
         let uploadExpectation = expectation(description: "Captured Requests uploaded")
         uploadExpectation.isInverted = true
-        let uploader = UploaderMock { request in
+        let uploader = UploaderMock { _ in
             uploadExpectation.fulfill()
         }
 
@@ -236,7 +236,7 @@ class RequestCollectorTests: XCTestCase {
             logErrorExpectation.fulfill()
         })
 
-        let requestBuilder: CapturedRequestBuilder = .init { startTime, page, requests in
+        let requestBuilder: CapturedRequestBuilder = .init { _, _, _ in
             throw TestError()
         }
 
@@ -277,7 +277,7 @@ class RequestCollectorTests: XCTestCase {
         }
 
         let uploadExpectation = expectation(description: "Captured Requests uploaded")
-        let uploader = UploaderMock { request in
+        let uploader = UploaderMock { _ in
             uploadExpectation.fulfill()
         }
 
