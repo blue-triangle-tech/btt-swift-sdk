@@ -31,6 +31,7 @@ struct CapturedRequestBuilder {
             "pageType": pageType,
             "os": Constants.os,
             "browser": Constants.browser,
+            "browserVersion": Device.bvzn,
             "device": Constants.device
         ]
     }
