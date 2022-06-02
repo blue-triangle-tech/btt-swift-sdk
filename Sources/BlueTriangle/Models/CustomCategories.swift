@@ -22,7 +22,7 @@ final public class CustomCategories: NSObject {
 
     /// Custom category for data collection use.
     public var cv9: String?
-    
+
     /// Custom category for data collection use.
     public var cv10: String?
 

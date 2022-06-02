@@ -166,6 +166,7 @@ extension BTTimer {
         ) -> (Page, BTTimer.TimerType) -> BTTimer {
             { page, timerType in
                 BTTimer(page: page,
+                        type: timerType,
                         logger: logger,
                         intervalProvider: timeIntervalProvider,
                         onStart: onStart,

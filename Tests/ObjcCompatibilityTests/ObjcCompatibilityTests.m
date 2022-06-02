@@ -69,7 +69,7 @@
     [BlueTriangle endTimer:timer2 purchaseConfirmation:nil];
 
     // Network Capture
-    BTTimer *spanTimer = [BlueTriangle startSpanWithPage:page];
+    BTTimer *timer3 = [BlueTriangle makeTimerWithPage:page timerType:TimerTypeMain];
 
     NSURLSession *session = [NSURLSession sharedSession];
 

@@ -41,6 +41,14 @@ enum Mock {
                         headerFields: headerFields)!
     }
 
+    static func makeCapturedResponse(expectedContentLength: Int = 100) -> HTTPURLResponse {
+        HTTPURLResponse(
+            url: URL(string: Mock.capturedRequestURLString)!,
+            mimeType: nil,
+            expectedContentLength: expectedContentLength,
+            textEncodingName: nil)
+    }
+
     static var successResponse = HTTPResponse<Data>(
         value: successJSON,
         response: makeHTTPResponse(statusCode: 200))
@@ -61,16 +69,9 @@ enum Mock {
 
 // MARK: - Configuration
 extension Mock {
-
     static var uploaderQueue: DispatchQueue {
         DispatchQueue(label: "com.bluetriangle.uploader",
                       qos: .userInitiated,
-                      autoreleaseFrequency: .workItem)
-    }
-
-    static var requestCollectorQueue: DispatchQueue {
-        DispatchQueue(label: "com.bluetriangle.network-capture",
-                      qos: .utility,
                       autoreleaseFrequency: .workItem)
     }
 
@@ -131,19 +132,14 @@ extension Mock {
     }
 
     static func makeRequestCollectorConfiguration(
-        queue: DispatchQueue = Self.requestCollectorQueue,
-        timeIntervalProvider: @escaping () -> TimeInterval,
         timerManagingProvider: @escaping (NetworkCaptureConfiguration) -> CaptureTimerManaging = { _ in CaptureTimerManagerMock() }
     ) -> CapturedRequestCollector.Configuration {
-        .init(queue: queue,
-              timeIntervalProvider: timeIntervalProvider,
-              timerManagingProvider: timerManagingProvider)
+        .init(timerManagingProvider: timerManagingProvider)
     }
 }
 
 // MARK: - Models
 extension Mock {
-
     static var customCategories = CustomCategories(
         cv6: "CV6",
         cv7: "CV7",

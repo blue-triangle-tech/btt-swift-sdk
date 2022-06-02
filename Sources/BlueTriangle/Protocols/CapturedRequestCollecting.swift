@@ -7,8 +7,7 @@
 
 import Foundation
 
-protocol CapturedRequestCollecting {
-    func start(timer: BTTimer, timerRequestBuilder: @escaping (BTTimer) throws -> Request)
-    func makeTimer() -> InternalTimer? 
-    func collect(timer: InternalTimer, data: Data?, response: URLResponse?)
+protocol CapturedRequestCollecting: Actor {
+    func start(page: Page, startTime: TimeInterval)
+    func collect(timer: InternalTimer, response: URLResponse?)
 }

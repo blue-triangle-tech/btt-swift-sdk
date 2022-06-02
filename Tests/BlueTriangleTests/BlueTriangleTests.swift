@@ -227,19 +227,25 @@ extension BlueTriangleTests {
 
 // MARK: - Network Capture
 extension BlueTriangleTests {
-    func testNetworkCapture() {
+    func testNetworkCapture() throws {
         Self.timeIntervals = [
+            // BTTimer.start()
+            6.0,
             // BTTimer.end()
             5.0,
-            // InternalTimer.end()
-            4.0,
-            // InternalTimer.start()
-            3.0,
-            // Timeline.insert()
-            2.0,
             // BTTimer.start()
             1.0
         ]
+
+        var requestTimeIntervals = [
+            // InternalTimer.end()
+            4.0,
+            // InternalTimer.start()
+            3.0
+        ]
+        let requestTimerIntervalProvider = {
+            requestTimeIntervals.popLast()!
+        }
 
         // Timer
         let timerFactory: (Page, BTTimer.TimerType) -> BTTimer = { page, timerType in
@@ -247,31 +253,23 @@ extension BlueTriangleTests {
                     type: timerType,
                     logger: Self.logger,
                     intervalProvider: Self.timeIntervalProvider,
+                    onStart: BlueTriangle.timerDidStart(_:page:startTime:),
                     performanceMonitor: PerformanceMonitorMock())
         }
 
         // Uploader
         var capturedRequest: Request!
-        var requestCount = 0
         let requestExpectation = self.expectation(description: "Request sent")
         let uploader = UploaderMock { req in
-            requestCount += 1
-            switch requestCount {
-            case 1:
-                break
-            case 2:
-                capturedRequest = req
-                requestExpectation.fulfill()
-            default:
-                XCTFail("Unexpected request count")
-            }
+            capturedRequest = req
+            requestExpectation.fulfill()
         }
 
         // Configure
         let configuration = BlueTriangleConfiguration()
         Mock.configureBlueTriangle(configuration: configuration)
 
-        let requestCollector = Mock.makeRequestCollectorConfiguration(timeIntervalProvider: Self.timeIntervalProvider)
+        let requestCollector = Mock.makeRequestCollectorConfiguration()
             .makeRequestCollector(
                 logger: Self.logger,
                 networkCaptureConfiguration: .standard,
@@ -282,17 +280,20 @@ extension BlueTriangleTests {
             configuration: configuration,
             uploader: uploader,
             timerFactory: timerFactory,
+            shouldCaptureRequests: true,
+            internalTimerFactory: { InternalTimer(logger: Self.logger, intervalProvider: requestTimerIntervalProvider) },
             requestCollector: requestCollector)
 
-        let _ = BlueTriangle.startSpan(page: Mock.page)
+        let timer = BlueTriangle.startTimer(page: Mock.page)
 
         let url: URL = "https://example.com/foo.json"
         let exp = expectation(description: "Requests completed")
         URLSession(configuration: .mock).btDataTask(with: url) { _, _, _ in exp.fulfill() }.resume()
         wait(for: [exp], timeout: 1.0)
 
-        BlueTriangle.startSpan(page: Mock.page)
+        timer.end()
 
+        _ = BlueTriangle.startTimer(page: Page(pageName: "Another_Page"))
         wait(for: [requestExpectation], timeout: 1.0)
 
         let capturedRequestString = String(data: Data(base64Encoded: capturedRequest.body!)!, encoding: .utf8)
@@ -308,8 +309,9 @@ extension BlueTriangleTests {
                                                                resourceUsage: ResourceUsage.self)
 
         // Timer
-        let timerFactory: (Page) -> BTTimer = { page in
+        let timerFactory: (Page, BTTimer.TimerType) -> BTTimer = { page, timerType  in
             BTTimer(page: page,
+                    type: timerType,
                     logger: Self.logger,
                     intervalProvider: Self.timeIntervalProvider,
                     performanceMonitor: performanceMonitor)
@@ -359,8 +361,9 @@ extension BlueTriangleTests {
                                                          resourceUsage: ResourceUsage.self)
 
         // Timer
-        let timerFactory: (Page) -> BTTimer = { page in
+        let timerFactory: (Page, BTTimer.TimerType) -> BTTimer = { page, timerType  in
             BTTimer(page: page,
+                    type: timerType,
                     logger: Self.logger,
                     intervalProvider: Self.timeIntervalProvider,
                     performanceMonitor: performanceMonitor)
@@ -409,8 +412,9 @@ extension BlueTriangleTests {
                                                                        resourceUsage: ResourceUsage.self)
 
         // Timer
-        let timerFactory: (Page) -> BTTimer = { page in
+        let timerFactory: (Page, BTTimer.TimerType) -> BTTimer = { page, timerType  in
             BTTimer(page: page,
+                    type: timerType,
                     logger: Self.logger,
                     intervalProvider: Self.timeIntervalProvider,
                     performanceMonitor: performanceMonitor)

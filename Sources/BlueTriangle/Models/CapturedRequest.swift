@@ -128,7 +128,7 @@ extension CapturedRequest.InitiatorType {
 }
 
 extension CapturedRequest {
-    init(timer: InternalTimer, response: URLResponse?) {
+    init(timer: InternalTimer, relativeTo startTime: Millisecond, response: URLResponse?) {
         let hostComponents = response?.url?.host?.split(separator: ".") ?? []
         self.host = hostComponents.first != nil ? String(hostComponents.first!) : ""
         if hostComponents.count > 2 {
@@ -148,8 +148,8 @@ extension CapturedRequest {
 
         self.url = response?.url?.absoluteString ?? ""
         self.file = response?.url?.lastPathComponent ?? ""
-        self.startTime = timer.startTime.milliseconds
-        self.endTime = timer.endTime.milliseconds
+        self.startTime = timer.startTime.milliseconds - startTime
+        self.endTime = timer.endTime.milliseconds - startTime
         self.duration = timer.endTime.milliseconds - timer.startTime.milliseconds
         self.decodedBodySize = 0
         self.encodedBodySize = response?.expectedContentLength ?? 0

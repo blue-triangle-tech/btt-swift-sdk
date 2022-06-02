@@ -86,6 +86,8 @@ final public class BlueTriangleConfiguration: NSObject {
 
     var timerConfiguration: BTTimer.Configuration = .live
 
+    var internalTimerConfiguration: InternalTimer.Configuration = .live
+
     var uploaderConfiguration: Uploader.Configuration = .live
 
     var capturedRequestCollectorConfiguration: CapturedRequestCollector.Configuration = .live
@@ -157,9 +159,13 @@ final public class BlueTriangle: NSObject {
             performanceMonitorFactory: configuration.makePerformanceMonitorFactory())
     }()
 
-    private static var shouldCaptureRequests: Bool {
+    private static var internalTimerFactory: () -> InternalTimer = {
+        configuration.internalTimerConfiguration.makeTimerFactory(logger: logger)
+    }()
+
+    private static var shouldCaptureRequests: Bool = {
         .random(probability: configuration.networkSampleRate)
-    }
+    }()
 
     /// A Boolean value indicating whether the SDK has been initialized.
     public private(set) static var initialized = false
@@ -167,12 +173,17 @@ final public class BlueTriangle: NSObject {
     private static var crashReportManager: CrashReportManaging?
 
     private static var capturedRequestCollector: CapturedRequestCollecting? = {
-        if Bool.random(probability: configuration.networkSampleRate) {
-            return configuration.capturedRequestCollectorConfiguration.makeRequestCollector(
+        if shouldCaptureRequests {
+            let collector = configuration.capturedRequestCollectorConfiguration.makeRequestCollector(
                 logger: logger,
                 networkCaptureConfiguration: .standard,
                 requestBuilder: CapturedRequestBuilder.makeBuilder { session },
                 uploader: uploader)
+
+            Task {
+                await collector.configure()
+            }
+            return collector
         } else {
             return nil
         }
@@ -307,6 +318,8 @@ extension BlueTriangle {
         logger: Logging? = nil,
         uploader: Uploading? = nil,
         timerFactory: ((Page, BTTimer.TimerType) -> BTTimer)? = nil,
+        shouldCaptureRequests: Bool? = nil,
+        internalTimerFactory: (() -> InternalTimer)? = nil,
         requestCollector: CapturedRequestCollecting? = nil
     ) {
         lock.sync {
@@ -323,6 +336,12 @@ extension BlueTriangle {
             }
             if let timerFactory = timerFactory {
                 self.timerFactory = timerFactory
+            }
+            if let shouldCaptureRequests = shouldCaptureRequests {
+                self.shouldCaptureRequests = shouldCaptureRequests
+            }
+            if let internalTimerFactory = internalTimerFactory {
+                self.internalTimerFactory = internalTimerFactory
             }
             self.capturedRequestCollector = requestCollector
         }
@@ -389,50 +408,38 @@ public extension BlueTriangle {
 
 // MARK: - Network Capture
 extension BlueTriangle {
-    /// Starts a span for network capture.
-    ///
-    /// - note: `configure(_:)` must be called before attempting to start a span.
-    ///
-    /// - Parameter page: An object providing information about the user interaction being timed.
-    /// - Returns: The running timer.
-    @discardableResult
-    @objc
-    public static func startSpan(page: Page) -> BTTimer {
-        let timer = makeTimer(page: page)
-        lock.lock()
-        capturedRequestCollector?.start(timer: timer) { timer in
-            lock.lock()
-            defer {
-                lock.unlock()
-            }
-            return try configuration.requestBuilder.builder(session, timer, nil)
-        }
-        lock.unlock()
-        return timer
-    }
-
     static func timerDidStart(_ type: BTTimer.TimerType, page: Page, startTime: TimeInterval) {
         guard case .main = type else {
             return
         }
-        // TODO: replace the main timer used for network capture
+
+        Task {
+            await capturedRequestCollector?.start(page: page, startTime: startTime)
+        }
     }
 
     @usableFromInline
     static func startRequestTimer() -> InternalTimer? {
-        var timer = capturedRequestCollector?.makeTimer()
-        timer?.start()
+        guard shouldCaptureRequests else {
+            return nil
+        }
+        var timer = internalTimerFactory()
+        timer.start()
         return timer
     }
 
     @usableFromInline
     static func captureRequest(timer: InternalTimer, data: Data?, response: URLResponse?) {
-        capturedRequestCollector?.collect(timer: timer, data: data, response: response)
+        Task {
+            await capturedRequestCollector?.collect(timer: timer, response: response)
+        }
     }
 
     @usableFromInline
     static func captureRequest(timer: InternalTimer, tuple: (Data, URLResponse)) {
-        capturedRequestCollector?.collect(timer: timer, data: tuple.0, response: tuple.1)
+        Task {
+            await capturedRequestCollector?.collect(timer: timer, response: tuple.1)
+        }
     }
 }
 
