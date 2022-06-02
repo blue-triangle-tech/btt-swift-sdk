@@ -14,8 +14,8 @@ final public class BTTimer: NSObject {
     public enum TimerType: Int {
         /// A timer used to measure primary user interactions and identify captured network requests.
         case main
-        /// A timer used to measure user interactions of secondary importance.
-        case secondary
+        /// A timer used to measure additional interactions.
+        case custom
     }
 
     /// Describes the state of a timer.
