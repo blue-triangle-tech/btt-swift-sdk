@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import XCTest
 @testable import BlueTriangle
 
 // swiftlint:disable line_length
@@ -29,11 +30,23 @@ enum Mock {
           }
           """.data(using: .utf8)!
 
-    static func makeHTTPResponse(statusCode: Int) -> HTTPURLResponse {
-        HTTPURLResponse(url: "https://example.com",
+    static func makeHTTPResponse(
+        url: URL = "https://example.com",
+        statusCode: Int = 200,
+        headerFields: [String: String]? = nil
+    ) -> HTTPURLResponse {
+        HTTPURLResponse(url: url,
                         statusCode: statusCode,
                         httpVersion: nil,
-                        headerFields: nil)!
+                        headerFields: headerFields)!
+    }
+
+    static func makeCapturedResponse(expectedContentLength: Int = 100) -> HTTPURLResponse {
+        HTTPURLResponse(
+            url: URL(string: Mock.capturedRequestURLString)!,
+            mimeType: nil,
+            expectedContentLength: expectedContentLength,
+            textEncodingName: nil)
     }
 
     static var successResponse = HTTPResponse<Data>(
@@ -56,7 +69,6 @@ enum Mock {
 
 // MARK: - Configuration
 extension Mock {
-
     static var uploaderQueue: DispatchQueue {
         DispatchQueue(label: "com.bluetriangle.uploader",
                       qos: .userInitiated,
@@ -64,15 +76,16 @@ extension Mock {
     }
 
     static func configureBlueTriangle(configuration config: BlueTriangleConfiguration) {
-        config.siteID = "MY_SITE_ID"
-        config.sessionID = Mock.sessionID
-        config.globalUserID = Mock.globalUserID
-        config.abTestID = "MY_AB_TEST_ID"
-        config.campaignMedium = "MY_CAMPAIGN_MEDIUM"
-        config.campaignName = "MY_CAMPAIGN_NAME"
-        config.campaignSource = "MY_CAMPAIGN_SOURCE"
-        config.dataCenter = "MY_DATA_CENTER"
-        config.trafficSegmentName = "MY_SEGMENT_NAME"
+        config.siteID = session.siteID
+        config.globalUserID = session.globalUserID
+        config.sessionID = session.sessionID
+        config.isReturningVisitor = session.isReturningVisitor
+        config.abTestID = session.abTestID
+        config.campaignMedium = session.campaignMedium
+        config.campaignName = session.campaignName
+        config.campaignSource = session.campaignSource
+        config.dataCenter = session.dataCenter
+        config.trafficSegmentName = session.trafficSegmentName
     }
 
     static func makeRequestBuilder(
@@ -117,11 +130,16 @@ extension Mock {
     static func makePerformanceMonitor(timerInterval: TimeInterval) -> PerformanceMonitoring {
         PerformanceMonitorMock()
     }
+
+    static func makeRequestCollectorConfiguration(
+        timerManagingProvider: @escaping (NetworkCaptureConfiguration) -> CaptureTimerManaging = { _ in CaptureTimerManagerMock() }
+    ) -> CapturedRequestCollector.Configuration {
+        .init(timerManagingProvider: timerManagingProvider)
+    }
 }
 
 // MARK: - Models
 extension Mock {
-
     static var customCategories = CustomCategories(
         cv6: "CV6",
         cv7: "CV7",
@@ -201,7 +219,6 @@ extension Mock {
         sessionID: Mock.sessionID,
         isReturningVisitor: true,
         abTestID: "MY_AB_TEST_ID",
-        campaign: "MY_CAMPAIGN",
         campaignMedium: "MY_CAMPAIGN_MEDIUM",
         campaignName: "MY_CAMPAIGN_NAME",
         campaignSource: "MY_CAMPAIGN_SOURCE",
@@ -227,14 +244,34 @@ extension Mock {
         minMemory: 0,
         maxMemory: 0,
         avgMemory: 0)
+
+    static let capturedRequestURLString = "https://d33wubrfki0l68.cloudfront.net/f50c058607f066d0231c1fe6753eac79f17ea447/e6748/static/logo-cw.f6eaf6dc.png"
+
+    static func makeCapturedRequest(
+        startTime: Millisecond = 100,
+        endTime: Millisecond = 200
+    ) -> CapturedRequest {
+        CapturedRequest(
+            domain: "cloudfront.net",
+            host:  "d33wubrfki0l68",
+            url: capturedRequestURLString,
+            file: "logo-cw.f6eaf6dc.png",
+            startTime: startTime,
+            endTime: endTime,
+            duration: endTime - startTime,
+            initiatorType: .image,
+            decodedBodySize: 0,
+            encodedBodySize: 100)
+    }
 }
 
 // MARK: - Request
 extension Mock {
+    static var capturedRequestJSON = "[{\"f\":\"foo.json\",\"ez\":-1,\"h\":\"example\",\"d\":1000,\"dz\":0,\"sT\":2000,\"e\":\"resource\",\"i\":\"other\",\"dmn\":\"example.com\",\"URL\":\"https:\\/\\/example.com\\/foo.json\",\"rE\":3000}]"
 
-    static func makeRequestJSON(appVersion: String, os: String, osVersion: String) -> String {
+    static func makeTimerRequestJSON(appVersion: String, os: String, osVersion: String) -> String {
         """
-{\"pgTm\":2000000,\"AB\":\"MY_AB_TEST_ID\",\"CN10\":10.1,\"CN8\":8.8800000000000008,\"CV13\":\"CV13\",\"siteID\":\"MY_SITE_ID\",\"CN9\":9.9900000000000002,\"CN18\":18.18,\"thisURL\":\"MY_URL\",\"pageType\":\"MY_PAGE_TYPE\",\"CN11\":11.109999999999999,\"campaign\":null,\"eventType\":9,\"CV14\":\"CV14\",\"CV1\":\"CV1\",\"CN19\":19.190000000000001,\"CN12\":12.119999999999999,\"CV2\":\"CV2\",\"maxCPU\":100,\"CV15\":\"CV15\",\"os\":\"iOS\",\"CmpS\":\"MY_CAMPAIGN_SOURCE\",\"txnName\":\"MY_SEGMENT_NAME\",\"CV3\":\"CV3\",\"minMemory\":10000000,\"EUOS\":\"\(os)\",\"sID\":999999999999999999,\"CN13\":13.130000000000001,\"CV4\":\"CV4\",\"CN20\":20.199999999999999,\"avgMemory\":50000000,\"CV5\":\"CV5\",\"CN1\":1.1100000000000001,\"CmpM\":\"MY_CAMPAIGN_MEDIUM\",\"CN14\":14.140000000000001,\"nst\":0,\"navigationType\":9,\"device\":\"Mobile\",\"CV6\":\"CV6\",\"CN2\":2.2200000000000002,\"avgCPU\":50,\"CV7\":\"CV7\",\"CV10\":\"CV10\",\"CN3\":3.3300000000000001,\"CmpN\":\"MY_CAMPAIGN_NAME\",\"unloadEventStart\":0,\"CN15\":15.15,\"CV8\":\"CV8\",\"CN4\":4.4400000000000004,\"wcd\":0,\"gID\":888888888888888888,\"RV\":0,\"CV9\":\"CV9\",\"RefURL\":\"MY_REFERRING_URL\",\"CN5\":5.5499999999999998,\"CV11\":\"CV11\",\"domInteractive\":1000000,\"CN16\":16.16,\"browser\":\"Native App\",\"minCPU\":1,\"bvzn\":\"Native App-\(appVersion)-\(os) 11.6\",\"CN6\":6.6600000000000001,\"bv\":0.51,\"CV12\":\"CV12\",\"maxMemory\":100000000,\"CN7\":7.7699999999999996,\"CN17\":17.170000000000002,\"pageName\":\"MY_PAGE_NAME\",\"DCTR\":\"MY_DATA_CENTER\"}
+{\"pgTm\":2000000,\"AB\":\"MY_AB_TEST_ID\",\"CN10\":10.1,\"CN8\":8.8800000000000008,\"CV13\":\"CV13\",\"siteID\":\"MY_SITE_ID\",\"CN9\":9.9900000000000002,\"CN18\":18.18,\"thisURL\":\"MY_URL\",\"pageType\":\"MY_PAGE_TYPE\",\"CN11\":11.109999999999999,\"campaign\":null,\"eventType\":9,\"CV14\":\"CV14\",\"CV1\":\"CV1\",\"CN19\":19.190000000000001,\"CN12\":12.119999999999999,\"CV2\":\"CV2\",\"maxCPU\":100,\"CV15\":\"CV15\",\"os\":\"iOS\",\"CmpS\":\"MY_CAMPAIGN_SOURCE\",\"txnName\":\"MY_SEGMENT_NAME\",\"CV3\":\"CV3\",\"minMemory\":10000000,\"EUOS\":\"\(os)\",\"sID\":999999999999999999,\"CN13\":13.130000000000001,\"CV4\":\"CV4\",\"CN20\":20.199999999999999,\"avgMemory\":50000000,\"CV5\":\"CV5\",\"CN1\":1.1100000000000001,\"CmpM\":\"MY_CAMPAIGN_MEDIUM\",\"CN14\":14.140000000000001,\"nst\":0,\"navigationType\":9,\"device\":\"Mobile\",\"CV6\":\"CV6\",\"CN2\":2.2200000000000002,\"avgCPU\":50,\"CV7\":\"CV7\",\"CV10\":\"CV10\",\"CN3\":3.3300000000000001,\"CmpN\":\"MY_CAMPAIGN_NAME\",\"unloadEventStart\":0,\"CN15\":15.15,\"CV8\":\"CV8\",\"CN4\":4.4400000000000004,\"wcd\":0,\"gID\":888888888888888888,\"RV\":1,\"CV9\":\"CV9\",\"RefURL\":\"MY_REFERRING_URL\",\"CN5\":5.5499999999999998,\"CV11\":\"CV11\",\"domInteractive\":1000000,\"CN16\":16.16,\"browser\":\"Native App\",\"minCPU\":1,\"bvzn\":\"Native App-\(appVersion)-\(os) \(osVersion)\",\"CN6\":6.6600000000000001,\"bv\":0.51,\"CV12\":\"CV12\",\"maxMemory\":100000000,\"CN7\":7.7699999999999996,\"CN17\":17.170000000000002,\"pageName\":\"MY_PAGE_NAME\",\"DCTR\":\"MY_DATA_CENTER\"}
 """
     }
 }
@@ -304,5 +341,91 @@ struct ResourceUsageMock: ResourceUsageMeasuring {
 
     static func memory() -> UInt64 {
         100
+    }
+}
+
+class CaptureTimerManagerMock: CaptureTimerManaging {
+    var onStart: () -> Void
+    var onCancel: () -> Void
+    var handler: (() -> Void)?
+
+    init(
+        onStart: @escaping () -> Void = {},
+        onCancel: @escaping () -> Void = {},
+        handler: @escaping () -> Void  = {}
+    ) {
+        self.onStart = onStart
+        self.onCancel = onCancel
+        self.handler = handler
+    }
+
+    func start() {
+        onStart()
+    }
+
+    func cancel() {
+        onCancel()
+    }
+
+    func fireTimer() {
+        handler?()
+    }
+}
+
+struct UploaderMock: Uploading {
+    var onSend: (Request) -> Void = { _ in }
+
+    init(onSend: @escaping (Request) -> Void = { _ in }) {
+        self.onSend = onSend
+    }
+
+    func send(request: Request) {
+        onSend(request)
+    }
+}
+
+final class URLProtocolMock: URLProtocol {
+    static var responseQueue: DispatchQueue = .global()
+    static var responseDelay: TimeInterval? = 0.3
+    static var responseProvider: (URL) throws -> (Data, HTTPURLResponse) = { url in
+        (Data(), Mock.makeHTTPResponse(url: url))
+    }
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        if let delay = Self.responseDelay {
+            guard client != nil else { return }
+            Self.responseQueue.asyncAfter(deadline: .now() + delay) {
+                self.respond()
+            }
+        } else {
+            respond()
+        }
+    }
+
+    override func stopLoading() { }
+
+    private func respond() {
+        guard let client = client else { return }
+        do {
+            let url = try XCTUnwrap(request.url)
+            let response = try Self.responseProvider(url)
+            client.urlProtocol(self, didReceive: response.1, cacheStoragePolicy: .notAllowed)
+            client.urlProtocol(self, didLoad: response.0)
+        } catch {
+            client.urlProtocol(self, didFailWithError: error)
+        }
+        client.urlProtocolDidFinishLoading(self)
+    }
+}
+
+extension URLSessionConfiguration {
+    static var mock: URLSessionConfiguration {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [URLProtocolMock.self]
+        return config
     }
 }

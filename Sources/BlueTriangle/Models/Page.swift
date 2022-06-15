@@ -68,6 +68,10 @@ final public class Page: NSObject {
         self.customCategories = customCategories
         self.customNumbers = customNumbers
     }
+
+    public override var description: String {
+        "<Page: \(pageName)>"
+    }
 }
 
 // MARK: - Crash Reporting

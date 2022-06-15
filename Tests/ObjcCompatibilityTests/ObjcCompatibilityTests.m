@@ -30,9 +30,9 @@
         config.siteID = @"MY_SITE_ID";
         config.sessionID = 1111;
         config.globalUserID = 2222;
+        config.isReturningVisitor = YES;
         config.abTestID = @"";
         config.abTestID = @"MY_AB_TEST_ID";
-        config.campaign = @"MY_CAMPAIGN";
         config.campaignMedium = @"MY_CAMPAIGN_MEDIUM";
         config.campaignName = @"MY_CAMPAIGN_NAME";
         config.campaignSource = @"MY_CAMPAIGN_SOURCE";
@@ -40,6 +40,7 @@
         config.trafficSegmentName = @"MY_TRAFFIC_SEGMENT";
         config.crashTracking = CrashTrackingNsException;
         config.performanceMonitorSampleRate = 1.5;
+        config.networkSampleRate = 1.0;
     }];
 
     // Timer
@@ -53,7 +54,7 @@
     NSNumber *cartValue = [NSNumber numberWithDouble:10.99];
     PurchaseConfirmation *purchaseConfirmation = [[PurchaseConfirmation alloc] initWithCartValue:cartValue.decimalValue orderNumber:@"MY_ORDER_NUMBER"];
 
-    BTTimer *timer = [BlueTriangle makeTimerWithPage:page];
+    BTTimer *timer = [BlueTriangle makeTimerWithPage:page timerType:TimerTypeMain];
 
     [timer start];
 
@@ -63,9 +64,21 @@
 
     [BlueTriangle endTimer:timer purchaseConfirmation:purchaseConfirmation];
 
-    BTTimer *timer2 = [BlueTriangle makeTimerWithPage:page];
+    BTTimer *timer2 = [BlueTriangle makeTimerWithPage:page timerType:TimerTypeCustom];
 
     [BlueTriangle endTimer:timer2 purchaseConfirmation:nil];
+
+    // Network Capture
+    BTTimer *timer3 = [BlueTriangle makeTimerWithPage:page timerType:TimerTypeMain];
+
+    NSURLSession *session = [NSURLSession sharedSession];
+
+    NSURL *url = [NSURL URLWithString:@"http://www.example.com"];
+    NSURLSessionDataTask *taskWithURL = [session btDataTaskWithURL:url completionHandler:^(NSData *data, NSURLResponse *response, NSError *error){}];
+
+    NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:url];
+    [urlRequest setHTTPMethod:@"GET"];
+    NSURLSessionDataTask *taskWithRequest = [session btDataTaskWithRequest:urlRequest completionHandler:^(NSData *data, NSURLResponse *response, NSError *error){}];
 }
 
 @end

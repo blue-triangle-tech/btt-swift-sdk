@@ -11,4 +11,15 @@ extension Bool {
     var smallInt: Int {
         self ? 1 : 0
     }
+
+    var smallIntString: String {
+        self ? "1" : "0"
+    }
+
+    static func random(probability: Double) -> Self {
+        guard probability <= 1.0 else {
+            return true
+        }
+        return Double.random(in: 0...1) <= probability
+    }
 }
