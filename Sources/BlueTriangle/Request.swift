@@ -42,7 +42,7 @@ struct Request: URLRequestConvertible {
 
     /// Returns a ``URLRequest`` created from this request.
     /// - Returns: The URL request instance.
-    func asURLRequest() throws -> URLRequest {
+    func asURLRequest() -> URLRequest {
         var urlRequest: URLRequest
         if let parameters = parameters, !parameters.isEmpty,
            var components = URLComponents(url: url, resolvingAgainstBaseURL: true) {

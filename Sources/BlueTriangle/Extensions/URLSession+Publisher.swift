@@ -69,15 +69,7 @@ extension HTTPResponse {
 
  extension URLSession {
      func dataTaskPublisher(for request: Request) -> AnyPublisher<HTTPResponse<Data>, NetworkError> {
-         let urlRequest: URLRequest
-         do {
-             urlRequest = try request.asURLRequest()
-         } catch {
-             return Fail(error: NetworkError.malformedRequest)
-                 .eraseToAnyPublisher()
-         }
-
-         return dataTaskPublisher(for: urlRequest)
+         dataTaskPublisher(for: request.asURLRequest())
              .tryMap { data, response -> HTTPResponse<Data> in
                  guard let httpResponse = response as? HTTPURLResponse else {
                      throw NetworkError.invalidResponse(response)
