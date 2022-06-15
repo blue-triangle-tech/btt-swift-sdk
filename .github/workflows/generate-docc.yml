@@ -1,7 +1,7 @@
 name: Generate DocC
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 env:
   GH-PAGES-BRANCH: 'gh-pages'
