@@ -20,7 +20,7 @@ enum NetworkError: Error {
     /// There was a client error: 400-499.
     case clientError(HTTPURLResponse)
     /// There was a server error.
-    case serverError(HTTPURLResponse) // Add data also?
+    case serverError(HTTPURLResponse)
     /// There was an error decoding the data.
     case decoding(error: Error)
     /// Unknown error.
@@ -31,9 +31,8 @@ enum NetworkError: Error {
     /// - Returns: The network client error case corresponding to `error`.
     public static func wrap(_ error: Error) -> NetworkError {
         switch error {
-        case is NetworkError:
-            // swiftlint:disable:next force_cast
-            return error as! NetworkError
+        case let error as NetworkError:
+            return error
         case is DecodingError:
             return .decoding(error: error)
         case is URLError:
