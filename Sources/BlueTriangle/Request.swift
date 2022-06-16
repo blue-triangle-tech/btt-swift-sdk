@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Request: URLRequestConvertible {
+struct Request: Codable, URLRequestConvertible {
     /// The query items for a request URL.
     typealias Parameters = [String: String]
 
@@ -88,7 +88,7 @@ extension Request {
 // MARK: - Supporting Types
 extension Request {
     /// The HTTP Method.
-    enum HTTPMethod: String {
+    enum HTTPMethod: String, Codable {
         case get = "GET"
         case post = "POST"
         case put = "PUT"
