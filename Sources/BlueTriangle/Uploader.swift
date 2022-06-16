@@ -10,22 +10,6 @@ import Combine
 
 typealias Networking = (Request) -> AnyPublisher<HTTPResponse<Data>, NetworkError>
 
-struct TimerRequestBuilder {
-    let builder: (Session, BTTimer, PurchaseConfirmation?) throws -> Request
-
-    static let live = TimerRequestBuilder { session, timer, purchase in
-        let model = TimerRequest(session: session,
-                                 page: timer.page,
-                                 timer: timer.pageTimeInterval,
-                                 purchaseConfirmation: purchase,
-                                 performanceReport: timer.performanceReport)
-        return try Request(method: .post,
-                           url: Constants.timerEndpoint,
-                           headers: nil,
-                           model: model)
-    }
-}
-
 final class Uploader: Uploading {
     private let lock = NSLock()
 
@@ -111,6 +95,5 @@ extension Uploader {
                                       initialDelay: 10.0,
                                       delayMultiplier: 1.0,
                                       shouldRetry: nil))
-
     }
 }
