@@ -10,10 +10,10 @@ import Combine
 
 typealias Networking = (Request) -> AnyPublisher<HTTPResponse<Data>, NetworkError>
 
-struct RequestBuilder {
+struct TimerRequestBuilder {
     let builder: (Session, BTTimer, PurchaseConfirmation?) throws -> Request
 
-    static let live = RequestBuilder { session, timer, purchase in
+    static let live = TimerRequestBuilder { session, timer, purchase in
         let model = TimerRequest(session: session,
                                  page: timer.page,
                                  timer: timer.pageTimeInterval,
