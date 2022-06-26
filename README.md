@@ -85,37 +85,30 @@ BlueTriangle.endTimer(customTimer)
 
 ### Network Capture
 
-Network capture is randomly enabled based on `BlueTriangleConfiguration.networkSampleRate`; a value of `0.05` means that 5% of sessions will be tracked. If enabled, network capture begins after the first call to `BlueTriangle.startSpan(page:)`:
+The Blue Triangle SDK offers `bt`-prefixed versions of common `URLSession` methods that can be used to gather information about network requests when network capture is enabled:
+
+| Standard                                       | Network Capture                                  |
+| :--                                            | :--                                              |
+| `URLSession.dataTask(with:completionHandler:)` | `URLSession.btDataTask(with:completionHandler:)` |
+| `URLSession.data(for:delegate:)`               | `URLSession.btData(for:delegate:)`               |
+| `URLSession.dataTaskPublisher(for:)`           | `URLSession.btDataTaskPublisher(for:)`           |
+
+To enable network capture, configure the SDK with a non-zero network sample rate:
 
 ```swift
-let firstPage = Page(pageName: "MY_PAGE")
-let spanTimer = BlueTriangle.startSpan(page: firstPage)
+BlueTriangle.configure { config in
+    ...
+    config.networkSampleRate = 0.05
+}
+```
 
+A value of `0.05`, for example, means that network capture will be randomly enabled for 5% of user sessions. Network requests made using one of the `bt`-prefixed `URLSession` methods will be associated with the last main timer to have been started.
+
+```swift
+let timer = BlueTriangle.startTimer(page: Page(pageName: "MY_PAGE"))
 URLSession.shared.btDataTask(with: URL(string: "https://example.com")!) { data, response, error in
     // ...
 }.resume()
 ```
 
-The Blue Triangle SDK offers `bt`-prefixed versions of common `URLSession` methods:
-
-| Standard                                       | Network Capture                                  |
-| :--                                            | :--                                              |     
-| `URLSession.dataTask(with:completionHandler:)` | `URLSession.btDataTask(with:completionHandler:)` |
-| `URLSession.data(for:delegate:)`               | `URLSession.btData(for:delegate:)`               |
-| `URLSession.dataTaskPublisher(for:)`           | `URLSession.btDataTaskPublisher(for:)`           |
-
-After this initial call to `startSpan(page:)`, there will always be one active span with which new requests make via one of the `bt`-prefixed `URLSession` methods are associated. Unlike the `BTTimer` instance returned from `makeTimer(page:)` and `startTimer(page:)`, the timer instance returned from `startSpan(page:)` does not need to be retained and passed to `endTimer(_:purchaseConfirmation)`. If the current span's timer has not already sent to Blue Triangle, it will be ended automatically and uploaded when a new span is started:
-
-```swift
-// `spanTimer` is ended and uploaded to Blue Triangle
-let newSpanTimer = BlueTriangle.startSpan(page: Page(pageName: "ANOTHER_PAGE"))
-
-// New requests made through one of the `bt`-prefixed `URLSession` methods are associated with `ANOTHER_PAGE`
-
-...
-
-// Optional
-BlueTriangle.endTimer(newSpanTimer)
-```
-
-A span continues to be active until a new one is started even if its timer has been ended.
+Requests are not associated with a timer until the request ends.
