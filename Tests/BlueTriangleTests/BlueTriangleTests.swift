@@ -31,7 +31,7 @@ final class BlueTriangleTests: XCTestCase {
     }
 
     static var onBuildRequest: (Session, BTTimer, PurchaseConfirmation?) throws -> Void = { _, _, _ in }
-    static let requestBuilder = RequestBuilder { session, timer, purchaseConfirmation in
+    static let requestBuilder = TimerRequestBuilder { session, timer, purchaseConfirmation in
         try onBuildRequest(session, timer, purchaseConfirmation)
         let model = TimerRequest(session: session,
                                  page: timer.page,
