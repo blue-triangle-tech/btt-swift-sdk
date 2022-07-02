@@ -20,7 +20,7 @@ let timer = BlueTriangle.makeTimer(page: page)
 timer.start()
 ```
 
-In both cases, pass your timer to ``BlueTriangle/BlueTriangle/endTimer(_:purchaseConfirmation:)`` to send it to the Blue Triangle server. 
+In both cases, pass your timer to ``BlueTriangle/BlueTriangle/endTimer(_:purchaseConfirmation:)`` to send it to the Blue Triangle server.
 
 ```swift
 BlueTriangle.endTimer(timer)
@@ -41,4 +41,17 @@ For timers that are associated with checkout, create a ``PurchaseConfirmation`` 
 timer.end()
 let purchaseConfirmation = PurchaseConfirmation(cartValue: 99.00)
 BlueTriangle.endTimer(timer, purchaseConfirmation: purchaseConfirmation)
+```
+
+### Timer Types
+
+``BlueTriangle/BlueTriangle/makeTimer(page:timerType:)`` and ``BlueTriangle/BlueTriangle/startTimer(page:timerType:)`` have a `timerType` parameter to specify the type of the timer they return. By default, both methods return main timers with the type ``BlueTriangle/BTTimer/TimerType/main``. When <doc:NetworkCapture> is enabled, requests made with one of the `bt`-prefixed `URLSession` methods will be associated with the last main timer to have been started at the time the request completes. It is recommended to only have a single main timer running at any given time. If you need overlapping timers, create additional custom timers by specifying a ``BlueTriangle/BTTimer/TimerType/custom`` timer type:
+
+```swift
+let mainTimer = BlueTriangle.startTimer(page: Page(pageName: "MY_PAGE"))
+let customTimer = BlueTriangle.startTimer(page: Page(pageName: "MY_OTHER_TIMER"), timerType: .custom)
+// ...
+BlueTriangle.endTimer(mainTimer)
+// ...
+BlueTriangle.endTimer(customTimer)
 ```

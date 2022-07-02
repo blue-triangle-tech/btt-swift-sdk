@@ -1,12 +1,14 @@
 name: Generate DocC
 on:
+  workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ master ]
 
 env:
   GH-PAGES-BRANCH: 'gh-pages'
   GH-PAGES-PATH: 'gh-pages'
   BUILD-SCHEME: 'blue-triangle'
+  DOCC-NAME: 'BlueTriangle'
   DERIVED-DATA-PATH: '/Users/runner/docbuild'
   HOSTING-BASE-PATH: 'btt-swift-sdk'
 
@@ -31,7 +33,7 @@ jobs:
           # cat build_output.txt
 
           # Find documentation inside docbuild
-          DOCC_DIR=`find ${{ env.DERIVED-DATA-PATH }} -type d -iname "${{ env.BUILD-SCHEME }}.doccarchive"`
+          DOCC_DIR=`find ${{ env.DERIVED-DATA-PATH }} -type d -iname "${{ env.DOCC-NAME }}.doccarchive"`
 
           # Pretty print DocC JSON output so that it can be consistently diffed between commits
           export DOCC_JSON_PRETTYPRINT=YES
