@@ -79,34 +79,3 @@ extension Persistence {
     static let crashReport = Self(fileManager: .default,
                                   file: try! File.makeCrashReport())
 }
-
-struct CrashReportPersistence {
-    static let persistence: Persistence = .crashReport
-    static let logger = BTLogger.live
-
-    static func save(_ exception: NSException) {
-        let report = CrashReport(exception: exception)
-        do {
-            try persistence.save(report)
-        } catch {
-            logger.error("Error saving \(report) to \(persistence.file.path): \(error.localizedDescription)")
-        }
-    }
-
-    static func read() -> CrashReport? {
-        do {
-            return try persistence.read()
-        } catch {
-            logger.error("Error reading object at \(persistence.file.path): \(error.localizedDescription)")
-            return nil
-        }
-    }
-
-    static func clear() {
-        do {
-            try persistence.clear()
-        } catch {
-            logger.error("Error clearing data at \(persistence.file.path): \(error.localizedDescription)")
-        }
-    }
-}
