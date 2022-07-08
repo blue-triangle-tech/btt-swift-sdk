@@ -9,86 +9,82 @@ import Foundation
 
 struct Persistence {
     private let fileManager: FileManager
-
     let file: File
 
-    private let logger: Logging
-
-    init(fileManager: FileManager, file: File, logger: Logging) {
+    init(fileManager: FileManager = .default, file: File) {
         self.fileManager = fileManager
         self.file = file
-        self.logger = logger
     }
 
-    func save<T: Encodable>(_ object: T) {
-        if fileManager.fileExists(atPath: file.path) {
-            logger.info("Deleting existing file at \(file.path)")
-        }
+    func save<T: Encodable>(_ object: T) throws {
+        let data = try JSONEncoder().encode(object)
+        try fileManager.createDirectory(at: file.directory, withIntermediateDirectories: true)
+        try data.write(to: file.url, options: .atomic)
+    }
 
+    func read<T: Decodable>() throws -> T? {
+        guard let data = try readData() else {
+            return nil
+        }
+        let object = try JSONDecoder().decode(T.self, from: data)
+        return object
+    }
+
+    func readData() throws -> Data? {
         do {
-            let data = try JSONEncoder().encode(object)
-            try data.write(to: file.url)
+            return try Data(contentsOf: file.url)
+        } catch CocoaError.Code.fileReadNoSuchFile {
+            return nil
         } catch {
-            logger.error("Error saving \(object) to \(file.path): \(error.localizedDescription)")
+            throw error
         }
     }
 
-    func read<T: Decodable>() -> T? {
-        guard let data = readData() else {
-            return nil
-        }
-        do {
-            let object = try JSONDecoder().decode(T.self, from: data)
-            return object
-        } catch {
-            logger.error("Error decoding object at \(file.path): \(error.localizedDescription)")
-            return nil
-        }
-    }
-
-    func readData() -> Data? {
-        guard fileManager.fileExists(atPath: file.path) else {
-            return nil
-        }
-        do {
-            let data = try Data(contentsOf: file.url)
-            return data
-        } catch {
-            logger.error("Error reading data at \(file.path): \(error.localizedDescription)")
-            return nil
-        }
-    }
-
-    func clear() {
-        guard fileManager.fileExists(atPath: file.path) else {
-            return
-        }
+    func clear() throws {
         do {
             try fileManager.removeItem(at: file.url)
+        } catch CocoaError.Code.fileNoSuchFile {
+            return
         } catch {
-            logger.error("\(error)")
+            throw error
         }
     }
 }
 
 extension Persistence {
     static let crashReport = Self(fileManager: .default,
-                                  file: try! File.makeCrashReport(),
-                                  logger: BTLogger.live)
+                                  file: try! File.makeCrashReport())
 }
 
 struct CrashReportPersistence {
     static let persistence: Persistence = .crashReport
+    static let logger = BTLogger.live
 
     static func save(_ exception: NSException) {
-        persistence.save(CrashReport(exception: exception))
+        let report = CrashReport(exception: exception)
+        do {
+            try persistence.save(report)
+        } catch {
+            logger.error("Error saving \(report) to \(persistence.file.path): \(error.localizedDescription)")
+        }
     }
 
     static func read() -> CrashReport? {
-        persistence.read()
+        do {
+            return try persistence.read()
+        } catch {
+            logger.error("Error reading object at \(persistence.file.path): \(error.localizedDescription)")
+            return nil
+        }
     }
 
     static func clear() {
-        persistence.clear()
+        do {
+            try persistence.clear()
+        } catch {
+            logger.error("Error clearing data at \(persistence.file.path): \(error.localizedDescription)")
+        }
+    }
+}
     }
 }
