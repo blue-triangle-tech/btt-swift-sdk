@@ -16,18 +16,9 @@ struct Persistence {
         self.file = file
     }
 
-    func save<T: Encodable>(_ object: T) throws {
-        let data = try JSONEncoder().encode(object)
+    func write(_ data: Data) throws {
         try fileManager.createDirectory(at: file.directory, withIntermediateDirectories: true)
         try data.write(to: file.url, options: .atomic)
-    }
-
-    func read<T: Decodable>() throws -> T? {
-        guard let data = try readData() else {
-            return nil
-        }
-        let object = try JSONDecoder().decode(T.self, from: data)
-        return object
     }
 
     func readData() throws -> Data? {
@@ -48,6 +39,21 @@ struct Persistence {
         } catch {
             throw error
         }
+    }
+}
+
+extension Persistence {
+    func save<T: Encodable>(_ object: T, encodingWith encoder: JSONEncoder = .init()) throws {
+        let data = try encoder.encode(object)
+        try write(data)
+    }
+
+    func read<T: Decodable>(decodingWith decoder: JSONDecoder = .init()) throws -> T? {
+        guard let data = try readData() else {
+            return nil
+        }
+        let object = try decoder.decode(T.self, from: data)
+        return object
     }
 }
 
@@ -84,7 +90,5 @@ struct CrashReportPersistence {
         } catch {
             logger.error("Error clearing data at \(persistence.file.path): \(error.localizedDescription)")
         }
-    }
-}
     }
 }
