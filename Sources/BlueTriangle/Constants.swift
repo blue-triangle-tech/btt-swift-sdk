@@ -12,6 +12,7 @@ enum Constants {
     static let device = "Mobile"
     static let os = "iOS"
     static let globalUserIDKey = "com.bluetriangle.kGlobalUserIDUserDefault"
+    static let persistenceDirectory = "com.bluetriangle.sdk"
 
     // Settings
     static let minimumSampleInterval: TimeInterval = 1 / 60
