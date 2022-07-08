@@ -74,8 +74,3 @@ extension Persistence {
         return object
     }
 }
-
-extension Persistence {
-    static let crashReport = Self(fileManager: .default,
-                                  file: try! File.makeCrashReport())
-}

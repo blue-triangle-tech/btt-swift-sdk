@@ -8,10 +8,6 @@
 import Foundation
 
 struct File {
-    enum FileError: Error {
-        case missingURL
-    }
-
     let directory: URL
     let name: String
 
@@ -28,9 +24,9 @@ struct File {
         self.name = name
     }
 
-    init(fileLocation: FileLocation, name: String) throws {
+    init?(fileLocation: FileLocation, name: String) {
         guard let containerURL = fileLocation.containerURL else {
-            throw FileError.missingURL
+            return nil
         }
         self.directory = containerURL
         self.name = name
@@ -38,11 +34,6 @@ struct File {
 }
 
 extension File {
-    static func makeCrashReport() throws -> Self {
-        try Self(fileLocation: UserLocation.cache(Constants.persistenceDirectory), name: "crash_report")
-    }
-
-    static func makeRequests() throws -> Self {
-        try Self(fileLocation: UserLocation.cache(Constants.persistenceDirectory), name: "requests")
-    }
+    static let crashReport = Self(fileLocation: UserLocation.cache(Constants.persistenceDirectory), name: "crash_report")
+    static let requests = Self(fileLocation: UserLocation.cache(Constants.persistenceDirectory), name: "requests")
 }

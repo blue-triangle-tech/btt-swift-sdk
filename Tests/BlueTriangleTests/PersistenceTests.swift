@@ -16,7 +16,7 @@ final class PersistenceTests: XCTestCase {
 
     var file: File = {
         let fileLocation = UserLocation.document(Constants.persistenceDirectory)
-        let file = try! File(fileLocation: fileLocation, name: "test")
+        let file = File(fileLocation: fileLocation, name: "test")!
         return file
     }()
 

@@ -8,32 +8,43 @@
 import Foundation
 
 struct CrashReportPersistence {
-    static let persistence: Persistence = .crashReport
-    static let logger = BTLogger.live
+    private static let logger = BTLogger.live
+
+    private static var persistence: Persistence? {
+        guard let file = File.crashReport else {
+            logger.error("Failed to get URL for ")
+            return nil
+        }
+        return Persistence(fileManager: .default, file: file)
+    }
+
+    private static var path: String {
+        persistence?.file.path ?? "MISSING"
+    }
 
     static func save(_ exception: NSException) {
         let report = CrashReport(exception: exception)
         do {
-            try persistence.save(report)
+            try persistence?.save(report)
         } catch {
-            logger.error("Error saving \(report) to \(persistence.file.path): \(error.localizedDescription)")
+            logger.error("Error saving \(report) to \(path): \(error.localizedDescription)")
         }
     }
 
     static func read() -> CrashReport? {
         do {
-            return try persistence.read()
+            return try persistence?.read()
         } catch {
-            logger.error("Error reading object at \(persistence.file.path): \(error.localizedDescription)")
+            logger.error("Error reading object at \(path): \(error.localizedDescription)")
             return nil
         }
     }
 
     static func clear() {
         do {
-            try persistence.clear()
+            try persistence?.clear()
         } catch {
-            logger.error("Error clearing data at \(persistence.file.path): \(error.localizedDescription)")
+            logger.error("Error clearing data at \(path): \(error.localizedDescription)")
         }
     }
 }
