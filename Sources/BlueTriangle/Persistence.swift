@@ -21,6 +21,24 @@ struct Persistence {
         try data.write(to: file.url, options: .atomic)
     }
 
+    func append(_ data: Data) throws {
+        if fileManager.fileExists(atPath: file.path) {
+            let fileHandle = try FileHandle(forUpdating: file.url)
+
+            if #available(iOS 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
+                try fileHandle.seekToEnd()
+                try fileHandle.write(contentsOf: data)
+                try fileHandle.close()
+            } else {
+                fileHandle.seekToEndOfFile()
+                fileHandle.write(data)
+                fileHandle.closeFile()
+            }
+        } else {
+            try write(data)
+        }
+    }
+
     func readData() throws -> Data? {
         do {
             return try Data(contentsOf: file.url)
