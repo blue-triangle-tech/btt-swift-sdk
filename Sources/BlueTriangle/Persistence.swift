@@ -10,33 +10,26 @@ import Foundation
 struct Persistence {
     private let fileManager: FileManager
 
-    private let fileLocation: FileLocation
+    let file: File
 
     private let logger: Logging
 
-    private var containerURL: URL? {
-        return fileLocation.containerURL
-    }
-
-    init(fileManager: FileManager, fileLocation: FileLocation, logger: Logging) {
+    init(fileManager: FileManager, file: File, logger: Logging) {
         self.fileManager = fileManager
-        self.fileLocation = fileLocation
+        self.file = file
         self.logger = logger
     }
 
     func save<T: Encodable>(_ object: T) {
-        guard let containerURL = containerURL else {
-            return
-        }
-        if fileManager.fileExists(atPath: containerURL.path) {
-            logger.info("Deleting existing file at \(containerURL.path)")
+        if fileManager.fileExists(atPath: file.path) {
+            logger.info("Deleting existing file at \(file.path)")
         }
 
         do {
             let data = try JSONEncoder().encode(object)
-            try data.write(to: containerURL)
+            try data.write(to: file.url)
         } catch {
-            logger.error("Error saving \(object) to \(containerURL.path): \(error.localizedDescription)")
+            logger.error("Error saving \(object) to \(file.path): \(error.localizedDescription)")
         }
     }
 
@@ -48,30 +41,30 @@ struct Persistence {
             let object = try JSONDecoder().decode(T.self, from: data)
             return object
         } catch {
-            logger.error("Error decoding object at \(containerURL?.path ?? ""): \(error.localizedDescription)")
+            logger.error("Error decoding object at \(file.path): \(error.localizedDescription)")
             return nil
         }
     }
 
     func readData() -> Data? {
-        guard let containerURL = containerURL, fileManager.fileExists(atPath: containerURL.path) else {
+        guard fileManager.fileExists(atPath: file.path) else {
             return nil
         }
         do {
-            let data = try Data(contentsOf: containerURL)
+            let data = try Data(contentsOf: file.url)
             return data
         } catch {
-            logger.error("Error reading data at \(containerURL.path): \(error.localizedDescription)")
+            logger.error("Error reading data at \(file.path): \(error.localizedDescription)")
             return nil
         }
     }
 
     func clear() {
-        guard let containerURL = containerURL, fileManager.fileExists(atPath: containerURL.path) else {
+        guard fileManager.fileExists(atPath: file.path) else {
             return
         }
         do {
-            try fileManager.removeItem(at: containerURL)
+            try fileManager.removeItem(at: file.url)
         } catch {
             logger.error("\(error)")
         }
@@ -80,7 +73,7 @@ struct Persistence {
 
 extension Persistence {
     static let crashReport = Self(fileManager: .default,
-                                  fileLocation: UserLocation.cache(Constants.crashReportFilename),
+                                  file: try! File.makeCrashReport(),
                                   logger: BTLogger.live)
 }
 
