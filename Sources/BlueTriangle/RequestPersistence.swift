@@ -49,24 +49,32 @@ struct RequestPersistence {
         }
     }
 
-    func read() throws -> [Request]? {
+    func read() -> [Request]? {
         let data: Data
-        if let disk = try persistence.readData() {
-            data = disk + Constants.lineBreak + buffer
-        } else {
-            data = buffer
-        }
-
         let decoder = JSONDecoder()
-        return try data
-            .split(separator: Constants.lineBreak[0])
-            .map { try decoder.decode(Request.self, from: $0) }
+        do {
+            if let disk = try persistence.readData() {
+                data = disk + Constants.lineBreak + buffer
+            } else {
+                data = buffer
+            }
+
+            return try data
+                .split(separator: Constants.lineBreak[0])
+                .map { try decoder.decode(Request.self, from: $0) }
+        } catch let error as DecodingError {
+            logger.error("Error decoding data: \(error.localizedDescription)")
+        } catch {
+            let path = persistence.file.path
+            logger.error("Error reading data from \(path): \(error.localizedDescription)")
+        }
+        return nil
     }
 
     mutating func clear() throws {
         clearBuffer()
         do {
-        try persistence.clear()
+            try persistence.clear()
         } catch {
             let path = persistence.file.path
             logger.error("Error removing file at \(path): \(error.localizedDescription)")

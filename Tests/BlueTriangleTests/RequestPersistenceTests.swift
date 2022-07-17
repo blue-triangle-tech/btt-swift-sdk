@@ -47,7 +47,7 @@ final class RequestPersistenceTests: XCTestCase {
         let request2 = try Request(url: Constants.timerEndpoint, model: Model(id: 2), encode: { try JSONEncoder().encode($0) })
         sut.save(request2)
 
-        let requests = try sut.read()
+        let requests = sut.read()
         XCTAssertEqual(requests, [request1, request2])
     }
 
@@ -65,7 +65,7 @@ final class RequestPersistenceTests: XCTestCase {
 
         XCTAssert(FileManager.default.fileExists(atPath: Self.file.path))
 
-        let requests = try sut.read()
+        let requests = sut.read()
         XCTAssertEqual(requests, [request1, request2])
     }
 }
