@@ -51,6 +51,7 @@ final class BlueTriangleTests: XCTestCase {
     override class func tearDown() {
         super.tearDown()
         BlueTriangle.reset()
+        Self.onSendRequest = { _ in }
     }
 
     override func setUp() {

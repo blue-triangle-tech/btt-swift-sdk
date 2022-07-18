@@ -150,7 +150,11 @@ final public class BlueTriangle: NSObject {
     }()
 
     private static var uploader: Uploading = {
-        configuration.uploaderConfiguration.makeUploader(logger: logger)
+        configuration.uploaderConfiguration.makeUploader(
+            logger: logger,
+            failureHandler: RequestFailureHandler(
+                file: .requests,
+                logger: logger))
     }()
 
     private static var timerFactory: (Page, BTTimer.TimerType) -> BTTimer = {
