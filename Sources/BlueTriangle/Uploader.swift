@@ -19,6 +19,8 @@ final class Uploader: Uploading {
 
     private let networking: Networking
 
+    private let failureHandler: RequestFailureHandling?
+
     private let retryConfiguration: RetryConfiguration<DispatchQueue>
 
     private var subscriptions = [UUID: AnyCancellable]()
@@ -31,12 +33,19 @@ final class Uploader: Uploading {
         queue: DispatchQueue,
         logger: Logging,
         networking: @escaping Networking,
+        failureHandler: RequestFailureHandling?,
         retryConfiguration: RetryConfiguration<DispatchQueue>
     ) {
         self.queue = queue
         self.logger = logger
         self.networking = networking
+        self.failureHandler = failureHandler
         self.retryConfiguration = retryConfiguration
+
+        failureHandler?.send = { [weak self] request in
+            self?.send(request: request)
+        }
+        failureHandler?.configureSubscriptions(queue: queue)
     }
 
     func send(request: Request) {
@@ -48,6 +57,7 @@ final class Uploader: Uploading {
                 receiveCompletion: { [weak self] completion in
                      if case .failure(let error) = completion {
                          self?.logger.error(error.localizedDescription)
+                         self?.failureHandler?.store(request: request)
                      }
                     self?.removeSubscription(id: id)
                 },
@@ -82,8 +92,12 @@ extension Uploader {
         let networking: Networking
         let retryConfiguration: RetryConfiguration<DispatchQueue>
 
-        func makeUploader(logger: Logging) -> Uploading {
-            Uploader(queue: queue, logger: logger, networking: networking, retryConfiguration: retryConfiguration)
+        func makeUploader(logger: Logging, failureHandler: RequestFailureHandling?) -> Uploading {
+            Uploader(queue: queue,
+                     logger: logger,
+                     networking: networking,
+                     failureHandler: failureHandler,
+                     retryConfiguration: retryConfiguration)
         }
 
         static let live = Self(
