@@ -19,8 +19,7 @@ final class RequestFailureHandler: RequestFailureHandling {
     init(persistence: RequestCache, logger: Logging) {
         self.persistence = persistence
         self.logger = logger
-        let networkMonitor = NWPathMonitor()
-        self.networkMonitor = networkMonitor
+        self.networkMonitor = NWPathMonitor()
     }
 
     convenience init?(file: File?, logger: Logging) {
