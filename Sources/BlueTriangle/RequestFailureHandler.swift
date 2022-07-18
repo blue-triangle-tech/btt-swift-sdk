@@ -11,12 +11,14 @@ import Network
 
 final class RequestFailureHandler: RequestFailureHandling {
     private var persistence: RequestCache
+    private let logger: Logging
     private let networkMonitor: NWPathMonitor
     private var cancellables = Set<AnyCancellable>()
     var send: ((Request) -> Void)?
 
-    init(persistence: RequestCache) {
+    init(persistence: RequestCache, logger: Logging) {
         self.persistence = persistence
+        self.logger = logger
         let networkMonitor = NWPathMonitor()
         self.networkMonitor = networkMonitor
     }
@@ -25,31 +27,53 @@ final class RequestFailureHandler: RequestFailureHandling {
         guard let file = file else {
             return nil
         }
-        self.init(persistence: RequestCache(persistence: Persistence(file: file), logger: logger))
+        self.init(
+            persistence: RequestCache(persistence: Persistence(file: file)),
+            logger: logger)
     }
 
     func configureSubscriptions(queue: DispatchQueue) {
         networkMonitor.publisher(queue: queue)
             .filter { $0.status == .satisfied }
-            .sink { [weak self] path in
+            .sink { [weak self] _ in
                 self?.sendSaved()
             }.store(in: &cancellables)
 
         NotificationCenter.default.publisher(for: .willTerminate)
             .sink { [weak self] _ in
-                self?.persistence.saveBuffer()
+                do {
+                    try self?.persistence.saveBuffer()
+                } catch {
+                    self?.log(error)
+                }
             }.store(in: &cancellables)
     }
 
     func store(request: Request) {
-        persistence.save(request)
+        do {
+            try persistence.save(request)
+        } catch {
+            log(error)
+        }
     }
 
     func sendSaved() {
-        guard let send = send, let requests = persistence.read() else {
-            return
-        }
+        do {
+            guard let send = send, let requests = try persistence.read() else {
+                return
+            }
 
-        requests.forEach { send($0) }
+            logger.info("Resending \(requests.count) requests.")
+            requests.forEach { send($0) }
+
+            try persistence.clear()
+        } catch {
+            log(error)
+        }
+    }
+
+    private func log(_ error: Error) {
+        let message = (error as? PersistenceError)?.localizedDescription ?? error.localizedDescription
+        logger.error(message)
     }
 }

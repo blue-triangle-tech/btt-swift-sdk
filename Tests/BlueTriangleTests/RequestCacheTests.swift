@@ -37,35 +37,31 @@ final class RequestCacheTests: XCTestCase {
 
     func testRequestPersistenceBuffer() throws {
         let maxSize: Int = 1024 * 1024
-        let logger = LoggerMock(onError: { XCTFail("Unexpected error: \($0)") })
-
-        var sut = RequestCache(persistence: Self.persistence, logger: logger, maxSize: maxSize)
+        var sut = RequestCache(persistence: Self.persistence, maxSize: maxSize)
 
         let request1 = try Request(url: Constants.timerEndpoint, model: Model(id: 1), encode: { try JSONEncoder().encode($0) })
-        sut.save(request1)
+        try sut.save(request1)
 
         let request2 = try Request(url: Constants.timerEndpoint, model: Model(id: 2), encode: { try JSONEncoder().encode($0) })
-        sut.save(request2)
+        try sut.save(request2)
 
-        let requests = sut.read()
+        let requests = try sut.read()
         XCTAssertEqual(requests, [request1, request2])
     }
 
     func testRequestPersistenceFile() throws {
         let maxSize: Int = 100
-        let logger = LoggerMock(onError: { XCTFail("Unexpected error: \($0)") })
-
-        var sut = RequestCache(persistence: Self.persistence, logger: logger, maxSize: maxSize)
+        var sut = RequestCache(persistence: Self.persistence, maxSize: maxSize)
 
         let request1 = try Request(url: Constants.timerEndpoint, model: Model(id: 1), encode: { try JSONEncoder().encode($0) })
-        sut.save(request1)
+        try sut.save(request1)
 
         let request2 = try Request(url: Constants.timerEndpoint, model: Model(id: 2), encode: { try JSONEncoder().encode($0) })
-        sut.save(request2)
+        try sut.save(request2)
 
         XCTAssert(FileManager.default.fileExists(atPath: Self.file.path))
 
-        let requests = sut.read()
+        let requests = try sut.read()
         XCTAssertEqual(requests, [request1, request2])
     }
 }

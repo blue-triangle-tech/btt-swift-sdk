@@ -13,43 +13,36 @@ struct RequestCache {
     }
 
     private let persistence: Persistence
-    private let logger: Logging
     private let maxSize: Int
     private var buffer: Data = .init()
 
-    init(persistence: Persistence, logger: Logging, maxSize: Int = 1024 * 1024) {
+    init(persistence: Persistence, maxSize: Int = 1024 * 1024) {
         self.persistence = persistence
-        self.logger = logger
         self.maxSize = maxSize
     }
 
-    mutating func save(_ request: Request) {
+    mutating func save(_ request: Request) throws {
         do {
             let data = try JSONEncoder().encode(request) + Constants.lineBreak
             buffer.append(data)
         } catch {
-            let path = persistence.file.path
-            logger.error("Error saving \(request) to \(path): \(error.localizedDescription)")
+            throw PersistenceError(underlyingError: error)
         }
 
         if buffer.count > maxSize {
-            saveBuffer()
-        }
-    }
-    
-    mutating func saveBuffer() {
-        defer {
-            clearBuffer()
-        }
-        do {
-            try persistence.append(buffer)
-        } catch {
-            let path = persistence.file.path
-            logger.error("Error appending buffer to \(path): \(error.localizedDescription)")
+            try saveBuffer()
         }
     }
 
-    func read() -> [Request]? {
+    mutating func saveBuffer() throws {
+        defer {
+            clearBuffer()
+        }
+
+        try persistence.append(buffer)
+    }
+
+    func read() throws -> [Request]? {
         let data: Data
         let decoder = JSONDecoder()
         do {
@@ -62,23 +55,14 @@ struct RequestCache {
             return try data
                 .split(separator: Constants.lineBreak[0])
                 .map { try decoder.decode(Request.self, from: $0) }
-        } catch let error as DecodingError {
-            logger.error("Error decoding data: \(error.localizedDescription)")
         } catch {
-            let path = persistence.file.path
-            logger.error("Error reading data from \(path): \(error.localizedDescription)")
+            throw PersistenceError(underlyingError: error)
         }
-        return nil
     }
 
     mutating func clear() throws {
         clearBuffer()
-        do {
-            try persistence.clear()
-        } catch {
-            let path = persistence.file.path
-            logger.error("Error removing file at \(path): \(error.localizedDescription)")
-        }
+        try persistence.clear()
     }
 
     private mutating func clearBuffer() {

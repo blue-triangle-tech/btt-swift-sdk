@@ -17,22 +17,30 @@ struct Persistence {
     }
 
     func write(_ data: Data) throws {
-        try fileManager.createDirectory(at: file.directory, withIntermediateDirectories: true)
-        try data.write(to: file.url, options: .atomic)
+        do {
+            try fileManager.createDirectory(at: file.directory, withIntermediateDirectories: true)
+            try data.write(to: file.url, options: .atomic)
+        } catch {
+            throw PersistenceError.file(path: file.path, error: error)
+        }
     }
 
     func append(_ data: Data) throws {
         if fileManager.fileExists(atPath: file.path) {
-            let fileHandle = try FileHandle(forUpdating: file.url)
+            do {
+                let fileHandle = try FileHandle(forUpdating: file.url)
 
-            if #available(iOS 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
-                try fileHandle.seekToEnd()
-                try fileHandle.write(contentsOf: data)
-                try fileHandle.close()
-            } else {
-                fileHandle.seekToEndOfFile()
-                fileHandle.write(data)
-                fileHandle.closeFile()
+                if #available(iOS 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2, *) {
+                    try fileHandle.seekToEnd()
+                    try fileHandle.write(contentsOf: data)
+                    try fileHandle.close()
+                } else {
+                    fileHandle.seekToEndOfFile()
+                    fileHandle.write(data)
+                    fileHandle.closeFile()
+                }
+            } catch {
+                throw PersistenceError.file(path: file.path, error: error)
             }
         } else {
             try write(data)
@@ -45,7 +53,7 @@ struct Persistence {
         } catch CocoaError.Code.fileReadNoSuchFile {
             return nil
         } catch {
-            throw error
+            throw PersistenceError.file(path: file.path, error: error)
         }
     }
 
@@ -55,22 +63,30 @@ struct Persistence {
         } catch CocoaError.Code.fileNoSuchFile {
             return
         } catch {
-            throw error
+            throw PersistenceError.file(path: file.path, error: error)
         }
     }
 }
 
 extension Persistence {
     func save<T: Encodable>(_ object: T, encodingWith encoder: JSONEncoder = .init()) throws {
-        let data = try encoder.encode(object)
-        try write(data)
+        do {
+            let data = try encoder.encode(object)
+            try write(data)
+        } catch {
+            throw PersistenceError(underlyingError: error)
+        }
     }
 
     func read<T: Decodable>(decodingWith decoder: JSONDecoder = .init()) throws -> T? {
         guard let data = try readData() else {
             return nil
         }
-        let object = try decoder.decode(T.self, from: data)
-        return object
+        do {
+            let object = try decoder.decode(T.self, from: data)
+            return object
+        } catch {
+            throw PersistenceError(underlyingError: error)
+        }
     }
 }
