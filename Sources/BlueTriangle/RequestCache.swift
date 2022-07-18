@@ -1,5 +1,5 @@
 //
-//  RequestPersistence.swift
+//  RequestCache.swift
 //
 //  Created by Mathew Gacy on 6/26/22.
 //  Copyright © 2022 Blue Triangle. All rights reserved.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct RequestPersistence {
+struct RequestCache {
     enum Constants {
         static let lineBreak = Data([10])
     }
