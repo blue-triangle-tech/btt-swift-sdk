@@ -74,25 +74,6 @@ final class BlueTriangleTests: XCTestCase {
             requestCollector: nil
         )
     }
-
-    func testOSInfo() {
-        let os = Device.os
-        let osVersion = Device.osVersion
-        let name = Device.name
-
-        #if os(iOS)
-        XCTAssertEqual(os, "iOS")
-        #elseif os(tvOS)
-        XCTAssertEqual(os, "tvOS")
-        #elseif os(watchOS)
-        XCTAssertEqual(os, "watchOS")
-        #elseif os(macOS)
-        XCTAssertEqual(os, "macOS")
-        #endif
-
-        XCTAssertFalse(osVersion.isEmpty)
-        XCTAssertFalse(name.isEmpty)
-    }
 }
 
 // MARK: - Timer
