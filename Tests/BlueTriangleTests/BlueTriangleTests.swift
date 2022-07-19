@@ -12,7 +12,7 @@ import Combine
 // swiftlint:disable function_body_length
 final class BlueTriangleTests: XCTestCase {
     static var timeIntervals: [TimeInterval] = []
-    static var timeIntervalProvider: () -> TimeInterval = {
+    static let timeIntervalProvider: () -> TimeInterval = {
         timeIntervals.popLast() ?? 0
     }
 
@@ -53,26 +53,14 @@ final class BlueTriangleTests: XCTestCase {
         BlueTriangle.reset()
     }
 
-    override func setUp() {
-        super.setUp()
-        Self.timeIntervals = []
-        Self.logger.reset()
-        Self.performanceMonitor.reset()
+    override func tearDown() {
+        super.tearDown()
         Self.onMakeTimer = { _, _ in }
         Self.onBuildRequest = { _, _, _ in }
         Self.onSendRequest = { _ in }
-
-        let configuration = BlueTriangleConfiguration()
-        Mock.configureBlueTriangle(configuration: configuration)
-        configuration.requestBuilder = Self.requestBuilder
-
-        BlueTriangle.reconfigure(
-            configuration: configuration,
-            logger: Self.logger,
-            uploader: Self.uploader,
-            timerFactory: Self.timerFactory,
-            requestCollector: nil
-        )
+        Self.logger.reset()
+        Self.performanceMonitor.reset()
+        BlueTriangle.reset()
     }
 }
 
@@ -87,7 +75,7 @@ extension BlueTriangleTests {
         Self.timeIntervals = [
             expectedEndTime,
             expectedInteractiveTime,
-            expectedStartTime,
+            expectedStartTime
         ]
 
         // Performance Monitor
@@ -118,6 +106,22 @@ extension BlueTriangleTests {
             requestExpectation.fulfill()
         }
 
+        // BlueTriangleConfiguration
+        let configuration = BlueTriangleConfiguration()
+        Mock.configureBlueTriangle(configuration: configuration)
+        configuration.requestBuilder = Self.requestBuilder
+
+        // Configure Blue Triangle
+        BlueTriangle.reconfigure(
+            configuration: configuration,
+            logger: Self.logger,
+            uploader: Self.uploader,
+            timerFactory: Self.timerFactory,
+            shouldCaptureRequests: false,
+            requestCollector: nil
+        )
+
+        // Timer
         let timer = BlueTriangle.makeTimer(page: Mock.page)
         XCTAssertEqual(timer.state, expectedInitialState)
 
@@ -182,6 +186,22 @@ extension BlueTriangleTests {
             requestExpectation.fulfill()
         }
 
+        // BlueTriangleConfiguration
+        let configuration = BlueTriangleConfiguration()
+        Mock.configureBlueTriangle(configuration: configuration)
+        configuration.requestBuilder = Self.requestBuilder
+
+        // Configure Blue Triangle
+        BlueTriangle.reconfigure(
+            configuration: configuration,
+            logger: Self.logger,
+            uploader: Self.uploader,
+            timerFactory: Self.timerFactory,
+            shouldCaptureRequests: false,
+            requestCollector: nil
+        )
+
+        // Timer
         let timer = BlueTriangle.startTimer(page: Mock.page)
         XCTAssertEqual(timer.state, expectedInitialState)
 
@@ -241,25 +261,27 @@ extension BlueTriangleTests {
         // Uploader
         var capturedRequest: Request!
         let requestExpectation = self.expectation(description: "Request sent")
-        let uploader = UploaderMock { req in
+        let capturedRequestUploader = UploaderMock { req in
             capturedRequest = req
             requestExpectation.fulfill()
         }
 
-        // Configure
+        // BlueTriangleConfiguration
         let configuration = BlueTriangleConfiguration()
         Mock.configureBlueTriangle(configuration: configuration)
+        configuration.requestBuilder = Self.requestBuilder
 
+        // Configure Blue Triangle
         let requestCollector = Mock.makeRequestCollectorConfiguration()
             .makeRequestCollector(
                 logger: Self.logger,
                 networkCaptureConfiguration: .standard,
                 requestBuilder: .makeBuilder { Mock.session },
-                uploader: uploader)
+                uploader: capturedRequestUploader)
 
         BlueTriangle.reconfigure(
             configuration: configuration,
-            uploader: uploader,
+            uploader: Self.uploader,
             timerFactory: timerFactory,
             shouldCaptureRequests: true,
             internalTimerFactory: { InternalTimer(logger: Self.logger, intervalProvider: requestTimerIntervalProvider) },
@@ -312,12 +334,20 @@ extension BlueTriangleTests {
             requestExpectation.fulfill()
         }
 
-        // Configure
+        // BlueTriangleConfiguration
         let configuration = BlueTriangleConfiguration()
         Mock.configureBlueTriangle(configuration: configuration)
         configuration.requestBuilder = Self.requestBuilder
-        BlueTriangle.reconfigure(configuration: configuration,
-                                 timerFactory: timerFactory)
+
+        // Configure Blue Triangle
+        BlueTriangle.reconfigure(
+            configuration: configuration,
+            logger: Self.logger,
+            uploader: Self.uploader,
+            timerFactory: timerFactory,
+            shouldCaptureRequests: false,
+            requestCollector: nil
+        )
 
         // ViewController
         let imageSize: CGSize = .init(width: 150, height: 150)
@@ -364,12 +394,20 @@ extension BlueTriangleTests {
             requestExpectation.fulfill()
         }
 
-        // Configure
+        // BlueTriangleConfiguration
         let configuration = BlueTriangleConfiguration()
         Mock.configureBlueTriangle(configuration: configuration)
         configuration.requestBuilder = Self.requestBuilder
-        BlueTriangle.reconfigure(configuration: configuration,
-                                 timerFactory: timerFactory)
+
+        // Configure Blue Triangle
+        BlueTriangle.reconfigure(
+            configuration: configuration,
+            logger: Self.logger,
+            uploader: Self.uploader,
+            timerFactory: timerFactory,
+            shouldCaptureRequests: false,
+            requestCollector: nil
+        )
 
         // ViewController
         let imageSize: CGSize = .init(width: 150, height: 150)
@@ -413,12 +451,20 @@ extension BlueTriangleTests {
             requestExpectation.fulfill()
         }
 
-        // Configure
+        // BlueTriangleConfiguration
         let configuration = BlueTriangleConfiguration()
         Mock.configureBlueTriangle(configuration: configuration)
         configuration.requestBuilder = Self.requestBuilder
-        BlueTriangle.reconfigure(configuration: configuration,
-                                 timerFactory: timerFactory)
+
+        // Configure Blue Triangle
+        BlueTriangle.reconfigure(
+            configuration: configuration,
+            logger: Self.logger,
+            uploader: Self.uploader,
+            timerFactory: timerFactory,
+            shouldCaptureRequests: false,
+            requestCollector: nil
+        )
 
         // ViewController
         let imageSize: CGSize = .init(width: 150, height: 150)
