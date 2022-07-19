@@ -25,7 +25,7 @@ final class RequestCacheTests: XCTestCase {
     }
 
     override func tearDownWithError() throws {
-        super.tearDown()
+        try super.tearDownWithError()
         do {
             try FileManager.default.removeItem(at: Self.file.url)
         } catch CocoaError.Code.fileNoSuchFile {

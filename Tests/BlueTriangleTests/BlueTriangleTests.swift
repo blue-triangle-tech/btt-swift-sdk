@@ -429,7 +429,7 @@ extension BlueTriangleTests {
 
         // Uploader
         let requestExpectation = self.expectation(description: "Request sent")
-        Self.onSendRequest = { req in
+        Self.onSendRequest = { _ in
             requestExpectation.fulfill()
         }
 

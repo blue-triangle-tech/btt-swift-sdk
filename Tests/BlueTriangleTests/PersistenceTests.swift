@@ -21,7 +21,7 @@ final class PersistenceTests: XCTestCase {
     }()
 
     override func tearDownWithError() throws {
-        super.tearDown()
+        try super.tearDownWithError()
         do {
             try FileManager.default.removeItem(at: file.url)
         } catch CocoaError.Code.fileNoSuchFile {
