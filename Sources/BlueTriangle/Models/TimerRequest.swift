@@ -7,14 +7,15 @@
 
 import Foundation
 
-struct TimerRequest: Encodable {
+struct TimerRequest {
     let session: Session
     let page: Page
     let timer: PageTimeInterval
     let purchaseConfirmation: PurchaseConfirmation?
     let performanceReport: PerformanceReport?
+}
 
-    // swiftlint:disable:next function_body_length
+extension TimerRequest: Codable {
     func encode(to enc: Encoder) throws {
         var con = enc.container(keyedBy: CodingKeys.self)
 
@@ -114,6 +115,120 @@ struct TimerRequest: Encodable {
             try con.encode(performanceReport.minMemory, forKey: .minMemory)
             try con.encode(performanceReport.maxMemory, forKey: .maxMemory)
             try con.encode(performanceReport.avgMemory, forKey: .avgMemory)
+        }
+    }
+
+    init(from decoder: Decoder) throws {
+        let container: KeyedDecodingContainer<CodingKeys> = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Session
+        guard let isReturningVisitor = Bool(try container.decode(Int.self, forKey: CodingKeys.rv)) else {
+            throw DecodingError.keyNotFound(
+                CodingKeys.rv,
+                DecodingError.Context(codingPath: [CodingKeys.rv], debugDescription: ""))
+        }
+
+        self.session = Session(
+            siteID: try container.decode(String.self, forKey: CodingKeys.siteID),
+            globalUserID: try container.decode(Identifier.self, forKey: CodingKeys.globalUserID),
+            sessionID: try container.decode(Identifier.self, forKey: CodingKeys.sessionID),
+            isReturningVisitor: isReturningVisitor,
+            abTestID: try container.decode(String.self, forKey: CodingKeys.abTestID),
+            campaign: try container.decodeIfPresent(String.self, forKey: CodingKeys.campaign),
+            campaignMedium: try container.decode(String.self, forKey: CodingKeys.campaignMedium),
+            campaignName: try container.decode(String.self, forKey: CodingKeys.campaignName),
+            campaignSource: try container.decode(String.self, forKey: CodingKeys.campaignSource),
+            dataCenter: try container.decode(String.self, forKey: CodingKeys.dataCenter),
+            trafficSegmentName: try container.decode(String.self, forKey: CodingKeys.trafficSegmentName))
+
+        // CustomVariables
+        let customVariables = CustomVariables(
+            cv1: try container.decodeIfPresent(String.self, forKey: CodingKeys.cv1),
+            cv2: try container.decodeIfPresent(String.self, forKey: CodingKeys.cv2),
+            cv3: try container.decodeIfPresent(String.self, forKey: CodingKeys.cv3),
+            cv4: try container.decodeIfPresent(String.self, forKey: CodingKeys.cv4),
+            cv5: try container.decodeIfPresent(String.self, forKey: CodingKeys.cv5),
+            cv11: try container.decodeIfPresent(String.self, forKey: CodingKeys.cv11),
+            cv12: try container.decodeIfPresent(String.self, forKey: CodingKeys.cv12),
+            cv13: try container.decodeIfPresent(String.self, forKey: CodingKeys.cv13),
+            cv14: try container.decodeIfPresent(String.self, forKey: CodingKeys.cv14),
+            cv15: try container.decodeIfPresent(String.self, forKey: CodingKeys.cv15))
+
+        // CustomCategories
+        let customCategories = CustomCategories(
+            cv6: try container.decodeIfPresent(String.self, forKey: CodingKeys.cv6),
+            cv7: try container.decodeIfPresent(String.self, forKey: CodingKeys.cv7),
+            cv8: try container.decodeIfPresent(String.self, forKey: CodingKeys.cv8),
+            cv9: try container.decodeIfPresent(String.self, forKey: CodingKeys.cv9),
+            cv10: try container.decodeIfPresent(String.self, forKey: CodingKeys.cv10))
+
+        // CustomNumbers
+        let customNumbers: CustomNumbers?
+        if let cn1 = try container.decodeIfPresent(Double.self, forKey: CodingKeys.cn1) {
+            customNumbers = CustomNumbers(
+                cn1: cn1,
+                cn2: try container.decode(Double.self, forKey: CodingKeys.cn2),
+                cn3: try container.decode(Double.self, forKey: CodingKeys.cn3),
+                cn4: try container.decode(Double.self, forKey: CodingKeys.cn4),
+                cn5: try container.decode(Double.self, forKey: CodingKeys.cn5),
+                cn6: try container.decode(Double.self, forKey: CodingKeys.cn6),
+                cn7: try container.decode(Double.self, forKey: CodingKeys.cn7),
+                cn8: try container.decode(Double.self, forKey: CodingKeys.cn8),
+                cn9: try container.decode(Double.self, forKey: CodingKeys.cn9),
+                cn10: try container.decode(Double.self, forKey: CodingKeys.cn10),
+                cn11: try container.decode(Double.self, forKey: CodingKeys.cn11),
+                cn12: try container.decode(Double.self, forKey: CodingKeys.cn12),
+                cn13: try container.decode(Double.self, forKey: CodingKeys.cn13),
+                cn14: try container.decode(Double.self, forKey: CodingKeys.cn14),
+                cn15: try container.decode(Double.self, forKey: CodingKeys.cn15),
+                cn16: try container.decode(Double.self, forKey: CodingKeys.cn16),
+                cn17: try container.decode(Double.self, forKey: CodingKeys.cn17),
+                cn18: try container.decode(Double.self, forKey: CodingKeys.cn18),
+                cn19: try container.decode(Double.self, forKey: CodingKeys.cn19),
+                cn20: try container.decode(Double.self, forKey: CodingKeys.cn20))
+        } else {
+            customNumbers = nil
+        }
+
+        // Page
+        self.page = Page(
+            pageName: try container.decode(String.self, forKey: CodingKeys.pageName),
+            brandValue: try container.decode(Decimal.self, forKey: CodingKeys.brandValue),
+            pageType: try container.decode(String.self, forKey: CodingKeys.pageType),
+            referringURL: try container.decode(String.self, forKey: CodingKeys.referringURL),
+            url: try container.decode(String.self, forKey: CodingKeys.url),
+            customVariables: customVariables,
+            customCategories: customCategories,
+            customNumbers: customNumbers)
+
+        // Timer
+        self.timer = PageTimeInterval(
+            startTime: try container.decode(Millisecond.self, forKey: CodingKeys.navigationStart),
+            interactiveTime: try container.decode(Millisecond.self, forKey: CodingKeys.domInteractive),
+            pageTime: try container.decode(Millisecond.self, forKey: CodingKeys.pageTime))
+
+        // PurchaseConfirmation
+        if let pageValue = try container.decodeIfPresent(Decimal.self, forKey: CodingKeys.pageValue) {
+            self.purchaseConfirmation = PurchaseConfirmation(
+                pageValue: pageValue,
+                cartValue: try container.decode(Decimal.self, forKey: CodingKeys.cartValue),
+                orderNumber: try container.decode(String.self, forKey: CodingKeys.orderNumber),
+                orderTime: try container.decode(TimeInterval.self, forKey: CodingKeys.orderTime))
+        } else {
+            self.purchaseConfirmation = nil
+        }
+
+        // PerformanceReport
+        if let minCPU = try container.decodeIfPresent(Float.self, forKey: CodingKeys.minCPU) {
+            self.performanceReport = PerformanceReport(
+                minCPU: minCPU,
+                maxCPU: try container.decode(Float.self, forKey: CodingKeys.maxCPU),
+                avgCPU: try container.decode(Float.self, forKey: CodingKeys.avgCPU),
+                minMemory: try container.decode(UInt64.self, forKey: CodingKeys.minMemory),
+                maxMemory: try container.decode(UInt64.self, forKey: CodingKeys.maxMemory),
+                avgMemory: try container.decode(UInt64.self, forKey: CodingKeys.avgMemory))
+        } else {
+            self.performanceReport = nil
         }
     }
 
