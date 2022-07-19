@@ -6,30 +6,6 @@
 //
 
 import Foundation
-#if os(iOS) || os(tvOS)
-import UIKit.UIApplication
-
-let launchNotification = UIApplication.didFinishLaunchingNotification
-let activeNotification = UIApplication.didBecomeActiveNotification
-let backgroundNotification = UIApplication.didEnterBackgroundNotification
-let terminateNotification = UIApplication.willTerminateNotification
-#elseif os(watchOS)
-import WatchKit.WKExtension
-
-@available(watchOS 7.0, *)
-let launchNotification = WKExtension.applicationDidFinishLaunchingNotification
-@available(watchOS 7.0, *)
-let activeNotification = WKExtension.applicationDidBecomeActiveNotification
-@available(watchOS 7.0, *)
-let backgroundNotification = WKExtension.applicationDidEnterBackgroundNotification
-#elseif os(macOS)
-import AppKit.NSApplication
-
-let launchNotification = NSApplication.didFinishLaunchingNotification
-let activeNotification = NSApplication.didBecomeActiveNotification
-let backgroundNotification = NSApplication.willResignActiveNotification
-let terminateNotification = NSApplication.willTerminateNotification
-#endif
 
 class AppEventObserver {
     typealias EventHandler = () -> Void
@@ -59,12 +35,12 @@ class AppEventObserver {
             return
         }
         #endif
-        center.addObserver(self, selector: #selector(onDidFinishLaunching(_:)), name: launchNotification, object: nil)
-        center.addObserver(self, selector: #selector(onDidBecomeActive(_:)), name: activeNotification, object: nil)
-        center.addObserver(self, selector: #selector(onDidEnterBackground), name: backgroundNotification, object: nil)
+        center.addObserver(self, selector: #selector(onDidFinishLaunching(_:)), name: .finishedLaunching, object: nil)
+        center.addObserver(self, selector: #selector(onDidBecomeActive(_:)), name: .becameActive, object: nil)
+        center.addObserver(self, selector: #selector(onDidEnterBackground), name: .enteredBackground, object: nil)
 
         #if !os(watchOS)
-        center.addObserver(self, selector: #selector(onWillTerminate(_:)), name: terminateNotification, object: nil)
+        center.addObserver(self, selector: #selector(onWillTerminate(_:)), name: .willTerminate, object: nil)
         #endif
     }
 

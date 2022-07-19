@@ -92,7 +92,7 @@ final public class BlueTriangleConfiguration: NSObject {
 
     var capturedRequestCollectorConfiguration: CapturedRequestCollector.Configuration = .live
 
-    var requestBuilder: RequestBuilder = .live
+    var requestBuilder: TimerRequestBuilder = .live
 
     var performanceMonitorBuilder: PerformanceMonitorBuilder = .live
 }
@@ -150,7 +150,11 @@ final public class BlueTriangle: NSObject {
     }()
 
     private static var uploader: Uploading = {
-        configuration.uploaderConfiguration.makeUploader(logger: logger)
+        configuration.uploaderConfiguration.makeUploader(
+            logger: logger,
+            failureHandler: RequestFailureHandler(
+                file: .requests,
+                logger: logger))
     }()
 
     private static var timerFactory: (Page, BTTimer.TimerType) -> BTTimer = {

@@ -90,8 +90,8 @@ extension Mock {
 
     static func makeRequestBuilder(
         onBuild: @escaping (Session, BTTimer, PurchaseConfirmation?) -> Void = { _, _, _ in }
-    ) -> RequestBuilder {
-        RequestBuilder { session, timer, purchaseConfirmation in
+    ) -> TimerRequestBuilder {
+        TimerRequestBuilder { session, timer, purchaseConfirmation in
             onBuild(session, timer, purchaseConfirmation)
             return Request(method: .post, url: "https://example.com")
         }
@@ -253,7 +253,7 @@ extension Mock {
     ) -> CapturedRequest {
         CapturedRequest(
             domain: "cloudfront.net",
-            host:  "d33wubrfki0l68",
+            host: "d33wubrfki0l68",
             url: capturedRequestURLString,
             file: "logo-cw.f6eaf6dc.png",
             startTime: startTime,

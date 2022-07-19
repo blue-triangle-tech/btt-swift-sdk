@@ -7,20 +7,31 @@
 
 import Foundation
 
-struct Request: URLRequestConvertible {
+struct Request: Codable, URLRequestConvertible {
+    /// The query items for a request URL.
     typealias Parameters = [String: String]
+
+    /// The HTTP header fields for a request.
     typealias Headers = [String: String]
 
+    /// The HTTP request method.
     let method: HTTPMethod
-
+    /// The URL of the request.
     let url: URL
-
+    /// The query items for the request URL.
     let parameters: Parameters?
-
+    /// The HTTP header fields for a request.
     let headers: Headers?
-
+    /// The data sent as the message body of a request, such as for an HTTP POST request.
     let body: Data?
 
+    /// Creates a request.
+    /// - Parameters:
+    ///   - method: The HTTP method for the request.
+    ///   - url: The URL for the request.
+    ///   - parameters: The query items for the request URL.
+    ///   - headers: The HTTP header fields for the request.
+    ///   - body: The data for the request body.
     init(method: HTTPMethod, url: URL, parameters: Parameters? = nil, headers: Headers? = nil, body: Data? = nil) {
         self.method = method
         self.url = url
@@ -29,7 +40,9 @@ struct Request: URLRequestConvertible {
         self.body = body
     }
 
-    func asURLRequest() throws -> URLRequest {
+    /// Returns a ``URLRequest`` created from this request.
+    /// - Returns: The URL request instance.
+    func asURLRequest() -> URLRequest {
         var urlRequest: URLRequest
         if let parameters = parameters, !parameters.isEmpty,
            var components = URLComponents(url: url, resolvingAgainstBaseURL: true) {
@@ -51,6 +64,14 @@ struct Request: URLRequestConvertible {
 }
 
 extension Request {
+    /// Creates a request.
+    /// - Parameters:
+    ///   - method: The HTTP method for the request.
+    ///   - url: The URL for the request.
+    ///   - parameters: The query items for the request URL.
+    ///   - headers: The HTTP header fields for the request.
+    ///   - model: The model to be encoded as the body for the request.
+    ///   - encode: The closure to encode the model for the request body.
     init<T: Encodable>(
         method: HTTPMethod = .post,
         url: URL,
@@ -66,7 +87,8 @@ extension Request {
 
 // MARK: - Supporting Types
 extension Request {
-    enum HTTPMethod: String {
+    /// The HTTP Method.
+    enum HTTPMethod: String, Codable {
         case get = "GET"
         case post = "POST"
         case put = "PUT"

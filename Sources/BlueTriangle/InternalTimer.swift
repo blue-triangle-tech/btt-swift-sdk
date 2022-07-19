@@ -74,8 +74,7 @@ extension InternalTimer.State: CustomStringConvertible {
 }
 
 extension InternalTimer: CustomStringConvertible {
-    @usableFromInline
-    var description: String {
+    @usableFromInline var description: String {
         "InternalTimer(state: \(state), startTime: \(startTime), endTime: \(endTime))"
     }
 }
