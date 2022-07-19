@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct PerformanceReport: Codable {
+struct PerformanceReport: Codable, Equatable {
     let minCPU: Float
     let maxCPU: Float
     let avgCPU: Float

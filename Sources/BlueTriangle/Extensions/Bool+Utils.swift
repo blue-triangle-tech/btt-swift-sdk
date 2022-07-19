@@ -22,4 +22,15 @@ extension Bool {
         }
         return Double.random(in: 0...1) <= probability
     }
+
+    init?(_ int: Int) {
+        switch int {
+        case 0:
+            self = false
+        case 1:
+            self = true
+        default:
+            return nil
+        }
+    }
 }
