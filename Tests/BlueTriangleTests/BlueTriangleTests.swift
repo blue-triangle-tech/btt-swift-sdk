@@ -363,7 +363,12 @@ extension BlueTriangleTests {
         print(performanceMonitor.measurements)
 
         let base64Decoded = Data(base64Encoded: request.body!)!
-        let requestString = String(data: base64Decoded, encoding: .utf8)
+        let performanceReport = try JSONDecoder().decode(TimerRequest.self, from: base64Decoded).performanceReport!
+        XCTAssertNotEqual(performanceReport.maxCPU, 0.0)
+        XCTAssertNotEqual(performanceReport.avgCPU, 0.0)
+        XCTAssertNotEqual(performanceReport.minMemory, 0)
+        XCTAssertNotEqual(performanceReport.maxMemory, 0)
+        XCTAssertNotEqual(performanceReport.avgMemory, 0)
     }
 
     @available(iOS 14.0, *)
@@ -422,7 +427,12 @@ extension BlueTriangleTests {
         XCTAssertNotNil(finishedTimer)
 
         let base64Decoded = Data(base64Encoded: request.body!)!
-        let requestString = String(data: base64Decoded, encoding: .utf8)
+        let performanceReport = try JSONDecoder().decode(TimerRequest.self, from: base64Decoded).performanceReport!
+        XCTAssertNotEqual(performanceReport.maxCPU, 0.0)
+        XCTAssertNotEqual(performanceReport.avgCPU, 0.0)
+        XCTAssertNotEqual(performanceReport.minMemory, 0)
+        XCTAssertNotEqual(performanceReport.maxMemory, 0)
+        XCTAssertNotEqual(performanceReport.avgMemory, 0)
     }
 
     @available(iOS 14.0, *)
