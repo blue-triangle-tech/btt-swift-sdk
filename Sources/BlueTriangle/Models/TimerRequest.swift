@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct TimerRequest {
+struct TimerRequest: Equatable {
     let session: Session
     let page: Page
     let timer: PageTimeInterval
