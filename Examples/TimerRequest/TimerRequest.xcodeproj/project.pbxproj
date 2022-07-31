@@ -21,6 +21,11 @@
 		C953399128970E6B003A3602 /* SettingsAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953399028970E6B003A3602 /* SettingsAccess.swift */; };
 		C953399328970F18003A3602 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = C953399228970F18003A3602 /* Settings.bundle */; };
 		C953399528970FD1003A3602 /* TimerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953399428970FD1003A3602 /* TimerViewModel.swift */; };
+		C953399728970FF8003A3602 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953399628970FF8003A3602 /* Constants.swift */; };
+		C953399928971100003A3602 /* LabeledView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953399828971100003A3602 /* LabeledView.swift */; };
+		C953399B28971121003A3602 /* TimerRequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953399A28971121003A3602 /* TimerRequestView.swift */; };
+		C953399D2897113F003A3602 /* TimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953399C2897113F003A3602 /* TimerView.swift */; };
+		C953399F28971174003A3602 /* PreviewData.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953399E28971174003A3602 /* PreviewData.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +63,11 @@
 		C953399028970E6B003A3602 /* SettingsAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAccess.swift; sourceTree = "<group>"; };
 		C953399228970F18003A3602 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 		C953399428970FD1003A3602 /* TimerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerViewModel.swift; sourceTree = "<group>"; };
+		C953399628970FF8003A3602 /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		C953399828971100003A3602 /* LabeledView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabeledView.swift; sourceTree = "<group>"; };
+		C953399A28971121003A3602 /* TimerRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRequestView.swift; sourceTree = "<group>"; };
+		C953399C2897113F003A3602 /* TimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerView.swift; sourceTree = "<group>"; };
+		C953399E28971174003A3602 /* PreviewData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewData.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -113,6 +123,7 @@
 			children = (
 				C953395628970021003A3602 /* TimerRequestApp.swift */,
 				C953395828970021003A3602 /* ContentView.swift */,
+				C953399628970FF8003A3602 /* Constants.swift */,
 				C953398828970DD5003A3602 /* Extensions */,
 				C953395C28970022003A3602 /* Preview Content */,
 				C9533980289700E8003A3602 /* Resources */,
@@ -160,6 +171,9 @@
 		C953398128970319003A3602 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C953399828971100003A3602 /* LabeledView.swift */,
+				C953399A28971121003A3602 /* TimerRequestView.swift */,
+				C953399C2897113F003A3602 /* TimerView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -200,6 +214,7 @@
 		C953398F28970E56003A3602 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				C953399E28971174003A3602 /* PreviewData.swift */,
 				C953399028970E6B003A3602 /* SettingsAccess.swift */,
 			);
 			path = Utils;
@@ -339,13 +354,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C953399B28971121003A3602 /* TimerRequestView.swift in Sources */,
 				C953399528970FD1003A3602 /* TimerViewModel.swift in Sources */,
 				C953398E28970E1D003A3602 /* Bool+Utils.swift in Sources */,
 				C953395928970021003A3602 /* ContentView.swift in Sources */,
 				C953398A28970DE8003A3602 /* NumberFormatter+Ext.swift in Sources */,
 				C953398C28970DFF003A3602 /* Dictionary+RequestRepresentation.swift in Sources */,
+				C953399D2897113F003A3602 /* TimerView.swift in Sources */,
 				C953399128970E6B003A3602 /* SettingsAccess.swift in Sources */,
+				C953399F28971174003A3602 /* PreviewData.swift in Sources */,
 				C953395728970021003A3602 /* TimerRequestApp.swift in Sources */,
+				C953399728970FF8003A3602 /* Constants.swift in Sources */,
+				C953399928971100003A3602 /* LabeledView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
