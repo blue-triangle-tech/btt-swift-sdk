@@ -96,8 +96,9 @@
 			children = (
 				C953395628970021003A3602 /* TimerRequestApp.swift */,
 				C953395828970021003A3602 /* ContentView.swift */,
-				C953395A28970022003A3602 /* Assets.xcassets */,
 				C953395C28970022003A3602 /* Preview Content */,
+				C9533980289700E8003A3602 /* Resources */,
+				C953398128970319003A3602 /* Views */,
 			);
 			path = TimerRequest;
 			sourceTree = "<group>";
@@ -125,6 +126,21 @@
 				C953397328970022003A3602 /* TimerRequestUITestsLaunchTests.swift */,
 			);
 			path = TimerRequestUITests;
+			sourceTree = "<group>";
+		};
+		C9533980289700E8003A3602 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				C953395A28970022003A3602 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		C953398128970319003A3602 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
