@@ -20,6 +20,7 @@
 		C953398E28970E1D003A3602 /* Bool+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953398D28970E1D003A3602 /* Bool+Utils.swift */; };
 		C953399128970E6B003A3602 /* SettingsAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953399028970E6B003A3602 /* SettingsAccess.swift */; };
 		C953399328970F18003A3602 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = C953399228970F18003A3602 /* Settings.bundle */; };
+		C953399528970FD1003A3602 /* TimerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953399428970FD1003A3602 /* TimerViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -56,6 +57,7 @@
 		C953398D28970E1D003A3602 /* Bool+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bool+Utils.swift"; sourceTree = "<group>"; };
 		C953399028970E6B003A3602 /* SettingsAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAccess.swift; sourceTree = "<group>"; };
 		C953399228970F18003A3602 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
+		C953399428970FD1003A3602 /* TimerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -180,6 +182,7 @@
 		C953398728970D8D003A3602 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				C953399428970FD1003A3602 /* TimerViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -336,6 +339,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C953399528970FD1003A3602 /* TimerViewModel.swift in Sources */,
 				C953398E28970E1D003A3602 /* Bool+Utils.swift in Sources */,
 				C953395928970021003A3602 /* ContentView.swift in Sources */,
 				C953398A28970DE8003A3602 /* NumberFormatter+Ext.swift in Sources */,
