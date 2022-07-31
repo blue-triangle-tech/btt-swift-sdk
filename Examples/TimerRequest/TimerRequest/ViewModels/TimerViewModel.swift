@@ -99,7 +99,7 @@ class TimerViewModel: ObservableObject {
 
     func clear() {
         isReturningVisitor = false
-        abTestID = ""
+        abTestID = "Default"
         campaignMedium = ""
         campaignName = ""
         campaignSource = ""

@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		C953395728970021003A3602 /* TimerRequestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953395628970021003A3602 /* TimerRequestApp.swift */; };
-		C953395928970021003A3602 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953395828970021003A3602 /* ContentView.swift */; };
 		C953395B28970022003A3602 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C953395A28970022003A3602 /* Assets.xcassets */; };
 		C953395E28970022003A3602 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C953395D28970022003A3602 /* Preview Assets.xcassets */; };
 		C953396828970022003A3602 /* TimerRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953396728970022003A3602 /* TimerRequestTests.swift */; };
@@ -48,7 +47,6 @@
 /* Begin PBXFileReference section */
 		C953395328970021003A3602 /* TimerRequest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TimerRequest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C953395628970021003A3602 /* TimerRequestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRequestApp.swift; sourceTree = "<group>"; };
-		C953395828970021003A3602 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		C953395A28970022003A3602 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C953395D28970022003A3602 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		C953396328970022003A3602 /* TimerRequestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TimerRequestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -122,7 +120,6 @@
 			isa = PBXGroup;
 			children = (
 				C953395628970021003A3602 /* TimerRequestApp.swift */,
-				C953395828970021003A3602 /* ContentView.swift */,
 				C953399628970FF8003A3602 /* Constants.swift */,
 				C953398828970DD5003A3602 /* Extensions */,
 				C953395C28970022003A3602 /* Preview Content */,
@@ -357,7 +354,6 @@
 				C953399B28971121003A3602 /* TimerRequestView.swift in Sources */,
 				C953399528970FD1003A3602 /* TimerViewModel.swift in Sources */,
 				C953398E28970E1D003A3602 /* Bool+Utils.swift in Sources */,
-				C953395928970021003A3602 /* ContentView.swift in Sources */,
 				C953398A28970DE8003A3602 /* NumberFormatter+Ext.swift in Sources */,
 				C953398C28970DFF003A3602 /* Dictionary+RequestRepresentation.swift in Sources */,
 				C953399D2897113F003A3602 /* TimerView.swift in Sources */,

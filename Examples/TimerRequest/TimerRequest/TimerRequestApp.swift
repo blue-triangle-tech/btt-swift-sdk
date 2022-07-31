@@ -10,9 +10,16 @@ import SwiftUI
 
 @main
 struct TimerRequestApp: App {
+    init() {
+        BlueTriangle.configure { config in
+            config.siteID = Constants.siteID
+            // ...
+        }
+    }
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            TimerView(viewModel: TimerViewModel())
         }
     }
 }
