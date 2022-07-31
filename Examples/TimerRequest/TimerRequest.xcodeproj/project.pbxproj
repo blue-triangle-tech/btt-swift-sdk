@@ -15,6 +15,11 @@
 		C953397228970022003A3602 /* TimerRequestUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953397128970022003A3602 /* TimerRequestUITests.swift */; };
 		C953397428970022003A3602 /* TimerRequestUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953397328970022003A3602 /* TimerRequestUITestsLaunchTests.swift */; };
 		C953398628970D35003A3602 /* BlueTriangle in Frameworks */ = {isa = PBXBuildFile; productRef = C953398528970D35003A3602 /* BlueTriangle */; };
+		C953398A28970DE8003A3602 /* NumberFormatter+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953398928970DE8003A3602 /* NumberFormatter+Ext.swift */; };
+		C953398C28970DFF003A3602 /* Dictionary+RequestRepresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953398B28970DFF003A3602 /* Dictionary+RequestRepresentation.swift */; };
+		C953398E28970E1D003A3602 /* Bool+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953398D28970E1D003A3602 /* Bool+Utils.swift */; };
+		C953399128970E6B003A3602 /* SettingsAccess.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953399028970E6B003A3602 /* SettingsAccess.swift */; };
+		C953399328970F18003A3602 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = C953399228970F18003A3602 /* Settings.bundle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -46,6 +51,11 @@
 		C953397128970022003A3602 /* TimerRequestUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRequestUITests.swift; sourceTree = "<group>"; };
 		C953397328970022003A3602 /* TimerRequestUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRequestUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		C953398328970C4E003A3602 /* btt-swift-sdk */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "btt-swift-sdk"; path = ../..; sourceTree = "<group>"; };
+		C953398928970DE8003A3602 /* NumberFormatter+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NumberFormatter+Ext.swift"; sourceTree = "<group>"; };
+		C953398B28970DFF003A3602 /* Dictionary+RequestRepresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Dictionary+RequestRepresentation.swift"; sourceTree = "<group>"; };
+		C953398D28970E1D003A3602 /* Bool+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bool+Utils.swift"; sourceTree = "<group>"; };
+		C953399028970E6B003A3602 /* SettingsAccess.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAccess.swift; sourceTree = "<group>"; };
+		C953399228970F18003A3602 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,9 +111,12 @@
 			children = (
 				C953395628970021003A3602 /* TimerRequestApp.swift */,
 				C953395828970021003A3602 /* ContentView.swift */,
+				C953398828970DD5003A3602 /* Extensions */,
 				C953395C28970022003A3602 /* Preview Content */,
 				C9533980289700E8003A3602 /* Resources */,
+				C953398F28970E56003A3602 /* Utils */,
 				C953398128970319003A3602 /* Views */,
+				C953398728970D8D003A3602 /* ViewModels */,
 			);
 			path = TimerRequest;
 			sourceTree = "<group>";
@@ -136,6 +149,7 @@
 		C9533980289700E8003A3602 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				C953399228970F18003A3602 /* Settings.bundle */,
 				C953395A28970022003A3602 /* Assets.xcassets */,
 			);
 			path = Resources;
@@ -161,6 +175,31 @@
 			children = (
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C953398728970D8D003A3602 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		C953398828970DD5003A3602 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				C953398D28970E1D003A3602 /* Bool+Utils.swift */,
+				C953398B28970DFF003A3602 /* Dictionary+RequestRepresentation.swift */,
+				C953398928970DE8003A3602 /* NumberFormatter+Ext.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		C953398F28970E56003A3602 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				C953399028970E6B003A3602 /* SettingsAccess.swift */,
+			);
+			path = Utils;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -271,6 +310,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C953395E28970022003A3602 /* Preview Assets.xcassets in Resources */,
+				C953399328970F18003A3602 /* Settings.bundle in Resources */,
 				C953395B28970022003A3602 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -296,7 +336,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C953398E28970E1D003A3602 /* Bool+Utils.swift in Sources */,
 				C953395928970021003A3602 /* ContentView.swift in Sources */,
+				C953398A28970DE8003A3602 /* NumberFormatter+Ext.swift in Sources */,
+				C953398C28970DFF003A3602 /* Dictionary+RequestRepresentation.swift in Sources */,
+				C953399128970E6B003A3602 /* SettingsAccess.swift in Sources */,
 				C953395728970021003A3602 /* TimerRequestApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
