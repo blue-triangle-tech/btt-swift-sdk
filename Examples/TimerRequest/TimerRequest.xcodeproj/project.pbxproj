@@ -14,6 +14,7 @@
 		C953396828970022003A3602 /* TimerRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953396728970022003A3602 /* TimerRequestTests.swift */; };
 		C953397228970022003A3602 /* TimerRequestUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953397128970022003A3602 /* TimerRequestUITests.swift */; };
 		C953397428970022003A3602 /* TimerRequestUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953397328970022003A3602 /* TimerRequestUITestsLaunchTests.swift */; };
+		C953398628970D35003A3602 /* BlueTriangle in Frameworks */ = {isa = PBXBuildFile; productRef = C953398528970D35003A3602 /* BlueTriangle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +45,7 @@
 		C953396D28970022003A3602 /* TimerRequestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TimerRequestUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C953397128970022003A3602 /* TimerRequestUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRequestUITests.swift; sourceTree = "<group>"; };
 		C953397328970022003A3602 /* TimerRequestUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRequestUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		C953398328970C4E003A3602 /* btt-swift-sdk */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "btt-swift-sdk"; path = ../..; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +53,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C953398628970D35003A3602 /* BlueTriangle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -74,10 +77,12 @@
 		C953394A28970021003A3602 = {
 			isa = PBXGroup;
 			children = (
+				C953398228970C4E003A3602 /* Packages */,
 				C953395528970021003A3602 /* TimerRequest */,
 				C953396628970022003A3602 /* TimerRequestTests */,
 				C953397028970022003A3602 /* TimerRequestUITests */,
 				C953395428970021003A3602 /* Products */,
+				C953398428970D35003A3602 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -143,6 +148,21 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		C953398228970C4E003A3602 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				C953398328970C4E003A3602 /* btt-swift-sdk */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		C953398428970D35003A3602 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -159,6 +179,9 @@
 			dependencies = (
 			);
 			name = TimerRequest;
+			packageProductDependencies = (
+				C953398528970D35003A3602 /* BlueTriangle */,
+			);
 			productName = TimerRequest;
 			productReference = C953395328970021003A3602 /* TimerRequest.app */;
 			productType = "com.apple.product-type.application";
@@ -601,6 +624,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C953398528970D35003A3602 /* BlueTriangle */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BlueTriangle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C953394B28970021003A3602 /* Project object */;
 }
