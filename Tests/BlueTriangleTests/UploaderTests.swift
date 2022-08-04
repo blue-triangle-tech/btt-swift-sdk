@@ -163,6 +163,7 @@ final class UploaderTests: XCTestCase {
         let uploader = Uploader(queue: uploaderQueue,
                                 logger: logger,
                                 networking: networking,
+                                failureHandler: nil,
                                 retryConfiguration: Mock.retryConfiguration)
 
         let group = DispatchGroup()
