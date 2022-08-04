@@ -30,6 +30,13 @@ final public class PurchaseConfirmation: NSObject {
         self.cartValue = cartValue
         self.orderNumber = orderNumber
     }
+
+    init(pageValue: Decimal = 0.0, cartValue: Decimal, orderNumber: String, orderTime: TimeInterval = 0.0) {
+        self.pageValue = pageValue
+        self.cartValue = cartValue
+        self.orderNumber = orderNumber
+        self.orderTime = orderTime
+    }
 }
 
 // MARK: - Equatable
