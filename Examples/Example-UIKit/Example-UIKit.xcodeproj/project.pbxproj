@@ -16,6 +16,8 @@
 		C9015ADD2719CA61003BC6C2 /* Example_UIKitUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9015ADC2719CA61003BC6C2 /* Example_UIKitUITests.swift */; };
 		C9015ADF2719CA61003BC6C2 /* Example_UIKitUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9015ADE2719CA61003BC6C2 /* Example_UIKitUITestsLaunchTests.swift */; };
 		C9015AEF2719CAFA003BC6C2 /* BlueTriangle in Frameworks */ = {isa = PBXBuildFile; productRef = C9015AEE2719CAFA003BC6C2 /* BlueTriangle */; };
+		C9D79C9928B1929A002FBB28 /* Album.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79C9828B1929A002FBB28 /* Album.swift */; };
+		C9D79C9B28B192B9002FBB28 /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79C9A28B192B9002FBB28 /* Photo.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,6 +51,8 @@
 		C9015ADC2719CA61003BC6C2 /* Example_UIKitUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Example_UIKitUITests.swift; sourceTree = "<group>"; };
 		C9015ADE2719CA61003BC6C2 /* Example_UIKitUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Example_UIKitUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		C9015AEC2719CA99003BC6C2 /* btt-swift-sdk */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "btt-swift-sdk"; path = ../..; sourceTree = "<group>"; };
+		C9D79C9828B1929A002FBB28 /* Album.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Album.swift; sourceTree = "<group>"; };
+		C9D79C9A28B192B9002FBB28 /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -175,6 +179,8 @@
 		C92144C72788B7B1007712FC /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				C9D79C9828B1929A002FBB28 /* Album.swift */,
+				C9D79C9A28B192B9002FBB28 /* Photo.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -336,6 +342,8 @@
 				C9015AC02719CA60003BC6C2 /* RootViewController.swift in Sources */,
 				C9015ABC2719CA60003BC6C2 /* AppDelegate.swift in Sources */,
 				C9015ABE2719CA60003BC6C2 /* SceneDelegate.swift in Sources */,
+				C9D79C9928B1929A002FBB28 /* Album.swift in Sources */,
+				C9D79C9B28B192B9002FBB28 /* Photo.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
