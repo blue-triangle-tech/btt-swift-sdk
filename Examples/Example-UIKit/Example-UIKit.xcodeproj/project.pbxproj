@@ -18,8 +18,8 @@
 		C9015AEF2719CAFA003BC6C2 /* BlueTriangle in Frameworks */ = {isa = PBXBuildFile; productRef = C9015AEE2719CAFA003BC6C2 /* BlueTriangle */; };
 		C9D79C9928B1929A002FBB28 /* Album.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79C9828B1929A002FBB28 /* Album.swift */; };
 		C9D79C9B28B192B9002FBB28 /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79C9A28B192B9002FBB28 /* Photo.swift */; };
-		C9D79C9E28B192F7002FBB28 /* PlaceholderClientProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79C9D28B192F7002FBB28 /* PlaceholderClientProtocol.swift */; };
-		C9D79CA028B193C9002FBB28 /* PlaceholderClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79C9F28B193C9002FBB28 /* PlaceholderClient.swift */; };
+		C9D79C9E28B192F7002FBB28 /* PlaceholderServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79C9D28B192F7002FBB28 /* PlaceholderServiceProtocol.swift */; };
+		C9D79CA028B193C9002FBB28 /* JSONPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79C9F28B193C9002FBB28 /* JSONPlaceholder.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,8 +55,8 @@
 		C9015AEC2719CA99003BC6C2 /* btt-swift-sdk */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "btt-swift-sdk"; path = ../..; sourceTree = "<group>"; };
 		C9D79C9828B1929A002FBB28 /* Album.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Album.swift; sourceTree = "<group>"; };
 		C9D79C9A28B192B9002FBB28 /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
-		C9D79C9D28B192F7002FBB28 /* PlaceholderClientProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderClientProtocol.swift; sourceTree = "<group>"; };
-		C9D79C9F28B193C9002FBB28 /* PlaceholderClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderClient.swift; sourceTree = "<group>"; };
+		C9D79C9D28B192F7002FBB28 /* PlaceholderServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderServiceProtocol.swift; sourceTree = "<group>"; };
+		C9D79C9F28B193C9002FBB28 /* JSONPlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONPlaceholder.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -207,7 +207,7 @@
 		C92144D52788BD45007712FC /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				C9D79C9F28B193C9002FBB28 /* PlaceholderClient.swift */,
+				C9D79C9F28B193C9002FBB28 /* JSONPlaceholder.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -215,7 +215,7 @@
 		C9D79C9C28B192E7002FBB28 /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
-				C9D79C9D28B192F7002FBB28 /* PlaceholderClientProtocol.swift */,
+				C9D79C9D28B192F7002FBB28 /* PlaceholderServiceProtocol.swift */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -354,10 +354,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				C9015AC02719CA60003BC6C2 /* RootViewController.swift in Sources */,
-				C9D79CA028B193C9002FBB28 /* PlaceholderClient.swift in Sources */,
+				C9D79CA028B193C9002FBB28 /* JSONPlaceholder.swift in Sources */,
 				C9015ABC2719CA60003BC6C2 /* AppDelegate.swift in Sources */,
 				C9015ABE2719CA60003BC6C2 /* SceneDelegate.swift in Sources */,
-				C9D79C9E28B192F7002FBB28 /* PlaceholderClientProtocol.swift in Sources */,
+				C9D79C9E28B192F7002FBB28 /* PlaceholderServiceProtocol.swift in Sources */,
 				C9D79C9928B1929A002FBB28 /* Album.swift in Sources */,
 				C9D79C9B28B192B9002FBB28 /* Photo.swift in Sources */,
 			);

@@ -1,5 +1,5 @@
 //
-//  PlaceholderClient.swift
+//  JSONPlaceholder.swift
 //  Example-UIKit
 //
 //  Created by Mathew Gacy on 8/20/22.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct PlaceholderClient: PlaceholderClientProtocol {
+struct JSONPlaceholder: PlaceholderServiceProtocol {
     let session: URLSession
 
     init(session: URLSession) {
