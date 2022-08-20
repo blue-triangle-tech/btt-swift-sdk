@@ -8,7 +8,7 @@
 
 import UIKit
 
-final class ImageCell: UICollectionViewCell {
+final class PhotoCell: UICollectionViewCell {
     var photo: Photo?
     var loadingTask: Task<Void, Never>?
 
