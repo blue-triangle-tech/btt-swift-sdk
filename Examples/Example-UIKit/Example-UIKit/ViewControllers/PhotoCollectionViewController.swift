@@ -52,6 +52,8 @@ final class PhotoCollectionViewController: UIViewController {
     private let layoutBuilder: LayoutBuilder
     private lazy var dataSource = makeDataSource(for: collectionView)
     private var loadingTask: Task<Void, Never>?
+    // Retain timer
+    private var timer: BTTimer?
 
     lazy var collectionView: UICollectionView = {
         let view = UICollectionView(frame: .zero, collectionViewLayout: layoutBuilder.buildLayout())
@@ -74,6 +76,17 @@ final class PhotoCollectionViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        // Start timer
+        let page = Page(pageName: "Album_Photos",
+                        brandValue: 0.5,
+                        pageType: "Page_Type",
+                        referringURL: "https://mobelux.com/z",
+                        url: "https://mobelux.com/photos",
+                        customVariables: nil,
+                        customCategories: nil,
+                        customNumbers: nil)
+        timer = BlueTriangle.startTimer(page: page)
 
         view.backgroundColor = .systemBackground
         view.addSubview(collectionView)
@@ -100,6 +113,11 @@ final class PhotoCollectionViewController: UIViewController {
                 let snapshot = SingleSection.makeInitialSnapshot(for: photos)
                 await dataSource.apply(snapshot)
 
+                // End timer
+                if let timer = timer {
+                    BlueTriangle.endTimer(timer)
+                }
+
                 loadingTask?.cancel()
                 loadingTask = nil
             } catch {
@@ -109,6 +127,12 @@ final class PhotoCollectionViewController: UIViewController {
     }
 
     private func handleError(_ error: Error) {
+        print("ERROR: \(error)")
+
+        // End timer
+        if let timer = timer {
+            BlueTriangle.endTimer(timer)
+        }
     }
 }
 
