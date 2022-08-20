@@ -20,6 +20,8 @@
 		C9D79C9B28B192B9002FBB28 /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79C9A28B192B9002FBB28 /* Photo.swift */; };
 		C9D79C9E28B192F7002FBB28 /* PlaceholderServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79C9D28B192F7002FBB28 /* PlaceholderServiceProtocol.swift */; };
 		C9D79CA028B193C9002FBB28 /* JSONPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79C9F28B193C9002FBB28 /* JSONPlaceholder.swift */; };
+		C9D79CB228B19E36002FBB28 /* PhotoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79CB128B19E36002FBB28 /* PhotoCell.swift */; };
+		C9D79CB428B19F36002FBB28 /* ViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79CB328B19F36002FBB28 /* ViewState.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +59,8 @@
 		C9D79C9A28B192B9002FBB28 /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 		C9D79C9D28B192F7002FBB28 /* PlaceholderServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderServiceProtocol.swift; sourceTree = "<group>"; };
 		C9D79C9F28B193C9002FBB28 /* JSONPlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONPlaceholder.swift; sourceTree = "<group>"; };
+		C9D79CB128B19E36002FBB28 /* PhotoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCell.swift; sourceTree = "<group>"; };
+		C9D79CB328B19F36002FBB28 /* ViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewState.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -186,6 +190,7 @@
 			children = (
 				C9D79C9828B1929A002FBB28 /* Album.swift */,
 				C9D79C9A28B192B9002FBB28 /* Photo.swift */,
+				C9D79CB328B19F36002FBB28 /* ViewState.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -200,6 +205,7 @@
 		C92144D22788B94D007712FC /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				C9D79CB128B19E36002FBB28 /* PhotoCell.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -358,6 +364,8 @@
 				C9D79CA028B193C9002FBB28 /* JSONPlaceholder.swift in Sources */,
 				C9015ABC2719CA60003BC6C2 /* AppDelegate.swift in Sources */,
 				C9015ABE2719CA60003BC6C2 /* SceneDelegate.swift in Sources */,
+				C9D79CB228B19E36002FBB28 /* PhotoCell.swift in Sources */,
+				C9D79CB428B19F36002FBB28 /* ViewState.swift in Sources */,
 				C9D79C9E28B192F7002FBB28 /* PlaceholderServiceProtocol.swift in Sources */,
 				C9D79C9928B1929A002FBB28 /* Album.swift in Sources */,
 				C9D79C9B28B192B9002FBB28 /* Photo.swift in Sources */,
