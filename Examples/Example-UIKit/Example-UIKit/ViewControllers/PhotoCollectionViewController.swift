@@ -51,6 +51,7 @@ final class PhotoCollectionViewController: UIViewController {
     private let jsonPlaceholder: PlaceholderServiceProtocol
     private let layoutBuilder: LayoutBuilder
     private lazy var dataSource = makeDataSource(for: collectionView)
+    private var loadingTask: Task<Void, Never>?
 
     lazy var collectionView: UICollectionView = {
         let view = UICollectionView(frame: .zero, collectionViewLayout: layoutBuilder.buildLayout())
@@ -88,6 +89,23 @@ final class PhotoCollectionViewController: UIViewController {
     // MARK: - Networking
 
     private func fetchData() {
+        loadingTask = Task {
+            do {
+                let albums = try await jsonPlaceholder.fetchAlbums()
+                guard let album = albums.first else {
+                    return
+                }
+                let photos = try await jsonPlaceholder.fetchPhotos(albumId: album.id)
+
+                let snapshot = SingleSection.makeInitialSnapshot(for: photos)
+                await dataSource.apply(snapshot)
+
+                loadingTask?.cancel()
+                loadingTask = nil
+            } catch {
+                handleError(error)
+            }
+        }
     }
 
     private func handleError(_ error: Error) {
@@ -106,7 +124,19 @@ private extension PhotoCollectionViewController {
         cell.photo = photo
         cell.render(.loading)
         cell.loadingTask = Task {
-            // ...
+            do {
+                let imageData = try await jsonPlaceholder.fetchPhoto(url: photo.thumbnailUrl)
+                guard cell.photo?.id == photo.id else {
+                    return
+                }
+                guard let image = UIImage(data: imageData) else {
+                    cell.render(.empty)
+                    return
+                }
+                cell.render(.loaded(image))
+            } catch {
+                cell.render(.errror(error))
+            }
         }
     }
 
