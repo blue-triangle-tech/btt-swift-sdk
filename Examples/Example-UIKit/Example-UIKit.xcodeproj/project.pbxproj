@@ -22,6 +22,7 @@
 		C9D79CA028B193C9002FBB28 /* JSONPlaceholder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79C9F28B193C9002FBB28 /* JSONPlaceholder.swift */; };
 		C9D79CB228B19E36002FBB28 /* PhotoCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79CB128B19E36002FBB28 /* PhotoCell.swift */; };
 		C9D79CB428B19F36002FBB28 /* ViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79CB328B19F36002FBB28 /* ViewState.swift */; };
+		C9D79CB628B19F82002FBB28 /* PhotoCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79CB528B19F82002FBB28 /* PhotoCollectionViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -61,6 +62,7 @@
 		C9D79C9F28B193C9002FBB28 /* JSONPlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONPlaceholder.swift; sourceTree = "<group>"; };
 		C9D79CB128B19E36002FBB28 /* PhotoCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCell.swift; sourceTree = "<group>"; };
 		C9D79CB328B19F36002FBB28 /* ViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewState.swift; sourceTree = "<group>"; };
+		C9D79CB528B19F82002FBB28 /* PhotoCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCollectionViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -181,6 +183,7 @@
 			isa = PBXGroup;
 			children = (
 				C9015ABF2719CA60003BC6C2 /* RootViewController.swift */,
+				C9D79CB528B19F82002FBB28 /* PhotoCollectionViewController.swift */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -365,6 +368,7 @@
 				C9015ABC2719CA60003BC6C2 /* AppDelegate.swift in Sources */,
 				C9015ABE2719CA60003BC6C2 /* SceneDelegate.swift in Sources */,
 				C9D79CB228B19E36002FBB28 /* PhotoCell.swift in Sources */,
+				C9D79CB628B19F82002FBB28 /* PhotoCollectionViewController.swift in Sources */,
 				C9D79CB428B19F36002FBB28 /* ViewState.swift in Sources */,
 				C9D79C9E28B192F7002FBB28 /* PlaceholderServiceProtocol.swift in Sources */,
 				C9D79C9928B1929A002FBB28 /* Album.swift in Sources */,
