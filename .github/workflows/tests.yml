@@ -35,6 +35,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build for ${{ matrix.platform }}
-        run: xcodebuild build-for-testing -scheme spm-github-actions-test -destination "platform=${{ matrix.platform }} Simulator,OS=latest,name=${{ matrix.device }}" | xcpretty
+        run: xcodebuild build-for-testing -scheme ${{ matrix.scheme }} -destination "platform=${{ matrix.platform }} Simulator,OS=latest,name=${{ matrix.device }}" | xcpretty
       - name: Run Tests
         run: xcodebuild test-without-building -scheme ${{ matrix.scheme }} -destination "platform=${{ matrix.platform }} Simulator,OS=latest,name=${{ matrix.device }}" | xcpretty
