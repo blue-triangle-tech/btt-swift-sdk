@@ -37,4 +37,9 @@ jobs:
       - name: Build for ${{ matrix.platform }}
         run: xcodebuild build-for-testing -scheme ${{ matrix.scheme }} -destination "platform=${{ matrix.platform }} Simulator,OS=latest,name=${{ matrix.device }}" | xcpretty
       - name: Run Tests
-        run: xcodebuild test-without-building -scheme ${{ matrix.scheme }} -destination "platform=${{ matrix.platform }} Simulator,OS=latest,name=${{ matrix.device }}" | xcpretty
+        run: xcodebuild test-without-building -scheme ${{ matrix.scheme }} -destination "platform=${{ matrix.platform }} Simulator,OS=latest,name=${{ matrix.device }}" -resultBundlePath TestResults | xcpretty
+      - name: Show Test Results
+        uses: kishikawakatsumi/xcresulttool@v1.5.0
+        with:
+          path: TestResults.xcresult
+        if: success() || failure()
