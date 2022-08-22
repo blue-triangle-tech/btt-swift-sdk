@@ -3,6 +3,7 @@
 //  Example-UIKitTests
 //
 //  Created by Mathew Gacy on 10/15/21.
+//  Copyright © 2022 Blue Triangle. All rights reserved.
 //
 
 import XCTest
