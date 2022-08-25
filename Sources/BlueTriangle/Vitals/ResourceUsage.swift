@@ -11,7 +11,7 @@ struct ResourceUsage: ResourceUsageMeasuring {
 
     static func cpu() -> Double {
         var totalUsageOfCPU: Double = 0.0
-        var threadList: thread_act_array_t = UnsafeMutablePointer(mutating: [thread_act_t]())
+        var threadList: thread_act_array_t?
         var threadCount: mach_msg_type_number_t = 0
 
         let threadResult = withUnsafeMutablePointer(to: &threadList) {
@@ -20,7 +20,7 @@ struct ResourceUsage: ResourceUsageMeasuring {
             }
         }
 
-        if threadResult == KERN_SUCCESS {
+        if threadResult == KERN_SUCCESS, let threadList = threadList {
             for index in 0..<threadCount {
                 var threadInfo = thread_basic_info()
                 var threadInfoCount = mach_msg_type_number_t(THREAD_INFO_MAX)
