@@ -1,0 +1,47 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: Type of release
+        type: choice
+        required: true
+        options:
+          - patch
+          - minor
+          - major
+
+env:
+  VERSION-FILE-PATH: 'Sources/BlueTriangle/Version.swift'
+
+jobs:
+  foo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout main
+        uses: actions/checkout@v3
+
+      - name: Get Current Version
+        id: current
+
+      - name: Bump Version
+        id: bump
+
+      - name: Update Version File
+
+      - name: Commit Changes
+        id: commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Bump version
+
+      - name: Create Tag
+        uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/${{ steps.bump.outputs.version }}',
+              sha: '${{ steps.commit.outputs.commit_hash }}'
+            })
