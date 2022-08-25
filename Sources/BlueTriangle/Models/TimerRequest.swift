@@ -21,6 +21,7 @@ extension TimerRequest: Codable {
 
         // Additional
         try con.encode(Constants.browser, forKey: .browser)
+        try con.encode(BlueTriangle.version, forKey: .btV)
         try con.encode(Constants.device, forKey: .device)
         try con.encode(Constants.os, forKey: .os)
 
@@ -235,6 +236,7 @@ extension TimerRequest: Codable {
     enum CodingKeys: String, CodingKey {
         // Additional
         case browser
+        case btV
         case device
         case os
         // Session

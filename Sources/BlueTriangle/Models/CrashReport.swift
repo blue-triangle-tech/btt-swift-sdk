@@ -9,6 +9,7 @@ import Foundation
 
 struct CrashReport: Codable {
     let message: String
+    let btV: String
     let eTp: String
     let eCnt: Int
     let appName: String
@@ -18,6 +19,7 @@ struct CrashReport: Codable {
 
     enum CodingKeys: String, CodingKey {
         case message = "msg"
+        case btV
         case eTp
         case eCnt
         case appName = "url"
@@ -34,6 +36,7 @@ extension CrashReport {
     ) {
         self.message = exception.bttCrashReportMessage
         self.eCnt = 1
+        self.btV = BlueTriangle.version
         self.eTp = Constants.eTp
         self.appName = "iOS%20App" // this should be the app name
         self.line = 1
