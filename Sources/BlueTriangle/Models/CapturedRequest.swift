@@ -31,7 +31,6 @@ struct CapturedRequest: Encodable, Equatable {
         case other
     }
 
-    let btV = Version.number
     let entryType = "resource"
     /// Page domain without host.
     var domain: String
@@ -160,7 +159,6 @@ extension CapturedRequest {
 // MARK: - Supporting Types
 extension CapturedRequest {
     enum CodingKeys: String, CodingKey {
-        case btV
         case entryType = "e"
         case domain = "dmn"
         case host = "h"
