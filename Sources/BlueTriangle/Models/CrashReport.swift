@@ -38,7 +38,7 @@ extension CrashReport {
         self.eCnt = 1
         self.btV = Version.number
         self.eTp = Constants.eTp
-        self.appName = "iOS%20App" // this should be the app name
+        self.appName = Bundle.main.appName ?? "Unknown"
         self.line = 1
         self.column = 1
         self.time = intervalProvider().milliseconds
