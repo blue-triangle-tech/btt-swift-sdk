@@ -7,8 +7,9 @@
 
 import Foundation
 
+/// An object that measures use of hardware resources.
 struct ResourceUsage: ResourceUsageMeasuring {
-
+    /// Returns current CPU usage.
     static func cpu() -> Double {
         var totalUsageOfCPU: Double = 0.0
         var threadList: thread_act_array_t?
@@ -48,8 +49,9 @@ struct ResourceUsage: ResourceUsageMeasuring {
         return totalUsageOfCPU
     }
 
-    // https://stackoverflow.com/a/50968168/4472195
+    /// Returns current memory usage.
     static func memory() -> UInt64 {
+        // https://stackoverflow.com/a/50968168/4472195
         var taskInfo = task_vm_info_data_t()
         var count = mach_msg_type_number_t(MemoryLayout<task_vm_info>.size) / 4
         let result: kern_return_t = withUnsafeMutablePointer(to: &taskInfo) {
