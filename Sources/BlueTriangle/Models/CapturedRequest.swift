@@ -31,7 +31,7 @@ struct CapturedRequest: Encodable, Equatable {
         case other
     }
 
-    let btV = BlueTriangle.version
+    let btV = Version.number
     let entryType = "resource"
     /// Page domain without host.
     var domain: String

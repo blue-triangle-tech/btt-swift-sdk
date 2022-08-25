@@ -143,7 +143,7 @@ extension BlueTriangleTests {
             appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
             os: Device.os,
             osVersion: Device.osVersion,
-            sdkVersion: BlueTriangle.version)
+            sdkVersion: Version.number)
 
         XCTAssertEqual(requestString, expectedString)
     }
@@ -223,7 +223,7 @@ extension BlueTriangleTests {
             appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
             os: Device.os,
             osVersion: Device.osVersion,
-            sdkVersion: BlueTriangle.version)
+            sdkVersion: Version.number)
 
         XCTAssertEqual(requestString, expectedString)
     }

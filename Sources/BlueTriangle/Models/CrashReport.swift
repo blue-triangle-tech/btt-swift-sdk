@@ -36,7 +36,7 @@ extension CrashReport {
     ) {
         self.message = exception.bttCrashReportMessage
         self.eCnt = 1
-        self.btV = BlueTriangle.version
+        self.btV = Version.number
         self.eTp = Constants.eTp
         self.appName = "iOS%20App" // this should be the app name
         self.line = 1

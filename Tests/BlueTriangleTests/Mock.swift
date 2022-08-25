@@ -267,7 +267,7 @@ extension Mock {
 
 // MARK: - Request
 extension Mock {
-    static var capturedRequestJSON = "[{\"rE\":3000,\"h\":\"example\",\"sT\":2000,\"i\":\"other\",\"ez\":-1,\"URL\":\"https:\\/\\/example.com\\/foo.json\",\"dz\":0,\"d\":1000,\"e\":\"resource\",\"f\":\"foo.json\",\"dmn\":\"example.com\",\"btV\":\"\(BlueTriangle.version)\"}]"
+    static var capturedRequestJSON = "[{\"rE\":3000,\"h\":\"example\",\"sT\":2000,\"i\":\"other\",\"ez\":-1,\"URL\":\"https:\\/\\/example.com\\/foo.json\",\"dz\":0,\"d\":1000,\"e\":\"resource\",\"f\":\"foo.json\",\"dmn\":\"example.com\",\"btV\":\"\(Version.number)\"}]"
 
     static func makeTimerRequestJSON(appVersion: String, os: String, osVersion: String, sdkVersion: String) -> String {
         """

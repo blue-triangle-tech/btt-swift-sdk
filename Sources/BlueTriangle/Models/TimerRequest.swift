@@ -21,7 +21,7 @@ extension TimerRequest: Codable {
 
         // Additional
         try con.encode(Constants.browser, forKey: .browser)
-        try con.encode(BlueTriangle.version, forKey: .btV)
+        try con.encode(Version.number, forKey: .btV)
         try con.encode(Constants.device, forKey: .device)
         try con.encode(Constants.os, forKey: .os)
 
