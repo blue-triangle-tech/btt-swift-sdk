@@ -142,7 +142,8 @@ extension BlueTriangleTests {
         let expectedString = Mock.makeTimerRequestJSON(
             appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
             os: Device.os,
-            osVersion: Device.osVersion)
+            osVersion: Device.osVersion,
+            sdkVersion: BlueTriangle.version)
 
         XCTAssertEqual(requestString, expectedString)
     }
@@ -221,7 +222,8 @@ extension BlueTriangleTests {
         let expectedString = Mock.makeTimerRequestJSON(
             appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
             os: Device.os,
-            osVersion: Device.osVersion)
+            osVersion: Device.osVersion,
+            sdkVersion: BlueTriangle.version)
 
         XCTAssertEqual(requestString, expectedString)
     }
