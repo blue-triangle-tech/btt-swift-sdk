@@ -13,11 +13,7 @@ import WatchKit
 #endif
 
 enum Device {
-
-    static var bvzn: String {
-        "\(Constants.browser)-\(Bundle.main.releaseVersionNumber ?? "0.0")-\(os) \(osVersion)"
-    }
-
+    /// The operating system name.
     static var os: String {
         #if os(iOS) || os(tvOS)
         return UIDevice.current.systemName
@@ -30,6 +26,7 @@ enum Device {
         #endif
     }
 
+    /// The operating system version.
     static var osVersion: String {
         #if os(iOS) || os(tvOS)
         return UIDevice.current.systemVersion
@@ -42,6 +39,7 @@ enum Device {
         #endif
     }
 
+    /// The device model name.
     static var name: String {
         #if os(iOS) || os(tvOS)
         return UIDevice.current.name
@@ -52,6 +50,17 @@ enum Device {
         #endif
     }
 
+    /// The BlueTriangle browser version.
+    static var bvzn: String {
+        "\(Constants.browser)-\(Bundle.main.releaseVersionNumber ?? "0.0")-\(os) \(osVersion)"
+    }
+
+    /// The User-Agent token.
+    static var userAgentToken: String {
+        "\(os)/\(osVersion) (\(name))"
+    }
+
+    /// Returns device name.
     private static func platform() -> String {
         var size = 0
         sysctlbyname("hw.model", nil, &size, nil, 0)
