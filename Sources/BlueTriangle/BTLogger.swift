@@ -68,6 +68,15 @@ final class BTLogger: Logging {
         }
     }
 
+    func logDebug(
+        _ message: @escaping () -> String,
+        file: StaticString,
+        function: StaticString,
+        line: UInt
+    ) {
+        logger.log(level: .debug, message: message, file: file, function: function, line: line)
+    }
+
     func logInfo(
         _ message: @escaping () -> String,
         file: StaticString,
