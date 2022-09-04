@@ -48,10 +48,15 @@ final class PhotoCollectionViewController: UIViewController {
     typealias Snapshot = NSDiffableDataSourceSnapshot<SingleSection, Photo>
     typealias CellRegistration = UICollectionView.CellRegistration<PhotoCell, Photo>
 
-    private let jsonPlaceholder: PlaceholderServiceProtocol
+    // Collection View
     private let layoutBuilder: LayoutBuilder
     private lazy var dataSource = makeDataSource(for: collectionView)
+
+    // Data Loading
+    private let jsonPlaceholder: PlaceholderServiceProtocol
+    private let imageLoader: ImageLoader
     private var loadingTask: Task<Void, Never>?
+
     // Retain timer
     private var timer: BTTimer?
 
@@ -64,8 +69,9 @@ final class PhotoCollectionViewController: UIViewController {
 
     // MARK: - Lifecycle
 
-    init(jsonPlaceholder: PlaceholderServiceProtocol, layoutBuilder: LayoutBuilder = .standard) {
+    init(jsonPlaceholder: PlaceholderServiceProtocol, imageLoader: ImageLoader, layoutBuilder: LayoutBuilder = .standard) {
         self.jsonPlaceholder = jsonPlaceholder
+        self.imageLoader = imageLoader
         self.layoutBuilder = layoutBuilder
         super.init(nibName: nil, bundle: nil)
     }
@@ -74,10 +80,14 @@ final class PhotoCollectionViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
+    deinit {
+        loadingTask?.cancel()
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Start timer
+        // Start timer and retain reference to it
         let page = Page(pageName: "Album_Photos",
                         brandValue: 0.5,
                         pageType: "Page_Type",
@@ -111,12 +121,16 @@ final class PhotoCollectionViewController: UIViewController {
                 let photos = try await jsonPlaceholder.fetchPhotos(albumId: album.id)
 
                 let snapshot = SingleSection.makeInitialSnapshot(for: photos)
-                await dataSource.apply(snapshot)
 
-                // End timer
-                if let timer = timer {
-                    BlueTriangle.endTimer(timer)
+                // End timer after initial view content has finished loading
+                await imageLoader.setCompletion { [weak self] in
+                    if let timer = self?.timer {
+                        BlueTriangle.endTimer(timer)
+                        self?.timer = nil
+                    }
                 }
+                
+                await dataSource.apply(snapshot)
 
                 loadingTask?.cancel()
                 loadingTask = nil
@@ -149,15 +163,13 @@ private extension PhotoCollectionViewController {
         cell.render(.loading)
         cell.loadingTask = Task {
             do {
-                let imageData = try await jsonPlaceholder.fetchPhoto(url: photo.thumbnailUrl)
+                let image = try await imageLoader.load(photo.thumbnailUrl)
                 guard cell.photo?.id == photo.id else {
                     return
                 }
-                guard let image = UIImage(data: imageData) else {
-                    cell.render(.empty)
-                    return
-                }
-                cell.render(.loaded(image))
+
+                let viewState: ViewState<UIImage> = image != nil ? .loaded(image!) : .empty
+                cell.render(viewState)
             } catch {
                 cell.render(.errror(error))
             }

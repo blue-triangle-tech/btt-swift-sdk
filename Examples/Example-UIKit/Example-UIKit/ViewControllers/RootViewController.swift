@@ -64,8 +64,11 @@ class RootViewController: UIViewController {
         let session = URLSession(configuration: configuration)
 
         let jsonPlaceholder = JSONPlaceholder(session: session)
+        let imageLoader = ImageLoader(session: session)
 
-        let viewController = PhotoCollectionViewController(jsonPlaceholder: jsonPlaceholder)
+        let viewController = PhotoCollectionViewController(
+            jsonPlaceholder: jsonPlaceholder,
+            imageLoader: imageLoader)
         navigationController?.pushViewController(viewController, animated: true)
     }
 

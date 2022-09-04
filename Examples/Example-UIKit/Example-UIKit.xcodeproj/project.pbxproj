@@ -24,6 +24,7 @@
 		C9D79CB428B19F36002FBB28 /* ViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79CB328B19F36002FBB28 /* ViewState.swift */; };
 		C9D79CB628B19F82002FBB28 /* PhotoCollectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79CB528B19F82002FBB28 /* PhotoCollectionViewController.swift */; };
 		C9D79CB828B1A2FA002FBB28 /* SingleSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79CB728B1A2FA002FBB28 /* SingleSection.swift */; };
+		C9D7E92028C425CC00FC1C27 /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D7E91F28C425CC00FC1C27 /* ImageLoader.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,6 +66,7 @@
 		C9D79CB328B19F36002FBB28 /* ViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewState.swift; sourceTree = "<group>"; };
 		C9D79CB528B19F82002FBB28 /* PhotoCollectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoCollectionViewController.swift; sourceTree = "<group>"; };
 		C9D79CB728B1A2FA002FBB28 /* SingleSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleSection.swift; sourceTree = "<group>"; };
+		C9D7E91F28C425CC00FC1C27 /* ImageLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoader.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -219,6 +221,7 @@
 		C92144D52788BD45007712FC /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				C9D7E91F28C425CC00FC1C27 /* ImageLoader.swift */,
 				C9D79C9F28B193C9002FBB28 /* JSONPlaceholder.swift */,
 			);
 			path = Services;
@@ -368,6 +371,7 @@
 			files = (
 				C9015AC02719CA60003BC6C2 /* RootViewController.swift in Sources */,
 				C9D79CB828B1A2FA002FBB28 /* SingleSection.swift in Sources */,
+				C9D7E92028C425CC00FC1C27 /* ImageLoader.swift in Sources */,
 				C9D79CA028B193C9002FBB28 /* JSONPlaceholder.swift in Sources */,
 				C9015ABC2719CA60003BC6C2 /* AppDelegate.swift in Sources */,
 				C9015ABE2719CA60003BC6C2 /* SceneDelegate.swift in Sources */,

@@ -11,5 +11,4 @@ import Foundation
 protocol PlaceholderServiceProtocol {
     func fetchAlbums() async throws -> [Album]
     func fetchPhotos(albumId: Int) async throws -> [Photo]
-    func fetchPhoto(url: URL) async throws -> Data
 }
