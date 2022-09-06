@@ -199,6 +199,7 @@ extension PhotoCollectionViewController: UICollectionViewDelegate {
             return
         }
 
-        // ...
+        let detailViewController = PhotoDetailViewController(imageLoader: imageLoader, photo: photo)
+        navigationController?.pushViewController(detailViewController, animated: true)
     }
 }
