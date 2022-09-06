@@ -12,21 +12,31 @@ class RootViewController: UIViewController {
 
     // MARK: - Subviews
 
+    private lazy var galleryButton: UIButton = {
+        let action = UIAction(title: "Gallery") { [weak self] _ in
+            self?.showPhotoCollection()
+        }
+        let control = UIButton(configuration: .filled(), primaryAction: action)
+        control.translatesAutoresizingMaskIntoConstraints = false
+        return control
+    }()
+
     private lazy var crashButton: UIButton = {
         let action = UIAction(title: "Crash") { [weak self] _ in
             self?.causeNSException()
         }
-        let control = UIButton(primaryAction: action)
+        let control = UIButton(configuration: .filled(), primaryAction: action)
+        control.tintColor = .red
         control.translatesAutoresizingMaskIntoConstraints = false
         return control
     }()
 
     private lazy var buttonStackView: UIStackView = {
-        let view = UIStackView(arrangedSubviews: [crashButton])
+        let view = UIStackView(arrangedSubviews: [galleryButton, crashButton])
         view.axis = .vertical
         view.alignment = .fill
         view.distribution = .fillEqually
-        view.spacing = 8.0
+        view.spacing = 16.0
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
@@ -45,6 +55,22 @@ class RootViewController: UIViewController {
     }
 
     // MARK: - Actions
+
+    private func showPhotoCollection() {
+        let configuration = URLSessionConfiguration.default
+        // Disable caching
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        configuration.urlCache = nil
+        let session = URLSession(configuration: configuration)
+
+        let jsonPlaceholder = JSONPlaceholder(session: session)
+        let imageLoader = ImageLoader(session: session)
+
+        let viewController = PhotoCollectionViewController(
+            jsonPlaceholder: jsonPlaceholder,
+            imageLoader: imageLoader)
+        navigationController?.pushViewController(viewController, animated: true)
+    }
 
     private func causeNSException() {
         let array = NSArray()

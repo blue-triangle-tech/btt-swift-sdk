@@ -26,8 +26,4 @@ struct JSONPlaceholder: PlaceholderServiceProtocol {
         let data = try await session.btData(from: url)
         return try JSONDecoder().decode(Array<Photo>.self, from: data.0)
     }
-
-    func fetchPhoto(url: URL) async throws -> Data {
-        try await session.btData(from: url).0
-    }
 }
