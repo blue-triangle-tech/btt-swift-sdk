@@ -110,6 +110,6 @@ extension Request: Equatable {
 // MARK: - CustomStringConvertible
 extension Request: CustomStringConvertible {
     public var description: String {
-         "\(method) \(url.absoluteString) \(body != nil ? (String(data: body!, encoding: .utf8) ?? "") : "")"
+        "\(method) \(url.absoluteString) \(body != nil ? (body!.base64Decoded()?.prettyJson ?? "") : "")"
     }
 }
