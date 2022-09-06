@@ -54,7 +54,7 @@ final class PhotoCollectionViewController: UIViewController {
 
     // Data Loading
     private let jsonPlaceholder: PlaceholderServiceProtocol
-    private let imageLoader: ImageLoader
+    private let imageLoader: ImageLoading
     private var loadingTask: Task<Void, Never>?
 
     // Retain timer
@@ -69,7 +69,7 @@ final class PhotoCollectionViewController: UIViewController {
 
     // MARK: - Lifecycle
 
-    init(jsonPlaceholder: PlaceholderServiceProtocol, imageLoader: ImageLoader, layoutBuilder: LayoutBuilder = .standard) {
+    init(jsonPlaceholder: PlaceholderServiceProtocol, imageLoader: ImageLoading, layoutBuilder: LayoutBuilder = .standard) {
         self.jsonPlaceholder = jsonPlaceholder
         self.imageLoader = imageLoader
         self.layoutBuilder = layoutBuilder

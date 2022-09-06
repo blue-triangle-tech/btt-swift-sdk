@@ -9,9 +9,7 @@
 import Foundation
 import UIKit
 
-actor ImageLoader {
-    typealias VoidCallback = () -> Void
-
+actor ImageLoader: ImageLoading {
     private let session: URLSession
     private var taskCount: Int = 0
     private var onComplete: VoidCallback?
