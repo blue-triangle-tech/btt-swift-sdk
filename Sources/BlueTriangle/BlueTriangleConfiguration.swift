@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os.log
 
 /// Configuration object for the Blue Triangle SDK.
 final public class BlueTriangleConfiguration: NSObject {
@@ -79,6 +80,9 @@ final public class BlueTriangleConfiguration: NSObject {
     /// Percentage of sessions for which network calls will be captured. A value of `0.05`
     /// means that 5% of sessions will be tracked.
     @objc public var networkSampleRate: Double = 0.05
+
+    /// Logging level.
+    @objc public var loggingLevel: OSLogType = .default
 
     var makeLogger: () -> Logging = {
         BTLogger.live
