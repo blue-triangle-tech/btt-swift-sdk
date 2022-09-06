@@ -7,11 +7,12 @@
 
 import Foundation
 
+/// An object that measures use of hardware resources.
 struct ResourceUsage: ResourceUsageMeasuring {
-
+    /// Returns current CPU usage.
     static func cpu() -> Double {
         var totalUsageOfCPU: Double = 0.0
-        var threadList: thread_act_array_t = UnsafeMutablePointer(mutating: [thread_act_t]())
+        var threadList: thread_act_array_t?
         var threadCount: mach_msg_type_number_t = 0
 
         let threadResult = withUnsafeMutablePointer(to: &threadList) {
@@ -20,7 +21,7 @@ struct ResourceUsage: ResourceUsageMeasuring {
             }
         }
 
-        if threadResult == KERN_SUCCESS {
+        if threadResult == KERN_SUCCESS, let threadList = threadList {
             for index in 0..<threadCount {
                 var threadInfo = thread_basic_info()
                 var threadInfoCount = mach_msg_type_number_t(THREAD_INFO_MAX)
@@ -48,8 +49,9 @@ struct ResourceUsage: ResourceUsageMeasuring {
         return totalUsageOfCPU
     }
 
-    // https://stackoverflow.com/a/50968168/4472195
+    /// Returns current memory usage.
     static func memory() -> UInt64 {
+        // https://stackoverflow.com/a/50968168/4472195
         var taskInfo = task_vm_info_data_t()
         var count = mach_msg_type_number_t(MemoryLayout<task_vm_info>.size) / 4
         let result: kern_return_t = withUnsafeMutablePointer(to: &taskInfo) {
