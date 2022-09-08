@@ -59,8 +59,10 @@ struct LoggerWrapper: SystemLogging {
 
 final class BTLogger: Logging {
     private let logger: SystemLogging
+    var enableDebug: Bool
 
-    init() {
+    init(enableDebug: Bool = false) {
+        self.enableDebug = enableDebug
         if #available(iOS 14.0, tvOS 14.0, watchOS 7.0, macOS 11.0, *) {
             self.logger = LoggerWrapper(subsystem: Constants.loggingSubsystem, category: Constants.loggingCategory)
         } else {

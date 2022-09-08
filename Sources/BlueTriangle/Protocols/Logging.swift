@@ -8,6 +8,8 @@
 import Foundation
 
 protocol Logging {
+    var enableDebug: Bool { get set }
+
     func logDebug(
         _ message: @escaping () -> String,
         file: StaticString,
@@ -37,7 +39,9 @@ extension Logging {
         function: StaticString = #function,
         line: UInt = #line
     ) {
-        logDebug(message, file: file, function: function, line: line)
+        if enableDebug {
+            logDebug(message, file: file, function: function, line: line)
+        }
     }
 
     func info(

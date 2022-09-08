@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import os.log
 
 /// Configuration object for the Blue Triangle SDK.
 final public class BlueTriangleConfiguration: NSObject {
@@ -81,12 +80,8 @@ final public class BlueTriangleConfiguration: NSObject {
     /// means that 5% of sessions will be tracked.
     @objc public var networkSampleRate: Double = 0.05
 
-    /// Logging level.
-    @objc public var loggingLevel: OSLogType = .default
-
-    var makeLogger: () -> Logging = {
-        BTLogger.live
-    }
+    /// Boolean indicating whether debug logging is enabled.
+    @objc public var enableDebugLogging: Bool = false
 
     var timerConfiguration: BTTimer.Configuration = .live
 
@@ -132,6 +127,12 @@ extension BlueTriangleConfiguration {
                 dataCenter: dataCenter,
                 trafficSegmentName: trafficSegmentName
         )
+    }
+
+    func makeLogger () -> Logging {
+        var logger = BTLogger.live
+        logger.enableDebug = enableDebugLogging
+        return logger
     }
 
     func makePerformanceMonitorFactory() -> (() -> PerformanceMonitoring)? {

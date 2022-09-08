@@ -9,22 +9,27 @@
 import Foundation
 
 class LoggerMock: Logging {
+    var enableDebug: Bool
     var onDebug: (String) -> Void
     var onInfo: (String) -> Void
     var onError: (String) -> Void
 
     init(
+        enableDebug: Bool = false,
         onDebug: @escaping (String) -> Void = { _ in },
         onInfo: @escaping (String) -> Void = { _ in },
         onError: @escaping (String) -> Void = { _ in }
     ) {
+        self.enableDebug = enableDebug
         self.onDebug = onDebug
         self.onInfo = onInfo
         self.onError = onError
     }
 
     func logDebug(_ message: @autoclosure () -> String, file: StaticString, function: StaticString, line: UInt) {
-        onDebug(message())
+        if enableDebug {
+            onDebug(message())
+        }
     }
 
     func logInfo(_ message: @autoclosure () -> String, file: StaticString, function: StaticString, line: UInt) {
