@@ -124,7 +124,6 @@ extension MockRequest where ID == Int {
 extension MockRequest where ID == URL {
     static func makePhotoRequest(delayStrategy: DelayGenerator.Strategy, imageSize: CGSize) -> MockRequest<URL> {
         MockRequest(builder: { url in
-                        let id = Int(url.lastPathComponent) ?? 1
                         let color = UIColor.sampleColors.randomElement() ?? .brown
                         return color.pngData(imageSize)
                      },
