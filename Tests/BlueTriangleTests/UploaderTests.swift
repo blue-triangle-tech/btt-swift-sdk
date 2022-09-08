@@ -129,6 +129,73 @@ final class UploaderTests: XCTestCase {
         waitForExpectations(timeout: 1.0)
     }
 
+    func testDebugLogIfEnabled() throws {
+        let logRequestExpectation = self.expectation(description: "Request logged")
+        let completionExpectation = self.expectation(description: "Request finished")
+
+        let networking: Networking = { _ in
+            Deferred {
+                Future { promise in
+                    promise(.success(Mock.successResponse))
+                    completionExpectation.fulfill()
+                }
+            }.eraseToAnyPublisher()
+        }
+
+        let logger = LoggerMock(
+            enableDebug: true,
+            onDebug: { _ in
+                logRequestExpectation.fulfill()
+            }
+        )
+
+        let uploaderQueue = Mock.uploaderQueue
+        let uploader = Uploader(queue: uploaderQueue,
+                                logger: logger,
+                                networking: networking,
+                                failureHandler: nil,
+                                retryConfiguration: Mock.retryConfiguration)
+
+        uploader.send(request: Mock.request)
+
+        waitForExpectations(timeout: 1.0)
+    }
+
+    func testDebugLogDisabled() throws {
+        let completionExpectation = self.expectation(description: "Request finished")
+        let logResponseExpectation = self.expectation(description: "Response logged")
+
+        let networking: Networking = { _ in
+            Deferred {
+                Future { promise in
+                    promise(.success(Mock.successResponse))
+                    completionExpectation.fulfill()
+                }
+            }.eraseToAnyPublisher()
+        }
+
+        let logger = LoggerMock(
+            enableDebug: false,
+            onDebug: { _ in
+                XCTFail("Unexpected debug log")
+            },
+            onInfo: { _ in
+                logResponseExpectation.fulfill()
+            }
+        )
+
+        let uploaderQueue = Mock.uploaderQueue
+        let uploader = Uploader(queue: uploaderQueue,
+                                logger: logger,
+                                networking: networking,
+                                failureHandler: nil,
+                                retryConfiguration: Mock.retryConfiguration)
+
+        uploader.send(request: Mock.request)
+
+        waitForExpectations(timeout: 1.0)
+    }
+
     func testUploaderSubscriptionRemoval() throws {
         let requestCount: Int = 10_000
         let expectation = self.expectation(description: "Requests finished")
