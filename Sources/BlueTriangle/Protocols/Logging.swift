@@ -39,9 +39,7 @@ extension Logging {
         function: StaticString = #function,
         line: UInt = #line
     ) {
-        if enableDebug {
-            logDebug(message, file: file, function: function, line: line)
-        }
+        logDebug(message, file: file, function: function, line: line)
     }
 
     func info(

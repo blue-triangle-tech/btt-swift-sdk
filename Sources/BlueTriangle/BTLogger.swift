@@ -61,6 +61,11 @@ final class BTLogger: Logging {
     private let logger: SystemLogging
     var enableDebug: Bool
 
+    init(logger: SystemLogging, enableDebug: Bool) {
+        self.logger = logger
+        self.enableDebug = enableDebug
+    }
+
     init(enableDebug: Bool = false) {
         self.enableDebug = enableDebug
         if #available(iOS 14.0, tvOS 14.0, watchOS 7.0, macOS 11.0, *) {
@@ -76,7 +81,9 @@ final class BTLogger: Logging {
         function: StaticString,
         line: UInt
     ) {
-        logger.log(level: .debug, message: message, file: file, function: function, line: line)
+        if enableDebug {
+            logger.log(level: .debug, message: message, file: file, function: function, line: line)
+        }
     }
 
     func logInfo(

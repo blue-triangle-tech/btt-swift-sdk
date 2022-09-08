@@ -129,7 +129,7 @@ final class UploaderTests: XCTestCase {
         waitForExpectations(timeout: 1.0)
     }
 
-    func testDebugLogIfEnabled() throws {
+    func testDebugLogging() throws {
         let logRequestExpectation = self.expectation(description: "Request logged")
         let completionExpectation = self.expectation(description: "Request finished")
 
@@ -158,10 +158,10 @@ final class UploaderTests: XCTestCase {
 
         uploader.send(request: Mock.request)
 
-        waitForExpectations(timeout: 1.0)
+        waitForExpectations(timeout: 0.1)
     }
 
-    func testDebugLogDisabled() throws {
+    func testSuccessLogging() throws {
         let completionExpectation = self.expectation(description: "Request finished")
         let logResponseExpectation = self.expectation(description: "Response logged")
 
@@ -175,10 +175,6 @@ final class UploaderTests: XCTestCase {
         }
 
         let logger = LoggerMock(
-            enableDebug: false,
-            onDebug: { _ in
-                XCTFail("Unexpected debug log")
-            },
             onInfo: { _ in
                 logResponseExpectation.fulfill()
             }
@@ -193,7 +189,7 @@ final class UploaderTests: XCTestCase {
 
         uploader.send(request: Mock.request)
 
-        waitForExpectations(timeout: 1.0)
+        waitForExpectations(timeout: 0.1)
     }
 
     func testUploaderSubscriptionRemoval() throws {
@@ -219,10 +215,7 @@ final class UploaderTests: XCTestCase {
                 }
             },
             onError: { _ in
-                responseCount += 1
-                if responseCount == requestCount * 2 {
-                    expectation.fulfill()
-                }
+                XCTFail("Unexpected Error")
             }
         )
 
@@ -247,7 +240,7 @@ final class UploaderTests: XCTestCase {
         }
 
         group.notify(queue: .main) {
-            print("SubscriptionCount: \(uploader.subscriptionCount)")
+            print("SubscriptionCount: \(uploader.subscriptionCount) - RequestCount: \(currentRequestCount) - ResponseCount: \(responseCount)")
             XCTAssert(uploader.subscriptionCount > requestCount)
         }
 
