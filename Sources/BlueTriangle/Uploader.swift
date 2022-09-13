@@ -49,6 +49,7 @@ final class Uploader: Uploading {
     }
 
     func send(request: Request) {
+        logger.debug(request.debugDescription)
         let id = UUID()
         let publisher = networking(request)
             .retry(retryConfiguration, scheduler: queue)
