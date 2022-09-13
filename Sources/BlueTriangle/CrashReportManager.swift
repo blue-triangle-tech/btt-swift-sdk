@@ -74,7 +74,8 @@ class CrashReportManager: CrashReportManaging {
                                  page: page,
                                  timer: timer,
                                  purchaseConfirmation: nil,
-                                 performanceReport: nil)
+                                 performanceReport: nil,
+                                 excluded: Constants.excludedValue)
 
         return try Request(method: .post,
                            url: Constants.timerEndpoint,

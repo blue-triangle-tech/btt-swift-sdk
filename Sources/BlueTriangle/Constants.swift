@@ -30,6 +30,7 @@ enum Constants {
     static let eTp = "NativeAppCrash"
     static let crashReportFilename = "com.bluetriangle.crash"
     static let crashReportLineSeparator = "~~"
+    static let excludedValue = "20"
 
     // Logging
     static let loggingSubsystem = "com.bluetriangle.sdk"
