@@ -59,12 +59,30 @@ struct LoggerWrapper: SystemLogging {
 
 final class BTLogger: Logging {
     private let logger: SystemLogging
+    var enableDebug: Bool
 
-    init() {
+    init(logger: SystemLogging, enableDebug: Bool) {
+        self.logger = logger
+        self.enableDebug = enableDebug
+    }
+
+    init(enableDebug: Bool = false) {
+        self.enableDebug = enableDebug
         if #available(iOS 14.0, tvOS 14.0, watchOS 7.0, macOS 11.0, *) {
             self.logger = LoggerWrapper(subsystem: Constants.loggingSubsystem, category: Constants.loggingCategory)
         } else {
             self.logger = OSLogWrapper(subsystem: Constants.loggingSubsystem, category: Constants.loggingCategory)
+        }
+    }
+
+    func logDebug(
+        _ message: @escaping () -> String,
+        file: StaticString,
+        function: StaticString,
+        line: UInt
+    ) {
+        if enableDebug {
+            logger.log(level: .debug, message: message, file: file, function: function, line: line)
         }
     }
 

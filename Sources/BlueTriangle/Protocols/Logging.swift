@@ -8,6 +8,15 @@
 import Foundation
 
 protocol Logging {
+    var enableDebug: Bool { get set }
+
+    func logDebug(
+        _ message: @escaping () -> String,
+        file: StaticString,
+        function: StaticString,
+        line: UInt
+    )
+
     func logInfo(
         _ message: @escaping () -> String,
         file: StaticString,
@@ -24,6 +33,15 @@ protocol Logging {
 }
 
 extension Logging {
+    func debug(
+        _ message: @autoclosure @escaping () -> String,
+        file: StaticString = #fileID,
+        function: StaticString = #function,
+        line: UInt = #line
+    ) {
+        logDebug(message, file: file, function: function, line: line)
+    }
+
     func info(
         _ message: @autoclosure @escaping () -> String,
         file: StaticString = #fileID,

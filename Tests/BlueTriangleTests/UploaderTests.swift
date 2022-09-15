@@ -129,6 +129,69 @@ final class UploaderTests: XCTestCase {
         waitForExpectations(timeout: 1.0)
     }
 
+    func testDebugLogging() throws {
+        let logRequestExpectation = self.expectation(description: "Request logged")
+        let completionExpectation = self.expectation(description: "Request finished")
+
+        let networking: Networking = { _ in
+            Deferred {
+                Future { promise in
+                    promise(.success(Mock.successResponse))
+                    completionExpectation.fulfill()
+                }
+            }.eraseToAnyPublisher()
+        }
+
+        let logger = LoggerMock(
+            enableDebug: true,
+            onDebug: { _ in
+                logRequestExpectation.fulfill()
+            }
+        )
+
+        let uploaderQueue = Mock.uploaderQueue
+        let uploader = Uploader(queue: uploaderQueue,
+                                logger: logger,
+                                networking: networking,
+                                failureHandler: nil,
+                                retryConfiguration: Mock.retryConfiguration)
+
+        uploader.send(request: Mock.request)
+
+        waitForExpectations(timeout: 0.1)
+    }
+
+    func testSuccessLogging() throws {
+        let completionExpectation = self.expectation(description: "Request finished")
+        let logResponseExpectation = self.expectation(description: "Response logged")
+
+        let networking: Networking = { _ in
+            Deferred {
+                Future { promise in
+                    promise(.success(Mock.successResponse))
+                    completionExpectation.fulfill()
+                }
+            }.eraseToAnyPublisher()
+        }
+
+        let logger = LoggerMock(
+            onInfo: { _ in
+                logResponseExpectation.fulfill()
+            }
+        )
+
+        let uploaderQueue = Mock.uploaderQueue
+        let uploader = Uploader(queue: uploaderQueue,
+                                logger: logger,
+                                networking: networking,
+                                failureHandler: nil,
+                                retryConfiguration: Mock.retryConfiguration)
+
+        uploader.send(request: Mock.request)
+
+        waitForExpectations(timeout: 0.1)
+    }
+
     func testUploaderSubscriptionRemoval() throws {
         let requestCount: Int = 10_000
         let expectation = self.expectation(description: "Requests finished")
@@ -152,10 +215,7 @@ final class UploaderTests: XCTestCase {
                 }
             },
             onError: { _ in
-                responseCount += 1
-                if responseCount == requestCount * 2 {
-                    expectation.fulfill()
-                }
+                XCTFail("Unexpected Error")
             }
         )
 
@@ -180,7 +240,7 @@ final class UploaderTests: XCTestCase {
         }
 
         group.notify(queue: .main) {
-            print("SubscriptionCount: \(uploader.subscriptionCount)")
+            print("SubscriptionCount: \(uploader.subscriptionCount) - RequestCount: \(currentRequestCount) - ResponseCount: \(responseCount)")
             XCTAssert(uploader.subscriptionCount > requestCount)
         }
 

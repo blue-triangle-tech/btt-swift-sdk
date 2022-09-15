@@ -25,6 +25,11 @@ struct Request: Codable, URLRequestConvertible {
     /// The data sent as the message body of a request, such as for an HTTP POST request.
     let body: Data?
 
+    /// The `URLQueryItem`s derived from ``parameters``.
+    var queryItems: [URLQueryItem]? {
+        parameters?.map { URLQueryItem(name: $0.0, value: $0.1) }
+    }
+
     /// Creates a request.
     /// - Parameters:
     ///   - method: The HTTP method for the request.
@@ -44,9 +49,9 @@ struct Request: Codable, URLRequestConvertible {
     /// - Returns: The URL request instance.
     func asURLRequest() -> URLRequest {
         var urlRequest: URLRequest
-        if let parameters = parameters, !parameters.isEmpty,
+        if let queryItems = queryItems,
            var components = URLComponents(url: url, resolvingAgainstBaseURL: true) {
-            components.queryItems = parameters.map { URLQueryItem(name: $0.0, value: $0.1) }
+            components.queryItems = queryItems
             urlRequest = URLRequest(url: components.url!)
         } else {
             urlRequest = URLRequest(url: url)
@@ -109,7 +114,30 @@ extension Request: Equatable {
 
 // MARK: - CustomStringConvertible
 extension Request: CustomStringConvertible {
+    var urlDescription: String {
+        if let queryItems = queryItems,
+           var components = URLComponents(url: url, resolvingAgainstBaseURL: true) {
+            components.queryItems = queryItems
+            return components.debugDescription
+        } else {
+            return url.absoluteString
+        }
+    }
+
     public var description: String {
-         "\(method) \(url.absoluteString) \(body != nil ? (String(data: body!, encoding: .utf8) ?? "") : "")"
+        "\(method.rawValue) \(urlDescription) \(body != nil ? (String(data: body!, encoding: .utf8) ?? "") : "")"
+    }
+}
+
+// MARK: - CustomDebugStringConvertible
+extension Request: CustomDebugStringConvertible {
+    var debugBodyDescription: String? {
+        body?.base64DecodedData()?.prettyJson
+    }
+
+    public var debugDescription: String {
+        "Request:\n" +
+            "  \(method.rawValue) \(urlDescription) \n" +
+            "  Body: \(debugBodyDescription ?? "")"
     }
 }
