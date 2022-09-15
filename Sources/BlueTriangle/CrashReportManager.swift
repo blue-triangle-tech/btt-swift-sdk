@@ -86,7 +86,7 @@ class CrashReportManager: CrashReportManaging {
         let params: [String: String] = [
             "siteID": session.siteID,
             "nStart": String(crashReport.time),
-            "pageName": "\(Constants.crashID)-\(Device.name)",
+            "pageName": Constants.crashID,
             "txnName": session.trafficSegmentName,
             "sessionID": String(session.sessionID),
             "pgTm": "0",
