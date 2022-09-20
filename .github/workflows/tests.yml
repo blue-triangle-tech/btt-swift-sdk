@@ -12,7 +12,6 @@ jobs:
   xcode_tests:
     name: ${{ matrix.platform }} Tests (Xcode)
     runs-on: macos-latest
-    needs: macos_tests
     strategy:
       fail-fast: false
       matrix:
