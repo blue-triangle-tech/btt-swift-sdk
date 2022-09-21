@@ -70,7 +70,7 @@ enum Mock {
 // MARK: - Configuration
 extension Mock {
     static var uploaderQueue: DispatchQueue {
-        DispatchQueue(label: "com.bluetriangle.uploader",
+        DispatchQueue(label: "com.bluetriangle.test",
                       qos: .userInitiated,
                       autoreleaseFrequency: .workItem)
     }
