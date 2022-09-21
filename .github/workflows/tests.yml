@@ -25,5 +25,6 @@ jobs:
       - name: Build for ${{ matrix.platform }}
         uses: mxcl/xcodebuild@v1
         with:
+          xcode: ^14
           platform: ${{ matrix.platform }}
           scheme: ${{ matrix.scheme }}
