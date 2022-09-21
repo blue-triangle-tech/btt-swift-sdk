@@ -9,40 +9,22 @@ on:
       - '*'
 
 jobs:
-  macos_tests:
-    name: macOS Tests (SwiftPM)
-    runs-on: macos-11
-    strategy:
-      matrix:
-        swift: ['5.5']
-
-    steps:
-      - uses: actions/checkout@v2
-      - name: Build for macOS
-        run: swift build
-      - name: Run tests
-        run: swift test
-
   xcode_tests:
     name: ${{ matrix.platform }} Tests (Xcode)
-    runs-on: macos-latest
-    if: ${{ always() }}
-    needs: macos_tests
+    runs-on: macos-12
     strategy:
       fail-fast: false
       matrix:
-        platform: ['iOS']
+        platform:
+          - macOS
+          - iOS
         scheme: ['blue-triangle']
-        device: ['iPhone 12']
 
     steps:
       - uses: actions/checkout@v2
       - name: Build for ${{ matrix.platform }}
-        run: xcodebuild build-for-testing -scheme ${{ matrix.scheme }} -destination "platform=${{ matrix.platform }} Simulator,OS=latest,name=${{ matrix.device }}" | xcpretty
-      - name: Run Tests
-        run: xcodebuild test-without-building -scheme ${{ matrix.scheme }} -destination "platform=${{ matrix.platform }} Simulator,OS=latest,name=${{ matrix.device }}" -resultBundlePath TestResults | xcpretty
-      - name: Show Test Results
-        uses: kishikawakatsumi/xcresulttool@v1.5.0
+        uses: mxcl/xcodebuild@v1
         with:
-          path: TestResults.xcresult
-        if: success() || failure()
+          xcode: ^14
+          platform: ${{ matrix.platform }}
+          scheme: ${{ matrix.scheme }}
