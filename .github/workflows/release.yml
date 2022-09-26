@@ -21,13 +21,11 @@ jobs:
       - name: Git Checkout main
         uses: actions/checkout@v3
 
-      - name: Get Current Version
-        id: current
-
-      - name: Bump Version
-        id: bump
-
-      - name: Update Version File
+      - name: Bump Version File
+        uses: ./.github/actions/bump-version-file
+        with:
+          version-file-path: ${{ env.VERSION-FILE-PATH }}
+          release-type: ${{ inputs.release_type }}
 
       - name: Commit Changes
         id: commit
