@@ -73,10 +73,3 @@ final public class Page: NSObject {
         "<Page: \(pageName)>"
     }
 }
-
-// MARK: - Crash Reporting
-extension Page {
-    convenience init(deviceName: String = "Unknown%20iOS%20Device") {
-        self.init(pageName: "iOSCrash\(deviceName)", pageType: "")
-    }
-}

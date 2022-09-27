@@ -68,7 +68,7 @@ class CrashReportManager: CrashReportManaging {
     }
 
     private func makeTimerRequest(session: Session, crashTime: Millisecond) throws -> Request {
-        let page = Page(deviceName: Constants.crashID)
+        let page = Page(pageName: Constants.crashID, pageType: "")
         let timer = PageTimeInterval(startTime: crashTime, interactiveTime: 0, pageTime: 0)
         let model = TimerRequest(session: session,
                                  page: page,
