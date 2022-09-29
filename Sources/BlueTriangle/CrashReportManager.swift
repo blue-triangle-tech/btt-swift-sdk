@@ -68,13 +68,14 @@ class CrashReportManager: CrashReportManaging {
     }
 
     private func makeTimerRequest(session: Session, crashTime: Millisecond) throws -> Request {
-        let page = Page(deviceName: Device.name)
+        let page = Page(pageName: Constants.crashID, pageType: Device.name)
         let timer = PageTimeInterval(startTime: crashTime, interactiveTime: 0, pageTime: 0)
         let model = TimerRequest(session: session,
                                  page: page,
                                  timer: timer,
                                  purchaseConfirmation: nil,
-                                 performanceReport: nil)
+                                 performanceReport: nil,
+                                 excluded: Constants.excludedValue)
 
         return try Request(method: .post,
                            url: Constants.timerEndpoint,
@@ -85,7 +86,7 @@ class CrashReportManager: CrashReportManaging {
         let params: [String: String] = [
             "siteID": session.siteID,
             "nStart": String(crashReport.time),
-            "pageName": "\(Constants.crashID)-\(Device.name)",
+            "pageName": Constants.crashID,
             "txnName": session.trafficSegmentName,
             "sessionID": String(session.sessionID),
             "pgTm": "0",

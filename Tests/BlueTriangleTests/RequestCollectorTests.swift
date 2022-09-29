@@ -260,7 +260,7 @@ class RequestCollectorTests: XCTestCase {
 
         await collector.start(page: Page(pageName: "Another_Page"), startTime: 2.0)
 
-        wait(for: [logErrorExpectation], timeout: 0.5)
+        wait(for: [logErrorExpectation], timeout: 1.0)
     }
 
     func testMultipleConfigureCalls() async throws {

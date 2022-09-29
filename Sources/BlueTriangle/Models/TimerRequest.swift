@@ -13,6 +13,23 @@ struct TimerRequest: Equatable {
     let timer: PageTimeInterval
     let purchaseConfirmation: PurchaseConfirmation?
     let performanceReport: PerformanceReport?
+    let excluded: String?
+
+    init(
+        session: Session,
+        page: Page,
+        timer: PageTimeInterval,
+        purchaseConfirmation: PurchaseConfirmation? = nil,
+        performanceReport: PerformanceReport? = nil,
+        excluded: String? = nil
+    ) {
+        self.session = session
+        self.page = page
+        self.timer = timer
+        self.purchaseConfirmation = purchaseConfirmation
+        self.performanceReport = performanceReport
+        self.excluded = excluded
+    }
 }
 
 extension TimerRequest: Codable {
@@ -23,6 +40,7 @@ extension TimerRequest: Codable {
         try con.encode(Constants.browser, forKey: .browser)
         try con.encode(Version.number, forKey: .btV)
         try con.encode(Constants.device, forKey: .device)
+        try con.encodeIfPresent(excluded, forKey: .excluded)
         try con.encode(Constants.os, forKey: .os)
 
         // Session
@@ -231,6 +249,8 @@ extension TimerRequest: Codable {
         } else {
             self.performanceReport = nil
         }
+
+        self.excluded = try container.decodeIfPresent(String.self, forKey: .excluded)
     }
 
     enum CodingKeys: String, CodingKey {
@@ -238,6 +258,7 @@ extension TimerRequest: Codable {
         case browser
         case btV
         case device
+        case excluded
         case os
         // Session
         // swiftlint:disable:next identifier_name
