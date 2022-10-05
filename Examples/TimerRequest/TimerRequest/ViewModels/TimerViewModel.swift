@@ -143,7 +143,7 @@ extension TimerViewModel {
         static let browser = "Native App"
         static let device = "Mobile"
         static let os = "iOS"
-        static let wcd = 0
+        static let wcd = 1
         static let eventType = 9
         static let navigationType = 9
     }
