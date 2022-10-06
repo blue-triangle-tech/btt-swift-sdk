@@ -7,6 +7,10 @@ inputs:
   release-type:
     description: Type of release. Must be one of `patch`, `minor`, `major`.
     required: true
+outputs:
+  version:
+    description: The new version number.
+    value: ${{ steps.bump.outputs.new-version }}
 
 runs:
   using: composite
@@ -15,20 +19,20 @@ runs:
       id: current
       shell: bash
       run: |
-        echo "::set-output name=current_version::$(grep -Eo '([0-9]+\.*)+' ${{ inputs.version-file-path }})"
+        echo "::set-output name=current-version::$(grep -Eo '([0-9]+\.*)+' ${{ inputs.version-file-path }})"
 
     - name: Bump Version
       id: bump
       shell: bash
       run: |
-        echo "::set-output name=new_version::$( ./semver.sh bump ${{ inputs.release-type }} ${{ current.outputs.current_version }})"
+        echo "::set-output name=new-version::$( ${{ github.action_path }}/semver.sh bump ${{ inputs.release-type }} ${{ steps.current.outputs.current-version }})"
 
     - name: Update Version File
       shell: bash
       run: |
         TEMPLATE=`cat <<EOF
         enum Version {
-          static let number = "${{ bump.outputs.new_version }}"
+            static let number = "${{ steps.bump.outputs.new-version }}"
         }
         `
         echo "$TEMPLATE" > ${{ inputs.version-file-path }}

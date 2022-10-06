@@ -15,13 +15,14 @@ env:
   VERSION-FILE-PATH: 'Sources/BlueTriangle/Version.swift'
 
 jobs:
-  foo:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Git Checkout main
         uses: actions/checkout@v3
 
       - name: Bump Version File
+        id: bump
         uses: ./.github/actions/bump-version-file
         with:
           version-file-path: ${{ env.VERSION-FILE-PATH }}
