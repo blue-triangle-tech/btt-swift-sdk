@@ -8,7 +8,7 @@
 import Foundation
 
 struct Session: Equatable {
-    let wcd = 0
+    let wcd = 1
     let eventType = 9
     let navigationType = 9
     let osInfo = Device.os
