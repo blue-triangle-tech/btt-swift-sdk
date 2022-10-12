@@ -32,6 +32,7 @@ jobs:
         id: commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
+          token: ${{ secrets.BOT_ACCESS_TOKEN }}
           commit_message: Bump version
 
       - name: Create Tag
