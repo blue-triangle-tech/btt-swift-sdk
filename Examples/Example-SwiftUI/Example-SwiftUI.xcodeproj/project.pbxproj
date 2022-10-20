@@ -14,6 +14,7 @@
 		C9F4A4272900DB6200BCDF3E /* Example_SwiftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F4A4262900DB6200BCDF3E /* Example_SwiftUITests.swift */; };
 		C9F4A4312900DB6200BCDF3E /* Example_SwiftUIUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F4A4302900DB6200BCDF3E /* Example_SwiftUIUITests.swift */; };
 		C9F4A4332900DB6200BCDF3E /* Example_SwiftUIUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F4A4322900DB6200BCDF3E /* Example_SwiftUIUITestsLaunchTests.swift */; };
+		C9F4A4452900DDE900BCDF3E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F4A4442900DDE900BCDF3E /* Constants.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +45,8 @@
 		C9F4A42C2900DB6200BCDF3E /* Example-SwiftUIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Example-SwiftUIUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9F4A4302900DB6200BCDF3E /* Example_SwiftUIUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Example_SwiftUIUITests.swift; sourceTree = "<group>"; };
 		C9F4A4322900DB6200BCDF3E /* Example_SwiftUIUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Example_SwiftUIUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		C9F4A4412900DC9900BCDF3E /* btt-swift-sdk */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "btt-swift-sdk"; path = ../..; sourceTree = "<group>"; };
+		C9F4A4442900DDE900BCDF3E /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +80,7 @@
 				C9F4A4142900DB6100BCDF3E /* Example-SwiftUI */,
 				C9F4A4252900DB6200BCDF3E /* Example-SwiftUITests */,
 				C9F4A42F2900DB6200BCDF3E /* Example-SwiftUIUITests */,
+				C9F4A4402900DC9900BCDF3E /* Packages */,
 				C9F4A4132900DB6100BCDF3E /* Products */,
 			);
 			sourceTree = "<group>";
@@ -96,6 +100,7 @@
 			children = (
 				C9F4A4152900DB6100BCDF3E /* Example_SwiftUIApp.swift */,
 				C9F4A4172900DB6100BCDF3E /* ContentView.swift */,
+				C9F4A4442900DDE900BCDF3E /* Constants.swift */,
 				C9F4A43F2900DBD000BCDF3E /* Resources */,
 				C9F4A41B2900DB6200BCDF3E /* Preview Content */,
 			);
@@ -133,6 +138,14 @@
 				C9F4A4192900DB6200BCDF3E /* Assets.xcassets */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		C9F4A4402900DC9900BCDF3E /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				C9F4A4412900DC9900BCDF3E /* btt-swift-sdk */,
+			);
+			name = Packages;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -268,6 +281,7 @@
 			files = (
 				C9F4A4182900DB6100BCDF3E /* ContentView.swift in Sources */,
 				C9F4A4162900DB6100BCDF3E /* Example_SwiftUIApp.swift in Sources */,
+				C9F4A4452900DDE900BCDF3E /* Constants.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
