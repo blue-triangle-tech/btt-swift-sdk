@@ -42,6 +42,10 @@ private extension URLRequest {
 }
 
 extension URLRequest {
+    static func delete(_ url: URL, headers: [String: String]? = nil) -> Self {
+        build(.delete, url: url, headerFields: headers)
+    }
+
     static func get(_ url: URL, queryItems: [URLQueryItem]? = nil, headers: [String: String]? = nil) -> Self {
         build(.get, url: url, queryItems: queryItems, headerFields: headers)
     }

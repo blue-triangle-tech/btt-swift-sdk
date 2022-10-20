@@ -61,6 +61,12 @@ public struct Service {
             .decode(with: decoder)
     }
 
+    public func cart(id: Cart.ID) async throws -> CartDetail {
+        try await networking(.get(url(for: Route.cart(id))))
+            .validate()
+            .decode(with: decoder)
+    }
+
     public func checkout(id: Checkout.ID) async throws -> Checkout {
         try await networking(.get(url(for: .cartCheckout(id))))
             .validate()
@@ -69,6 +75,12 @@ public struct Service {
 
     public func createCart(_ createCart: CreateCart) async throws -> Cart {
         try await networking(.post(url(for: Route.carts), body: createCart))
+            .validate()
+            .decode(with: decoder)
+    }
+
+    public func deleteCheckout(id: Checkout.ID) async throws -> CartDetail {
+        try await networking(.get(url(for: .cartCheckout(id))))
             .validate()
             .decode(with: decoder)
     }
