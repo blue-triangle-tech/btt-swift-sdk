@@ -7,23 +7,7 @@
 
 import Foundation
 
-extension URLRequest {
-    static func get(_ url: URL, queryItems: [URLQueryItem]? = nil, headers: [String: String]? = nil) -> Self {
-        build(.get, url: url, queryItems: queryItems, headerFields: headers)
-    }
-
-    static func post<T: Encodable>(_ url: URL, body: T, headers: [String: String]? = nil) throws -> Self {
-        var request = build(.post, url: url, headerFields: headers)
-
-        let data = try JSONEncoder().encode(body)
-        request.httpBody = data
-
-        return request
-    }
-}
-
 private extension URLRequest {
-
     enum HTTPMethod: String {
         case get = "GET"
         case post = "POST"
@@ -52,6 +36,21 @@ private extension URLRequest {
         if let headerFields {
             request.allHTTPHeaderFields = headerFields
         }
+
+        return request
+    }
+}
+
+extension URLRequest {
+    static func get(_ url: URL, queryItems: [URLQueryItem]? = nil, headers: [String: String]? = nil) -> Self {
+        build(.get, url: url, queryItems: queryItems, headerFields: headers)
+    }
+
+    static func post<T: Encodable>(_ url: URL, body: T, headers: [String: String]? = nil) throws -> Self {
+        var request = build(.post, url: url, headerFields: headers)
+
+        let data = try JSONEncoder().encode(body)
+        request.httpBody = data
 
         return request
     }
