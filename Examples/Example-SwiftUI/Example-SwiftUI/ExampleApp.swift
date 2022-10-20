@@ -1,5 +1,5 @@
 //
-//  Example_SwiftUIApp.swift
+//  ExampleApp.swift
 //  Example-SwiftUI
 //
 //  Created by Mathew Gacy on 10/19/22.
