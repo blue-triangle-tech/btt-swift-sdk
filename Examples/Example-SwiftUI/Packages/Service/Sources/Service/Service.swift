@@ -85,6 +85,12 @@ public struct Service {
             .decode(with: decoder)
     }
 
+    public func items() async throws -> [CartItem] {
+        try await networking(.get(url(for: .items)))
+            .validate()
+            .decode(with: decoder)
+    }
+
     public func product(id: Product.ID) async throws -> Product {
         try await networking(.get(url(for: .product(id))))
             .validate()
