@@ -13,7 +13,7 @@ public struct Cart: Codable, Equatable, Hashable, Identifiable {
     public let shipping: String
     public let created: Date
     public let updated: Date
-    public let items: [CartItem]
+    public let cartItemSet: [Int]
 
     public init(
         id: Int,
@@ -21,13 +21,22 @@ public struct Cart: Codable, Equatable, Hashable, Identifiable {
         shipping: String,
         created: Date,
         updated: Date,
-        items: [CartItem]
+        cartItemSet: [Int]
     ) {
         self.id = id
         self.confirmation = confirmation
         self.shipping = shipping
         self.created = created
         self.updated = updated
-        self.items = items
+        self.cartItemSet = cartItemSet
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case confirmation
+        case shipping
+        case created
+        case updated
+        case cartItemSet = "cartitem_set"
     }
 }
