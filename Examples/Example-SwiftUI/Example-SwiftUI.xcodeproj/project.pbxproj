@@ -15,6 +15,7 @@
 		C9F4A4312900DB6200BCDF3E /* Example_SwiftUIUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F4A4302900DB6200BCDF3E /* Example_SwiftUIUITests.swift */; };
 		C9F4A4332900DB6200BCDF3E /* Example_SwiftUIUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F4A4322900DB6200BCDF3E /* Example_SwiftUIUITestsLaunchTests.swift */; };
 		C9F4A4452900DDE900BCDF3E /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F4A4442900DDE900BCDF3E /* Constants.swift */; };
+		C9F4A4482900DE8400BCDF3E /* BlueTriangle in Frameworks */ = {isa = PBXBuildFile; productRef = C9F4A4472900DE8400BCDF3E /* BlueTriangle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C9F4A4482900DE8400BCDF3E /* BlueTriangle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,6 +84,7 @@
 				C9F4A42F2900DB6200BCDF3E /* Example-SwiftUIUITests */,
 				C9F4A4402900DC9900BCDF3E /* Packages */,
 				C9F4A4132900DB6100BCDF3E /* Products */,
+				C9F4A4462900DE8400BCDF3E /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -148,6 +151,13 @@
 			name = Packages;
 			sourceTree = "<group>";
 		};
+		C9F4A4462900DE8400BCDF3E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -164,6 +174,9 @@
 			dependencies = (
 			);
 			name = "Example-SwiftUI";
+			packageProductDependencies = (
+				C9F4A4472900DE8400BCDF3E /* BlueTriangle */,
+			);
 			productName = "Example-SwiftUI";
 			productReference = C9F4A4122900DB6100BCDF3E /* Example-SwiftUI.app */;
 			productType = "com.apple.product-type.application";
@@ -606,6 +619,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C9F4A4472900DE8400BCDF3E /* BlueTriangle */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BlueTriangle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C9F4A40A2900DB6100BCDF3E /* Project object */;
 }
