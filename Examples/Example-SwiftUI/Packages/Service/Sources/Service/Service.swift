@@ -13,7 +13,7 @@ public struct Service {
         /// Path: `/cart/{cart_id}/`
         case cart(Int)
         /// Path: `/cart/{cart_id}/checkout/`
-        case cartCheckout(Int)
+        case cartCheckout(Checkout.ID)
         /// Path: `/cart/`
         case carts
         /// Path: `/item/`
@@ -57,6 +57,18 @@ public struct Service {
 
     public func carts() async throws -> [Cart] {
         try await networking(.get(url(for: .carts)))
+            .validate()
+            .decode(with: decoder)
+    }
+
+    public func checkout(id: Checkout.ID) async throws -> Checkout {
+        try await networking(.get(url(for: .cartCheckout(id))))
+            .validate()
+            .decode(with: decoder)
+    }
+
+    public func createCart(_ createCart: CreateCart) async throws -> Cart {
+        try await networking(.post(url(for: Route.carts), body: createCart))
             .validate()
             .decode(with: decoder)
     }
