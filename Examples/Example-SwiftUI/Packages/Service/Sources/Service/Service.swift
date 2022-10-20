@@ -42,32 +42,48 @@ public struct Service {
     }
 
     private let baseURL: URL
+    private let decoder: JSONDecoder
     private let networking: (URLRequest) async throws -> ResponseValue
 
-    public init(baseURL: URL, networking: @escaping (URLRequest) async throws -> ResponseValue) {
+    public init(
+        baseURL: URL,
+        decoder: JSONDecoder,
+        networking: @escaping (URLRequest) async throws -> ResponseValue
+    ) {
         self.baseURL = baseURL
+        self.decoder = decoder
         self.networking = networking
+    }
+
+    public func carts() async throws -> [Cart] {
+        try await networking(.get(url(for: .carts)))
+            .validate()
+            .decode(with: decoder)
     }
 
     public func product(id: Product.ID) async throws -> Product {
         try await networking(.get(url(for: .product(id))))
             .validate()
-            .decode()
+            .decode(with: decoder)
     }
 
     public func products() async throws -> [Product] {
         try await networking(.get(url(for: .products)))
             .validate()
-            .decode()
+            .decode(with: decoder)
     }
 }
 
 public extension Service {
     static let live: Self = {
+        var decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601Full
+
         let session = URLSession(configuration: .default)
 
         return .init(
             baseURL: Constants.baseURL,
+            decoder: decoder,
             networking: session.data(request:))
     }()
 }
