@@ -48,6 +48,7 @@
 		C9F4A4322900DB6200BCDF3E /* Example_SwiftUIUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Example_SwiftUIUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		C9F4A4412900DC9900BCDF3E /* btt-swift-sdk */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "btt-swift-sdk"; path = ../..; sourceTree = "<group>"; };
 		C9F4A4442900DDE900BCDF3E /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
+		C9F4A4492900DFE300BCDF3E /* Service */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = Service; path = Packages/Service; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,6 +147,7 @@
 		C9F4A4402900DC9900BCDF3E /* Packages */ = {
 			isa = PBXGroup;
 			children = (
+				C9F4A4492900DFE300BCDF3E /* Service */,
 				C9F4A4412900DC9900BCDF3E /* btt-swift-sdk */,
 			);
 			name = Packages;
