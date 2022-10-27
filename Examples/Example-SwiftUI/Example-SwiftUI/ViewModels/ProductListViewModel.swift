@@ -22,7 +22,6 @@ final class ProductListViewModel: ObservableObject {
         do {
             products = try await service.products().splitTuple()
         } catch {
-            print("ERROR: \(error)")
             self.error = error
         }
     }

@@ -53,6 +53,7 @@ struct ProductListView: View {
             }
             .navigationTitle("Products")
         }
+        .errorAlert(error: $viewModel.error)
     }
 }
 
