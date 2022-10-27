@@ -20,3 +20,11 @@ extension JSONDecoder.DateDecodingStrategy {
         return date
     }
 }
+
+extension JSONDecoder {
+    static var iso8601Full: JSONDecoder {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601Full
+        return decoder
+    }
+}
