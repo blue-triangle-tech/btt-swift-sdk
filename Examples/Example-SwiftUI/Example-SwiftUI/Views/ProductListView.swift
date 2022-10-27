@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ProductListView: View {
+    @StateObject var viewModel: ProductListViewModel
+
     var body: some View {
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
     }
@@ -15,6 +17,6 @@ struct ProductListView: View {
 
 struct ProductListView_Previews: PreviewProvider {
     static var previews: some View {
-        ProductListView()
+        ProductListView(viewModel: .init())
     }
 }
