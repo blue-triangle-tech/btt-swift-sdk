@@ -20,7 +20,7 @@ struct Example_SwiftUIApp: App {
 
     var body: some Scene {
         WindowGroup {
-            TabContainerView()
+            TabContainerView(service: .live)
         }
     }
 }

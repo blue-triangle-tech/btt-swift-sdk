@@ -5,6 +5,7 @@
 //  Copyright © 2022 Blue Triangle. All rights reserved.
 //
 
+import Service
 import SwiftUI
 
 struct TabContainerView: View {
@@ -14,7 +15,12 @@ struct TabContainerView: View {
         case settings
     }
 
+    private let service: Service
     @State private var selectedTab: Tab = .products
+
+    init(service: Service) {
+        self.service = service
+    }
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -44,6 +50,6 @@ struct TabContainerView: View {
 
 struct TabContainerView_Previews: PreviewProvider {
     static var previews: some View {
-        TabContainerView()
+        TabContainerView(service: .mock)
     }
 }
