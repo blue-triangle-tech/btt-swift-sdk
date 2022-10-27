@@ -5,18 +5,21 @@
 //  Copyright © 2022 Blue Triangle. All rights reserved.
 //
 
+import Service
 import SwiftUI
 
 struct ProductDetailView: View {
     @StateObject var viewModel: ProductDetailViewModel
 
     var body: some View {
-        Text("Product Detail")
+        Text(viewModel.name)
     }
 }
 
 struct ProductDetailView_Previews: PreviewProvider {
     static var previews: some View {
-        ProductDetailView(viewModel: .init())
+        ProductDetailView(
+            viewModel: .init(
+                product: Mock.product))
     }
 }

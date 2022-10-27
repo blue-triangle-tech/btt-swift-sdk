@@ -6,7 +6,32 @@
 //
 
 import Foundation
+import Service
 
+@MainActor
 final class ProductListViewModel: ObservableObject {
-    
+    @Published private(set) var products: ([Product], [Product]) = ([], [])
+    @Published var error: Error?
+    private let service: Service
+
+    init(service: Service) {
+        self.service = service
+    }
+
+    func loadProducts() async {
+        do {
+            products = try await service.products().splitTuple()
+        } catch {
+            print("ERROR: \(error)")
+            self.error = error
+        }
+    }
+
+    func detailViewModel(for productID: Product.ID) -> ProductDetailViewModel? {
+        guard let product = products.0.first(where: { $0.id == productID }) ?? products.1.first(where: { $0.id == productID }) else  {
+            return nil
+        }
+
+        return ProductDetailViewModel(product: product)
+    }
 }

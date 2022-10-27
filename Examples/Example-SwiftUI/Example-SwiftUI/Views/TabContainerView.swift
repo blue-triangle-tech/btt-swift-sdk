@@ -24,7 +24,9 @@ struct TabContainerView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            ProductListView(viewModel: .init())
+            ProductListView(
+                viewModel: .init(
+                    service: service))
                 .tabItem {
                     Text("Products")
                     Image(systemName: "square.grid.2x2.fill")
