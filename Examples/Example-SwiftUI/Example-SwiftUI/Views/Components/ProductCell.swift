@@ -19,9 +19,11 @@ struct ProductCell: View {
                 switch phase {
                 case .empty:
                     ProgressView()
+                        .padding()
                 case .success(let image):
                     image.resizable()
                         .aspectRatio(contentMode: .fit)
+                        .cornerRadius(8)
                 case .failure:
                     Image(systemName: "photo")
                         .padding()
