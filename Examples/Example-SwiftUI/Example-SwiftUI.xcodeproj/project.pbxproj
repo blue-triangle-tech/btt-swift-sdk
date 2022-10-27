@@ -18,6 +18,8 @@
 		C94BF022290AE61C007E1C25 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94BF021290AE61C007E1C25 /* SettingsViewModel.swift */; };
 		C94BF024290AE9C0007E1C25 /* ProductDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94BF023290AE9C0007E1C25 /* ProductDetailViewModel.swift */; };
 		C94BF026290AE9DB007E1C25 /* CartViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94BF025290AE9DB007E1C25 /* CartViewModel.swift */; };
+		C94BF02B290B1803007E1C25 /* CheckoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94BF02A290B1802007E1C25 /* CheckoutView.swift */; };
+		C94BF02D290B1825007E1C25 /* CheckoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94BF02C290B1825007E1C25 /* CheckoutViewModel.swift */; };
 		C9F4A4162900DB6100BCDF3E /* ExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F4A4152900DB6100BCDF3E /* ExampleApp.swift */; };
 		C9F4A41A2900DB6200BCDF3E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C9F4A4192900DB6200BCDF3E /* Assets.xcassets */; };
 		C9F4A41D2900DB6200BCDF3E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C9F4A41C2900DB6200BCDF3E /* Preview Assets.xcassets */; };
@@ -56,6 +58,8 @@
 		C94BF021290AE61C007E1C25 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		C94BF023290AE9C0007E1C25 /* ProductDetailViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductDetailViewModel.swift; sourceTree = "<group>"; };
 		C94BF025290AE9DB007E1C25 /* CartViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartViewModel.swift; sourceTree = "<group>"; };
+		C94BF02A290B1802007E1C25 /* CheckoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutView.swift; sourceTree = "<group>"; };
+		C94BF02C290B1825007E1C25 /* CheckoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutViewModel.swift; sourceTree = "<group>"; };
 		C9F4A4122900DB6100BCDF3E /* Example-SwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Example-SwiftUI.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9F4A4152900DB6100BCDF3E /* ExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleApp.swift; sourceTree = "<group>"; };
 		C9F4A4192900DB6200BCDF3E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -102,6 +106,7 @@
 			children = (
 				C94BF00F290ADC07007E1C25 /* Components */,
 				C94BF01A290AE580007E1C25 /* CartView.swift */,
+				C94BF02A290B1802007E1C25 /* CheckoutView.swift */,
 				C94BF00D290ADC02007E1C25 /* ProductDetailView.swift */,
 				C94BF00B290ADBF0007E1C25 /* ProductListView.swift */,
 				C94BF01C290AE58A007E1C25 /* SettingsView.swift */,
@@ -122,6 +127,7 @@
 			isa = PBXGroup;
 			children = (
 				C94BF025290AE9DB007E1C25 /* CartViewModel.swift */,
+				C94BF02C290B1825007E1C25 /* CheckoutViewModel.swift */,
 				C94BF023290AE9C0007E1C25 /* ProductDetailViewModel.swift */,
 				C94BF01F290AE5FF007E1C25 /* ProductListViewModel.swift */,
 				C94BF021290AE61C007E1C25 /* SettingsViewModel.swift */,
@@ -348,6 +354,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C94BF02D290B1825007E1C25 /* CheckoutViewModel.swift in Sources */,
 				C94BF020290AE5FF007E1C25 /* ProductListViewModel.swift in Sources */,
 				C94BF01B290AE580007E1C25 /* CartView.swift in Sources */,
 				C94BF026290AE9DB007E1C25 /* CartViewModel.swift in Sources */,
@@ -357,6 +364,7 @@
 				C94BF011290ADC20007E1C25 /* ProductCell.swift in Sources */,
 				C94BF024290AE9C0007E1C25 /* ProductDetailViewModel.swift in Sources */,
 				C9F4A4162900DB6100BCDF3E /* ExampleApp.swift in Sources */,
+				C94BF02B290B1803007E1C25 /* CheckoutView.swift in Sources */,
 				C94BF019290AE519007E1C25 /* TabContainerView.swift in Sources */,
 				C9F4A4452900DDE900BCDF3E /* Constants.swift in Sources */,
 				C94BF022290AE61C007E1C25 /* SettingsViewModel.swift in Sources */,
