@@ -106,15 +106,19 @@ public struct Service {
 
 public extension Service {
     static let live: Self = {
-        var decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601Full
-
         let session = URLSession(configuration: .default)
 
         return .init(
             baseURL: Constants.baseURL,
-            decoder: decoder,
+            decoder: .iso8601Full,
             networking: session.data(request:))
+    }()
+
+    static let mock: Self = {
+        .init(
+            baseURL: Constants.baseURL,
+            decoder: .iso8601Full,
+            networking: NetworkingMock.networking)
     }()
 }
 
