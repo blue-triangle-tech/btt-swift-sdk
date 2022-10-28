@@ -22,7 +22,7 @@ struct ProductListView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                HStack(alignment: .top) {
+                HStack(alignment: .top, spacing: 16) {
                     LazyVGrid(columns: columns) {
                         ForEach(viewModel.products.0) { product in
                             NavigationLink(value: product) {
@@ -39,6 +39,7 @@ struct ProductListView: View {
                         }
                     }
                 }
+                .padding(.horizontal, 16)
                 .navigationDestination(for: Product.self) { product in
                     if let detailViewModel = viewModel.detailViewModel(for: product.id) {
                         ProductDetailView(
