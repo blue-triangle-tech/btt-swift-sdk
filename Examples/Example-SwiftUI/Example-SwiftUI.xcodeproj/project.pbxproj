@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C93FCCB729100D9C00633487 /* PrimaryButtonStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C93FCCB629100D9C00633487 /* PrimaryButtonStyle.swift */; };
 		C94BF00C290ADBF0007E1C25 /* ProductListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94BF00B290ADBF0007E1C25 /* ProductListView.swift */; };
 		C94BF00E290ADC02007E1C25 /* ProductDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94BF00D290ADC02007E1C25 /* ProductDetailView.swift */; };
 		C94BF011290ADC20007E1C25 /* ProductCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94BF010290ADC20007E1C25 /* ProductCell.swift */; };
@@ -50,6 +51,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		C93FCCB629100D9C00633487 /* PrimaryButtonStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButtonStyle.swift; sourceTree = "<group>"; };
 		C94BF00B290ADBF0007E1C25 /* ProductListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductListView.swift; sourceTree = "<group>"; };
 		C94BF00D290ADC02007E1C25 /* ProductDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductDetailView.swift; sourceTree = "<group>"; };
 		C94BF010290ADC20007E1C25 /* ProductCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductCell.swift; sourceTree = "<group>"; };
@@ -105,10 +107,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		C93FCCB529100D5600633487 /* View Styles */ = {
+			isa = PBXGroup;
+			children = (
+				C93FCCB629100D9C00633487 /* PrimaryButtonStyle.swift */,
+			);
+			path = "View Styles";
+			sourceTree = "<group>";
+		};
 		C94BF00A290ADBA6007E1C25 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				C94BF00F290ADC07007E1C25 /* Components */,
+				C93FCCB529100D5600633487 /* View Styles */,
 				C94BF01A290AE580007E1C25 /* CartView.swift */,
 				C94BF02A290B1802007E1C25 /* CheckoutView.swift */,
 				C94BF00D290ADC02007E1C25 /* ProductDetailView.swift */,
@@ -368,6 +379,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C93FCCB729100D9C00633487 /* PrimaryButtonStyle.swift in Sources */,
 				C94BF02D290B1825007E1C25 /* CheckoutViewModel.swift in Sources */,
 				C94BF020290AE5FF007E1C25 /* ProductListViewModel.swift in Sources */,
 				C94BF01B290AE580007E1C25 /* CartView.swift in Sources */,
