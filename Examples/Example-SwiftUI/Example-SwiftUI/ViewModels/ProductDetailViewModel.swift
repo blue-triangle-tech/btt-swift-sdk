@@ -10,12 +10,30 @@ import Service
 
 final class ProductDetailViewModel: ObservableObject {
     private let product: Product
+    @Published var quantity: Int
+    @Published var error: Error?
 
     var name: String {
         product.name
     }
 
-    init(product: Product) {
+    var description: String {
+        product.description
+    }
+
+    var price: String {
+        "$\(product.price)"
+    }
+
+    var imageURL: URL {
+        product.image
+    }
+
+    init(product: Product, quantity: Int = 1) {
         self.product = product
+        self.quantity = quantity
+    }
+
+    func addToCart() {
     }
 }
