@@ -32,6 +32,7 @@ public extension ResponseValue {
 }
 
 public extension ResponseValue {
+    @discardableResult
     func validate() throws -> Self {
         switch statusCode {
         // Informational

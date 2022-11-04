@@ -49,14 +49,18 @@ public struct Service {
     private let decoder: JSONDecoder
     private let networking: (URLRequest) async throws -> ResponseValue
 
-    public init(
-        baseURL: URL,
-        decoder: JSONDecoder,
+    init(
+        baseURL: URL = Constants.baseURL,
+        decoder: JSONDecoder = .iso8601Full,
         networking: @escaping (URLRequest) async throws -> ResponseValue
     ) {
         self.baseURL = baseURL
         self.decoder = decoder
         self.networking = networking
+    }
+
+    public init(_ networking: @escaping (URLRequest) async throws -> ResponseValue) {
+        self.init(networking: networking)
     }
 
     public func carts() async throws -> [Cart] {
