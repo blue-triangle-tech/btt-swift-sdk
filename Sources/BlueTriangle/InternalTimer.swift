@@ -39,8 +39,8 @@ public struct InternalTimer {
         handle(.start)
     }
 
-    @usableFromInline
-    mutating func end() {
+    /// Ends the timer.
+    public mutating func end() {
         handle(.end)
     }
 
