@@ -11,11 +11,13 @@ public struct Service {
 
     enum Route {
         /// Path: `/cart/{cart_id}/`
-        case cart(Int)
+        case cart(Cart.ID)
         /// Path: `/cart/{cart_id}/checkout/`
         case cartCheckout(Checkout.ID)
         /// Path: `/cart/`
         case carts
+        /// Path: `/item/{item_id}/`
+        case item(CartItem.ID)
         /// Path: `/item/`
         case items
         /// Path: `/products/{product_id}/`
@@ -31,6 +33,8 @@ public struct Service {
                 return "/cart/\(id)/checkout/"
             case .carts:
                 return "/cart/"
+            case .item(let id):
+                return "/item/\(id)/"
             case .items:
                 return "/item/"
             case .product(let id):
@@ -77,6 +81,23 @@ public struct Service {
         try await networking(.post(url(for: .carts), body: createCart))
             .validate()
             .decode(with: decoder)
+    }
+
+    public func createCartItem(_ createCartItem: CreateCartItem) async throws -> CartItem {
+        try await networking(.post(url(for: .items), body: createCartItem))
+            .validate()
+            .decode(with: decoder)
+    }
+
+    public func updateCartItem(_ updateCartItem: UpdateCartItem) async throws -> CartItem {
+        try await networking(.patch(url(for: .item(updateCartItem.id)), body: updateCartItem))
+            .validate()
+            .decode(with: decoder)
+    }
+
+    public func deleteCartItem(id: CartItem.ID) async throws -> Void {
+        try await networking(.delete(url(for: .item(id))))
+            .validate()
     }
 
     public func deleteCheckout(id: Checkout.ID) async throws -> CartDetail {
