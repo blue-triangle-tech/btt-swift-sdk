@@ -7,8 +7,8 @@
 
 import Foundation
 
-@usableFromInline
-struct InternalTimer {
+/// An time that measures the duration of app events like network requuests.
+public struct InternalTimer {
 
     enum State {
         case initial
@@ -64,7 +64,7 @@ struct InternalTimer {
 
 // MARK: - CustomStringConvertible
 extension InternalTimer.State: CustomStringConvertible {
-    var description: String {
+    public var description: String {
         switch self {
         case .initial: return ".initial"
         case .started: return ".started"
@@ -74,7 +74,7 @@ extension InternalTimer.State: CustomStringConvertible {
 }
 
 extension InternalTimer: CustomStringConvertible {
-    @usableFromInline var description: String {
+    public var description: String {
         "InternalTimer(state: \(state), startTime: \(startTime), endTime: \(endTime))"
     }
 }
