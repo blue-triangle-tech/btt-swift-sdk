@@ -10,9 +10,13 @@ import Foundation
 /// An time that measures the duration of app events like network requuests.
 public struct InternalTimer {
 
-    enum State {
+    /// Describes the state of a timer.
+    public enum State {
+        /// Timer has not yet been started.
         case initial
+        /// Timer has been started.
         case started
+        /// Timer has been ended.
         case ended
     }
 
@@ -24,9 +28,18 @@ public struct InternalTimer {
     private let timeIntervalProvider: () -> TimeInterval
     private let logger: Logging
 
-    private(set) var state: State = .initial
-    private(set) var startTime: TimeInterval = 0.0
-    private(set) var endTime: TimeInterval = 0.0
+    /// The state of the timer.
+    public private(set) var state: State = .initial
+
+    /// The epoch time interval at which the timer was started.
+    ///
+    /// The default value is `0.0`.
+    public private(set) var startTime: TimeInterval = 0.0
+
+    /// The epoch time interval at which the timer was ended.
+    ///
+    /// The default value is `0.0`.
+    public private(set) var endTime: TimeInterval = 0.0
 
     init(logger: Logging,
          intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }
