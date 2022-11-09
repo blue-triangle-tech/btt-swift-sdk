@@ -129,6 +129,35 @@ extension CapturedRequest.InitiatorType {
 
 extension CapturedRequest {
     init(timer: InternalTimer, relativeTo startTime: Millisecond, response: URLResponse?) {
+        self.init(
+            startTime: timer.startTime.milliseconds - startTime,
+            endTime: timer.endTime.milliseconds - startTime,
+            duration: timer.endTime.milliseconds - timer.startTime.milliseconds,
+            decodedBodySize: 0,
+            encodedBodySize: response?.expectedContentLength ?? 0,
+            response: response)
+    }
+
+    init(metrics: URLSessionTaskMetrics) {
+        let lastMetric = metrics.transactionMetrics.last
+
+        self.init(
+            startTime: metrics.taskInterval.start.timeIntervalSince1970.milliseconds,
+            endTime: metrics.taskInterval.end.timeIntervalSince1970.milliseconds,
+            duration: metrics.taskInterval.duration.milliseconds,
+            decodedBodySize: lastMetric?.countOfResponseBodyBytesAfterDecoding ?? 0,
+            encodedBodySize: lastMetric?.countOfResponseBodyBytesReceived ?? 0,
+            response: lastMetric?.response)
+    }
+
+    init(
+        startTime: Millisecond,
+        endTime: Millisecond,
+        duration: Millisecond,
+        decodedBodySize: Int64,
+        encodedBodySize: Int64,
+        response: URLResponse?
+    ) {
         let hostComponents = response?.url?.host?.split(separator: ".") ?? []
         self.host = hostComponents.first != nil ? String(hostComponents.first!) : ""
         if hostComponents.count > 2 {
@@ -148,11 +177,11 @@ extension CapturedRequest {
 
         self.url = response?.url?.absoluteString ?? ""
         self.file = response?.url?.lastPathComponent ?? ""
-        self.startTime = timer.startTime.milliseconds - startTime
-        self.endTime = timer.endTime.milliseconds - startTime
-        self.duration = timer.endTime.milliseconds - timer.startTime.milliseconds
-        self.decodedBodySize = 0
-        self.encodedBodySize = response?.expectedContentLength ?? 0
+        self.startTime = startTime
+        self.endTime = endTime
+        self.duration = duration
+        self.decodedBodySize = decodedBodySize
+        self.encodedBodySize = encodedBodySize
     }
 }
 
