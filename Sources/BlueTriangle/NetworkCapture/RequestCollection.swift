@@ -26,6 +26,9 @@ struct RequestCollection: Equatable {
         requests.append(CapturedRequest(timer: timer, relativeTo: startTime, response: response))
     }
 
+    mutating func insert(metrics: URLSessionTaskMetrics) {
+    }
+
     mutating func batchRequests() -> [CapturedRequest]? {
         guard isNotEmpty else {
             return nil
