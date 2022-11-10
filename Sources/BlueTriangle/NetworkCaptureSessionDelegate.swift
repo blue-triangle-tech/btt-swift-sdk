@@ -16,8 +16,6 @@ open class NetworkCaptureSessionDelegate: NSObject, URLSessionTaskDelegate {
     ///   - task: The task whose metrics have been collected.
     ///   - metrics: The collected metrics.
     open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-//        print("\(#function): \(metrics)")
-        print("\(#function)")
         BlueTriangle.captureRequest(metrics: metrics)
     }
 }

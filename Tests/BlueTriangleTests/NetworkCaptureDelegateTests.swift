@@ -25,7 +25,6 @@ final class NetworkCaptureDelegateTests: XCTestCase {
         let metricsExpectation = expectation(description: "Collected session task metrics")
         var metrics: URLSessionTaskMetrics!
         let requestCollector = CapturedRequestCollectorMock(onCollectMetrics: { taskMetrics in
-            print("Metrics: \(taskMetrics)")
             metrics = taskMetrics
             metricsExpectation.fulfill()
         })
