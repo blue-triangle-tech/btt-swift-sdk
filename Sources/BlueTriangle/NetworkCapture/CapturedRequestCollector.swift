@@ -12,6 +12,7 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
     private var timerManager: CaptureTimerManaging
     private let requestBuilder: CapturedRequestBuilder
     private let uploader: Uploading
+    private let uploadTaskPriority: TaskPriority
     private var requestCollection: RequestCollection?
     private(set) var hasBeenConfigured: Bool = false
 
@@ -19,12 +20,14 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
         logger: Logging,
         timerManager: CaptureTimerManaging,
         requestBuilder: CapturedRequestBuilder,
-        uploader: Uploading
+        uploader: Uploading,
+        uploadTaskPriority: TaskPriority = .background
     ) {
         self.logger = logger
         self.timerManager = timerManager
         self.requestBuilder = requestBuilder
         self.uploader = uploader
+        self.uploadTaskPriority = uploadTaskPriority
     }
 
     func configure() {
@@ -70,7 +73,7 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
     }
 
     private func upload(startTime: Millisecond, page: Page, requests: [CapturedRequest]) {
-        Task.detached(priority: .background) {
+        Task.detached(priority: uploadTaskPriority) {
             do {
                 let request = try self.requestBuilder.build(startTime, page, requests)
                 self.uploader.send(request: request)

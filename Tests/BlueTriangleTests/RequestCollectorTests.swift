@@ -21,6 +21,8 @@ class RequestCollectorTests: XCTestCase {
         return Request(method: .post, url: Constants.capturedRequestEndpoint)
     }
 
+    let uploadTaskPriority: TaskPriority = .high
+
     override class func tearDown() {
         BlueTriangle.reset()
     }
@@ -59,7 +61,8 @@ class RequestCollectorTests: XCTestCase {
             logger: Self.logger,
             timerManager: timerManager,
             requestBuilder: Self.requestBuilder,
-            uploader: UploaderMock())
+            uploader: UploaderMock(),
+            uploadTaskPriority: uploadTaskPriority)
         await collector.configure()
 
         await collector.start(page: Mock.page, startTime: 1.0)
@@ -92,7 +95,8 @@ class RequestCollectorTests: XCTestCase {
             logger: Self.logger,
             timerManager: CaptureTimerManagerMock(),
             requestBuilder: requestBuilder,
-            uploader: uploader)
+            uploader: uploader,
+            uploadTaskPriority: uploadTaskPriority)
         await collector.configure()
 
         // Start BTTimer
@@ -135,7 +139,8 @@ class RequestCollectorTests: XCTestCase {
             logger: Self.logger,
             timerManager: CaptureTimerManagerMock(),
             requestBuilder: requestBuilder,
-            uploader: uploader)
+            uploader: uploader,
+            uploadTaskPriority: uploadTaskPriority)
         await collector.configure()
 
         // Start BTTimer
@@ -170,7 +175,8 @@ class RequestCollectorTests: XCTestCase {
             logger: Self.logger,
             timerManager: timerManager,
             requestBuilder: requestBuilder,
-            uploader: uploader)
+            uploader: uploader,
+            uploadTaskPriority: uploadTaskPriority)
         await collector.configure()
 
         // Start BTTimer
@@ -214,7 +220,8 @@ class RequestCollectorTests: XCTestCase {
             logger: Self.logger,
             timerManager: timerManager,
             requestBuilder: requestBuilder,
-            uploader: uploader)
+            uploader: uploader,
+            uploadTaskPriority: uploadTaskPriority)
         await collector.configure()
 
         // Start BTTimer
@@ -245,7 +252,8 @@ class RequestCollectorTests: XCTestCase {
             logger: logger,
             timerManager: timerManager,
             requestBuilder: requestBuilder,
-            uploader: UploaderMock())
+            uploader: UploaderMock(),
+            uploadTaskPriority: uploadTaskPriority)
         await collector.configure()
 
         // Start BTTimer
@@ -286,7 +294,8 @@ class RequestCollectorTests: XCTestCase {
             logger: Self.logger,
             timerManager: timerManager,
             requestBuilder: requestBuilder,
-            uploader: uploader)
+            uploader: uploader,
+            uploadTaskPriority: uploadTaskPriority)
         await collector.configure()
         await collector.configure()
 
