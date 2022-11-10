@@ -22,6 +22,8 @@ class RequestCollectorTests: XCTestCase {
     }
 
     let uploadTaskPriority: TaskPriority = .high
+    let shortTimeout: TimeInterval = 0.2
+    let longTimeout: TimeInterval = 1.0
 
     override class func tearDown() {
         BlueTriangle.reset()
@@ -67,8 +69,8 @@ class RequestCollectorTests: XCTestCase {
 
         await collector.start(page: Mock.page, startTime: 1.0)
 
-        wait(for: [cancelExpectation!], timeout: 0.1)
-        wait(for: [startExpectation], timeout: 0.1)
+        wait(for: [cancelExpectation!], timeout: shortTimeout)
+        wait(for: [startExpectation], timeout: shortTimeout)
         // Accommodate timer manager cancel on deinit
         cancelExpectation = nil
     }
@@ -114,7 +116,7 @@ class RequestCollectorTests: XCTestCase {
         // Start another timer
         await collector.start(page: Page(pageName: "Another_Page"), startTime: 2.0)
 
-        wait(for: [requestExpectation, uploadExpectation], timeout: 1.0)
+        wait(for: [requestExpectation, uploadExpectation], timeout: longTimeout)
 
         XCTAssertEqual(actualStartTime, expectedStartTime.milliseconds)
         XCTAssertEqual(actualPage, expectedPage)
@@ -194,7 +196,7 @@ class RequestCollectorTests: XCTestCase {
         timerManager.fireTimer()
 
         try await Task.sleep(nanoseconds: 1.0.nanoseconds)
-        wait(for: [requestExpectation, uploadExpectation], timeout: 1.0)
+        wait(for: [requestExpectation, uploadExpectation], timeout: longTimeout)
 
         XCTAssertEqual(actualStartTime, expectedStartTime.milliseconds)
         XCTAssertEqual(actualPage, expectedPage)
@@ -232,7 +234,7 @@ class RequestCollectorTests: XCTestCase {
         timerManager.fireTimer()
 
         try await Task.sleep(nanoseconds: 1.0.nanoseconds)
-        wait(for: [requestExpectation, uploadExpectation], timeout: 1.0)
+        wait(for: [requestExpectation, uploadExpectation], timeout: longTimeout)
     }
 
     func testRequestBuilderError() async throws {
@@ -268,7 +270,7 @@ class RequestCollectorTests: XCTestCase {
 
         await collector.start(page: Page(pageName: "Another_Page"), startTime: 2.0)
 
-        wait(for: [logErrorExpectation], timeout: 1.0)
+        wait(for: [logErrorExpectation], timeout: longTimeout)
     }
 
     func testMultipleConfigureCalls() async throws {
@@ -314,7 +316,7 @@ class RequestCollectorTests: XCTestCase {
         timerManager.fireTimer()
 
         try await Task.sleep(nanoseconds: 1.0.nanoseconds)
-        wait(for: [requestExpectation, uploadExpectation], timeout: 1.0)
+        wait(for: [requestExpectation, uploadExpectation], timeout: longTimeout)
 
         XCTAssertEqual(actualStartTime, expectedStartTime.milliseconds)
         XCTAssertEqual(actualPage, expectedPage)
