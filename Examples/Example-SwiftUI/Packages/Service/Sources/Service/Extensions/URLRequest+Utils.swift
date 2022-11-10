@@ -19,6 +19,9 @@ private extension URLRequest {
     static func build(
         _ method: HTTPMethod,
         url: URL,
+        accept: ContentType? = nil,
+        contentType: ContentType? = nil,
+        body: Data? = nil,
         queryItems: [URLQueryItem]? = nil,
         headerFields: [String: String]? = nil
     ) -> Self {
@@ -31,10 +34,26 @@ private extension URLRequest {
             request = URLRequest(url: url)
         }
 
+        if let accept {
+            request.setValue(accept.rawValue, forHTTPHeaderField: "Accept")
+        }
+
+        if let contentType {
+            request.setValue(contentType.rawValue, forHTTPHeaderField: "Content-Type")
+        }
+
+        if let headerFields {
+            headerFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
+        }
+
         request.httpMethod = method.rawValue
 
         if let headerFields {
             request.allHTTPHeaderFields = headerFields
+        }
+
+        if let body {
+            request.httpBody = body
         }
 
         return request
@@ -42,20 +61,66 @@ private extension URLRequest {
 }
 
 extension URLRequest {
-    static func delete(_ url: URL, headers: [String: String]? = nil) -> Self {
-        build(.delete, url: url, headerFields: headers)
+    enum ContentType: String {
+        case json = "application/json"
+        case urlencoded = "application/x-www-form-urlencoded"
     }
 
-    static func get(_ url: URL, queryItems: [URLQueryItem]? = nil, headers: [String: String]? = nil) -> Self {
-        build(.get, url: url, queryItems: queryItems, headerFields: headers)
+    static func delete(
+        _ url: URL,
+        accept: ContentType = .json,
+        headers: [String: String]? = nil
+    ) -> Self {
+        build(
+            .delete,
+            url: url,
+            accept: accept,
+            headerFields: headers)
     }
 
-    static func post<T: Encodable>(_ url: URL, body: T, headers: [String: String]? = nil) throws -> Self {
-        var request = build(.post, url: url, headerFields: headers)
+    static func get(
+        _ url: URL,
+        accept: ContentType = .json,
+        queryItems: [URLQueryItem]? = nil,
+        headers: [String: String]? = nil
+    ) -> Self {
+        build(
+            .get,
+            url: url,
+            accept: accept,
+            queryItems: queryItems,
+            headerFields: headers)
+    }
 
-        let data = try JSONEncoder().encode(body)
-        request.httpBody = data
+    static func patch<T: Encodable>(
+        _ url: URL,
+        accept: ContentType = .json,
+        contentType: ContentType? = .json,
+        body: T,
+        headers: [String: String]? = nil
+    ) throws -> Self {
+        build(
+            .patch,
+            url: url,
+            accept: accept,
+            contentType: contentType,
+            body: try JSONEncoder().encode(body),
+            headerFields: headers)
+    }
 
-        return request
+    static func post<T: Encodable>(
+        _ url: URL,
+        accept: ContentType = .json,
+        contentType: ContentType? = .json,
+        body: T,
+        headers: [String: String]? = nil
+    ) throws -> Self {
+        build(
+            .post,
+            url: url,
+            accept: accept,
+            contentType: contentType,
+            body: try JSONEncoder().encode(body),
+            headerFields: headers)
     }
 }

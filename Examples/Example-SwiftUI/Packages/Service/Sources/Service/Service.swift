@@ -11,11 +11,13 @@ public struct Service {
 
     enum Route {
         /// Path: `/cart/{cart_id}/`
-        case cart(Int)
+        case cart(Cart.ID)
         /// Path: `/cart/{cart_id}/checkout/`
         case cartCheckout(Checkout.ID)
         /// Path: `/cart/`
         case carts
+        /// Path: `/item/{item_id}/`
+        case item(CartItem.ID)
         /// Path: `/item/`
         case items
         /// Path: `/products/{product_id}/`
@@ -31,6 +33,8 @@ public struct Service {
                 return "/cart/\(id)/checkout/"
             case .carts:
                 return "/cart/"
+            case .item(let id):
+                return "/item/\(id)/"
             case .items:
                 return "/item/"
             case .product(let id):
@@ -45,14 +49,18 @@ public struct Service {
     private let decoder: JSONDecoder
     private let networking: (URLRequest) async throws -> ResponseValue
 
-    public init(
-        baseURL: URL,
-        decoder: JSONDecoder,
+    init(
+        baseURL: URL = Constants.baseURL,
+        decoder: JSONDecoder = .iso8601Full,
         networking: @escaping (URLRequest) async throws -> ResponseValue
     ) {
         self.baseURL = baseURL
         self.decoder = decoder
         self.networking = networking
+    }
+
+    public init(_ networking: @escaping (URLRequest) async throws -> ResponseValue) {
+        self.init(networking: networking)
     }
 
     public func carts() async throws -> [Cart] {
@@ -62,7 +70,7 @@ public struct Service {
     }
 
     public func cart(id: Cart.ID) async throws -> CartDetail {
-        try await networking(.get(url(for: Route.cart(id))))
+        try await networking(.get(url(for: .cart(id))))
             .validate()
             .decode(with: decoder)
     }
@@ -74,9 +82,26 @@ public struct Service {
     }
 
     public func createCart(_ createCart: CreateCart) async throws -> Cart {
-        try await networking(.post(url(for: Route.carts), body: createCart))
+        try await networking(.post(url(for: .carts), body: createCart))
             .validate()
             .decode(with: decoder)
+    }
+
+    public func createCartItem(_ createCartItem: CreateCartItem) async throws -> CartItem {
+        try await networking(.post(url(for: .items), body: createCartItem))
+            .validate()
+            .decode(with: decoder)
+    }
+
+    public func updateCartItem(_ updateCartItem: UpdateCartItem) async throws -> CartItem {
+        try await networking(.patch(url(for: .item(updateCartItem.id)), body: updateCartItem))
+            .validate()
+            .decode(with: decoder)
+    }
+
+    public func deleteCartItem(id: CartItem.ID) async throws -> Void {
+        try await networking(.delete(url(for: .item(id))))
+            .validate()
     }
 
     public func deleteCheckout(id: Checkout.ID) async throws -> CartDetail {

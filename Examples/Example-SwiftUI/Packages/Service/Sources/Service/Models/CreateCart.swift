@@ -15,7 +15,7 @@ public struct CreateCart: Codable, Equatable {
     public init(
         confirmation: String,
         shipping: String,
-        itemIDs: Set<Int>
+        itemIDs: Set<Int> = []
     ) {
         self.confirmation = confirmation
         self.shipping = shipping
