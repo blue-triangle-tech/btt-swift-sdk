@@ -138,12 +138,12 @@ extension CapturedRequest {
             response: response)
     }
 
-    init(metrics: URLSessionTaskMetrics) {
+    init(metrics: URLSessionTaskMetrics, relativeTo startTime: Millisecond) {
         let lastMetric = metrics.transactionMetrics.last
 
         self.init(
-            startTime: metrics.taskInterval.start.timeIntervalSince1970.milliseconds,
-            endTime: metrics.taskInterval.end.timeIntervalSince1970.milliseconds,
+            startTime: metrics.taskInterval.start.timeIntervalSince1970.milliseconds - startTime,
+            endTime: metrics.taskInterval.end.timeIntervalSince1970.milliseconds - startTime,
             duration: metrics.taskInterval.duration.milliseconds,
             decodedBodySize: lastMetric?.countOfResponseBodyBytesAfterDecoding ?? 0,
             encodedBodySize: lastMetric?.countOfResponseBodyBytesReceived ?? 0,

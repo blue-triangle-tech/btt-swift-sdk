@@ -27,7 +27,7 @@ struct RequestCollection: Equatable {
     }
 
     mutating func insert(metrics: URLSessionTaskMetrics) {
-        requests.append(CapturedRequest(metrics: metrics))
+        requests.append(CapturedRequest(metrics: metrics, relativeTo: startTime))
     }
 
     mutating func batchRequests() -> [CapturedRequest]? {
