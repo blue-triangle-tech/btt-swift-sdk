@@ -133,8 +133,8 @@ extension CapturedRequest {
             startTime: timer.startTime.milliseconds - startTime,
             endTime: timer.endTime.milliseconds - startTime,
             duration: timer.endTime.milliseconds - timer.startTime.milliseconds,
-            decodedBodySize: 0,
-            encodedBodySize: response?.expectedContentLength ?? 0,
+            decodedBodySize: response?.expectedContentLength ?? 0,
+            encodedBodySize: 0,
             response: response)
     }
 
