@@ -386,7 +386,7 @@ public extension BlueTriangle {
             let reportRequest = try Request(method: .post,
                                             url: Constants.errorEndpoint,
                                             parameters: params,
-                                            model: [CrashReport(error: error)])
+                                            model: [CrashReport(error: error, line: line)])
 
             uploader.send(request: reportRequest)
         } catch {
