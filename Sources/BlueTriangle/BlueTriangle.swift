@@ -324,12 +324,8 @@ extension BlueTriangle {
     static func configureCrashTracking(with crashConfiguration: CrashReportConfiguration) {
         crashReportManager = CrashReportManager(crashConfiguration,
                                                 logger: logger,
-                                                uploader: uploader)
-
-        appEventObserver = AppEventObserver(onLaunch: {
-            crashReportManager?.uploadReports(session: session)
-        })
-        appEventObserver?.configureNotifications()
+                                                uploader: uploader,
+                                                sessionProvider: { session })
     }
 }
 
