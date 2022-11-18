@@ -16,16 +16,19 @@ struct TabContainerView: View {
     }
 
     private let service: Service
+    private let cartRepository: CartRepository
     @State private var selectedTab: Tab = .products
 
     init(service: Service) {
         self.service = service
+        self.cartRepository = CartRepository(service: service)
     }
 
     var body: some View {
         TabView(selection: $selectedTab) {
             ProductListView(
                 viewModel: .init(
+                    cartRepository: cartRepository,
                     service: service))
                 .tabItem {
                     Text("Products")
@@ -33,7 +36,10 @@ struct TabContainerView: View {
                  }
                 .tag(Tab.products)
 
-            CartView(viewModel: .init())
+            CartView(
+                viewModel: .init(
+                    service: service,
+                    cartRepository: cartRepository))
                 .tabItem {
                     Text("Cart")
                     Image(systemName: "cart.fill")

@@ -12,9 +12,11 @@ import Service
 final class ProductListViewModel: ObservableObject {
     @Published private(set) var products: ([Product], [Product]) = ([], [])
     @Published var error: Error?
+    private let cartRepository: CartRepository
     private let service: Service
 
-    init(service: Service) {
+    init(cartRepository: CartRepository, service: Service) {
+        self.cartRepository = cartRepository
         self.service = service
     }
 
