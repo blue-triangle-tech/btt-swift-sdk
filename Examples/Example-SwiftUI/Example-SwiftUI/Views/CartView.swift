@@ -10,7 +10,7 @@ import SwiftUI
 import Service
 
 struct CartView: View {
-    @StateObject var viewModel: CartViewModel
+    @ObservedObject var viewModel: CartViewModel
 
     init(viewModel: CartViewModel) {
         self.viewModel = viewModel
