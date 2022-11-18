@@ -17,7 +17,87 @@ struct CartView: View {
     }
 
     var body: some View {
-        Text("Cart")
+        NavigationStack {
+            Group {
+                if viewModel.productItems.isEmpty {
+                    VStack(spacing: 16) {
+                        Image(systemName: "cart.fill")
+                            .resizable()
+                            .frame(width: 64, height: 64)
+
+                        Text("Your cart is empty")
+                    }
+                    .foregroundColor(.secondary)
+                } else {
+                    cartList(viewModel)
+                        .overlay(alignment: .bottom) {
+                            Button(
+                                action: {
+                                    viewModel.checkout()
+                                },
+                                label: {
+                                    Text("Check Out")
+                                })
+                            .buttonStyle(.primary())
+                            .padding()
+                        }
+                }
+            }
+            .navigationTitle("Cart")
+        }
+        .errorAlert(error: $viewModel.error)
+    }
+}
+
+private extension CartView {
+    @ViewBuilder
+    func footer(estimatedTax: Double, subtotal: Double) -> some View {
+        VStack(spacing: 8) {
+            HStack {
+                Text("Estimated tax")
+
+                Spacer()
+
+                Text(
+                    estimatedTax,
+                    format: .currency(
+                        code: Constants.currencyCode))
+            }
+
+            HStack {
+                Text("Subtotal")
+                    .fontWeight(.bold)
+
+                Spacer()
+
+                Text(
+                    subtotal,
+                    format: .currency(
+                        code: Constants.currencyCode))
+            }
+        }
+    }
+
+    @ViewBuilder
+    func cartList(_ viewModel: CartViewModel) -> some View {
+        List {
+            ForEach(viewModel.productItems) { productItem in
+                CartItemRow(
+                    item: productItem,
+                    onIncrement: {
+                        viewModel.increment(id: productItem.id)
+                    },
+                    onDecrement: {
+                        viewModel.decrement(id: productItem.id)
+                    })
+            }
+
+            Section {
+                footer(
+                    estimatedTax: viewModel.estimatedTax,
+                    subtotal: viewModel.subtotal)
+            }
+        }
     }
 }
 
