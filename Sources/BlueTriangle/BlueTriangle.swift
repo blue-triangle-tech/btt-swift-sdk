@@ -324,6 +324,14 @@ public extension BlueTriangle {
             await capturedRequestCollector?.collect(timer: timer, response: tuple.1)
         }
     }
+
+    /// Captures a network request.
+    /// - Parameter metrics: An object encapsulating the metrics for a session task.
+    static func captureRequest(metrics: URLSessionTaskMetrics) {
+        Task {
+            await capturedRequestCollector?.collect(metrics: metrics)
+        }
+    }
 }
 
 // MARK: - Crash Reporting
