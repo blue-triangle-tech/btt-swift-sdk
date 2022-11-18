@@ -60,6 +60,8 @@ struct ProductListView: View {
 
 struct ProductListView_Previews: PreviewProvider {
     static var previews: some View {
-        ProductListView(viewModel: .init(service: .mock))
+        ProductListView(viewModel: .init(
+            cartRepository: .mock,
+            service: .mock))
     }
 }

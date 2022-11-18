@@ -9,6 +9,7 @@ import Foundation
 import Service
 
 final class ProductDetailViewModel: ObservableObject {
+    private let cartRepository: CartRepository
     private let product: Product
     @Published var quantity: Int
     @Published var error: Error?
@@ -29,11 +30,16 @@ final class ProductDetailViewModel: ObservableObject {
         product.image
     }
 
-    init(product: Product, quantity: Int = 1) {
+    init(cartRepository: CartRepository, product: Product, quantity: Int = 1) {
+        self.cartRepository = cartRepository
         self.product = product
         self.quantity = quantity
     }
 
+    @MainActor
     func addToCart() {
+        cartRepository.add(
+            product: product,
+            quantity: quantity)
     }
 }

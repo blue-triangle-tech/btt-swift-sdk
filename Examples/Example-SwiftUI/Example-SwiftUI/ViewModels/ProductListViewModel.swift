@@ -33,6 +33,8 @@ final class ProductListViewModel: ObservableObject {
             return nil
         }
 
-        return ProductDetailViewModel(product: product)
+        return ProductDetailViewModel(
+            cartRepository: cartRepository,
+            product: product)
     }
 }
