@@ -12,7 +12,7 @@ import Service
 final class CartViewModel: ObservableObject {
     private let service: Service
     private let cartRepository: CartRepository
-    @Published var productItems: IdentifiedArrayOf<CartProductItem> = []
+    @Published var productItems: IdentifiedArrayOf<CartItemModel> = []
     @Published var error: Error?
 
     init(service: Service, cartRepository: CartRepository) {

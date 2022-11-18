@@ -10,31 +10,10 @@ import Foundation
 import IdentifiedCollections
 import Service
 
-struct CartProductItem: Codable, Equatable, Hashable, Identifiable {
-    var id: Int
-    var quantity: Int
-    var product: Product
-
-    var price: Double {
-        Double(product.price).flatMap { $0 * Double(quantity) } ?? 0
-    }
-}
-
-struct CartModel {
-    var cart: Cart
-    var items: IdentifiedArrayOf<CartProductItem>
-
-    var subtotal: Double {
-        items.reduce(into: 0) { result, element in
-            result += element.price
-        }
-    }
-}
-
 final class CartRepository {
     private let service: Service
     private var cartDetail: CartDetail?
-    let items = CurrentValueSubject<IdentifiedArrayOf<CartProductItem>, Never>([])
+    let items = CurrentValueSubject<IdentifiedArrayOf<CartItemModel>, Never>([])
 
     init(service: Service) {
         self.service = service
@@ -105,7 +84,7 @@ private extension CartRepository {
                 itemIDs: []))
     }
 
-    func addProduct(_ product: Product, quantity: Int = 1) async throws -> CartProductItem? {
+    func addProduct(_ product: Product, quantity: Int = 1) async throws -> CartItemModel? {
         if let cartDetail {
             if let existingItem = cartDetail.items.first(where: { $0.productID == product.id }) {
                 guard quantity != existingItem.quantity else {
@@ -133,7 +112,7 @@ private extension CartRepository {
         }
     }
 
-    func addItem(product: Product, quantity: Int, cartID: Cart.ID) async throws -> CartProductItem {
+    func addItem(product: Product, quantity: Int, cartID: Cart.ID) async throws -> CartItemModel {
         let cartItem = try await service.createCartItem(
             CreateCartItem(
                 productID: product.id,
@@ -141,19 +120,19 @@ private extension CartRepository {
                 price: product.price,
                 cartID: cartID))
 
-        return CartProductItem(
+        return CartItemModel(
             id: cartItem.id,
             quantity: cartItem.quantity,
             product: product)
     }
 
-    func updateItem(cartItemID: CartItem.ID, product: Product, quantity: Int) async throws -> CartProductItem {
+    func updateItem(cartItemID: CartItem.ID, product: Product, quantity: Int) async throws -> CartItemModel {
         let cartItem = try await service.updateCartItem(
             UpdateCartItem(
                 id: cartItemID,
                 quantity: quantity))
 
-        return CartProductItem(
+        return CartItemModel(
             id: cartItem.id,
             quantity: cartItem.quantity,
             product: product)
