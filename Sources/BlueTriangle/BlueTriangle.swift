@@ -283,8 +283,8 @@ public extension BlueTriangle {
 }
 
 // MARK: - Network Capture
-extension BlueTriangle {
-    static func timerDidStart(_ type: BTTimer.TimerType, page: Page, startTime: TimeInterval) {
+public extension BlueTriangle {
+    internal static func timerDidStart(_ type: BTTimer.TimerType, page: Page, startTime: TimeInterval) {
         guard case .main = type else {
             return
         }
@@ -294,7 +294,7 @@ extension BlueTriangle {
         }
     }
 
-    @usableFromInline
+    /// Returns a timer for network capture.
     static func startRequestTimer() -> InternalTimer? {
         guard shouldCaptureRequests else {
             return nil
@@ -304,17 +304,32 @@ extension BlueTriangle {
         return timer
     }
 
-    @usableFromInline
+    /// Captures a network request.
+    /// - Parameters:
+    ///   - timer: The request timer.
+    ///   - data: The request response data.
+    ///   - response: The request response.
     static func captureRequest(timer: InternalTimer, data: Data?, response: URLResponse?) {
         Task {
             await capturedRequestCollector?.collect(timer: timer, response: response)
         }
     }
 
-    @usableFromInline
+    /// Captures a network request.
+    /// - Parameters:
+    ///   - timer: The request timer.
+    ///   - tuple: The asynchronously-delivered tuple containing the request contents as a Data instance and a URLResponse.
     static func captureRequest(timer: InternalTimer, tuple: (Data, URLResponse)) {
         Task {
             await capturedRequestCollector?.collect(timer: timer, response: tuple.1)
+        }
+    }
+
+    /// Captures a network request.
+    /// - Parameter metrics: An object encapsulating the metrics for a session task.
+    static func captureRequest(metrics: URLSessionTaskMetrics) {
+        Task {
+            await capturedRequestCollector?.collect(metrics: metrics)
         }
     }
 }
