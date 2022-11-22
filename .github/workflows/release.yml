@@ -20,6 +20,8 @@ jobs:
     steps:
       - name: Git Checkout main
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.MIMIC_ACCESS_TOKEN }}
 
       - name: Bump Version File
         id: bump
@@ -33,6 +35,9 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Bump version
+          commit_user_email: mimic@bluetriangle.com
+          commit_author: BTT-Mimic <mimic@bluetriangle.com>
+
 
       - name: Create Tag
         uses: actions/github-script@v5

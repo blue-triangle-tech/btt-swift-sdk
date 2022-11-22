@@ -31,6 +31,7 @@ enum Constants {
     static let crashReportFilename = "com.bluetriangle.crash"
     static let crashReportLineSeparator = "~~"
     static let excludedValue = "20"
+    static let startupDelay: TimeInterval = 10
 
     // Logging
     static let loggingSubsystem = "com.bluetriangle.sdk"

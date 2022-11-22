@@ -260,14 +260,14 @@ extension Mock {
             endTime: endTime,
             duration: endTime - startTime,
             initiatorType: .image,
-            decodedBodySize: 0,
-            encodedBodySize: 100)
+            decodedBodySize: 100,
+            encodedBodySize: 0)
     }
 }
 
 // MARK: - Request
 extension Mock {
-    static var capturedRequestJSON = "[{\"f\":\"foo.json\",\"ez\":-1,\"h\":\"example\",\"d\":1000,\"dz\":0,\"sT\":2000,\"e\":\"resource\",\"i\":\"other\",\"dmn\":\"example.com\",\"URL\":\"https:\\/\\/example.com\\/foo.json\",\"rE\":3000}]"
+    static var capturedRequestJSON = "[{\"f\":\"foo.json\",\"ez\":0,\"h\":\"example\",\"d\":1000,\"dz\":-1,\"sT\":2000,\"e\":\"resource\",\"i\":\"other\",\"dmn\":\"example.com\",\"URL\":\"https:\\/\\/example.com\\/foo.json\",\"rE\":3000}]"
 
     static func makeTimerRequestJSON(appVersion: String, os: String, osVersion: String, sdkVersion: String) -> String {
         """
