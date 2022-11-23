@@ -21,7 +21,7 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
         timerManager: CaptureTimerManaging,
         requestBuilder: CapturedRequestBuilder,
         uploader: Uploading,
-        uploadTaskPriority: TaskPriority = .background
+        uploadTaskPriority: TaskPriority
     ) {
         self.logger = logger
         self.timerManager = timerManager
@@ -91,6 +91,7 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
 // MARK: - Supporting Types
 extension CapturedRequestCollector {
     struct Configuration {
+        let uploadTaskPriority: TaskPriority
         let timerManagingProvider: (NetworkCaptureConfiguration) -> CaptureTimerManaging
 
         func makeRequestCollector(
@@ -101,13 +102,14 @@ extension CapturedRequestCollector {
         ) -> CapturedRequestCollector {
             let timerManager = timerManagingProvider(networkCaptureConfiguration)
             return CapturedRequestCollector(logger: logger,
-                                                 timerManager: timerManager,
-                                                 requestBuilder: requestBuilder,
-                                                 uploader: uploader)
+                                            timerManager: timerManager,
+                                            requestBuilder: requestBuilder,
+                                            uploader: uploader,
+                                            uploadTaskPriority: uploadTaskPriority)
         }
 
         static var live: Self {
-            return Configuration { configuration in
+            Configuration(uploadTaskPriority: .background) { configuration in
                 CaptureTimerManager(configuration: configuration)
             }
         }

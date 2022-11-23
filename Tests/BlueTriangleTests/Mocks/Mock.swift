@@ -134,7 +134,7 @@ extension Mock {
     static func makeRequestCollectorConfiguration(
         timerManagingProvider: @escaping (NetworkCaptureConfiguration) -> CaptureTimerManaging = { _ in CaptureTimerManagerMock() }
     ) -> CapturedRequestCollector.Configuration {
-        .init(timerManagingProvider: timerManagingProvider)
+        .init(uploadTaskPriority: .high, timerManagingProvider: timerManagingProvider)
     }
 }
 
