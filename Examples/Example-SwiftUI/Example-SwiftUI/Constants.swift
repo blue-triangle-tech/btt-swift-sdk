@@ -9,5 +9,6 @@
 import Foundation
 
 enum Constants {
-    static var siteID = "bluetriangledemo500z"
+    static let shipping = "3.99"
+    static let siteID = "bluetriangledemo500z"
 }

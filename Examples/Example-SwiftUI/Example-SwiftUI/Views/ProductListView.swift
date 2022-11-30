@@ -13,7 +13,11 @@ struct ProductListView: View {
         case productDetail(Product)
     }
 
-    @StateObject var viewModel: ProductListViewModel
+    @ObservedObject var viewModel: ProductListViewModel
+
+    init(viewModel: ProductListViewModel) {
+        self.viewModel = viewModel
+    }
 
     var columns: [GridItem] {
         [GridItem(.adaptive(minimum: 150, maximum: 170))]
@@ -60,6 +64,8 @@ struct ProductListView: View {
 
 struct ProductListView_Previews: PreviewProvider {
     static var previews: some View {
-        ProductListView(viewModel: .init(service: .mock))
+        ProductListView(viewModel: .init(
+            cartRepository: .mock,
+            service: .mock))
     }
 }

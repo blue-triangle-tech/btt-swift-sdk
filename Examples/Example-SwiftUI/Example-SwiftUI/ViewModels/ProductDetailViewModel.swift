@@ -9,13 +9,37 @@ import Foundation
 import Service
 
 final class ProductDetailViewModel: ObservableObject {
+    private let cartRepository: CartRepository
     private let product: Product
+    @Published var quantity: Int
+    @Published var error: Error?
 
     var name: String {
         product.name
     }
 
-    init(product: Product) {
+    var description: String {
+        product.description
+    }
+
+    var price: String {
+        "$\(product.price)"
+    }
+
+    var imageURL: URL {
+        product.image
+    }
+
+    init(cartRepository: CartRepository, product: Product, quantity: Int = 1) {
+        self.cartRepository = cartRepository
         self.product = product
+        self.quantity = quantity
+    }
+
+    @MainActor
+    func addToCart() {
+        cartRepository.add(
+            product: product,
+            quantity: quantity)
     }
 }
