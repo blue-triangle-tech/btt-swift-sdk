@@ -78,10 +78,14 @@ private extension CartView {
                 CartItemRow(
                     item: productItem,
                     onIncrement: {
-                        viewModel.increment(id: productItem.id)
+                        Task {
+                            await viewModel.increment(id: productItem.id)
+                        }
                     },
                     onDecrement: {
-                        viewModel.decrement(id: productItem.id)
+                        Task {
+                            await viewModel.decrement(id: productItem.id)
+                        }
                     })
             }
 

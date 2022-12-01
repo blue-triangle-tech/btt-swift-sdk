@@ -31,6 +31,7 @@ final class CartViewModel: ObservableObject {
         self.cartRepository = cartRepository
 
         cartRepository.items
+            .receive(on: DispatchQueue.main)
             .assign(to: &$productItems)
     }
 
@@ -44,24 +45,32 @@ final class CartViewModel: ObservableObject {
     }
 
     @MainActor
-    func increment(id: CartItemModel.ID) {
+    func increment(id: CartItemModel.ID) async {
         guard let currentQuantity = productItems[id: id]?.quantity else {
             return
         }
 
-        cartRepository.updateQuantity(cartItemID: id, quantity: currentQuantity + 1)
+        do {
+            try await cartRepository.updateQuantity(cartItemID: id, quantity: currentQuantity + 1)
+        } catch {
+            self.error = error
+        }
     }
 
     @MainActor
-    func decrement(id: CartItemModel.ID) {
+    func decrement(id: CartItemModel.ID) async {
         guard let currentQuantity = productItems[id: id]?.quantity else {
             return
         }
 
-        if currentQuantity > 1 {
-            cartRepository.updateQuantity(cartItemID: id, quantity: currentQuantity - 1)
-        } else {
-            cartRepository.remove(cartItemID: id)
+        do {
+            if currentQuantity > 1 {
+                try await cartRepository.updateQuantity(cartItemID: id, quantity: currentQuantity - 1)
+            } else {
+                try await cartRepository.remove(cartItemID: id)
+            }
+        } catch {
+            self.error = error
         }
     }
 }

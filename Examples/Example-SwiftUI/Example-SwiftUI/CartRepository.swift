@@ -19,59 +19,37 @@ final class CartRepository {
         self.service = service
     }
 
-    @MainActor
-    func add(product: Product, quantity: Int) {
-        Task {
-            do {
-                if let item = try await addProduct(product, quantity: quantity) {
-                    var currentItems = items.value
-                    currentItems[id: item.id] = item
-                    items.value = currentItems
-                }
-            } catch {
-                print("ERROR: \(error)")
-            }
+    func add(product: Product, quantity: Int) async throws {
+        if let item = try await addProduct(product, quantity: quantity) {
+            var currentItems = items.value
+            currentItems[id: item.id] = item
+            items.value = currentItems
         }
     }
 
-    @MainActor
-    func updateQuantity(cartItemID: CartItem.ID, quantity: Int) {
+    func updateQuantity(cartItemID: CartItem.ID, quantity: Int) async throws {
         guard let cartID = cartDetail?.id, let currentItem = items.value[id: cartItemID] else {
             return
         }
 
-        Task {
-            do {
-                let updatedItem = try await updateItem(
-                    cartItemID: cartItemID,
-                    product: currentItem.product,
-                    quantity: quantity)
+        let updatedItem = try await updateItem(
+            cartItemID: cartItemID,
+            product: currentItem.product,
+            quantity: quantity)
 
-                self.cartDetail = try await service.cart(id: cartID)
+        self.cartDetail = try await service.cart(id: cartID)
 
-                items.value[id: cartItemID] = updatedItem
-
-            } catch {
-                print("ERROR: \(error)")
-            }
-        }
+        items.value[id: cartItemID] = updatedItem
     }
 
-    @MainActor
-    func remove(cartItemID: CartItem.ID) {
+    func remove(cartItemID: CartItem.ID) async throws {
         guard let cartID = cartDetail?.id else {
             return
         }
 
-        Task {
-            do {
-                try await service.deleteCartItem(id: cartItemID)
-                items.value[id: cartItemID] = nil
-                cartDetail = try await service.cart(id: cartID)
-            } catch {
-                print("ERROR: \(error)")
-            }
-        }
+        try await service.deleteCartItem(id: cartItemID)
+        items.value[id: cartItemID] = nil
+        cartDetail = try await service.cart(id: cartID)
     }
 
     func checkout() async throws -> Checkout {

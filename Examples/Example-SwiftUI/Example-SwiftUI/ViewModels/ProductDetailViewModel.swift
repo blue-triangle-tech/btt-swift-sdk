@@ -37,9 +37,13 @@ final class ProductDetailViewModel: ObservableObject {
     }
 
     @MainActor
-    func addToCart() {
-        cartRepository.add(
-            product: product,
-            quantity: quantity)
+    func addToCart() async {
+        do {
+            try  await cartRepository.add(
+                product: product,
+                quantity: quantity)
+        } catch {
+            self.error = error
+        }
     }
 }

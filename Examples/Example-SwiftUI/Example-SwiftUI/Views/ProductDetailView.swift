@@ -45,7 +45,9 @@ struct ProductDetailView: View {
         .overlay(alignment: .bottom) {
             Button(
                 action: {
-                    viewModel.addToCart()
+                    Task {
+                        await viewModel.addToCart()
+                    }
                 },
                 label: {
                     Text("Add to Cart")
