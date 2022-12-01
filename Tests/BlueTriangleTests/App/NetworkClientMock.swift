@@ -6,6 +6,7 @@
 //
 
 #if os(iOS) || os(tvOS)
+@testable import BlueTriangle
 import Foundation
 import UIKit
 

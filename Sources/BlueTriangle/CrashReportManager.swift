@@ -11,19 +11,34 @@ enum CrashReportConfiguration {
     case nsException
 }
 
-class CrashReportManager: CrashReportManaging {
+final class CrashReportManager: CrashReportManaging {
 
     private let logger: Logging
 
     private let uploader: Uploading
 
+    private let sessionProvider: () -> Session
+
+    private var startupTask: Task<Void, Error>?
+
     init(
         _ configuration: CrashReportConfiguration,
         logger: Logging,
-        uploader: Uploading
+        uploader: Uploading,
+        sessionProvider: @escaping () -> Session
     ) {
         self.logger = logger
         self.uploader = uploader
+        self.sessionProvider = sessionProvider
+        self.startupTask = Task.delayed(byTimeInterval: Constants.startupDelay) { [weak self] in
+            guard let session = self?.sessionProvider() else {
+                return
+            }
+
+            self?.uploadReports(session: session)
+            self?.startupTask = nil
+        }
+
         configureErrorHandling(configuration: configuration)
     }
 
