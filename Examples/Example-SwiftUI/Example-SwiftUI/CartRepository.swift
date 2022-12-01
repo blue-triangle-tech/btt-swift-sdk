@@ -73,6 +73,17 @@ final class CartRepository {
             }
         }
     }
+
+    func checkout() async throws -> Checkout {
+        guard let cartDetail else {
+            throw "Missing Cart"
+        }
+        return try await service.checkout(id: cartDetail.id)
+    }
+
+    func confirm(_ checkoutID: Checkout.ID) async throws -> CartDetail {
+        try await service.deleteCheckout(id: checkoutID)
+    }
 }
 
 private extension CartRepository {
