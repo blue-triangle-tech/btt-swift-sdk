@@ -22,7 +22,7 @@ public extension Mock {
         decode(CartItem.self.self, from: cartItemJSON)
     }
 
-    static var checkout: Checkout  {
+    static var checkout: Checkout {
         decode(Checkout.self, from: checkoutJSON)
     }
 
@@ -53,7 +53,7 @@ public extension Mock {
 extension Mock {
     static var decoder: JSONDecoder = {
         let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
+        decoder.dateDecodingStrategy = .iso8601Full
         return decoder
     }()
 
@@ -78,6 +78,7 @@ extension Mock {
         """
 
     static let checkoutItemJSON = """
+        {"id":3,"product":6,"quantity":999,"price":"0.99","cart":2}
         """
 
     static let createCartJSON = """
