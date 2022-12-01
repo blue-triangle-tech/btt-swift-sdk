@@ -52,14 +52,7 @@ final class CrashReportManager: CrashReportManaging {
                     return
                 }
 
-                let timerRequest = try strongSelf.makeTimerRequest(session: session,
-                                                                   crashTime: crashReport.time)
-                strongSelf.uploader.send(request: timerRequest)
-
-                let reportRequest = try strongSelf.makeCrashReportRequest(session: session,
-                                                                          crashReport: crashReport)
-                strongSelf.uploader.send(request: reportRequest)
-
+                try strongSelf.upload(crashReport, session: session)
                 CrashReportPersistence.clear()
             } catch {
                 self?.logger.error(error.localizedDescription)
@@ -121,5 +114,15 @@ final class CrashReportManager: CrashReportManaging {
                            url: Constants.errorEndpoint,
                            parameters: params,
                            model: [crashReport])
+    }
+
+    private func upload(_ crashReport: CrashReport, session: Session) throws {
+        let timerRequest = try makeTimerRequest(session: session,
+                                                crashTime: crashReport.time)
+        uploader.send(request: timerRequest)
+
+        let reportRequest = try makeCrashReportRequest(session: session,
+                                                       crashReport: crashReport)
+        uploader.send(request: reportRequest)
     }
 }
