@@ -44,6 +44,10 @@ struct CartView: View {
                 }
             }
             .navigationTitle("Cart")
+            .sheet(item: $viewModel.checkoutItem) { checkout in
+                CheckoutView(
+                    viewModel: viewModel.checkoutViewModel(checkout))
+            }
         }
         .errorAlert(error: $viewModel.error)
     }

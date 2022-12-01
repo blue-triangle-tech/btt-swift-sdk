@@ -8,6 +8,11 @@
 import SwiftUI
 
 struct CheckoutView: View {
+    @ObservedObject var  viewModel: CheckoutViewModel
+    init(viewModel: CheckoutViewModel) {
+        self.viewModel = viewModel
+    }
+
     var body: some View {
         Text("Checkout")
     }
@@ -15,6 +20,11 @@ struct CheckoutView: View {
 
 struct CheckoutView_Previews: PreviewProvider {
     static var previews: some View {
-        CheckoutView()
+        CheckoutView(
+            viewModel: .init(
+                cartRepository: .mock,
+                checkout: Mock.checkout,
+                onFinish: {}
+            ))
     }
 }
