@@ -335,12 +335,18 @@ public extension BlueTriangle {
 }
 
 // MARK: - Crash Reporting
-extension BlueTriangle {
-    static func configureCrashTracking(with crashConfiguration: CrashReportConfiguration) {
+public extension BlueTriangle {
+    internal static func configureCrashTracking(with crashConfiguration: CrashReportConfiguration) {
         crashReportManager = CrashReportManager(crashConfiguration,
                                                 logger: logger,
                                                 uploader: uploader,
                                                 sessionProvider: { session })
+    }
+
+    /// Saves an exception to upload to the Blue Triangle portal.
+    /// - Parameter exception: The exception to upload.
+    static func report(exception: NSException) {
+        CrashReportPersistence.save(exception)
     }
 }
 
