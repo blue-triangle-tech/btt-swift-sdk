@@ -105,7 +105,7 @@ public struct Service {
     }
 
     public func deleteCheckout(id: Checkout.ID) async throws -> CartDetail {
-        try await networking(.get(url(for: .cartCheckout(id))))
+        try await networking(.delete(url(for: .cartCheckout(id))))
             .validate()
             .decode(with: decoder)
     }
