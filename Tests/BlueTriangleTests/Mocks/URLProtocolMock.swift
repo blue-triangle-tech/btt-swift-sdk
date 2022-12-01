@@ -10,7 +10,7 @@ import XCTest
 
 final class URLProtocolMock: URLProtocol {
     static var responseQueue: DispatchQueue = .global()
-    static var responseDelay: TimeInterval? = 0.3
+    static var responseDelay: TimeInterval? = 0.1
     static var responseProvider: (URL) throws -> (Data, HTTPURLResponse) = { url in
         (Data(), Mock.makeHTTPResponse(url: url))
     }
@@ -43,6 +43,11 @@ final class URLProtocolMock: URLProtocol {
             client.urlProtocol(self, didFailWithError: error)
         }
         client.urlProtocolDidFinishLoading(self)
+    }
+
+    static func reset() {
+        responseDelay = 0.1
+        responseProvider = { (Data(), Mock.makeHTTPResponse(url: $0)) }
     }
 }
 
