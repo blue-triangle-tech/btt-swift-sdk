@@ -47,7 +47,6 @@ final class CartViewModel: ObservableObject {
 
     @MainActor
     func increment(id: CartItemModel.ID) {
-        print("\(#function): \(id)")
         guard let currentQuantity = productItems[id: id]?.quantity else {
             return
         }
@@ -57,7 +56,6 @@ final class CartViewModel: ObservableObject {
 
     @MainActor
     func decrement(id: CartItemModel.ID) {
-        print("\(#function): \(id)")
         guard let currentQuantity = productItems[id: id]?.quantity else {
             return
         }
