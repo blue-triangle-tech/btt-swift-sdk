@@ -27,6 +27,7 @@
 		C94BF02B290B1803007E1C25 /* CheckoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94BF02A290B1802007E1C25 /* CheckoutView.swift */; };
 		C94BF02D290B1825007E1C25 /* CheckoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94BF02C290B1825007E1C25 /* CheckoutViewModel.swift */; };
 		C9B637D1290B26A6006E5F90 /* View+ErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B637D0290B26A6006E5F90 /* View+ErrorAlert.swift */; };
+		C9C7D88F2939029C00950C55 /* LineItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9C7D88E2939029C00950C55 /* LineItemRow.swift */; };
 		C9E1141A291421F00031E874 /* IdentifiedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = C9E11419291421F00031E874 /* IdentifiedCollections */; };
 		C9E1141C291425340031E874 /* CartRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E1141B291425340031E874 /* CartRepository.swift */; };
 		C9E1141E291454DB0031E874 /* Service+BTT.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E1141D291454DB0031E874 /* Service+BTT.swift */; };
@@ -77,6 +78,7 @@
 		C94BF02A290B1802007E1C25 /* CheckoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutView.swift; sourceTree = "<group>"; };
 		C94BF02C290B1825007E1C25 /* CheckoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutViewModel.swift; sourceTree = "<group>"; };
 		C9B637D0290B26A6006E5F90 /* View+ErrorAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ErrorAlert.swift"; sourceTree = "<group>"; };
+		C9C7D88E2939029C00950C55 /* LineItemRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineItemRow.swift; sourceTree = "<group>"; };
 		C9E1141B291425340031E874 /* CartRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartRepository.swift; sourceTree = "<group>"; };
 		C9F4A4122900DB6100BCDF3E /* Example-SwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Example-SwiftUI.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9F4A4152900DB6100BCDF3E /* ExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleApp.swift; sourceTree = "<group>"; };
@@ -155,8 +157,9 @@
 		C94BF00F290ADC07007E1C25 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				C94BF010290ADC20007E1C25 /* ProductCell.swift */,
 				C93FCCB829103A7E00633487 /* CartItemRow.swift */,
+				C9C7D88E2939029C00950C55 /* LineItemRow.swift */,
+				C94BF010290ADC20007E1C25 /* ProductCell.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -412,6 +415,7 @@
 				C9E1141C291425340031E874 /* CartRepository.swift in Sources */,
 				C93FCCB729100D9C00633487 /* PrimaryButtonStyle.swift in Sources */,
 				C94BF02D290B1825007E1C25 /* CheckoutViewModel.swift in Sources */,
+				C9C7D88F2939029C00950C55 /* LineItemRow.swift in Sources */,
 				C94BF020290AE5FF007E1C25 /* ProductListViewModel.swift in Sources */,
 				C94BF01B290AE580007E1C25 /* CartView.swift in Sources */,
 				C94BF026290AE9DB007E1C25 /* CartViewModel.swift in Sources */,
