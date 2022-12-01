@@ -35,13 +35,11 @@ final class CartViewModel: ObservableObject {
     }
 
     @MainActor
-    func checkout() {
-        Task {
-            do {
-                checkoutItem = try await cartRepository.checkout()
-            } catch {
-                self.error = error
-            }
+    func checkout() async {
+        do {
+            checkoutItem = try await cartRepository.checkout()
+        } catch {
+            self.error = error
         }
     }
 

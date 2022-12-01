@@ -33,7 +33,9 @@ struct CartView: View {
                         .overlay(alignment: .bottom) {
                             Button(
                                 action: {
-                                    viewModel.checkout()
+                                    Task {
+                                        await viewModel.checkout()
+                                    }
                                 },
                                 label: {
                                     Text("Check Out")
