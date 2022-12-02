@@ -15,11 +15,47 @@ final class CartViewModel: ObservableObject {
     @Published var productItems: IdentifiedArrayOf<CartItemModel> = []
     @Published var error: Error?
 
+    var estimatedTax: Double {
+        Constants.averageSalesTax * subtotal
+    }
+
+    var subtotal: Double {
+        productItems.reduce(into: 0) { result, item in
+            result += item.price
+        }
+    }
+
     init(service: Service, cartRepository: CartRepository) {
         self.service = service
         self.cartRepository = cartRepository
 
         cartRepository.items
             .assign(to: &$productItems)
+    }
+
+    func checkout() {
+        print("\(#function)")
+    }
+
+    @MainActor
+    func increment(id: CartItemModel.ID) {
+        guard let currentQuantity = productItems[id: id]?.quantity else {
+            return
+        }
+
+        cartRepository.updateQuantity(cartItemID: id, quantity: currentQuantity + 1)
+    }
+
+    @MainActor
+    func decrement(id: CartItemModel.ID) {
+        guard let currentQuantity = productItems[id: id]?.quantity else {
+            return
+        }
+
+        if currentQuantity > 1 {
+            cartRepository.updateQuantity(cartItemID: id, quantity: currentQuantity - 1)
+        } else {
+            cartRepository.remove(cartItemID: id)
+        }
     }
 }

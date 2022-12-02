@@ -9,6 +9,8 @@
 import Foundation
 
 enum Constants {
+    static let averageSalesTax: Double = 0.0635
+    static let currencyCode = "USD"
     static let shipping = "3.99"
     static let siteID = "bluetriangledemo500z"
 }
