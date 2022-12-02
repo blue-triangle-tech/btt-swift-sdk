@@ -12,6 +12,7 @@ import Service
 final class CartViewModel: ObservableObject {
     private let service: Service
     private let cartRepository: CartRepository
+    @Published var checkoutItem: Checkout?
     @Published var productItems: IdentifiedArrayOf<CartItemModel> = []
     @Published var error: Error?
 
@@ -33,8 +34,13 @@ final class CartViewModel: ObservableObject {
             .assign(to: &$productItems)
     }
 
-    func checkout() {
-        print("\(#function)")
+    @MainActor
+    func checkout() async {
+        do {
+            checkoutItem = try await cartRepository.checkout()
+        } catch {
+            self.error = error
+        }
     }
 
     @MainActor
@@ -57,5 +63,16 @@ final class CartViewModel: ObservableObject {
         } else {
             cartRepository.remove(cartItemID: id)
         }
+    }
+}
+
+extension CartViewModel {
+    func checkoutViewModel(_ checkout: Checkout) -> CheckoutViewModel {
+        CheckoutViewModel(
+            cartRepository: cartRepository,
+            checkout: checkout,
+            onFinish: { [weak self] in
+                self?.checkoutItem = nil
+            })
     }
 }

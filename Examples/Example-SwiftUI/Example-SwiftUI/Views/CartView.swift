@@ -33,7 +33,9 @@ struct CartView: View {
                         .overlay(alignment: .bottom) {
                             Button(
                                 action: {
-                                    viewModel.checkout()
+                                    Task {
+                                        await viewModel.checkout()
+                                    }
                                 },
                                 label: {
                                     Text("Check Out")
@@ -44,6 +46,10 @@ struct CartView: View {
                 }
             }
             .navigationTitle("Cart")
+            .sheet(item: $viewModel.checkoutItem) { checkout in
+                CheckoutView(
+                    viewModel: viewModel.checkoutViewModel(checkout))
+            }
         }
         .errorAlert(error: $viewModel.error)
     }
@@ -53,28 +59,15 @@ private extension CartView {
     @ViewBuilder
     func footer(estimatedTax: Double, subtotal: Double) -> some View {
         VStack(spacing: 8) {
-            HStack {
-                Text("Estimated tax")
+            LineItemRow(
+                title: "Estimated tax",
+                value: estimatedTax)
 
-                Spacer()
-
-                Text(
-                    estimatedTax,
-                    format: .currency(
-                        code: Constants.currencyCode))
-            }
-
-            HStack {
-                Text("Subtotal")
-                    .fontWeight(.bold)
-
-                Spacer()
-
-                Text(
-                    subtotal,
-                    format: .currency(
-                        code: Constants.currencyCode))
-            }
+            LineItemRow(
+                title: "Subtotal",
+                value: subtotal) {
+                    $0.bold()
+                }
         }
     }
 
