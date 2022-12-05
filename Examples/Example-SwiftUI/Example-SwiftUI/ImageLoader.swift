@@ -24,19 +24,6 @@ struct ImageDownload: Identifiable {
     let status: ImageStatus
 }
 
-// MARK: - EnvironmentValues
-
-struct ImageLoaderKey: EnvironmentKey {
-    static let defaultValue = ImageLoader.shared
-}
-
-extension EnvironmentValues {
-    var imageLoader: ImageLoader {
-        get { self[ImageLoaderKey.self] }
-        set { self[ImageLoaderKey.self ] = newValue}
-    }
-}
-
 // MARK: - ImageLoader
 
 final class ImageLoader: ObservableObject {
@@ -45,15 +32,14 @@ final class ImageLoader: ObservableObject {
         let result: Result<UIImage, Error>
     }
 
-    public static let shared: ImageLoader = {
-        ImageLoader()
-    }()
-
-    private var networking: (URL) async throws -> ResponseValue = { url in
-        try ResponseValue(try await URLSession.shared.data(from: url))
-    }
-
     @Published @MainActor private(set) var images: IdentifiedArrayOf<ImageDownload> = []
+    private let networking: (URL) async throws -> ResponseValue
+
+    init(
+        networking: @escaping (URL) async throws -> ResponseValue
+    ) {
+        self.networking = networking
+    }
 
     func fetch(urls: [URL]) async {
         await withTaskGroup(of: ImageResult.self, returning: Void.self) { group in
@@ -107,5 +93,20 @@ private extension ImageLoader {
         withAnimation {
             images[id: url] = ImageDownload(id: url, status: status)
         }
+    }
+}
+
+extension ImageLoader {
+    static var mock: ImageLoader {
+        ImageLoader(networking: { url in
+            ResponseValue(
+                data: UIColor.random().image().pngData() ?? Data(),
+                httpResponse: HTTPURLResponse(
+                    url: url,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: nil)!
+            )
+        })
     }
 }
