@@ -8,7 +8,6 @@
 import Foundation
 import Service
 
-@MainActor
 final class ProductListViewModel: ObservableObject {
     @Published private(set) var products: ([Product], [Product]) = ([], [])
     @Published var error: Error?
@@ -20,6 +19,7 @@ final class ProductListViewModel: ObservableObject {
         self.service = service
     }
 
+    @MainActor
     func loadProducts() async {
         do {
             products = try await service.products().splitTuple()
