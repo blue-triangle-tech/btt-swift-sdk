@@ -13,10 +13,18 @@ import UIKit
 
 // MARK: - Models
 
-enum ImageStatus {
+enum ImageStatus: CustomStringConvertible {
     case loading
     case downloaded(UIImage)
     case error(Error)
+
+    var description: String {
+        switch self {
+        case .loading: return "loading"
+        case .downloaded: return "downloaded"
+        case .error(let error): return error.localizedDescription
+        }
+    }
 }
 
 struct ImageDownload: Identifiable {
