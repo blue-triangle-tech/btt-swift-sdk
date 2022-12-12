@@ -30,7 +30,9 @@ struct ProductListView: View {
                     LazyVGrid(columns: columns) {
                         ForEach(viewModel.products.0) { product in
                             NavigationLink(value: product) {
-                                ProductCell(product: product)
+                                ProductCell(
+                                    imageStatusProvider: viewModel.imageStatus(_:),
+                                    product: product)
                             }
                         }
                     }
@@ -38,7 +40,9 @@ struct ProductListView: View {
                     LazyVGrid(columns: columns) {
                         ForEach(viewModel.products.1) { product in
                             NavigationLink(value: product) {
-                                ProductCell(product: product)
+                                ProductCell(
+                                    imageStatusProvider: viewModel.imageStatus(_:),
+                                    product: product)
                             }
                         }
                     }
@@ -53,8 +57,11 @@ struct ProductListView: View {
                     }
                 }
             }
-            .task {
+            .refreshable {
                 await viewModel.loadProducts()
+            }
+            .task {
+                await viewModel.onAppear()
             }
             .navigationTitle("Products")
         }
@@ -64,8 +71,10 @@ struct ProductListView: View {
 
 struct ProductListView_Previews: PreviewProvider {
     static var previews: some View {
-        ProductListView(viewModel: .init(
-            cartRepository: .mock,
-            service: .mock))
+        ProductListView(
+            viewModel: .init(
+                cartRepository: .mock,
+                imageLoader: .mock,
+                service: .mock))
     }
 }
