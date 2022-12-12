@@ -5,42 +5,40 @@
 //  Copyright © 2022 Blue Triangle. All rights reserved.
 //
 
+import BlueTriangle
 import Foundation
 import IdentifiedCollections
 import Service
 import SwiftUI
 import UIKit
 
-// MARK: - Models
+// MARK: - Model
 
 enum ImageStatus: CustomStringConvertible {
-    case loading
-    case downloaded(UIImage)
-    case error(Error)
+    case loading(Task<ImageLoader.ImageResult, Never>)
+    case downloaded(Result<UIImage, Error>)
 
     var description: String {
         switch self {
-        case .loading: return "loading"
-        case .downloaded: return "downloaded"
-        case .error(let error): return error.localizedDescription
+        case .loading:
+           return "ImageStatus.loading"
+        case .downloaded(.success):
+            return "ImageStatus.downloaded - success"
+        case .downloaded(.failure(let error)):
+            return "ImageStatus.downloaded - failure: \(error.localizedDescription)"
         }
     }
 }
 
-struct ImageDownload: Identifiable {
-    let id: URL
-    let status: ImageStatus
-}
-
 // MARK: - ImageLoader
 
-final class ImageLoader: ObservableObject {
-    struct ImageResult: Identifiable {
-        let id: URL
+actor ImageLoader {
+    struct ImageResult {
+        let url: URL
         let result: Result<UIImage, Error>
     }
 
-    @Published @MainActor private(set) var images: IdentifiedArrayOf<ImageDownload> = []
+    private(set) var images: [URL: ImageStatus] = [:]
     private let networking: (URL) async throws -> ResponseValue
 
     init(
@@ -49,31 +47,42 @@ final class ImageLoader: ObservableObject {
         self.networking = networking
     }
 
-    func fetch(urls: [URL]) async {
+    func fetch(urls: [URL]) async throws {
         await withTaskGroup(of: ImageResult.self, returning: Void.self) { group in
+            var imagesUpdate: [URL: ImageStatus] = [:]
             urls.forEach { url in
+                let task = downloadTask(url: url)
+                imagesUpdate[url] = .loading(task)
+
                 group.addTask {
-                    await self.fetchImage(url: url)
+                    return await task.value
                 }
             }
 
-            await updateImages(
-                IdentifiedArrayOf(
-                    uniqueElements: urls.map { ImageDownload(id: $0, status: .loading) }))
+            updateImages(imagesUpdate)
 
             for await imageResult in group {
-                switch imageResult.result {
-                case .success(let image):
-                    await updateStatus(imageResult.id, status: .downloaded(image))
-                case .failure(let error):
-                    await updateStatus(imageResult.id, status: .error(error))
-                }
+                updateStatus(imageResult.url, result: imageResult.result)
             }
         }
     }
 }
 
 private extension ImageLoader {
+    func updateImages(_ newImages: [URL: ImageStatus]) {
+        images = newImages
+    }
+
+    func updateStatus(_ url: URL, result: Result<UIImage, Error>) {
+        images[url] = .downloaded(result)
+    }
+
+    func downloadTask(url: URL, priority: TaskPriority? = nil) -> Task<ImageResult, Never> {
+        Task(priority: priority) {
+            await fetchImage(url: url)
+        }
+    }
+
     func fetchImage(url: URL) async -> ImageResult {
         do {
             let responseValue = try await networking(url)
@@ -83,28 +92,29 @@ private extension ImageLoader {
                 throw "Cannot parse image"
             }
 
-            return ImageResult(id: url, result: .success(image))
+            return ImageResult(url: url, result: .success(image))
         } catch {
-            return ImageResult(id: url, result: .failure(error))
-        }
-    }
-
-    @MainActor
-    func updateImages(_ newImages: IdentifiedArrayOf<ImageDownload>) {
-        withAnimation {
-            images = newImages
-        }
-    }
-
-    @MainActor
-    func updateStatus(_ url: URL, status: ImageStatus) {
-        withAnimation {
-            images[id: url] = ImageDownload(id: url, status: status)
+            return ImageResult(url: url, result: .failure(error))
         }
     }
 }
 
 extension ImageLoader {
+    static var live: ImageLoader {
+        let configuration = URLSessionConfiguration.default
+        let delegate = NetworkCaptureSessionDelegate()
+
+        let session = URLSession(
+            configuration: configuration,
+            delegate: delegate,
+            delegateQueue: nil)
+
+        return ImageLoader(
+            networking: { url in
+                try ResponseValue(try await session.data(from: url))
+            })
+    }
+
     static var mock: ImageLoader {
         ImageLoader(networking: { url in
             ResponseValue(
