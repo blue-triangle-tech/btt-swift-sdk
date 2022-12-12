@@ -21,7 +21,9 @@ struct Example_SwiftUIApp: App {
 
     var body: some Scene {
         WindowGroup {
-            TabContainerView(service: .live)
+            TabContainerView(
+                imageLoader: .live,
+                service: .live)
         }
     }
 }
