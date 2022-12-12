@@ -9,10 +9,11 @@ import Foundation
 import Service
 
 final class ProductDetailViewModel: ObservableObject {
-    private let cartRepository: CartRepository
-    private let product: Product
-    @Published var quantity: Int
     @Published var error: Error?
+    @Published var quantity: Int
+    private let cartRepository: CartRepository
+    private let imageLoader: ImageLoader
+    private let product: Product
 
     var name: String {
         product.name
@@ -26,14 +27,27 @@ final class ProductDetailViewModel: ObservableObject {
         "$\(product.price)"
     }
 
-    var imageURL: URL {
-        product.image
-    }
-
-    init(cartRepository: CartRepository, product: Product, quantity: Int = 1) {
+    init(
+        cartRepository: CartRepository,
+        imageLoader: ImageLoader,
+        product: Product, quantity: Int = 1
+    ) {
         self.cartRepository = cartRepository
+        self.imageLoader = imageLoader
         self.product = product
         self.quantity = quantity
+    }
+
+    @MainActor
+    func imageStatus() async -> ImageStatus? {
+        // Start timer ...
+
+        let status = await imageLoader.images[product.image]
+
+        // End timer
+        print("End \(String(describing: self)) Timer")
+
+        return status
     }
 
     @MainActor
