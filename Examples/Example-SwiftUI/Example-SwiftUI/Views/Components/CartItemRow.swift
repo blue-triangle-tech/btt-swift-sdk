@@ -9,6 +9,8 @@ import Service
 import SwiftUI
 
 struct CartItemRow: View {
+    @State var imageStatus: ImageStatus?
+    let imageStatusProvider: (URL) async -> ImageStatus?
     let name: String
     let price: Double
     let quantity: Int
@@ -18,23 +20,11 @@ struct CartItemRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
-            AsyncImage(url: imageURL) { phase in
-                switch phase {
-                case .empty:
-                    ProgressView()
-                        .padding()
-                case .success(let image):
-                    image.resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .cornerRadius(8)
-                case .failure:
-                    Image(systemName: "photo")
-                        .padding()
-                @unknown default:
-                    EmptyView()
-                }
+            if let imageStatus {
+                RemoteImage(imageStatus: imageStatus)
+                    .cornerRadius(8)
+                    .frame(width: 64, height: 64)
             }
-            .frame(width: 64, height: 64)
 
             VStack(alignment: .leading) {
                 Text(name)
@@ -50,15 +40,22 @@ struct CartItemRow: View {
                     onDecrement: onDecrement)
             }
         }
+        .task {
+            if let status = await imageStatusProvider(imageURL) {
+                imageStatus = status
+            }
+        }
     }
 }
 
 extension CartItemRow {
     init(
+        imageStatusProvider: @escaping (URL) async -> ImageStatus?,
         item: CartItemModel,
         onIncrement: @escaping () -> Void = {},
         onDecrement: @escaping () -> Void = {}
     ) {
+        self.imageStatusProvider = imageStatusProvider
         self.name = item.product.name
         self.price = item.price
         self.quantity = item.quantity
@@ -71,10 +68,13 @@ extension CartItemRow {
 struct CartItemRow_Previews: PreviewProvider {
     static var previews: some View {
         CartItemRow(
+            imageStatusProvider: { _ in
+                .downloaded(.success(UIColor.random().image()))
+            },
             item: CartItemModel(
                 id: 1,
                 quantity: 1,
                 product: Mock.product))
-            .previewLayout(.sizeThatFits)
+        .previewLayout(.sizeThatFits)
     }
 }

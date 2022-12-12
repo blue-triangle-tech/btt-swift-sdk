@@ -10,9 +10,11 @@ import SwiftUI
 import Service
 
 struct CartView: View {
+    private let imageLoader: ImageLoader
     @ObservedObject var viewModel: CartViewModel
 
-    init(viewModel: CartViewModel) {
+    init(imageLoader: ImageLoader, viewModel: CartViewModel) {
+        self.imageLoader = imageLoader
         self.viewModel = viewModel
     }
 
@@ -56,7 +58,6 @@ struct CartView: View {
 }
 
 private extension CartView {
-    @ViewBuilder
     func footer(estimatedTax: Double, subtotal: Double) -> some View {
         VStack(spacing: 8) {
             LineItemRow(
@@ -71,11 +72,11 @@ private extension CartView {
         }
     }
 
-    @ViewBuilder
     func cartList(_ viewModel: CartViewModel) -> some View {
         List {
             ForEach(viewModel.productItems) { productItem in
                 CartItemRow(
+                    imageStatusProvider: { await imageLoader.images[$0] },
                     item: productItem,
                     onIncrement: {
                         Task {
@@ -101,6 +102,7 @@ private extension CartView {
 struct CartView_Previews: PreviewProvider {
     static var previews: some View {
         CartView(
+            imageLoader: .mock,
             viewModel: .init(
                 service: .mock,
                 cartRepository: .mock
