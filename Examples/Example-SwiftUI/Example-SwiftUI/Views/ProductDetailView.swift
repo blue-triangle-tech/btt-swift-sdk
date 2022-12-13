@@ -9,25 +9,14 @@ import Service
 import SwiftUI
 
 struct ProductDetailView: View {
-    @StateObject var viewModel: ProductDetailViewModel
+    @ObservedObject var viewModel: ProductDetailViewModel
+    @State var imageStatus: ImageStatus?
 
     var body: some View {
         ScrollView {
             VStack {
-                AsyncImage(url: viewModel.imageURL) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                            .padding()
-                    case .success(let image):
-                        image.resizable()
-                            .aspectRatio(contentMode: .fit)
-                    case .failure:
-                        Image(systemName: "photo")
-                            .padding()
-                    @unknown default:
-                        EmptyView()
-                    }
+                if let imageStatus = imageStatus {
+                    RemoteImage(imageStatus: imageStatus)
                 }
 
                 VStack(alignment: .leading, spacing: 16) {
@@ -45,13 +34,20 @@ struct ProductDetailView: View {
         .overlay(alignment: .bottom) {
             Button(
                 action: {
-                    viewModel.addToCart()
+                    Task {
+                        await viewModel.addToCart()
+                    }
                 },
                 label: {
                     Text("Add to Cart")
                 })
             .buttonStyle(.primary())
             .padding()
+        }
+        .task {
+            if let status = await viewModel.imageStatus() {
+                imageStatus = status
+            }
         }
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -89,6 +85,7 @@ struct ProductDetailView_Previews: PreviewProvider {
         ProductDetailView(
             viewModel: .init(
                 cartRepository: .mock,
+                imageLoader: .mock,
                 product: Mock.product))
     }
 }

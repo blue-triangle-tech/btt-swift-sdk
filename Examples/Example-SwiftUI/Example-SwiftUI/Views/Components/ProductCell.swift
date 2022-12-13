@@ -9,27 +9,17 @@ import Service
 import SwiftUI
 
 struct ProductCell: View {
+    @State var imageStatus: ImageStatus?
+    let imageStatusProvider: (URL) async -> ImageStatus?
     let name: String
     let price: String
     let imageURL: URL
 
     var body: some View {
         VStack {
-            AsyncImage(url: imageURL) { phase in
-                switch phase {
-                case .empty:
-                    ProgressView()
-                        .padding()
-                case .success(let image):
-                    image.resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .cornerRadius(8)
-                case .failure:
-                    Image(systemName: "photo")
-                        .padding()
-                @unknown default:
-                    EmptyView()
-                }
+            if let imageStatus {
+                RemoteImage(imageStatus: imageStatus)
+                    .cornerRadius(8)
             }
 
             HStack {
@@ -45,11 +35,20 @@ struct ProductCell: View {
             }
             .foregroundColor(.primary)
         }
+        .task {
+            if let status = await imageStatusProvider(imageURL) {
+                imageStatus = status
+            }
+        }
     }
 }
 
 extension ProductCell {
-    init(product: Product) {
+    init(
+        imageStatusProvider: @escaping (URL) async -> ImageStatus?,
+        product: Product
+    ) {
+        self.imageStatusProvider = imageStatusProvider
         self.name = product.name
         self.price = "$\(product.price)"
         self.imageURL = product.image
@@ -59,7 +58,11 @@ extension ProductCell {
 struct ProductCell_Previews: PreviewProvider {
     static var previews: some View {
         ProductCell(
-            product: Mock.product)
+            imageStatusProvider: { _ in
+                .downloaded(.success(UIColor.random().image()))
+            },
+            product: Mock.product
+        )
         .previewLayout(.sizeThatFits)
     }
 }

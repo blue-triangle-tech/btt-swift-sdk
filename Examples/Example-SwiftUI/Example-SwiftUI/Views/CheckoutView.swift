@@ -9,7 +9,7 @@ import Service
 import SwiftUI
 
 struct CheckoutView: View {
-    @ObservedObject var  viewModel: CheckoutViewModel
+    @ObservedObject var viewModel: CheckoutViewModel
 
     init(viewModel: CheckoutViewModel) {
         self.viewModel = viewModel

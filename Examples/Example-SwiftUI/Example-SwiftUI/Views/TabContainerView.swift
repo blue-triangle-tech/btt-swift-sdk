@@ -15,11 +15,13 @@ struct TabContainerView: View {
         case settings
     }
 
-    private let service: Service
-    private let cartRepository: CartRepository
     @State private var selectedTab: Tab = .products
+    private let cartRepository: CartRepository
+    private let imageLoader: ImageLoader
+    private let service: Service
 
-    init(service: Service) {
+    init(imageLoader: ImageLoader, service: Service) {
+        self.imageLoader = imageLoader
         self.service = service
         self.cartRepository = CartRepository(service: service)
     }
@@ -29,6 +31,7 @@ struct TabContainerView: View {
             ProductListView(
                 viewModel: .init(
                     cartRepository: cartRepository,
+                    imageLoader: imageLoader,
                     service: service))
                 .tabItem {
                     Text("Products")
@@ -37,6 +40,7 @@ struct TabContainerView: View {
                 .tag(Tab.products)
 
             CartView(
+                imageLoader: imageLoader,
                 viewModel: .init(
                     service: service,
                     cartRepository: cartRepository))
@@ -58,6 +62,8 @@ struct TabContainerView: View {
 
 struct TabContainerView_Previews: PreviewProvider {
     static var previews: some View {
-        TabContainerView(service: .mock)
+        TabContainerView(
+            imageLoader: .mock,
+            service: .mock)
     }
 }
