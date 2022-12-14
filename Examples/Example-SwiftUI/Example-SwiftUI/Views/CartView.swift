@@ -5,6 +5,7 @@
 //  Copyright © 2022 Blue Triangle. All rights reserved.
 //
 
+import BlueTriangle
 import IdentifiedCollections
 import SwiftUI
 import Service
@@ -46,6 +47,15 @@ struct CartView: View {
                             .padding()
                         }
                 }
+            }
+            .onAppear {
+                let timer = BlueTriangle.startTimer(
+                    page: Page(
+                        pageName: "Cart",
+                        customNumbers: CustomNumbers(
+                            cn1: viewModel.subtotal)))
+
+                BlueTriangle.endTimer(timer)
             }
             .navigationTitle("Cart")
             .sheet(item: $viewModel.checkoutItem) { checkout in
