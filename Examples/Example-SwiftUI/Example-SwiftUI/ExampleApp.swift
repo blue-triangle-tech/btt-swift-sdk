@@ -23,7 +23,7 @@ struct Example_SwiftUIApp: App {
         WindowGroup {
             TabContainerView(
                 imageLoader: .live,
-                service: .live)
+                service: .captured)
         }
     }
 }
