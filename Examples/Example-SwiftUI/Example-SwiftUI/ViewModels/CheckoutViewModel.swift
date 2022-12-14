@@ -49,6 +49,7 @@ final class CheckoutViewModel: ObservableObject {
         self.onFinish = onFinish
     }
 
+    @MainActor
     func placeOrder() async {
         do {
             let timer = BlueTriangle.startTimer(
