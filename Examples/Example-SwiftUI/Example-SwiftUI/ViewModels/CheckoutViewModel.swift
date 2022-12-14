@@ -5,6 +5,7 @@
 //  Copyright © 2022 Blue Triangle. All rights reserved.
 //
 
+import BlueTriangle
 import Foundation
 import Service
 
@@ -50,7 +51,18 @@ final class CheckoutViewModel: ObservableObject {
 
     func placeOrder() async {
         do {
-            _ = try await cartRepository.confirm(checkout.id)
+            let timer = BlueTriangle.startTimer(
+                page: Page(
+                    pageName: "Checkout"))
+
+            let detail = try await cartRepository.confirm(checkout.id)
+
+            BlueTriangle.endTimer(
+                timer,
+                purchaseConfirmation: PurchaseConfirmation(
+                    cartValue: Decimal(itemTotal),
+                    orderNumber: detail.confirmation))
+
             onFinish()
         } catch {
             self.error = error
