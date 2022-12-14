@@ -5,6 +5,7 @@
 //  Copyright © 2022 Blue Triangle. All rights reserved.
 //
 
+import BlueTriangle
 import Foundation
 import Service
 
@@ -40,12 +41,15 @@ final class ProductDetailViewModel: ObservableObject {
 
     @MainActor
     func imageStatus() async -> ImageStatus? {
-        // Start timer ...
+        // Start timer
+        let timer = BlueTriangle.startTimer(
+            page: Page(
+                pageName: "ProductDetail: \(product.name)"))
 
         let status = await imageLoader.images[product.image]
 
         // End timer
-        print("End \(String(describing: self)) Timer")
+        BlueTriangle.endTimer(timer)
 
         return status
     }
