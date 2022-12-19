@@ -1,0 +1,22 @@
+//
+//  Config.xcconfig
+//
+//  Created by Mathew Gacy on 12/18/22.
+//  Copyright © 2022 Blue Triangle. All rights reserved.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+
+BASE_URL = example.com
+SITE_ID = bluetriangledemo500z
+
+// Developers can override the Xcode settings by creating a build configuration file at
+// `Examples/DeveloperConfig.xcconfig` with the following:
+//
+//    BASE_URL = <Your URL (excluding scheme)>
+//    SITE_ID = <Your Site ID>
+//
+// You should then be able to build without modifying the project.
+
+#include? "../../DeveloperConfig.xcconfig"
