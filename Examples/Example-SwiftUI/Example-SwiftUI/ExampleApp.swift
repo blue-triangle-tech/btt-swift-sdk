@@ -13,7 +13,7 @@ import SwiftUI
 struct Example_SwiftUIApp: App {
     init() {
         BlueTriangle.configure { config in
-            config.siteID = Constants.siteID
+            config.siteID = Secrets.siteID
             config.networkSampleRate = 1.0
             // ...
         }
