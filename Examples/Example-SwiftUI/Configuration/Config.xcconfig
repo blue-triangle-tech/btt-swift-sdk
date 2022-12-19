@@ -15,7 +15,7 @@ DEVELOPMENT_TEAM = BXV9QFGNQ8
 // Developers can override the Xcode settings by creating a build configuration file at
 // `Examples/DeveloperConfig.xcconfig` with the following:
 //
-//    BASE_URL = <Your URL (excluding scheme)>
+//    BASE_URL = <Your URL (excluding `https://`)>
 //    SITE_ID = <Your Site ID>
 //    DEVELOPMENT_TEAM = <Your Team ID>
 //
