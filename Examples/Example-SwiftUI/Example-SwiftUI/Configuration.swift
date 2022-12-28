@@ -13,22 +13,15 @@ private enum Configuration {
         case siteID = "_SITE_ID"
     }
 
-    static func value<T>(for key: Key) -> T where T: LosslessStringConvertible {
+    static func value(for key: Key) -> String {
         guard let object = Bundle.main.object(forInfoDictionaryKey: key.rawValue) else {
             fatalError("Missing Configuration.Key: \(key.rawValue)")
         }
-
-        switch object {
-        case let value as T:
-            return value
-        case let string as String:
-            guard let value = T(string) else {
-                fallthrough
-            }
-            return value
-        default:
-            fatalError("Invalid Type for Configuration.Key \(key.rawValue): \(T.self)")
+        guard let value = object as? String else {
+            fatalError("Invalid Type for Configuration.Key \(key.rawValue)")
         }
+
+        return value
     }
 }
 
