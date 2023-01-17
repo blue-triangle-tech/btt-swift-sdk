@@ -40,6 +40,8 @@ struct CapturedRequest: Encodable, Equatable {
     var url: String
     /// Name of the file.
     var file: String?
+    /// Response status code.
+    var statusCode: String
     /// Request start time.
     var startTime: Millisecond
     /// Request end time.
@@ -166,7 +168,14 @@ extension CapturedRequest {
             self.domain = response?.url?.host ?? ""
         }
 
-        if let httpResponse = response as? HTTPURLResponse, let contentType = httpResponse.contentType {
+        let httpResponse = response as? HTTPURLResponse
+        if let statusCode = httpResponse?.statusCode {
+            self.statusCode = String(statusCode)
+        } else {
+            self.statusCode = ""
+        }
+
+        if let contentType = httpResponse?.contentType {
             self.initiatorType = .init(contentType) ?? .other
         } else if let pathExtensionString = response?.url?.pathExtension,
                   let pathExtension = InitiatorType.PathExtension(rawValue: pathExtensionString) {
@@ -193,6 +202,7 @@ extension CapturedRequest {
         case host = "h"
         case url = "URL"
         case file = "f"
+        case statusCode = "rCd"
         case startTime = "sT"
         case endTime = "rE"
         case duration = "d"
