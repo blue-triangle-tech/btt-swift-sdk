@@ -256,6 +256,7 @@ extension Mock {
             host: "d33wubrfki0l68",
             url: capturedRequestURLString,
             file: "logo-cw.f6eaf6dc.png",
+            statusCode: "200",
             startTime: startTime,
             endTime: endTime,
             duration: endTime - startTime,
@@ -267,7 +268,7 @@ extension Mock {
 
 // MARK: - Request
 extension Mock {
-    static var capturedRequestJSON = "[{\"f\":\"foo.json\",\"ez\":0,\"h\":\"example\",\"d\":1000,\"dz\":-1,\"sT\":2000,\"e\":\"resource\",\"i\":\"other\",\"dmn\":\"example.com\",\"URL\":\"https:\\/\\/example.com\\/foo.json\",\"rE\":3000}]"
+    static var capturedRequestJSON = "[{\"rE\":3000,\"h\":\"example\",\"sT\":2000,\"i\":\"other\",\"ez\":0,\"URL\":\"https:\\/\\/example.com\\/foo.json\",\"dz\":-1,\"d\":1000,\"e\":\"resource\",\"f\":\"foo.json\",\"rCd\":\"200\",\"dmn\":\"example.com\"}]"
 
     static func makeTimerRequestJSON(appVersion: String, os: String, osVersion: String, sdkVersion: String) -> String {
         """
