@@ -40,8 +40,8 @@ struct CapturedRequest: Encodable, Equatable {
     var url: String
     /// Name of the file.
     var file: String?
-    /// Response status code.
-    var statusCode: String
+    /// HTTP response status code.
+    var statusCode: String?
     /// Request start time.
     var startTime: Millisecond
     /// Request end time.
@@ -171,8 +171,6 @@ extension CapturedRequest {
         let httpResponse = response as? HTTPURLResponse
         if let statusCode = httpResponse?.statusCode {
             self.statusCode = String(statusCode)
-        } else {
-            self.statusCode = ""
         }
 
         if let contentType = httpResponse?.contentType {
