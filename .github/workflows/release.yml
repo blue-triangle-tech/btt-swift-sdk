@@ -12,6 +12,7 @@ on:
           - major
 
 env:
+  PODSPEC-PATH: 'BlueTriangleSDK-Swift.podspec'
   VERSION-FILE-PATH: 'Sources/BlueTriangle/Version.swift'
 
 jobs:
@@ -29,6 +30,12 @@ jobs:
         with:
           version-file-path: ${{ env.VERSION-FILE-PATH }}
           release-type: ${{ inputs.release_type }}
+
+      - name: Generate podspec
+        uses: ./.github/actions/generate-podspec
+        with:
+          podspec-path: ${{ env.PODSPEC-PATH }}
+          version: ${{ steps.bump.outputs.version }}
 
       - name: Commit Changes
         id: commit
