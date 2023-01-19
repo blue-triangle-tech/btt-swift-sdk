@@ -12,6 +12,7 @@ Pod::Spec.new do |s|
     s.source           = { :git => 'https://github.com/blue-triangle-tech/btt-swift-sdk.git', :tag => s.version.to_s }
     s.social_media_url = 'https://twitter.com/_BlueTriangle'
 
+    s.module_name   = 'BlueTriangle'
     s.swift_version = '5.5'
 
     s.ios.deployment_target = '13.0'
