@@ -56,3 +56,9 @@ jobs:
               ref: 'refs/tags/${{ steps.bump.outputs.version }}',
               sha: '${{ steps.commit.outputs.commit_hash }}'
             })
+
+      - name: Publish podspec
+        env:
+          COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+        run: |
+          pod trunk push ${{ env.PODSPEC-PATH }}
