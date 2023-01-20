@@ -5,6 +5,7 @@
 //  Copyright © 2022 Blue Triangle. All rights reserved.
 //
 
+import BlueTriangle
 import SwiftUI
 
 struct SettingsView: View {
@@ -12,6 +13,13 @@ struct SettingsView: View {
 
     var body: some View {
         Text("Settings")
+            .onAppear {
+                let timer = BlueTriangle.startTimer(
+                    page: Page(
+                        pageName: "Settings"))
+
+                BlueTriangle.endTimer(timer)
+            }
     }
 }
 

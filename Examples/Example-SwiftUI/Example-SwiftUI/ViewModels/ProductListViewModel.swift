@@ -5,6 +5,7 @@
 //  Copyright © 2022 Blue Triangle. All rights reserved.
 //
 
+import BlueTriangle
 import Foundation
 import Service
 
@@ -28,9 +29,12 @@ final class ProductListViewModel: ObservableObject {
 
     @MainActor
     func loadProducts() async {
-        do {
-            // Start timer ...
+        // Start timer
+        let timer = BlueTriangle.startTimer(
+            page: Page(
+                pageName: "ProductList"))
 
+        do {
             let productResponse = try await service.products()
             products = productResponse.splitTuple()
 
@@ -41,7 +45,7 @@ final class ProductListViewModel: ObservableObject {
         }
 
         // End timer after view images have loaded
-        print("End \(String(describing: self)) Timer")
+        BlueTriangle.endTimer(timer)
     }
 
     func onAppear() async {

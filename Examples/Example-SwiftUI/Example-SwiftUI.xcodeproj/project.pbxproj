@@ -26,6 +26,7 @@
 		C94BF029290B1018007E1C25 /* Collection+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94BF028290B1018007E1C25 /* Collection+Utils.swift */; };
 		C94BF02B290B1803007E1C25 /* CheckoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94BF02A290B1802007E1C25 /* CheckoutView.swift */; };
 		C94BF02D290B1825007E1C25 /* CheckoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C94BF02C290B1825007E1C25 /* CheckoutViewModel.swift */; };
+		C97930B5294A598200605CC9 /* Service+BTT.swift in Sources */ = {isa = PBXBuildFile; fileRef = C97930B4294A598200605CC9 /* Service+BTT.swift */; };
 		C9B637D1290B26A6006E5F90 /* View+ErrorAlert.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9B637D0290B26A6006E5F90 /* View+ErrorAlert.swift */; };
 		C9C7D88F2939029C00950C55 /* LineItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9C7D88E2939029C00950C55 /* LineItemRow.swift */; };
 		C9C7D891293930E900950C55 /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9C7D890293930E900950C55 /* ImageLoader.swift */; };
@@ -79,6 +80,7 @@
 		C94BF028290B1018007E1C25 /* Collection+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Collection+Utils.swift"; sourceTree = "<group>"; };
 		C94BF02A290B1802007E1C25 /* CheckoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutView.swift; sourceTree = "<group>"; };
 		C94BF02C290B1825007E1C25 /* CheckoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckoutViewModel.swift; sourceTree = "<group>"; };
+		C97930B4294A598200605CC9 /* Service+BTT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Service+BTT.swift"; sourceTree = "<group>"; };
 		C9B637D0290B26A6006E5F90 /* View+ErrorAlert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+ErrorAlert.swift"; sourceTree = "<group>"; };
 		C9C7D88E2939029C00950C55 /* LineItemRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineItemRow.swift; sourceTree = "<group>"; };
 		C9C7D890293930E900950C55 /* ImageLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ImageLoader.swift; path = "Example-SwiftUI/ImageLoader.swift"; sourceTree = SOURCE_ROOT; };
@@ -188,6 +190,7 @@
 				C94BF028290B1018007E1C25 /* Collection+Utils.swift */,
 				C91C59A02928017B00A20136 /* String+LocalizedError.swift */,
 				C9C7D894293E417300950C55 /* UIColor+Utils.swift */,
+				C97930B4294A598200605CC9 /* Service+BTT.swift */,
 				C9B637D0290B26A6006E5F90 /* View+ErrorAlert.swift */,
 			);
 			path = Extensions;
@@ -446,6 +449,7 @@
 				C94BF022290AE61C007E1C25 /* SettingsViewModel.swift in Sources */,
 				C93FCCB929103A7E00633487 /* CartItemRow.swift in Sources */,
 				C91C59A12928017B00A20136 /* String+LocalizedError.swift in Sources */,
+				C97930B5294A598200605CC9 /* Service+BTT.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
