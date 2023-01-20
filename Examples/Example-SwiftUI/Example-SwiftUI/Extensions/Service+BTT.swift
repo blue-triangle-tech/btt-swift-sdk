@@ -13,7 +13,8 @@ extension Service {
         let session = URLSession(configuration: .default)
 
         return .init(
-            { request in
+            baseURL: URL(string: "https://\(Secrets.baseURL)")!,
+            networking: { request in
                 try await ResponseValue(session.btData(for: request))
             })
     }

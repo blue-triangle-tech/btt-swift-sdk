@@ -32,6 +32,7 @@
 		C9C7D891293930E900950C55 /* ImageLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9C7D890293930E900950C55 /* ImageLoader.swift */; };
 		C9C7D8932939315D00950C55 /* RemoteImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9C7D8922939315D00950C55 /* RemoteImage.swift */; };
 		C9C7D895293E417300950C55 /* UIColor+Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9C7D894293E417300950C55 /* UIColor+Utils.swift */; };
+		C9D83EA4294FE78600330F33 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D83EA3294FE78600330F33 /* Configuration.swift */; };
 		C9E1141A291421F00031E874 /* IdentifiedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = C9E11419291421F00031E874 /* IdentifiedCollections */; };
 		C9E1141C291425340031E874 /* CartRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9E1141B291425340031E874 /* CartRepository.swift */; };
 		C9F4A4162900DB6100BCDF3E /* ExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F4A4152900DB6100BCDF3E /* ExampleApp.swift */; };
@@ -86,6 +87,9 @@
 		C9C7D890293930E900950C55 /* ImageLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ImageLoader.swift; path = "Example-SwiftUI/ImageLoader.swift"; sourceTree = SOURCE_ROOT; };
 		C9C7D8922939315D00950C55 /* RemoteImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemoteImage.swift; sourceTree = "<group>"; };
 		C9C7D894293E417300950C55 /* UIColor+Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Utils.swift"; sourceTree = "<group>"; };
+		C9D83EA2294FE54700330F33 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
+		C9D83EA3294FE78600330F33 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
+		C9D83EA5294FEA9C00330F33 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		C9E1141B291425340031E874 /* CartRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CartRepository.swift; sourceTree = "<group>"; };
 		C9F4A4122900DB6100BCDF3E /* Example-SwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Example-SwiftUI.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9F4A4152900DB6100BCDF3E /* ExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleApp.swift; sourceTree = "<group>"; };
@@ -196,6 +200,14 @@
 			path = Extensions;
 			sourceTree = "<group>";
 		};
+		C9D83EA1294FE52400330F33 /* Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				C9D83EA2294FE54700330F33 /* Config.xcconfig */,
+			);
+			path = Configuration;
+			sourceTree = "<group>";
+		};
 		C9F4A4092900DB6100BCDF3E = {
 			isa = PBXGroup;
 			children = (
@@ -205,6 +217,7 @@
 				C9F4A4402900DC9900BCDF3E /* Packages */,
 				C9F4A4132900DB6100BCDF3E /* Products */,
 				C9F4A4462900DE8400BCDF3E /* Frameworks */,
+				C9D83EA1294FE52400330F33 /* Configuration */,
 			);
 			sourceTree = "<group>";
 		};
@@ -221,9 +234,11 @@
 		C9F4A4142900DB6100BCDF3E /* Example-SwiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				C9D83EA5294FEA9C00330F33 /* Info.plist */,
 				C9F4A4442900DDE900BCDF3E /* Constants.swift */,
 				C9F4A4152900DB6100BCDF3E /* ExampleApp.swift */,
 				C9E1141B291425340031E874 /* CartRepository.swift */,
+				C9D83EA3294FE78600330F33 /* Configuration.swift */,
 				C9C7D890293930E900950C55 /* ImageLoader.swift */,
 				C94BF027290B100C007E1C25 /* Extensions */,
 				C91C599B2927E1C900A20136 /* Models */,
@@ -425,6 +440,7 @@
 			files = (
 				C9E1141C291425340031E874 /* CartRepository.swift in Sources */,
 				C93FCCB729100D9C00633487 /* PrimaryButtonStyle.swift in Sources */,
+				C9D83EA4294FE78600330F33 /* Configuration.swift in Sources */,
 				C94BF02D290B1825007E1C25 /* CheckoutViewModel.swift in Sources */,
 				C9C7D88F2939029C00950C55 /* LineItemRow.swift in Sources */,
 				C94BF020290AE5FF007E1C25 /* ProductListViewModel.swift in Sources */,
@@ -488,6 +504,7 @@
 /* Begin XCBuildConfiguration section */
 		C9F4A4342900DB6200BCDF3E /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C9D83EA2294FE54700330F33 /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -548,6 +565,7 @@
 		};
 		C9F4A4352900DB6200BCDF3E /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C9D83EA2294FE54700330F33 /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -608,9 +626,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Example-SwiftUI/Preview Content\"";
-				DEVELOPMENT_TEAM = 2PMX4WLK83;
+				DEVELOPMENT_TEAM = "$(DEVELOPMENT_TEAM)";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Example-SwiftUI/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -637,9 +656,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Example-SwiftUI/Preview Content\"";
-				DEVELOPMENT_TEAM = 2PMX4WLK83;
+				DEVELOPMENT_TEAM = "$(DEVELOPMENT_TEAM)";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Example-SwiftUI/Info.plist";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

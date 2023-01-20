@@ -46,21 +46,15 @@ public struct Service {
     }
 
     private let baseURL: URL
-    private let decoder: JSONDecoder
+    private let decoder: JSONDecoder = .iso8601Full
     private let networking: (URLRequest) async throws -> ResponseValue
 
-    init(
-        baseURL: URL = Constants.baseURL,
-        decoder: JSONDecoder = .iso8601Full,
+    public init(
+        baseURL: URL,
         networking: @escaping (URLRequest) async throws -> ResponseValue
     ) {
         self.baseURL = baseURL
-        self.decoder = decoder
         self.networking = networking
-    }
-
-    public init(_ networking: @escaping (URLRequest) async throws -> ResponseValue) {
-        self.init(networking: networking)
     }
 
     public func carts() async throws -> [Cart] {
@@ -135,14 +129,12 @@ public extension Service {
 
         return .init(
             baseURL: Constants.baseURL,
-            decoder: .iso8601Full,
             networking: session.data(request:))
     }()
 
     static let mock: Self = {
         .init(
             baseURL: Constants.baseURL,
-            decoder: .iso8601Full,
             networking: NetworkingMock.networking)
     }()
 }
