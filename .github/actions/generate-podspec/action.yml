@@ -15,4 +15,4 @@ runs:
       id: current
       shell: bash
       run: |
-        generate.sh ${{ inputs.version }} > ${{ inputs.podspec-path }}
+        ${{ github.action_path }}/generate.sh ${{ inputs.version }} > ${{ inputs.podspec-path }}
