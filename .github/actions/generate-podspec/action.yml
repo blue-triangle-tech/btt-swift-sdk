@@ -1,0 +1,18 @@
+name: Generate podspec
+description: Generates a `.podspec` file with a given version number.
+inputs:
+  podspec-path:
+    description: The path of the generated podspec.
+    required: true
+  version:
+    description: The new version number.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Get Current Version
+      id: current
+      shell: bash
+      run: |
+        ${{ github.action_path }}/generate.sh ${{ inputs.version }} > ${{ inputs.podspec-path }}

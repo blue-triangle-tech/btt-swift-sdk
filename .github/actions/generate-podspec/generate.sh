@@ -1,6 +1,11 @@
+#!/usr/bin/env sh
+
+VERSION=$1
+
+cat  << EOF
 Pod::Spec.new do |s|
     s.name             = 'BlueTriangleSDK-Swift'
-    s.version          = '3.3.0'
+    s.version          = '$VERSION'
     s.summary          = 'BlueTriangleSDK exposes methods to send analytics and crash data to the Blue Triangle portal'
     s.description      = <<-DESC
     BlueTriangleSDK exposes methods to send analytics and crash data to the Blue Triangle portal via HTTP Post
@@ -23,3 +28,4 @@ Pod::Spec.new do |s|
     s.source_files = 'Sources/BlueTriangle/**/*.swift'
 
   end
+EOF
