@@ -29,6 +29,9 @@ public enum AnyCodable: Codable, Equatable, Hashable {
     /// > Note: once encoded, `Int64` values will be decoded as `Int`s.
     case int64(Int64)
     /// A case wrapping a `UInt64` value.
+    ///
+    /// > Note: once encoded, `UInt64` values that fall within the range of allowable `Int64`
+    /// values will be decoded as `Int64`.
     case uint64(UInt64)
     /// A case wrapping a `Date` value.
     ///
