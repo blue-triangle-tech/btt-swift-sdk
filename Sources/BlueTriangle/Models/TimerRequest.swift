@@ -60,7 +60,6 @@ extension TimerRequest: Codable {
         try con.encode(session.campaignSource, forKey: .campaignSource)
         try con.encode(session.dataCenter, forKey: .dataCenter)
         try con.encode(session.trafficSegmentName, forKey: .trafficSegmentName)
-        try con.encode(session.metrics, forKey: .customMetrics)
 
         // Page
         try con.encode(page.brandValue, forKey: .brandValue)
@@ -159,8 +158,7 @@ extension TimerRequest: Codable {
             campaignName: try container.decode(String.self, forKey: CodingKeys.campaignName),
             campaignSource: try container.decode(String.self, forKey: CodingKeys.campaignSource),
             dataCenter: try container.decode(String.self, forKey: CodingKeys.dataCenter),
-            trafficSegmentName: try container.decode(String.self, forKey: CodingKeys.trafficSegmentName),
-            metrics: try container.decodeIfPresent([String: AnyCodable].self, forKey: CodingKeys.customMetrics))
+            trafficSegmentName: try container.decode(String.self, forKey: CodingKeys.trafficSegmentName))
 
         // CustomVariables
         let customVariables = CustomVariables(
@@ -280,7 +278,6 @@ extension TimerRequest: Codable {
         case campaignSource = "CmpS"
         case dataCenter = "DCTR"
         case trafficSegmentName = "txnName"
-        case customMetrics = "ECV"
         // Page
         case brandValue = "bv"
         case pageName
