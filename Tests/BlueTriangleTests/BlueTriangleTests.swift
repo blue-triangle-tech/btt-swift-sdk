@@ -82,12 +82,7 @@ extension BlueTriangleTests {
         // Performance Monitor
         let performanceStartExpectation = expectation(description: "Performance monitoring started")
         let performanceEndExpectation = expectation(description: "Performance monitoring ended")
-        let expectedReport = PerformanceReport(minCPU: 1.0,
-                                               maxCPU: 100.0,
-                                               avgCPU: 50.0,
-                                               minMemory: 10000000,
-                                               maxMemory: 100000000,
-                                               avgMemory: 50000000)
+        let expectedReport = Mock.performanceReport
 
         Self.performanceMonitor.report = expectedReport
         Self.performanceMonitor.onStart = { performanceStartExpectation.fulfill() }
