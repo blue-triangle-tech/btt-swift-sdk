@@ -56,6 +56,7 @@ final class BlueTriangleTests: XCTestCase {
 
     override func tearDown() {
         super.tearDown()
+        Self.timeIntervals = []
         Self.onMakeTimer = { _, _ in }
         Self.onBuildRequest = { _, _, _ in }
         Self.onSendRequest = { _ in }
@@ -358,7 +359,6 @@ extension BlueTriangleTests {
         waitForExpectations(timeout: 10.0)
 
         XCTAssertNotNil(finishedTimer)
-        print(performanceMonitor.measurements)
 
         let base64Decoded = Data(base64Encoded: request.body!)!
         let performanceReport = try JSONDecoder().decode(TimerRequest.self, from: base64Decoded).performanceReport!
