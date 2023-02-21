@@ -11,7 +11,7 @@ struct TimerRequestBuilder {
     let builder: (Session, BTTimer, PurchaseConfirmation?) throws -> Request
 
     static func live(logger: Logging) -> Self {
-        let encodeer = JSONEncoder()
+        let encoder = JSONEncoder()
 
         return .init { session, timer, purchase in
             let request = TimerRequest(session: session,
@@ -20,10 +20,10 @@ struct TimerRequestBuilder {
                                        purchaseConfirmation: purchase,
                                        performanceReport: timer.performanceReport)
 
-            var requestData = try encodeer.encode(request)
+            var requestData = try encoder.encode(request)
             if let metrics = session.metrics {
                 do {
-                    let metricsData = try encodeer.encode(metrics)
+                    let metricsData = try encoder.encode(metrics)
 
                     let base64MetricsData = metricsData.base64EncodedData()
                     if base64MetricsData.count > Constants.metricsSizeLimit {
