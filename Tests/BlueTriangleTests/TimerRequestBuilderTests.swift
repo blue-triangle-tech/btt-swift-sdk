@@ -98,24 +98,18 @@ final class TimerRequestBuilderTests: XCTestCase {
     }
 
     func testMetricsExceedingSizeLimitDropped() throws {
-        let expectedLengthMessage = "Custom metrics length is 3000010 characters; exceeding 1024 results in data loss."
-        let expectedSizeMessage = "Custom metrics encoded size of 4 MB (4,000,016 bytes) exceeds limit of 3 MB (3,000,000 bytes); dropping from timer request."
+        let expectedMessage = "Custom metrics encoded size of 4 MB (4,000,016 bytes) exceeds limit of 3 MB (3,000,000 bytes); dropping from timer request."
         let expectedString = Mock.makeTimerRequestJSON(
             appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
             os: Device.os,
             osVersion: Device.osVersion,
             sdkVersion: Version.number)
 
-        var lengthMessage: String?
-        var sizeMessage: String?
+        var errorMessage: String?
         let errorExpectation = expectation(description: "Error logged")
         let logger = LoggerMock(onError: { message in
-            if lengthMessage == nil {
-                lengthMessage = message
-            } else {
-                sizeMessage = message
-                errorExpectation.fulfill()
-            }
+            errorMessage = message
+            errorExpectation.fulfill()
         })
 
         let sut = TimerRequestBuilder.live(logger: logger)
@@ -126,7 +120,6 @@ final class TimerRequestBuilderTests: XCTestCase {
         wait(for: [errorExpectation], timeout: 0.1)
 
         XCTAssertEqual(String(decoding: actualBody, as: UTF8.self), expectedString)
-        XCTAssertEqual(lengthMessage, expectedLengthMessage)
-        XCTAssertEqual(sizeMessage, expectedSizeMessage)
+        XCTAssertEqual(errorMessage, expectedMessage)
     }
 }

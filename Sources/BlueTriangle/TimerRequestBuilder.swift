@@ -25,11 +25,6 @@ struct TimerRequestBuilder {
                 do {
                     let metricsData = try encodeer.encode(metrics)
 
-                    let metricsString = String(decoding: metricsData, as: UTF8.self)
-                    if metricsString.count > Constants.metricsCharacterLimit {
-                        logger.error("Custom metrics length is \(metricsString.count) characters; exceeding \(Constants.metricsCharacterLimit) results in data loss.")
-                    }
-
                     let base64MetricsData = metricsData.base64EncodedData()
                     if base64MetricsData.count > Constants.metricsSizeLimit {
                         let bcf = ByteCountFormatter()
@@ -41,6 +36,11 @@ struct TimerRequestBuilder {
 
                         logger.error("Custom metrics encoded size of \(formatted(base64MetricsData.count)) exceeds limit of \(formatted(Constants.metricsSizeLimit)); dropping from timer request.")
                     } else {
+                        let metricsString = String(decoding: metricsData, as: UTF8.self)
+                        if metricsString.count > Constants.metricsCharacterLimit {
+                            logger.error("Custom metrics length is \(metricsString.count) characters; exceeding \(Constants.metricsCharacterLimit) results in data loss.")
+                        }
+
                         try requestData.append(objectData: metricsData, key: Constants.metricsCodingKey)
                     }
 
