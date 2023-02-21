@@ -76,11 +76,11 @@ final class TimerRequestBuilderTests: XCTestCase {
         let expectedMessage = "Custom metrics length is 2010 characters; exceeding 1024 results in data loss."
         let expectedKeyValue = String(repeating: "a", count: 2_000)
 
-        var errorMessage: String?
-        let errorExpectation = expectation(description: "Error logged")
-        let logger = LoggerMock(onError: { message in
-            errorMessage = message
-            errorExpectation.fulfill()
+        var logMessge: String?
+        let logExpectation = expectation(description: "Warning logged")
+        let logger = LoggerMock(onDefault: { message in
+            logMessge = message
+            logExpectation.fulfill()
         })
 
         let sut = TimerRequestBuilder.live(logger: logger)
@@ -88,13 +88,13 @@ final class TimerRequestBuilderTests: XCTestCase {
         var session = Mock.session
         session.metrics = ["key": .string(expectedKeyValue)]
         let actualBody = try sut.builder(session, timer, nil).body!
-        wait(for: [errorExpectation], timeout: 0.1)
+        wait(for: [logExpectation], timeout: 0.1)
 
         let jsonObject = try JSONSerialization.jsonObject(with: actualBody) as! [String: Any]
         let actualMetrics = jsonObject["ECV"] as! [String: String]
 
         XCTAssertEqual(actualMetrics, ["key": expectedKeyValue])
-        XCTAssertEqual(errorMessage, expectedMessage)
+        XCTAssertEqual(logMessge, expectedMessage)
     }
 
     func testMetricsExceedingSizeLimitDropped() throws {
@@ -105,11 +105,11 @@ final class TimerRequestBuilderTests: XCTestCase {
             osVersion: Device.osVersion,
             sdkVersion: Version.number)
 
-        var errorMessage: String?
-        let errorExpectation = expectation(description: "Error logged")
-        let logger = LoggerMock(onError: { message in
-            errorMessage = message
-            errorExpectation.fulfill()
+        var logMessge: String?
+        let logExpectation = expectation(description: "Warning logged")
+        let logger = LoggerMock(onDefault: { message in
+            logMessge = message
+            logExpectation.fulfill()
         })
 
         let sut = TimerRequestBuilder.live(logger: logger)
@@ -117,9 +117,9 @@ final class TimerRequestBuilderTests: XCTestCase {
         var session = Mock.session
         session.metrics = ["key": .string(String(repeating: "a", count: 3_000_000))]
         let actualBody = try sut.builder(session, timer, nil).body!
-        wait(for: [errorExpectation], timeout: 0.1)
+        wait(for: [logExpectation], timeout: 0.1)
 
         XCTAssertEqual(String(decoding: actualBody, as: UTF8.self), expectedString)
-        XCTAssertEqual(errorMessage, expectedMessage)
+        XCTAssertEqual(logMessge, expectedMessage)
     }
 }

@@ -34,18 +34,18 @@ struct TimerRequestBuilder {
                             bcf.string(fromByteCount: Int64(count))
                         }
 
-                        logger.error("Custom metrics encoded size of \(formatted(base64MetricsData.count)) exceeds limit of \(formatted(Constants.metricsSizeLimit)); dropping from timer request.")
+                        logger.log("Custom metrics encoded size of \(formatted(base64MetricsData.count)) exceeds limit of \(formatted(Constants.metricsSizeLimit)); dropping from timer request.")
                     } else {
                         let metricsString = String(decoding: metricsData, as: UTF8.self)
                         if metricsString.count > Constants.metricsCharacterLimit {
-                            logger.error("Custom metrics length is \(metricsString.count) characters; exceeding \(Constants.metricsCharacterLimit) results in data loss.")
+                            logger.log("Custom metrics length is \(metricsString.count) characters; exceeding \(Constants.metricsCharacterLimit) results in data loss.")
                         }
 
                         try requestData.append(objectData: metricsData, key: Constants.metricsCodingKey)
                     }
 
                 } catch {
-                    logger.error("Custom metrics encoding failed: \(error.localizedDescription)")
+                    logger.log("Custom metrics encoding failed: \(error.localizedDescription)")
                 }
             }
 
