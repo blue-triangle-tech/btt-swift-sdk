@@ -56,6 +56,7 @@ final class BlueTriangleTests: XCTestCase {
 
     override func tearDown() {
         super.tearDown()
+        Self.timeIntervals = []
         Self.onMakeTimer = { _, _ in }
         Self.onBuildRequest = { _, _, _ in }
         Self.onSendRequest = { _ in }
@@ -82,12 +83,7 @@ extension BlueTriangleTests {
         // Performance Monitor
         let performanceStartExpectation = expectation(description: "Performance monitoring started")
         let performanceEndExpectation = expectation(description: "Performance monitoring ended")
-        let expectedReport = PerformanceReport(minCPU: 1.0,
-                                               maxCPU: 100.0,
-                                               avgCPU: 50.0,
-                                               minMemory: 10000000,
-                                               maxMemory: 100000000,
-                                               avgMemory: 50000000)
+        let expectedReport = Mock.performanceReport
 
         Self.performanceMonitor.report = expectedReport
         Self.performanceMonitor.onStart = { performanceStartExpectation.fulfill() }
@@ -363,7 +359,6 @@ extension BlueTriangleTests {
         waitForExpectations(timeout: 10.0)
 
         XCTAssertNotNil(finishedTimer)
-        print(performanceMonitor.measurements)
 
         let base64Decoded = Data(base64Encoded: request.body!)!
         let performanceReport = try JSONDecoder().decode(TimerRequest.self, from: base64Decoded).performanceReport!

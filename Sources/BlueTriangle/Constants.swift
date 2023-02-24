@@ -33,6 +33,11 @@ enum Constants {
     static let excludedValue = "20"
     static let startupDelay: TimeInterval = 10
 
+    // Custom Metrics
+    static let metricsCharacterLimit = 1024
+    static let metricsSizeLimit = 3_000_000
+    static let metricsCodingKey = "ECV"
+
     // Logging
     static let loggingSubsystem = "com.bluetriangle.sdk"
     static let loggingCategory = "tracker"
