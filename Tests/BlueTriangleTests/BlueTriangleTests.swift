@@ -303,6 +303,61 @@ extension BlueTriangleTests {
     }
 }
 
+// MARK: - Custom Metrics
+extension BlueTriangleTests {
+    func testSetMetricsAreSent() {
+        let expectedMetrics: [String: AnyCodable] = [
+            "string": "String",
+            "double": 9.99,
+            "nested": [
+                "new": "value"
+            ]
+        ]
+
+        var metrics: [String: AnyCodable]!
+        let requestBuiltExpectation = expectation(description: "Request built")
+        Self.onBuildRequest = { session, _, _ in
+            metrics = session.metrics
+            requestBuiltExpectation.fulfill()
+        }
+
+        var session = Mock.session
+        session.metrics = [
+            "string": "String",
+            "double": 9.99,
+            "nested": [
+                "foo": "bar"
+            ]
+        ]
+
+        // BlueTriangleConfiguration
+        let configuration = BlueTriangleConfiguration()
+        Mock.configureBlueTriangle(configuration: configuration)
+        configuration.requestBuilder = Self.requestBuilder
+
+        // Configure Blue Triangle
+        BlueTriangle.reconfigure(
+            configuration: configuration,
+            session: session,
+            logger: Self.logger,
+            uploader: Self.uploader,
+            timerFactory: Self.timerFactory,
+            shouldCaptureRequests: false,
+            requestCollector: nil
+        )
+
+        BlueTriangle.metrics?["nested"] = [
+            "new": "value"
+        ]
+
+        let timer = BlueTriangle.startTimer(page: Mock.page)
+        BlueTriangle.endTimer(timer)
+
+        wait(for: [requestBuiltExpectation], timeout: 1.0)
+        XCTAssertEqual(metrics, expectedMetrics)
+    }
+}
+
 #if os(iOS) || os(tvOS)
 extension BlueTriangleTests {
     @available(iOS 14.0, *)
