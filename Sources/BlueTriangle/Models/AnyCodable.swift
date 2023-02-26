@@ -322,6 +322,18 @@ extension AnyCodable: ExpressibleByStringLiteral {
     public init(stringLiteral value: String) {
         self = .string(value)
     }
+
+    /// Creates an instance initialized to the given value.
+    /// - Parameter value: The value of the new instance.
+    public init(unicodeScalarLiteral value: String) {
+        self = .string(value)
+    }
+
+    /// Creates an instance initialized to the given value.
+    /// - Parameter value: The value of the new instance.
+    public init(extendedGraphemeClusterLiteral value: String) {
+        self = .string(value)
+    }
 }
 
 extension AnyCodable: ExpressibleByStringInterpolation {}
