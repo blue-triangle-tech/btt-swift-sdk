@@ -300,6 +300,105 @@ public extension BlueTriangle {
     }
 }
 
+// MARK: - Custom Metrics
+public extension BlueTriangle {
+    /// Updates the value stored in custom metrics for the given key, or adds a new key-value pair
+    /// if the key does not exist.
+    /// - Parameters:
+    ///   - value: The new value to add to custom metrics.
+    ///   - key: The key to associate with value. If `key` already exists in the custom metrics,
+    ///     `value` replaces the existing associated value. If `key` isn’t already a key of the
+    ///     dictionary, the `(key, value)` pair is added.
+    private static func set(_ value: AnyCodable?, key: String) {
+        lock.lock()
+        if session.metrics != nil {
+            session.metrics![key] = value
+        } else {
+            guard let value else {
+                return
+            }
+            session.metrics = [key: value]
+        }
+        lock.unlock()
+    }
+
+    /// Updates the value stored in custom metrics for the given key, or adds a new key-value pair
+    /// if the key does not exist.
+    ///
+    /// > Note: this member is provided for Objective-C compatibility; ``BlueTriangle/BlueTriangle/metrics``
+    /// should be used when calling from Swift.
+    /// 
+    /// - Parameters:
+    ///   - value: The new value to add to custom metrics.
+    ///   - key: The key to associate with value. If `key` already exists in the custom metrics,
+    ///     `value` replaces the existing associated value. If `key` isn’t already a key of the
+    ///     dictionary, the `(key, value)` pair is added.
+    @objc(setMetrics:forKey:)
+    static func _setMetrics(_ value: Any?, forKey key: String) {
+        switch value {
+        case .none:
+            lock.lock()
+            session.metrics?[key] = nil
+            lock.unlock()
+        case .some(let wrapped):
+            do {
+                let value = try AnyCodable(wrapped)
+                set(value, key: key)
+            } catch {
+                logger.error("Unable to convert \(wrapped) to an `Encodable` representation.")
+            }
+        }
+    }
+
+    /// Updates the value stored in custom metrics for the given key, or adds a new key-value pair
+    /// if the key does not exist.
+    ///
+    /// Prefer this method over `setMetrics:forKey:` when using `NSNumber` values.
+    ///
+    /// > Note: this member is provided for Objective-C compatibility; ``BlueTriangle/BlueTriangle/metrics``
+    /// should be used when calling from Swift.
+    ///
+    /// - Parameters:
+    ///   - nsNumber: The new number vaue to add to custom metrics.
+    ///   - key: The key to associate with value. If `key` already exists in the custom metrics,
+    ///     `nsNumber` replaces the existing associated value. If `key` isn’t already a key of the
+    ///     dictionary, the `(key, nsNumber)` pair is added.
+    @objc(setMetricsWithNsNumber:forKey:)
+    static func _setMetrics(nsNumber: NSNumber?, forKey key: String) {
+        switch nsNumber {
+        case .none:
+            lock.lock()
+            session.metrics?[key] = nil
+            lock.unlock()
+        case .some(let wrapped):
+            do {
+                let value = try AnyCodable(wrapped)
+                set(value, key: key)
+            } catch {
+                logger.error("Unable to convert \(wrapped) to an `Encodable` representation.")
+            }
+        }
+    }
+
+    /// Returns the value associated with the given key if one exists.
+    /// - Parameter key: The key to look up in custom metrics.
+    /// - Returns: The value associated with `key` in custom metrics or `nil` if none exists.
+    @objc(getMetricsForKey:)
+    static func _getMetrics(forKey key: String) -> Any? {
+        lock.lock()
+        defer { lock.unlock() }
+        return session.metrics?[key]?.anyValue
+    }
+
+    /// Removes all custom metrics values.
+    @objc
+    static func clearMetrics() {
+        lock.lock()
+        session.metrics = nil
+        lock.unlock()
+    }
+}
+
 // MARK: - Network Capture
 public extension BlueTriangle {
     internal static func timerDidStart(_ type: BTTimer.TimerType, page: Page, startTime: TimeInterval) {
