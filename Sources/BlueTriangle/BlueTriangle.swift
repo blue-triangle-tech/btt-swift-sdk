@@ -183,18 +183,7 @@ final public class BlueTriangle: NSObject {
     /// > Note: this member is provided for Objective-C compatibility; ``BlueTriangle/BlueTriangle/metrics``
     /// should be used when calling from Swift.
     @objc(metrics) public static var _metrics: [String: Any]? {
-        get {
-            lock.sync { session.metrics?.anyValues }
-        }
-        set {
-            do {
-                let converted = try newValue?.compactMapValues(AnyCodable.init)
-                print("newValue: \(newValue) - converted: \(converted)")
-                lock.sync { session.metrics = converted }
-            } catch {
-                logger.error(error.localizedDescription)
-            }
-        }
+        lock.sync { session.metrics?.anyValues }
     }
 }
 
