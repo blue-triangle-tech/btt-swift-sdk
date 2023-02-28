@@ -337,3 +337,11 @@ extension AnyCodable: ExpressibleByStringLiteral {
 }
 
 extension AnyCodable: ExpressibleByStringInterpolation {}
+
+// MARK: - Dictionary+Utils
+public extension Dictionary where Value == AnyCodable {
+    /// A dictionary containing the underlying values that were wrapped in ``AnyCodable``.
+    var anyValues: [Key: Any] {
+        mapValues { $0.anyValue }
+    }
+}
