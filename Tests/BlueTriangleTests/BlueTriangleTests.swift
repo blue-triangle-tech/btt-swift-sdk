@@ -315,7 +315,6 @@ extension BlueTriangleTests {
             "new": [1, 2, 3]
         ]
 
-
         var session = Mock.session
         session.metrics = [
             "string": "String",
@@ -332,6 +331,28 @@ extension BlueTriangleTests {
         XCTAssertEqual(actualMetrics, expectedMetrics)
     }
 
+    func testRemoveMetricsValue() {
+        let expectedMetrics: [String: AnyCodable] = [
+            "string": "String",
+            "double": 9.99,
+        ]
+
+        var session = Mock.session
+        session.metrics = [
+            "string": "String",
+            "double": 9.99,
+            "nested": [
+                "foo": "bar"
+            ]
+        ]
+        BlueTriangle.reconfigure(session: session)
+
+        BlueTriangle.metrics?["nested"] = nil
+
+        let actualMetrics = BlueTriangle.metrics!
+        XCTAssertEqual(actualMetrics, expectedMetrics)
+    }
+
     func testSetMetricsAreSent() {
         let expectedMetrics: [String: AnyCodable] = [
             "string": "String",
@@ -341,10 +362,10 @@ extension BlueTriangleTests {
             ]
         ]
 
-        var metrics: [String: AnyCodable]!
+        var sentMetrics: [String: AnyCodable]!
         let requestBuiltExpectation = expectation(description: "Request built")
         Self.onBuildRequest = { session, _, _ in
-            metrics = session.metrics
+            sentMetrics = session.metrics
             requestBuiltExpectation.fulfill()
         }
 
@@ -374,7 +395,7 @@ extension BlueTriangleTests {
         BlueTriangle.endTimer(timer)
 
         wait(for: [requestBuiltExpectation], timeout: 1.0)
-        XCTAssertEqual(metrics, expectedMetrics)
+        XCTAssertEqual(sentMetrics, expectedMetrics)
     }
 
     func testAnyMetricsAccess() {
@@ -400,7 +421,7 @@ extension BlueTriangleTests {
         let value = "value"
         let expectedValue: [String: AnyCodable] = [key: .string(value)]
 
-        BlueTriangle.reconfigure(session: nil)
+        BlueTriangle.reconfigure(session: Mock.session)
 
         BlueTriangle._setMetrics(value, forKey: key)
 
@@ -417,6 +438,16 @@ extension BlueTriangleTests {
         BlueTriangle._setMetrics(nil, forKey: key)
 
         XCTAssertEqual(BlueTriangle.metrics, [:])
+    }
+
+    func testSetNilAnyValueWhenNil() {
+        let key = "key"
+
+        BlueTriangle.reconfigure(session: Mock.session)
+
+        BlueTriangle._setMetrics(nil, forKey: key)
+
+        XCTAssertNil(BlueTriangle.metrics)
     }
 
     func testSetUnwrappableAnyValueHandled() {

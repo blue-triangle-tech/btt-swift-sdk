@@ -311,6 +311,8 @@ public extension BlueTriangle {
     ///     dictionary, the `(key, value)` pair is added.
     private static func set(_ value: AnyCodable?, key: String) {
         lock.lock()
+        defer { lock.unlock() }
+
         if session.metrics != nil {
             session.metrics![key] = value
         } else {
@@ -319,7 +321,6 @@ public extension BlueTriangle {
             }
             session.metrics = [key: value]
         }
-        lock.unlock()
     }
 
     /// Updates the value stored in custom metrics for the given key, or adds a new key-value pair
@@ -337,9 +338,7 @@ public extension BlueTriangle {
     static func _setMetrics(_ value: Any?, forKey key: String) {
         switch value {
         case .none:
-            lock.lock()
-            session.metrics?[key] = nil
-            lock.unlock()
+            set(nil, key: key)
         case .some(let wrapped):
             do {
                 let value = try AnyCodable(wrapped)
@@ -367,9 +366,7 @@ public extension BlueTriangle {
     static func _setMetrics(nsNumber: NSNumber?, forKey key: String) {
         switch nsNumber {
         case .none:
-            lock.lock()
-            session.metrics?[key] = nil
-            lock.unlock()
+            set(nil, key: key)
         case .some(let wrapped):
             do {
                 let value = try AnyCodable(wrapped)
