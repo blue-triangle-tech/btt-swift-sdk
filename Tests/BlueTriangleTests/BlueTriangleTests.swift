@@ -468,6 +468,16 @@ extension BlueTriangleTests {
         XCTAssertNil(BlueTriangle.metrics)
     }
 
+    func testSetNilNSNumber() {
+        let key = "key"
+
+        BlueTriangle.reconfigure(session: Mock.session)
+
+        BlueTriangle._setMetrics(nsNumber: nil, forKey: key)
+
+        XCTAssertNil(BlueTriangle.metrics)
+    }
+
     func testSetNSNumber() {
         let key = "key"
         let double = 9.99
