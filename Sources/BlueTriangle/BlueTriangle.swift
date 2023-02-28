@@ -246,9 +246,9 @@ extension BlueTriangle {
 public extension BlueTriangle {
     /// Creates a timer timer to measure the duration of a user interaction.
     ///
-    /// The returned timer is not running. Call `start()` before passing to `endTimer(_:purchaseConfirmation:)`.
+    /// The returned timer is not running. Call ``BTTimer/start()`` before passing to ``endTimer(_:purchaseConfirmation:)``.
     ///
-    /// - note: `configure(_:)` must be called before attempting to create a timer.
+    /// - note: ``configure(_:)`` must be called before attempting to create a timer.
     ///
     /// - Parameters:
     ///   - page: An object providing information about the user interaction being timed.
@@ -265,7 +265,7 @@ public extension BlueTriangle {
 
     /// Creates a running timer to measure the duration of a user interaction.
     ///
-    /// - note: `configure(_:)` must be called before attempting to start a timer.
+    /// - note: ``configure(_:)`` must be called before attempting to start a timer.
     ///
     /// - Parameters:
     ///   - page: An object providing information about the user interaction being timed.
