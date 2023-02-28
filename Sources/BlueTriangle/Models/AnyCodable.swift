@@ -160,10 +160,10 @@ public enum AnyCodable: Codable, Equatable, Hashable {
 // MARK: - Associated Value Access
 public extension AnyCodable {
     /// The type-erased wrapped value.
-    var anyValue: Any? {
+    var anyValue: Any {
         switch self {
         case .none:
-            return nil
+            return Optional<Any>.none as Any
         case .bool(let bool):
             return bool as Any
         case .double(let double):
