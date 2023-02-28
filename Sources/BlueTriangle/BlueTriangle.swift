@@ -352,7 +352,8 @@ public extension BlueTriangle {
     /// Updates the value stored in custom metrics for the given key, or adds a new key-value pair
     /// if the key does not exist.
     ///
-    /// Prefer this method over `setMetrics:forKey:` when using `NSNumber` values.
+    /// Prefer this method over `setMetrics:forKey:` when using `NSNumber` values to ensure that values are
+    /// handled properly.
     ///
     /// > Note: this member is provided for Objective-C compatibility; ``BlueTriangle/BlueTriangle/metrics``
     /// should be used when calling from Swift.
@@ -378,6 +379,10 @@ public extension BlueTriangle {
     }
 
     /// Returns the value associated with the given key if one exists.
+    ///
+    /// > Note: this member is provided for Objective-C compatibility; ``BlueTriangle/BlueTriangle/metrics``
+    /// should be used when calling from Swift.
+    ///
     /// - Parameter key: The key to look up in custom metrics.
     /// - Returns: The value associated with `key` in custom metrics or `nil` if none exists.
     @objc(getMetricsForKey:)
