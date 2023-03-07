@@ -160,10 +160,10 @@ public enum AnyCodable: Codable, Equatable, Hashable {
 // MARK: - Associated Value Access
 public extension AnyCodable {
     /// The type-erased wrapped value.
-    var anyValue: Any? {
+    var anyValue: Any {
         switch self {
         case .none:
-            return nil
+            return Optional<Any>.none as Any
         case .bool(let bool):
             return bool as Any
         case .double(let double):
@@ -322,6 +322,26 @@ extension AnyCodable: ExpressibleByStringLiteral {
     public init(stringLiteral value: String) {
         self = .string(value)
     }
+
+    /// Creates an instance initialized to the given value.
+    /// - Parameter value: The value of the new instance.
+    public init(unicodeScalarLiteral value: String) {
+        self = .string(value)
+    }
+
+    /// Creates an instance initialized to the given value.
+    /// - Parameter value: The value of the new instance.
+    public init(extendedGraphemeClusterLiteral value: String) {
+        self = .string(value)
+    }
 }
 
 extension AnyCodable: ExpressibleByStringInterpolation {}
+
+// MARK: - Dictionary+Utils
+public extension Dictionary where Value == AnyCodable {
+    /// A dictionary containing the underlying values that were wrapped in ``AnyCodable``.
+    var anyValues: [Key: Any] {
+        mapValues { $0.anyValue }
+    }
+}

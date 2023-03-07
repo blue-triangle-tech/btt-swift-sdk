@@ -144,9 +144,14 @@ extension AnyCodableTests {
     }
 
     func testUInt64Coding() throws {
-        let expectedValue: UInt64 = UInt64.max
-        let actualValue: UInt64? = try encodeAndDecode(expectedValue)
-        XCTAssertEqual(actualValue, expectedValue)
+        let expectedLargeValue: UInt64 = UInt64.max
+        let actualLargeValue: UInt64? = try encodeAndDecode(expectedLargeValue)
+        XCTAssertEqual(actualLargeValue, expectedLargeValue)
+
+        // Values within the range of possibile values of `Int64` will be decoded as such
+        let smallValue: UInt64 = 5
+        let actualSmallValue: UInt64? = try encodeAndDecode(smallValue)
+        XCTAssertNil(actualSmallValue)
     }
 
     func testURLCoding() throws {
@@ -344,5 +349,27 @@ extension AnyCodableTests {
         let sut = try AnyCodable(url)
         let actual = sut.anyValue as? URL
         XCTAssertEqual(actual, url)
+    }
+
+    func testAnyValueOfAnyCodableDictionary() throws {
+        let sut: [String: AnyCodable] = [
+            "string": "String",
+            "bool": true,
+            "double": 9.99,
+            "int": 9,
+            "array": ["a", "b", "c"],
+            "nested": [
+                "foo": "bar"
+            ]
+        ]
+
+        let actualValue = sut.anyValues
+
+        XCTAssertEqual(actualValue["string"] as? String, string)
+        XCTAssertEqual(actualValue["bool"] as? Bool, bool)
+        XCTAssertEqual(actualValue["double"] as? Double, double)
+        XCTAssertEqual(actualValue["int"] as? Int, int)
+        XCTAssertEqual(actualValue["array"] as? [String], ["a", "b", "c"])
+        XCTAssertEqual(actualValue["nested"] as? [String: String], ["foo": "bar"])
     }
 }
