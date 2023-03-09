@@ -9,6 +9,7 @@
 import XCTest
 
 final class AnyCodableTests: XCTestCase {
+    let key = "key"
     let array: [String] = ["a", "b", "c"]
     let bool: Bool = true
     let date = Date(timeIntervalSince1970: 1670000000)
@@ -329,6 +330,239 @@ extension AnyCodableTests {
         let value = 4
         let sut: AnyCodable = "The value is \(value)"
         XCTAssertEqual(sut, .string("The value is 4"))
+    }
+}
+
+// MARK: - Subscripts
+extension AnyCodableTests {
+    func testGetArraySubscript() {
+        let expectedValue: [AnyCodable] = [.string("a"), .string("b"), .string("c")]
+
+        let sut: [String: AnyCodable] = [
+            key: .array(expectedValue),
+            "other": "another value"
+        ]
+
+        XCTAssertEqual(sut[array: key], expectedValue)
+    }
+
+    func testSetArraySubscript() {
+        let expectedValue: [AnyCodable] = [.string("a"), .string("b"), .string("c")]
+
+        var sut: [String: AnyCodable] = [:]
+
+        sut[array: key] = expectedValue
+        XCTAssertEqual(sut, [key: .array(expectedValue)])
+
+        sut[array: key] = nil
+        XCTAssertEqual(sut, [:])
+    }
+
+    func testGetBoolSubscript() {
+        let expectedValue = bool
+
+        let sut: [String: AnyCodable] = [
+            key: .bool(expectedValue),
+            "other": "another value"
+        ]
+
+        XCTAssertEqual(sut[bool: key], expectedValue)
+    }
+
+    func testSetBoolSubscript() {
+        let expectedValue = bool
+
+        var sut: [String: AnyCodable] = [:]
+
+        sut[bool: key] = expectedValue
+        XCTAssertEqual(sut, [key: .bool(expectedValue)])
+
+        sut[bool: key] = nil
+        XCTAssertEqual(sut, [:])
+    }
+
+    func testGetDateSubscript() {
+        let expectedValue = date
+
+        let sut: [String: AnyCodable] = [
+            key: .date(expectedValue),
+            "other": "another value"
+        ]
+
+        XCTAssertEqual(sut[date: key], expectedValue)
+    }
+
+    func testSetDateSubscript() {
+        let expectedValue = date
+
+        var sut: [String: AnyCodable] = [:]
+
+        sut[date: key] = expectedValue
+        XCTAssertEqual(sut, [key: .date(expectedValue)])
+
+        sut[date: key] = nil
+        XCTAssertEqual(sut, [:])
+    }
+
+    func testGetDictionarySubscript() {
+        let expectedValue: [AnyCodable] = [.string("a"), .string("b"), .string("c")]
+
+        let sut: [String: AnyCodable] = [
+            key: .array(expectedValue),
+            "other": "another value"
+        ]
+
+        XCTAssertEqual(sut[array: key], expectedValue)
+    }
+
+    func testSetDictionarySubscript() {
+        let expectedValue: [String: AnyCodable] = ["a": .string("a"), "b": .string("b"), "c": .string("c")]
+
+        var sut: [String: AnyCodable] = [:]
+
+        sut[dictionary: key] = expectedValue
+        XCTAssertEqual(sut, [key: .dictionary(expectedValue)])
+
+        sut[dictionary: key] = nil
+        XCTAssertEqual(sut, [:])
+    }
+
+    func testGetDoubleSubscript() {
+        let expectedValue = double
+
+        let sut: [String: AnyCodable] = [
+            key: .double(expectedValue),
+            "other": "another value"
+        ]
+
+        XCTAssertEqual(sut[double: key], expectedValue)
+    }
+
+    func testSetDoubleSubscript() {
+        let expectedValue = double
+
+        var sut: [String: AnyCodable] = [:]
+
+        sut[double: key] = expectedValue
+        XCTAssertEqual(sut, [key: .double(expectedValue)])
+
+        sut[double: key] = nil
+        XCTAssertEqual(sut, [:])
+    }
+
+    func testGetIntSubscript() {
+        let expectedValue = int
+
+        let sut: [String: AnyCodable] = [
+            key: .int(expectedValue),
+            "other": "another value"
+        ]
+
+        XCTAssertEqual(sut[int: key], expectedValue)
+    }
+
+    func testSetIntSubscript() {
+        let expectedValue = int
+
+        var sut: [String: AnyCodable] = [:]
+
+        sut[int: key] = expectedValue
+        XCTAssertEqual(sut, [key: .int(expectedValue)])
+
+        sut[int: key] = nil
+        XCTAssertEqual(sut, [:])
+    }
+
+    func testGetInt64Subscript() {
+        let expectedValue = int64
+
+        let sut: [String: AnyCodable] = [
+            key: .int64(expectedValue),
+            "other": "another value"
+        ]
+
+        XCTAssertEqual(sut[int64: key], expectedValue)
+    }
+
+    func testSetInt64Subscript() {
+        let expectedValue = int64
+
+        var sut: [String: AnyCodable] = [:]
+
+        sut[int64: key] = expectedValue
+        XCTAssertEqual(sut, [key: .int64(expectedValue)])
+
+        sut[int64: key] = nil
+        XCTAssertEqual(sut, [:])
+    }
+
+    func testGetStringSubscript() {
+        let expectedValue = string
+
+        let sut: [String: AnyCodable] = [
+            key: .string(expectedValue),
+            "other": "another value"
+        ]
+
+        XCTAssertEqual(sut[string: key], expectedValue)
+    }
+
+    func testSetStringSubscript() {
+        let expectedValue = string
+
+        var sut: [String: AnyCodable] = [:]
+
+        sut[string: key] = expectedValue
+        XCTAssertEqual(sut, [key: .string(expectedValue)])
+
+        sut[string: key] = nil
+        XCTAssertEqual(sut, [:])
+    }
+
+    func testGetUInt64Subscript() {
+        let expectedValue = uint64
+
+        let sut: [String: AnyCodable] = [
+            key: .uint64(expectedValue),
+            "other": "another value"
+        ]
+
+        XCTAssertEqual(sut[uint64: key], expectedValue)
+    }
+
+    func testSetUInt64Subscript() {
+        let expectedValue = uint64
+
+        var sut: [String: AnyCodable] = [:]
+
+        sut[uint64: key] = expectedValue
+        XCTAssertEqual(sut, [key: .uint64(expectedValue)])
+
+        sut[uint64: key] = nil
+        XCTAssertEqual(sut, [:])
+    }
+
+    func testGetURLSubscript() {
+        let expectedValue = url
+
+        let sut: [String: AnyCodable] = [
+            key: .url(expectedValue),
+            "other": "another value"
+        ]
+
+        XCTAssertEqual(sut[url: key], expectedValue)
+    }
+
+    func testSetURLSubscript() {
+        let expectedValue = url
+
+        var sut: [String: AnyCodable] = [:]
+
+        sut[url: key] = expectedValue
+        XCTAssertEqual(sut, [key: .url(expectedValue)])
+
+        sut[url: key] = nil
+        XCTAssertEqual(sut, [:])
     }
 }
 
