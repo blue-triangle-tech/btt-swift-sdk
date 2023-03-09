@@ -169,12 +169,12 @@ final public class BlueTriangle: NSObject {
     }
 
     /// Custom metrics.
-    public static var metrics: [String: AnyCodable]? {
+    public static var metrics: [String: AnyCodable] {
         get {
-            lock.sync { session.metrics }
+            lock.sync { session.metrics ?? [:] }
         }
         set {
-            lock.sync { session.metrics = newValue }
+            lock.sync { session.metrics = (newValue.isEmpty ? nil : newValue) }
         }
     }
 

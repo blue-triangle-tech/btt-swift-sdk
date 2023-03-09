@@ -344,4 +344,155 @@ public extension Dictionary where Value == AnyCodable {
     var anyValues: [Key: Any] {
         mapValues { $0.anyValue }
     }
+
+    /// Accesses the array associated with the given key for reading and writing.
+    subscript(array key: Key) -> [AnyCodable]? {
+        get {
+            self[key]?.arrayValue
+        }
+        set {
+            switch newValue {
+            case .some(let wrapped):
+                self[key] = AnyCodable.array(wrapped)
+            case .none:
+                self[key] = nil
+            }
+        }
+    }
+
+    /// Accesses the Boolean associated with the given key for reading and writing.
+    subscript(bool key: Key) -> Bool? {
+        get {
+            self[key]?.boolValue
+        }
+        set {
+            switch newValue {
+            case .some(let wrapped):
+                self[key] = AnyCodable.bool(wrapped)
+            case .none:
+                self[key] = nil
+            }
+        }
+    }
+
+    /// Accesses the date associated with the given key for reading and writing.
+    subscript(date key: Key) -> Date? {
+        get {
+            self[key]?.dateValue
+        }
+        set {
+            switch newValue {
+            case .some(let wrapped):
+                self[key] = AnyCodable.date(wrapped)
+            case .none:
+                self[key] = nil
+            }
+        }
+    }
+
+    /// Accesses the dictionary associated with the given key for reading and writing.
+    subscript(dictionary key: Key) -> [String: AnyCodable]? {
+        get {
+            self[key]?.dictionaryValue
+        }
+        set {
+            switch newValue {
+            case .some(let wrapped):
+                self[key] = AnyCodable.dictionary(wrapped)
+            case .none:
+                self[key] = nil
+            }
+        }
+    }
+
+    /// Accesses the double associated with the given key for reading and writing.
+    subscript(double key: Key) -> Double? {
+        get {
+            self[key]?.doubleValue
+        }
+        set {
+            switch newValue {
+            case .some(let wrapped):
+                self[key] = AnyCodable.double(wrapped)
+            case .none:
+                self[key] = nil
+            }
+        }
+    }
+
+    /// Accesses the integer associated with the given key for reading and writing.
+    subscript(int key: Key) -> Int? {
+        get {
+            self[key]?.intValue
+        }
+        set {
+            switch newValue {
+            case .some(let wrapped):
+                self[key] = AnyCodable.int(wrapped)
+            case .none:
+                self[key] = nil
+            }
+        }
+    }
+
+    /// Accesses the 64-bit signed integer associated with the given key for reading and writing.
+    subscript(int64 key: Key) -> Int64? {
+        get {
+            self[key]?.int64Value
+        }
+        set {
+            switch newValue {
+            case .some(let wrapped):
+                self[key] = AnyCodable.int64(wrapped)
+            case .none:
+                self[key] = nil
+            }
+        }
+    }
+
+    /// Accesses the string associated with the given key for reading and writing.
+    subscript(string key: Key) -> String? {
+        get {
+            self[key]?.stringValue
+        }
+        set {
+            switch newValue {
+            case .some(let wrapped):
+                self[key] = AnyCodable.string(wrapped)
+            case .none:
+                self[key] = nil
+            }
+        }
+    }
+
+    /// Accesses the 64-bit unsigned integer associated with the given key for reading and writing.
+    subscript(uint64 key: Key) -> UInt64? {
+        get {
+            self[key]?.uint64Value
+        }
+        set {
+            switch newValue {
+            case .some(let wrapped):
+                self[key] = AnyCodable.uint64(wrapped)
+            case .none:
+                self[key] = nil
+            }
+        }
+    }
+
+    /// Accesses the URL associated with the given key for reading and writing.
+    subscript(url key: Key) -> URL? {
+        get {
+            self[key]?.urlValue
+        }
+        set {
+            switch newValue {
+            case .some(let wrapped):
+                self[key] = AnyCodable.url(wrapped)
+            case .none:
+                self[key] = nil
+            }
+        }
+    }
+}
 }

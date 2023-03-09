@@ -325,9 +325,9 @@ extension BlueTriangleTests {
         ]
         BlueTriangle.reconfigure(session: session)
 
-        BlueTriangle.metrics?["new"] = [1, 2, 3]
+        BlueTriangle.metrics["new"] = [1, 2, 3]
 
-        let actualMetrics = BlueTriangle.metrics!
+        let actualMetrics = BlueTriangle.metrics
         XCTAssertEqual(actualMetrics, expectedMetrics)
     }
 
@@ -347,9 +347,9 @@ extension BlueTriangleTests {
         ]
         BlueTriangle.reconfigure(session: session)
 
-        BlueTriangle.metrics?["nested"] = nil
+        BlueTriangle.metrics["nested"] = nil
 
-        let actualMetrics = BlueTriangle.metrics!
+        let actualMetrics = BlueTriangle.metrics
         XCTAssertEqual(actualMetrics, expectedMetrics)
     }
 
@@ -387,7 +387,7 @@ extension BlueTriangleTests {
             session: session
         )
 
-        BlueTriangle.metrics?["nested"] = [
+        BlueTriangle.metrics["nested"] = [
             "new": "value"
         ]
 
@@ -447,7 +447,7 @@ extension BlueTriangleTests {
 
         BlueTriangle._setMetrics(nil, forKey: key)
 
-        XCTAssertNil(BlueTriangle.metrics)
+        XCTAssertEqual(BlueTriangle.metrics, [:])
     }
 
     func testSetUnwrappableAnyValueHandled() {
@@ -465,7 +465,7 @@ extension BlueTriangleTests {
         BlueTriangle._setMetrics(Mock.session, forKey: "value")
 
         wait(for: [errorExpectation], timeout: 1.0)
-        XCTAssertNil(BlueTriangle.metrics)
+        XCTAssertEqual(BlueTriangle.metrics, [:])
     }
 
     func testSetNilNSNumber() {
@@ -475,7 +475,7 @@ extension BlueTriangleTests {
 
         BlueTriangle._setMetrics(nsNumber: nil, forKey: key)
 
-        XCTAssertNil(BlueTriangle.metrics)
+        XCTAssertEqual(BlueTriangle.metrics, [:])
     }
 
     func testSetNSNumber() {
@@ -509,7 +509,7 @@ extension BlueTriangleTests {
         BlueTriangle.reconfigure(session: session)
 
         BlueTriangle.clearMetrics()
-        XCTAssertNil(BlueTriangle.metrics)
+        XCTAssertEqual(BlueTriangle.metrics, [:])
     }
 }
 
