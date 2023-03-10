@@ -11,6 +11,12 @@ import Combine
 
 // swiftlint:disable function_body_length
 final class BlueTriangleTests: XCTestCase {
+    static let requestEncoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        return encoder
+    }()
+
     static var timeIntervals: [TimeInterval] = []
     static let timeIntervalProvider: () -> TimeInterval = {
         timeIntervals.popLast() ?? 0
@@ -42,7 +48,8 @@ final class BlueTriangleTests: XCTestCase {
         return try Request(method: .post,
                            url: Constants.timerEndpoint,
                            headers: nil,
-                           model: model)
+                           model: model,
+                           encode: { try requestEncoder.encode($0).base64EncodedData() })
     }
 
     static var onSendRequest: (Request) -> Void = { _ in }
