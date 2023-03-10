@@ -256,10 +256,10 @@ extension TimerRequest: Codable {
     enum CodingKeys: String, CodingKey {
         // Additional
         case browser
-        case ver = "VER"
         case device
         case excluded
         case os
+        case ver = "VER"
         // Session
         // swiftlint:disable:next identifier_name
         case rv = "RV"
