@@ -11,6 +11,7 @@ struct TimerRequest: Equatable {
     let session: Session
     let page: Page
     let timer: PageTimeInterval
+    let customMetrics: String?
     let purchaseConfirmation: PurchaseConfirmation?
     let performanceReport: PerformanceReport?
     let excluded: String?
@@ -19,6 +20,7 @@ struct TimerRequest: Equatable {
         session: Session,
         page: Page,
         timer: PageTimeInterval,
+        customMetrics: String? = nil,
         purchaseConfirmation: PurchaseConfirmation? = nil,
         performanceReport: PerformanceReport? = nil,
         excluded: String? = nil
@@ -26,6 +28,7 @@ struct TimerRequest: Equatable {
         self.session = session
         self.page = page
         self.timer = timer
+        self.customMetrics = customMetrics
         self.purchaseConfirmation = purchaseConfirmation
         self.performanceReport = performanceReport
         self.excluded = excluded
@@ -81,6 +84,9 @@ extension TimerRequest: Codable {
         try con.encode(timer.unloadStartTime, forKey: .unloadEventStart)
         try con.encode(timer.interactiveTime, forKey: .domInteractive)
         try con.encode(timer.pageTime, forKey: .pageTime)
+
+        // Custom Metrics
+        try con.encodeIfPresent(customMetrics, forKey: .customMetrics)
 
         // Custom Variables
         if let customVars = page.customVariables {
@@ -226,6 +232,9 @@ extension TimerRequest: Codable {
             interactiveTime: try container.decode(Millisecond.self, forKey: CodingKeys.domInteractive),
             pageTime: try container.decode(Millisecond.self, forKey: CodingKeys.pageTime))
 
+        // Custom Metrics
+        self.customMetrics = try container.decodeIfPresent(String.self, forKey: CodingKeys.customMetrics)
+
         // PurchaseConfirmation
         if let pageValue = try container.decodeIfPresent(Decimal.self, forKey: CodingKeys.pageValue) {
             self.purchaseConfirmation = PurchaseConfirmation(
@@ -278,6 +287,7 @@ extension TimerRequest: Codable {
         case campaignSource = "CmpS"
         case dataCenter = "DCTR"
         case trafficSegmentName = "txnName"
+        case customMetrics = "ECV"
         // Page
         case brandValue = "bv"
         case pageName
