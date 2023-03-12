@@ -14,18 +14,12 @@ struct TimerRequestBuilder {
         let encoder = JSONEncoder()
 
         return .init { session, timer, purchase in
-            let request = TimerRequest(session: session,
-                                       page: timer.page,
-                                       timer: timer.pageTimeInterval,
-                                       purchaseConfirmation: purchase,
-                                       performanceReport: timer.performanceReport)
-
-            var requestData = try encoder.encode(request)
+            var customMetrics: String? = nil
             if let metrics = session.metrics {
                 do {
-                    let metricsData = try encoder.encode(metrics)
+                    let metricsString = String(describing: try encoder.encode(metrics))
 
-                    let base64MetricsData = metricsData.base64EncodedData()
+                    let base64MetricsData = Data(metricsString.utf8).base64EncodedData()
                     if base64MetricsData.count > Constants.metricsSizeLimit {
                         let bcf = ByteCountFormatter()
                         bcf.includesActualByteCount = true
@@ -36,23 +30,28 @@ struct TimerRequestBuilder {
 
                         logger.log("Custom metrics encoded size of \(formatted(base64MetricsData.count)) exceeds limit of \(formatted(Constants.metricsSizeLimit)); dropping from timer request.")
                     } else {
-                        let metricsString = String(decoding: metricsData, as: UTF8.self)
                         if metricsString.count > Constants.metricsCharacterLimit {
                             logger.log("Custom metrics length is \(metricsString.count) characters; exceeding \(Constants.metricsCharacterLimit) results in data loss.")
                         }
 
-                        try requestData.append(objectData: metricsData, key: Constants.metricsCodingKey)
+                        customMetrics = metricsString
                     }
-
                 } catch {
                     logger.log("Custom metrics encoding failed: \(error.localizedDescription)")
                 }
             }
 
-            return Request(method: .post,
+            let model = TimerRequest(session: session,
+                                     page: timer.page,
+                                     timer: timer.pageTimeInterval,
+                                     customMetrics: customMetrics,
+                                     purchaseConfirmation: purchase,
+                                     performanceReport: timer.performanceReport)
+
+            return try Request(method: .post,
                            url: Constants.timerEndpoint,
                            headers: nil,
-                           body: requestData)
+                           model: model)
         }
     }
 }
