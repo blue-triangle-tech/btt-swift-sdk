@@ -36,7 +36,6 @@ enum Constants {
     // Custom Metrics
     static let metricsCharacterLimit = 1024
     static let metricsSizeLimit = 3_000_000
-    static let metricsCodingKey = "ECV"
 
     // Logging
     static let loggingSubsystem = "com.bluetriangle.sdk"
