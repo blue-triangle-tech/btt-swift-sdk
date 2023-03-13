@@ -47,7 +47,7 @@ final class TimerRequestBuilderTests: XCTestCase {
         let actualBody = try sut.builder(Mock.session, timer, nil).body!
         wait(for: [errorExpectation], timeout: 0.1)
 
-        XCTAssertEqual(String(decoding: actualBody, as: UTF8.self), expectedString)
+        XCTAssertEqual(String(decoding: actualBody.base64DecodedData()!, as: UTF8.self), expectedString)
     }
 
     func testMetrics() throws {
@@ -66,10 +66,10 @@ final class TimerRequestBuilderTests: XCTestCase {
         let actualBody = try sut.builder(session, timer, nil).body!
         wait(for: [errorExpectation], timeout: 0.1)
 
-        let jsonObject = try JSONSerialization.jsonObject(with: actualBody) as! [String: Any]
-        let actualMetrics = jsonObject["ECV"] as! [String: String]
+        let jsonObject = try JSONSerialization.jsonObject(with: actualBody.base64DecodedData()!) as! [String: Any]
+        let actualMetrics = jsonObject["ECV"] as! String
 
-        XCTAssertEqual(actualMetrics, ["key": expectedKeyValue])
+        XCTAssertEqual(actualMetrics, "{\"key\":\"\(expectedKeyValue)\"}")
     }
 
     func testMetricsExceedingLengthLimitLogged() throws {
@@ -90,10 +90,10 @@ final class TimerRequestBuilderTests: XCTestCase {
         let actualBody = try sut.builder(session, timer, nil).body!
         wait(for: [logExpectation], timeout: 0.1)
 
-        let jsonObject = try JSONSerialization.jsonObject(with: actualBody) as! [String: Any]
-        let actualMetrics = jsonObject["ECV"] as! [String: String]
+        let jsonObject = try JSONSerialization.jsonObject(with: actualBody.base64DecodedData()!) as! [String: Any]
+        let actualMetrics = jsonObject["ECV"] as! String
 
-        XCTAssertEqual(actualMetrics, ["key": expectedKeyValue])
+        XCTAssertEqual(actualMetrics, "{\"key\":\"\(expectedKeyValue)\"}")
         XCTAssertEqual(logMessge, expectedMessage)
     }
 
@@ -119,7 +119,7 @@ final class TimerRequestBuilderTests: XCTestCase {
         let actualBody = try sut.builder(session, timer, nil).body!
         wait(for: [logExpectation], timeout: 0.1)
 
-        XCTAssertEqual(String(decoding: actualBody, as: UTF8.self), expectedString)
+        XCTAssertEqual(String(decoding: actualBody.base64DecodedData()!, as: UTF8.self), expectedString)
         XCTAssertEqual(logMessge, expectedMessage)
     }
 }
