@@ -17,7 +17,7 @@ struct TimerRequestBuilder {
             var customMetrics: String? = nil
             if let metrics = session.metrics {
                 do {
-                    let metricsString = String(describing: try encoder.encode(metrics))
+                    let metricsString = String(decoding: try encoder.encode(metrics), as: UTF8.self)
 
                     let base64MetricsData = Data(metricsString.utf8).base64EncodedData()
                     if base64MetricsData.count > Constants.metricsSizeLimit {
