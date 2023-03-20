@@ -47,11 +47,15 @@ final class TimerRequestBuilderTests: XCTestCase {
         let actualBody = try sut.builder(Mock.session, timer, nil).body!
         wait(for: [errorExpectation], timeout: 0.1)
 
-        XCTAssertEqual(String(decoding: actualBody, as: UTF8.self), expectedString)
+        XCTAssertEqual(String(decoding: actualBody.base64DecodedData()!, as: UTF8.self), expectedString)
     }
 
     func testMetrics() throws {
-        let expectedKeyValue = "value"
+        let value1 = "https://portal.bluetriangletech.com"
+        let value2 = 2
+        let value3 = "portalv7"
+        let value4 = 0
+        let value5 = 1188.2999999999884
 
         let errorExpectation = expectation(description: "Unexpected error logged")
         errorExpectation.isInverted = true
@@ -62,14 +66,29 @@ final class TimerRequestBuilderTests: XCTestCase {
         let sut = TimerRequestBuilder.live(logger: logger)
 
         var session = Mock.session
-        session.metrics = ["key": .string(expectedKeyValue)]
+        session.metrics = [
+            "firstVar": .url(URL(string: value1)!),
+            "secondVar": .int(value2),
+            "thirdVar": .string(value3),
+            "fourthVar": .int(value4),
+            "fifthVar": .double(value5)
+        ]
+
         let actualBody = try sut.builder(session, timer, nil).body!
         wait(for: [errorExpectation], timeout: 0.1)
 
-        let jsonObject = try JSONSerialization.jsonObject(with: actualBody) as! [String: Any]
-        let actualMetrics = jsonObject["ECV"] as! [String: String]
+        let jsonString = String(decoding: actualBody, as: UTF8.self)
+        let jsonObject = try JSONSerialization.jsonObject(with: actualBody.base64DecodedData()!) as! [String: Any]
 
-        XCTAssertEqual(actualMetrics, ["key": expectedKeyValue])
+        let metricsString = jsonObject["ECV"] as! String
+        let metricsObject = try JSONSerialization.jsonObject(with: Data(metricsString.utf8)) as! [String: Any]
+
+        XCTAssertEqual(metricsObject.keys.count, 5)
+        XCTAssertEqual(metricsObject["firstVar"] as! String, value1)
+        XCTAssertEqual(metricsObject["secondVar"] as! Int, value2)
+        XCTAssertEqual(metricsObject["thirdVar"] as! String, value3)
+        XCTAssertEqual(metricsObject["fourthVar"] as! Int, value4)
+        XCTAssertEqual(metricsObject["fifthVar"] as! Double, value5)
     }
 
     func testMetricsExceedingLengthLimitLogged() throws {
@@ -90,10 +109,10 @@ final class TimerRequestBuilderTests: XCTestCase {
         let actualBody = try sut.builder(session, timer, nil).body!
         wait(for: [logExpectation], timeout: 0.1)
 
-        let jsonObject = try JSONSerialization.jsonObject(with: actualBody) as! [String: Any]
-        let actualMetrics = jsonObject["ECV"] as! [String: String]
+        let jsonObject = try JSONSerialization.jsonObject(with: actualBody.base64DecodedData()!) as! [String: Any]
+        let actualMetrics = jsonObject["ECV"] as! String
 
-        XCTAssertEqual(actualMetrics, ["key": expectedKeyValue])
+        XCTAssertEqual(actualMetrics, "{\"key\":\"\(expectedKeyValue)\"}")
         XCTAssertEqual(logMessge, expectedMessage)
     }
 
@@ -119,7 +138,7 @@ final class TimerRequestBuilderTests: XCTestCase {
         let actualBody = try sut.builder(session, timer, nil).body!
         wait(for: [logExpectation], timeout: 0.1)
 
-        XCTAssertEqual(String(decoding: actualBody, as: UTF8.self), expectedString)
+        XCTAssertEqual(String(decoding: actualBody.base64DecodedData()!, as: UTF8.self), expectedString)
         XCTAssertEqual(logMessge, expectedMessage)
     }
 }

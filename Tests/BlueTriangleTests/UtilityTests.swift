@@ -42,36 +42,3 @@ extension UtilityTests {
         XCTAssertEqual(nsNumber.numberType(), .int(Int(int64)))
     }
 }
-
-// MARK: - Data Manipulation
-extension UtilityTests {
-    var jsonObject1: Data {
-        .init("{\"a\":\"b\"}".utf8)
-    }
-
-    var jsonObject2: Data {
-        .init("{\"c\":\"d\"}".utf8)
-    }
-
-    var jsonArrayData: Data {
-        .init("[\"e\",\"f\"]".utf8)
-    }
-
-    func testAppendToInvalidObjectThrows() throws {
-        var sut = jsonArrayData
-        XCTAssertThrowsError(try sut.append(objectData: jsonObject1, key: "key"))
-    }
-
-    func testAppendObjectData() throws {
-        let addedKey = "added"
-
-        let expectedData = Data("""
-        {"a":"b","\(addedKey)":{"c":"d"}}
-        """.utf8)
-
-        var sut = jsonObject1
-        try sut.append(objectData: jsonObject2, key: addedKey)
-
-        XCTAssertEqual(sut, expectedData)
-    }
-}
