@@ -30,7 +30,7 @@ final class CrashReportManager: CrashReportManaging {
         self.logger = logger
         self.uploader = uploader
         self.sessionProvider = sessionProvider
-        self.startupTask = Task.delayed(byTimeInterval: Constants.startupDelay) { [weak self] in
+        self.startupTask = Task.delayed(byTimeInterval: Constants.startupDelay, priority: .utility) { [weak self] in
             guard let session = self?.sessionProvider() else {
                 return
             }
@@ -43,27 +43,21 @@ final class CrashReportManager: CrashReportManaging {
     }
 
     func uploadReports(session: Session) {
-        DispatchQueue.global(qos: .utility).async { [weak self] in
-            guard let crashReport = CrashReportPersistence.read() else {
-                return
-            }
-            do {
-                guard let strongSelf = self else {
-                    return
-                }
+        guard let crashReport = CrashReportPersistence.read() else {
+            return
+        }
+        do {
+            let timerRequest = try makeTimerRequest(session: session,
+                                                    crashTime: crashReport.time)
+            uploader.send(request: timerRequest)
 
-                let timerRequest = try strongSelf.makeTimerRequest(session: session,
-                                                                   crashTime: crashReport.time)
-                strongSelf.uploader.send(request: timerRequest)
+            let reportRequest = try makeCrashReportRequest(session: session,
+                                                           crashReport: crashReport)
+            uploader.send(request: reportRequest)
 
-                let reportRequest = try strongSelf.makeCrashReportRequest(session: session,
-                                                                          crashReport: crashReport)
-                strongSelf.uploader.send(request: reportRequest)
-
-                CrashReportPersistence.clear()
-            } catch {
-                self?.logger.error(error.localizedDescription)
-            }
+            CrashReportPersistence.clear()
+        } catch {
+            logger.error(error.localizedDescription)
         }
     }
 
