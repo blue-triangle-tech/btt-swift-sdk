@@ -8,39 +8,45 @@
 import Foundation
 
 struct CrashReport: Codable {
-    let message: String
-    let eCnt: Int
-    let eTp: String
-    let ver: String
-    let appName: String
-    let line: Int
-    let column: Int
-    let time: Millisecond
 
-    enum CodingKeys: String, CodingKey {
-        case message = "msg"
-        case eCnt
-        case eTp
-        case ver = "VER"
-        case appName = "url"
-        case line
-        case column = "col"
-        case time
+    struct Report: Codable {
+        let message: String
+        let eCnt: Int
+        let eTp: String
+        let ver: String
+        let appName: String
+        let line: Int
+        let column: Int
+        let time: Millisecond
+
+        enum CodingKeys: String, CodingKey {
+            case message = "msg"
+            case eCnt
+            case eTp
+            case ver = "VER"
+            case appName = "url"
+            case line
+            case column = "col"
+            case time
+        }
     }
-}
 
-extension CrashReport {
+    let sessionID: Identifier
+    let report: Report
+
     init(
+        sessionID: Identifier,
         exception: NSException,
         intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }
     ) {
-        self.message = exception.bttCrashReportMessage
-        self.eCnt = 1
-        self.eTp = Constants.eTp
-        self.ver = Version.number
-        self.appName = Bundle.main.appName ?? "Unknown"
-        self.line = 1
-        self.column = 1
-        self.time = intervalProvider().milliseconds
+        self.sessionID = sessionID
+        self.report = Report(message: exception.bttCrashReportMessage,
+                           eCnt: 1,
+                           eTp: Constants.eTp,
+                           ver: Version.number,
+                           appName: Bundle.main.appName ?? "Unknown",
+                           line: 1,
+                           column: 1,
+                           time: intervalProvider().milliseconds)
     }
 }

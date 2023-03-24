@@ -48,11 +48,11 @@ final class CrashReportManager: CrashReportManaging {
         }
         do {
             let timerRequest = try makeTimerRequest(session: session,
-                                                    crashTime: crashReport.time)
+                                                    crashTime: crashReport.report.time)
             uploader.send(request: timerRequest)
 
             let reportRequest = try makeCrashReportRequest(session: session,
-                                                           crashReport: crashReport)
+                                                           report: crashReport.report)
             uploader.send(request: reportRequest)
 
             CrashReportPersistence.clear()
@@ -72,7 +72,9 @@ final class CrashReportManager: CrashReportManaging {
 
     private func configureNSExceptionHandler() {
         NSSetUncaughtExceptionHandler { exception in
-            CrashReportPersistence.save(exception)
+            CrashReportPersistence.save(
+                CrashReport(sessionID: BlueTriangle.sessionID,
+                            exception: exception))
         }
     }
 
@@ -91,10 +93,10 @@ final class CrashReportManager: CrashReportManaging {
                            model: model)
     }
 
-    private func makeCrashReportRequest(session: Session, crashReport: CrashReport) throws -> Request {
+    private func makeCrashReportRequest(session: Session, report: CrashReport.Report) throws -> Request {
         let params: [String: String] = [
             "siteID": session.siteID,
-            "nStart": String(crashReport.time),
+            "nStart": String(report.time),
             "pageName": Constants.crashID,
             "txnName": session.trafficSegmentName,
             "sessionID": String(session.sessionID),
@@ -114,6 +116,6 @@ final class CrashReportManager: CrashReportManaging {
         return try Request(method: .post,
                            url: Constants.errorEndpoint,
                            parameters: params,
-                           model: [crashReport])
+                           model: [report])
     }
 }

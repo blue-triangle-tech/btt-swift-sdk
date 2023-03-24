@@ -22,12 +22,11 @@ struct CrashReportPersistence {
         persistence?.file.path ?? "MISSING"
     }
 
-    static func save(_ exception: NSException) {
-        let report = CrashReport(exception: exception)
+    static func save(_ crashReport: CrashReport) {
         do {
-            try persistence?.save(report)
+            try persistence?.save(crashReport)
         } catch {
-            logger.error("Error saving \(report) to \(path): \(error.localizedDescription)")
+            logger.error("Error saving \(crashReport) to \(path): \(error.localizedDescription)")
         }
     }
 
