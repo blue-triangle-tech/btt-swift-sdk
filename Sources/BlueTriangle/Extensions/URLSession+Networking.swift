@@ -10,6 +10,7 @@ import Foundation
 extension URLSession {
     static let live: Networking = {
         let configuration = URLSessionConfiguration.default
+        configuration.httpShouldSetCookies = false
         configuration.httpAdditionalHeaders = [
             "User-Agent": "\(Bundle.main.userAgentToken) \(Device.userAgentToken) \(Constants.sdkProductIdentifier)/\(Version.number)"]
 

@@ -9,9 +9,9 @@ import Foundation
 
 struct CrashReport: Codable {
     let message: String
-    let btV: String
-    let eTp: String
     let eCnt: Int
+    let eTp: String
+    let ver: String
     let appName: String
     let line: Int
     let column: Int
@@ -19,9 +19,9 @@ struct CrashReport: Codable {
 
     enum CodingKeys: String, CodingKey {
         case message = "msg"
-        case btV
-        case eTp
         case eCnt
+        case eTp
+        case ver = "VER"
         case appName = "url"
         case line
         case column = "col"
@@ -36,8 +36,8 @@ extension CrashReport {
     ) {
         self.message = exception.bttCrashReportMessage
         self.eCnt = 1
-        self.btV = Version.number
         self.eTp = Constants.eTp
+        self.ver = Version.number
         self.appName = Bundle.main.appName ?? "Unknown"
         self.line = 1
         self.column = 1

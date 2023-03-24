@@ -12,11 +12,12 @@ on:
           - major
 
 env:
+  PODSPEC-PATH: 'BlueTriangleSDK-Swift.podspec'
   VERSION-FILE-PATH: 'Sources/BlueTriangle/Version.swift'
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Git Checkout main
         uses: actions/checkout@v3
@@ -29,6 +30,12 @@ jobs:
         with:
           version-file-path: ${{ env.VERSION-FILE-PATH }}
           release-type: ${{ inputs.release_type }}
+
+      - name: Generate podspec
+        uses: ./.github/actions/generate-podspec
+        with:
+          podspec-path: ${{ env.PODSPEC-PATH }}
+          version: ${{ steps.bump.outputs.version }}
 
       - name: Commit Changes
         id: commit
@@ -49,3 +56,9 @@ jobs:
               ref: 'refs/tags/${{ steps.bump.outputs.version }}',
               sha: '${{ steps.commit.outputs.commit_hash }}'
             })
+
+      - name: Publish podspec
+        env:
+          COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+        run: |
+          pod trunk push ${{ env.PODSPEC-PATH }}
