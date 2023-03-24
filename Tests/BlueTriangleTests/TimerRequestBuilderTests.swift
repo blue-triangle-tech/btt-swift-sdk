@@ -63,6 +63,10 @@ final class TimerRequestBuilderTests: XCTestCase {
         let value4 = 0
         let value5 = 1188.2999999999884
 
+        let expectedMetrics = """
+        {"fifthVar":\(value5),"firstVar":"https:\\/\\/portal.bluetriangletech.com","fourthVar":\(value4),"secondVar":\(value2),"thirdVar":"\(value3)"}
+        """
+
         let errorExpectation = expectation(description: "Unexpected error logged")
         errorExpectation.isInverted = true
         let logger = LoggerMock(onError: { _ in
@@ -83,18 +87,10 @@ final class TimerRequestBuilderTests: XCTestCase {
         let actualBody = try sut.builder(session, timer, nil).body!
         wait(for: [errorExpectation], timeout: 0.1)
 
-        let jsonString = String(decoding: actualBody, as: UTF8.self)
         let jsonObject = try JSONSerialization.jsonObject(with: actualBody.base64DecodedData()!) as! [String: Any]
-
         let metricsString = jsonObject["ECV"] as! String
-        let metricsObject = try JSONSerialization.jsonObject(with: Data(metricsString.utf8)) as! [String: Any]
 
-        XCTAssertEqual(metricsObject.keys.count, 5)
-        XCTAssertEqual(metricsObject["firstVar"] as! String, value1)
-        XCTAssertEqual(metricsObject["secondVar"] as! Int, value2)
-        XCTAssertEqual(metricsObject["thirdVar"] as! String, value3)
-        XCTAssertEqual(metricsObject["fourthVar"] as! Int, value4)
-        XCTAssertEqual(metricsObject["fifthVar"] as! Double, value5)
+        XCTAssertEqual(metricsString, expectedMetrics)
     }
 
     func testMetricsExceedingLengthLimitLogged() throws {
