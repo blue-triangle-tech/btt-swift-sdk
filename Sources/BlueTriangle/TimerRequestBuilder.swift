@@ -40,17 +40,18 @@ struct TimerRequestBuilder {
                 }
             }
 
-            let model = TimerRequest(session: session,
-                                     page: timer.page,
-                                     timer: timer.pageTimeInterval,
-                                     customMetrics: customMetrics,
-                                     purchaseConfirmation: purchase,
-                                     performanceReport: timer.performanceReport)
+            let body = try encoder.encode(
+                TimerRequest(session: session,
+                             page: timer.page,
+                             timer: timer.pageTimeInterval,
+                             customMetrics: customMetrics,
+                             purchaseConfirmation: purchase,
+                             performanceReport: timer.performanceReport))
 
-            return try Request(method: .post,
+            return Request(method: .post,
                            url: Constants.timerEndpoint,
                            headers: nil,
-                           model: model)
+                           body: body.base64EncodedData())
         }
     }
 }
