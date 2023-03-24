@@ -10,10 +10,8 @@ import Foundation
 struct TimerRequestBuilder {
     let builder: (Session, BTTimer, PurchaseConfirmation?) throws -> Request
 
-    static func live(logger: Logging) -> Self {
-        let encoder = JSONEncoder()
-
-        return .init { session, timer, purchase in
+    static func live(logger: Logging, encoder: JSONEncoder = .init()) -> Self {
+        .init { session, timer, purchase in
             var customMetrics: String? = nil
             if let metrics = session.metrics {
                 do {
