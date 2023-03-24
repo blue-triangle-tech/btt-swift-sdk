@@ -47,11 +47,15 @@ final class CrashReportManager: CrashReportManaging {
             return
         }
         do {
-            let timerRequest = try makeTimerRequest(session: session,
+            // Update session to use `sessionID` from when app crashed
+            var sessionCopy = session
+            sessionCopy.sessionID = crashReport.sessionID
+
+            let timerRequest = try makeTimerRequest(session: sessionCopy,
                                                     crashTime: crashReport.report.time)
             uploader.send(request: timerRequest)
 
-            let reportRequest = try makeCrashReportRequest(session: session,
+            let reportRequest = try makeCrashReportRequest(session: sessionCopy,
                                                            report: crashReport.report)
             uploader.send(request: reportRequest)
 
