@@ -9,6 +9,12 @@ import XCTest
 @testable import BlueTriangle
 
 final class TimerRequestBuilderTests: XCTestCase {
+   var encoder: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        return encoder
+    }()
+
     var timer: BTTimer {
         var timeIntervals: [TimeInterval] = [
             2000,
@@ -42,7 +48,7 @@ final class TimerRequestBuilderTests: XCTestCase {
                 errorExpectation.fulfill()
         })
 
-        let sut = TimerRequestBuilder.live(logger: logger)
+        let sut = TimerRequestBuilder.live(logger: logger, encoder: encoder)
 
         let actualBody = try sut.builder(Mock.session, timer, nil).body!
         wait(for: [errorExpectation], timeout: 0.1)
@@ -63,7 +69,7 @@ final class TimerRequestBuilderTests: XCTestCase {
                 errorExpectation.fulfill()
         })
 
-        let sut = TimerRequestBuilder.live(logger: logger)
+        let sut = TimerRequestBuilder.live(logger: logger, encoder: encoder)
 
         var session = Mock.session
         session.metrics = [
@@ -102,7 +108,7 @@ final class TimerRequestBuilderTests: XCTestCase {
             logExpectation.fulfill()
         })
 
-        let sut = TimerRequestBuilder.live(logger: logger)
+        let sut = TimerRequestBuilder.live(logger: logger, encoder: encoder)
 
         var session = Mock.session
         session.metrics = ["key": .string(expectedKeyValue)]
@@ -131,7 +137,7 @@ final class TimerRequestBuilderTests: XCTestCase {
             logExpectation.fulfill()
         })
 
-        let sut = TimerRequestBuilder.live(logger: logger)
+        let sut = TimerRequestBuilder.live(logger: logger, encoder: encoder)
 
         var session = Mock.session
         session.metrics = ["key": .string(String(repeating: "a", count: 3_000_000))]
