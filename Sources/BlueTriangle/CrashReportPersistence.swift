@@ -12,7 +12,7 @@ struct CrashReportPersistence {
 
     private static var persistence: Persistence? {
         guard let file = File.crashReport else {
-            logger.error("Failed to get URL for ")
+            logger.error("Failed to get URL for `File.crashReport`.")
             return nil
         }
         return Persistence(fileManager: .default, file: file)
