@@ -337,10 +337,11 @@ public extension BlueTriangle {
 // MARK: - Crash Reporting
 extension BlueTriangle {
     static func configureCrashTracking(with crashConfiguration: CrashReportConfiguration) {
-        crashReportManager = CrashReportManager(crashConfiguration,
-                                                logger: logger,
+        crashReportManager = CrashReportManager(logger: logger,
                                                 uploader: uploader,
                                                 sessionProvider: { session })
+
+        CrashReportPersistence.configureCrashHandling(configuration: crashConfiguration)
     }
 }
 

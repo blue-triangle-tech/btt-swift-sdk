@@ -7,10 +7,6 @@
 
 import Foundation
 
-enum CrashReportConfiguration {
-    case nsException
-}
-
 final class CrashReportManager: CrashReportManaging {
 
     private let logger: Logging
@@ -22,7 +18,6 @@ final class CrashReportManager: CrashReportManaging {
     private var startupTask: Task<Void, Error>?
 
     init(
-        _ configuration: CrashReportConfiguration,
         logger: Logging,
         uploader: Uploading,
         sessionProvider: @escaping () -> Session
@@ -38,8 +33,6 @@ final class CrashReportManager: CrashReportManaging {
             self?.uploadReports(session: session)
             self?.startupTask = nil
         }
-
-        configureErrorHandling(configuration: configuration)
     }
 
     func uploadReports(session: Session) {
@@ -66,21 +59,6 @@ final class CrashReportManager: CrashReportManaging {
     }
 
     // MARK: - Private
-
-    private func configureErrorHandling(configuration: CrashReportConfiguration) {
-        switch configuration {
-        case .nsException:
-            configureNSExceptionHandler()
-        }
-    }
-
-    private func configureNSExceptionHandler() {
-        NSSetUncaughtExceptionHandler { exception in
-            CrashReportPersistence.save(
-                CrashReport(sessionID: BlueTriangle.sessionID,
-                            exception: exception))
-        }
-    }
 
     private func makeTimerRequest(session: Session, crashTime: Millisecond) throws -> Request {
         let page = Page(pageName: Constants.crashID, pageType: Device.name)

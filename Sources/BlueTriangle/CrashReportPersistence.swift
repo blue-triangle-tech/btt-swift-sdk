@@ -7,7 +7,11 @@
 
 import Foundation
 
-struct CrashReportPersistence {
+enum CrashReportConfiguration {
+    case nsException
+}
+
+struct CrashReportPersistence: CrashReportPersisting {
     private static let logger = BTLogger.live
 
     private static var persistence: Persistence? {
@@ -20,6 +24,17 @@ struct CrashReportPersistence {
 
     private static var path: String {
         persistence?.file.path ?? "MISSING"
+    }
+
+    static func configureCrashHandling(configuration: CrashReportConfiguration) {
+        switch configuration {
+        case .nsException:
+            NSSetUncaughtExceptionHandler { exception in
+                Self.save(
+                    CrashReport(sessionID: BlueTriangle.sessionID,
+                                exception: exception))
+            }
+        }
     }
 
     static func save(_ crashReport: CrashReport) {
