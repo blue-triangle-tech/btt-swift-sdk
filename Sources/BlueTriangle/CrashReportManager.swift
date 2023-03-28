@@ -20,7 +20,7 @@ final class CrashReportManager: CrashReportManaging {
     private var startupTask: Task<Void, Error>?
 
     init(
-        crashReportPersistence: CrashReportPersisting.Type = CrashReportPersistence.self,
+        crashReportPersistence: CrashReportPersisting.Type,
         logger: Logging,
         uploader: Uploading,
         sessionProvider: @escaping () -> Session
