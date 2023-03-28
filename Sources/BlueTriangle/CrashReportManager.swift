@@ -9,6 +9,8 @@ import Foundation
 
 final class CrashReportManager: CrashReportManaging {
 
+    private let crashReportPersistence: CrashReportPersisting.Type
+
     private let logger: Logging
 
     private let uploader: Uploading
@@ -18,10 +20,12 @@ final class CrashReportManager: CrashReportManaging {
     private var startupTask: Task<Void, Error>?
 
     init(
+        crashReportPersistence: CrashReportPersisting.Type = CrashReportPersistence.self,
         logger: Logging,
         uploader: Uploading,
         sessionProvider: @escaping () -> Session
     ) {
+        self.crashReportPersistence = crashReportPersistence
         self.logger = logger
         self.uploader = uploader
         self.sessionProvider = sessionProvider
@@ -36,33 +40,29 @@ final class CrashReportManager: CrashReportManaging {
     }
 
     func uploadReports(session: Session) {
-        guard let crashReport = CrashReportPersistence.read() else {
+        guard let crashReport = crashReportPersistence.read() else {
             return
         }
+
+        // Update session to use values from when the app crashed
+        var sessionCopy = session
+        sessionCopy.sessionID = crashReport.sessionID
+
         do {
-            // Update session to use `sessionID` from when app crashed
-            var sessionCopy = session
-            sessionCopy.sessionID = crashReport.sessionID
+            try upload(session: session, report: crashReport.report)
 
-            let timerRequest = try makeTimerRequest(session: sessionCopy,
-                                                    crashTime: crashReport.report.time)
-            uploader.send(request: timerRequest)
-
-            let reportRequest = try makeCrashReportRequest(session: sessionCopy,
-                                                           report: crashReport.report)
-            uploader.send(request: reportRequest)
-
-            CrashReportPersistence.clear()
+            crashReportPersistence.clear()
         } catch {
             logger.error(error.localizedDescription)
         }
     }
+}
 
-    // MARK: - Private
-
-    private func makeTimerRequest(session: Session, crashTime: Millisecond) throws -> Request {
+// MARK: - Private
+private extension CrashReportManager {
+    func makeTimerRequest(session: Session, errorTime: Millisecond) throws -> Request {
         let page = Page(pageName: Constants.crashID, pageType: Device.name)
-        let timer = PageTimeInterval(startTime: crashTime, interactiveTime: 0, pageTime: 0)
+        let timer = PageTimeInterval(startTime: errorTime, interactiveTime: 0, pageTime: 0)
         let model = TimerRequest(session: session,
                                  page: page,
                                  timer: timer,
@@ -75,7 +75,7 @@ final class CrashReportManager: CrashReportManaging {
                            model: model)
     }
 
-    private func makeCrashReportRequest(session: Session, report: ErrorReport) throws -> Request {
+    func makeErrorReportRequest(session: Session, report: ErrorReport) throws -> Request {
         let params: [String: String] = [
             "siteID": session.siteID,
             "nStart": String(report.time),
@@ -99,5 +99,15 @@ final class CrashReportManager: CrashReportManaging {
                            url: Constants.errorEndpoint,
                            parameters: params,
                            model: [report])
+    }
+
+    func upload(session: Session, report: ErrorReport) throws {
+        let timerRequest = try makeTimerRequest(session: session,
+                                                errorTime: report.time)
+        uploader.send(request: timerRequest)
+
+        let reportRequest = try makeErrorReportRequest(session: session,
+                                                       report: report)
+        uploader.send(request: reportRequest)
     }
 }
