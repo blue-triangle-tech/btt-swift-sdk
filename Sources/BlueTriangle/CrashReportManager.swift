@@ -97,7 +97,7 @@ final class CrashReportManager: CrashReportManaging {
                            model: model)
     }
 
-    private func makeCrashReportRequest(session: Session, report: CrashReport.Report) throws -> Request {
+    private func makeCrashReportRequest(session: Session, report: ErrorReport) throws -> Request {
         let params: [String: String] = [
             "siteID": session.siteID,
             "nStart": String(report.time),
