@@ -405,6 +405,16 @@ extension BlueTriangle {
 
         CrashReportPersistence.configureCrashHandling(configuration: crashConfiguration)
     }
+
+    /// Saves an exception to upload to the Blue Triangle portal on next launch.
+    ///
+    /// Use this method to store exceptions caught by other exception handlers.
+    ///
+    /// - Parameter exception: The exception to upload.
+    public static func storeException(exception: NSException) {
+        let crashReport = CrashReport(sessionID: sessionID, exception: exception)
+        CrashReportPersistence.save(crashReport)
+    }
 }
 
 // MARK: - Test Support
