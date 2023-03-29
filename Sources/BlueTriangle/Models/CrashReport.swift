@@ -20,10 +20,6 @@ extension CrashReport {
     ) {
         self.sessionID = sessionID
         self.report = ErrorReport(message: exception.bttCrashReportMessage,
-                                  eCnt: 1,
-                                  eTp: Constants.eTp,
-                                  ver: Version.number,
-                                  appName: Bundle.main.appName ?? "Unknown",
                                   line: 1,
                                   column: 1,
                                   time: intervalProvider().milliseconds)
