@@ -37,7 +37,7 @@ final class CrashReportManagerTests: XCTestCase {
             sessionProvider: { Mock.session }
         )
 
-        sut.uploadReports(session: Mock.session)
+        sut.uploadCrashReport(session: Mock.session)
         wait(for: [reportReadExpectation, reportClearedExpectation], timeout: 1.0)
     }
 
@@ -62,7 +62,7 @@ final class CrashReportManagerTests: XCTestCase {
             sessionProvider: { Mock.session }
         )
 
-        sut.uploadReports(session: Mock.session)
+        sut.uploadCrashReport(session: Mock.session)
         wait(for: [uploadExpectation], timeout: 1.0)
 
         let actualTimer = try JSONDecoder().decode(TimerRequest.self, from: timerRequest.body!.base64DecodedData()!)
@@ -93,7 +93,7 @@ final class CrashReportManagerTests: XCTestCase {
             sessionProvider: { Mock.session }
         )
 
-        sut.uploadReports(session: Mock.session)
+        sut.uploadCrashReport(session: Mock.session)
         wait(for: [uploadExpectation], timeout: 1.0)
 
         let actualReport = try JSONDecoder().decode([ErrorReport].self,from: errorRequest.body!.base64DecodedData()!).first!
