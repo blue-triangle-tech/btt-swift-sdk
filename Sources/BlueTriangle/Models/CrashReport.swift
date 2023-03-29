@@ -28,19 +28,4 @@ extension CrashReport {
                                   column: 1,
                                   time: intervalProvider().milliseconds)
     }
-
-    init(
-        error: Error,
-        line: UInt,
-        intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }
-    ) {
-        self.message = String(describing: error)
-        self.eCnt = 1
-        self.btV = Version.number
-        self.eTp = Constants.eTp
-        self.appName = Bundle.main.appName ?? "Unknown"
-        self.line = Int(line)
-        self.column = 1
-        self.time = intervalProvider().milliseconds
-    }
 }
