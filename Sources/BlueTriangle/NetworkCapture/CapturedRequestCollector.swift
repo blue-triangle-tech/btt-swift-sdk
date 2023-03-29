@@ -21,7 +21,7 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
         timerManager: CaptureTimerManaging,
         requestBuilder: CapturedRequestBuilder,
         uploader: Uploading,
-        uploadTaskPriority: TaskPriority = .background
+        uploadTaskPriority: TaskPriority = .utility
     ) {
         self.logger = logger
         self.timerManager = timerManager
