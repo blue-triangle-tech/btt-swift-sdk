@@ -49,7 +49,7 @@ final class CrashReportManager: CrashReportManaging {
         sessionCopy.sessionID = crashReport.sessionID
 
         do {
-            try upload(session: session, report: crashReport.report)
+            try upload(session: sessionCopy, report: crashReport.report)
 
             crashReportPersistence.clear()
         } catch {
