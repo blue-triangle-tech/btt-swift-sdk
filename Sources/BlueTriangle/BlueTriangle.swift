@@ -345,53 +345,7 @@ public extension BlueTriangle {
         function: StaticString = #function,
         line: UInt = #line
     ) {
-        let now = Date().timeIntervalSince1970.milliseconds
-
-        let page = Page(pageName: Constants.crashID, pageType: Device.name)
-        let timer = PageTimeInterval(startTime: now, interactiveTime: 0, pageTime: 0)
-        let model = TimerRequest(session: session,
-                                 page: page,
-                                 timer: timer,
-                                 purchaseConfirmation: nil,
-                                 performanceReport: nil,
-                                 excluded: Constants.excludedValue)
-
-
-        do {
-            let timerRequest = try Request(method: .post,
-                                           url: Constants.timerEndpoint,
-                                           model: model)
-
-            uploader.send(request: timerRequest)
-
-            let params: [String: String] = [
-                "siteID": session.siteID,
-                "nStart": String(now),
-                "pageName": Constants.crashID,
-                "txnName": session.trafficSegmentName,
-                "sessionID": String(session.sessionID),
-                "pgTm": "0",
-                "pageType": Device.name,
-                "AB": session.abTestID,
-                "DCTR": session.dataCenter,
-                "CmpN": session.campaignName,
-                "CmpM": session.campaignMedium,
-                "CmpS": session.campaignSource,
-                "os": Constants.os,
-                "browser": Constants.browser,
-                "browserVersion": Device.bvzn,
-                "device": Constants.device
-            ]
-
-            let reportRequest = try Request(method: .post,
-                                            url: Constants.errorEndpoint,
-                                            parameters: params,
-                                            model: [ErrorReport(error: error, line: line, time: now)])
-
-            uploader.send(request: reportRequest)
-        } catch {
-            logger.error("\(error)")
-        }
+        crashReportManager?.uploadError(error, file: file, function: function, line: line)
     }
 }
 

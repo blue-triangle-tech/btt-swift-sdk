@@ -17,29 +17,33 @@ final class CrashReportManager: CrashReportManaging {
 
     private let sessionProvider: () -> Session
 
+    private let intervalProvider: () -> TimeInterval
+
     private var startupTask: Task<Void, Error>?
 
     init(
         crashReportPersistence: CrashReportPersisting.Type,
         logger: Logging,
         uploader: Uploading,
-        sessionProvider: @escaping () -> Session
+        sessionProvider: @escaping () -> Session,
+        intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }
     ) {
         self.crashReportPersistence = crashReportPersistence
         self.logger = logger
         self.uploader = uploader
         self.sessionProvider = sessionProvider
+        self.intervalProvider = intervalProvider
         self.startupTask = Task.delayed(byTimeInterval: Constants.startupDelay, priority: .utility) { [weak self] in
             guard let session = self?.sessionProvider() else {
                 return
             }
 
-            self?.uploadReports(session: session)
+            self?.uploadCrashReport(session: session)
             self?.startupTask = nil
         }
     }
 
-    func uploadReports(session: Session) {
+    func uploadCrashReport(session: Session) {
         guard let crashReport = crashReportPersistence.read() else {
             return
         }
@@ -52,6 +56,21 @@ final class CrashReportManager: CrashReportManaging {
             try upload(session: session, report: crashReport.report)
 
             crashReportPersistence.clear()
+        } catch {
+            logger.error(error.localizedDescription)
+        }
+    }
+
+    func uploadError<E: Error>(
+        _ error: E,
+        file: StaticString,
+        function: StaticString,
+        line: UInt
+    ) {
+        let report = ErrorReport(error: error, line: line, time: intervalProvider().milliseconds)
+
+        do {
+            try upload(session: sessionProvider(), report: report)
         } catch {
             logger.error(error.localizedDescription)
         }
