@@ -18,6 +18,7 @@
 		C9015AEF2719CAFA003BC6C2 /* BlueTriangle in Frameworks */ = {isa = PBXBuildFile; productRef = C9015AEE2719CAFA003BC6C2 /* BlueTriangle */; };
 		C96B79BA28C6EEFD00BD03CD /* ImageLoading.swift in Sources */ = {isa = PBXBuildFile; fileRef = C96B79B928C6EEFD00BD03CD /* ImageLoading.swift */; };
 		C96B79BC28C6F55800BD03CD /* PhotoDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C96B79BB28C6F55800BD03CD /* PhotoDetailViewController.swift */; };
+		C9A4146B292422DE001D2C46 /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9A4146A292422DE001D2C46 /* AppError.swift */; };
 		C9D79C9928B1929A002FBB28 /* Album.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79C9828B1929A002FBB28 /* Album.swift */; };
 		C9D79C9B28B192B9002FBB28 /* Photo.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79C9A28B192B9002FBB28 /* Photo.swift */; };
 		C9D79C9E28B192F7002FBB28 /* PlaceholderServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D79C9D28B192F7002FBB28 /* PlaceholderServiceProtocol.swift */; };
@@ -62,6 +63,7 @@
 		C9015AEC2719CA99003BC6C2 /* btt-swift-sdk */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "btt-swift-sdk"; path = ../..; sourceTree = "<group>"; };
 		C96B79B928C6EEFD00BD03CD /* ImageLoading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoading.swift; sourceTree = "<group>"; };
 		C96B79BB28C6F55800BD03CD /* PhotoDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoDetailViewController.swift; sourceTree = "<group>"; };
+		C9A4146A292422DE001D2C46 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
 		C9D79C9828B1929A002FBB28 /* Album.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Album.swift; sourceTree = "<group>"; };
 		C9D79C9A28B192B9002FBB28 /* Photo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Photo.swift; sourceTree = "<group>"; };
 		C9D79C9D28B192F7002FBB28 /* PlaceholderServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderServiceProtocol.swift; sourceTree = "<group>"; };
@@ -200,9 +202,10 @@
 			isa = PBXGroup;
 			children = (
 				C9D79C9828B1929A002FBB28 /* Album.swift */,
+				C9A4146A292422DE001D2C46 /* AppError.swift */,
 				C9D79C9A28B192B9002FBB28 /* Photo.swift */,
-				C9D79CB328B19F36002FBB28 /* ViewState.swift */,
 				C9D79CB728B1A2FA002FBB28 /* SingleSection.swift */,
+				C9D79CB328B19F36002FBB28 /* ViewState.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -369,6 +372,7 @@
 			files = (
 				C9015AC02719CA60003BC6C2 /* RootViewController.swift in Sources */,
 				C9D79CB828B1A2FA002FBB28 /* SingleSection.swift in Sources */,
+				C9A4146B292422DE001D2C46 /* AppError.swift in Sources */,
 				C9D7E92028C425CC00FC1C27 /* ImageLoader.swift in Sources */,
 				C9D79CA028B193C9002FBB28 /* JSONPlaceholder.swift in Sources */,
 				C9015ABC2719CA60003BC6C2 /* AppDelegate.swift in Sources */,
