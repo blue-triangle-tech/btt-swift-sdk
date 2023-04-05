@@ -334,13 +334,40 @@ public extension BlueTriangle {
     }
 }
 
+// MARK: - Error Tracking
+public extension BlueTriangle {
+
+    /// Uploads a crash timer and a corresponding report to Blue Triangle for processing.
+    /// - Parameter error: The error to upload.
+    static func logError<E: Error>(
+        _ error: E,
+        file: StaticString = #fileID,
+        function: StaticString = #function,
+        line: UInt = #line
+    ) {
+        crashReportManager?.uploadError(error, file: file, function: function, line: line)
+    }
+}
+
 // MARK: - Crash Reporting
 extension BlueTriangle {
     static func configureCrashTracking(with crashConfiguration: CrashReportConfiguration) {
-        crashReportManager = CrashReportManager(crashConfiguration,
+        crashReportManager = CrashReportManager(crashReportPersistence: CrashReportPersistence.self,
                                                 logger: logger,
                                                 uploader: uploader,
                                                 sessionProvider: { session })
+
+        CrashReportPersistence.configureCrashHandling(configuration: crashConfiguration)
+    }
+
+    /// Saves an exception to upload to the Blue Triangle portal on next launch.
+    ///
+    /// Use this method to store exceptions caught by other exception handlers.
+    ///
+    /// - Parameter exception: The exception to upload.
+    public static func storeException(exception: NSException) {
+        let crashReport = CrashReport(sessionID: sessionID, exception: exception)
+        CrashReportPersistence.save(crashReport)
     }
 }
 
