@@ -238,12 +238,12 @@ extension Mock {
         performanceReport: nil)
 
     static var performanceReport = PerformanceReport(
-        minCPU: 0.0,
-        maxCPU: 0.0,
-        avgCPU: 0.0,
-        minMemory: 0,
-        maxMemory: 0,
-        avgMemory: 0)
+        minCPU: 1.0,
+        maxCPU: 100.0,
+        avgCPU: 50.0,
+        minMemory: 10000000,
+        maxMemory: 100000000,
+        avgMemory: 50000000)
 
     static let capturedRequestURLString = "https://d33wubrfki0l68.cloudfront.net/f50c058607f066d0231c1fe6753eac79f17ea447/e6748/static/logo-cw.f6eaf6dc.png"
 

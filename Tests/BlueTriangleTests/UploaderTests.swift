@@ -242,7 +242,6 @@ final class UploaderTests: XCTestCase {
         }
 
         group.notify(queue: .main) {
-            print("SubscriptionCount: \(uploader.subscriptionCount) - RequestCount: \(currentRequestCount) - ResponseCount: \(responseCount)")
             XCTAssert(uploader.subscriptionCount > requestCount)
         }
 
@@ -254,6 +253,6 @@ final class UploaderTests: XCTestCase {
         otherExpectation.isInverted = true
         wait(for: [otherExpectation], timeout: 3.0)
 
-        XCTAssert(uploader.subscriptionCount < 3)
+        XCTAssert(uploader.subscriptionCount < 3, "Subscription count is \(uploader.subscriptionCount)")
     }
 }

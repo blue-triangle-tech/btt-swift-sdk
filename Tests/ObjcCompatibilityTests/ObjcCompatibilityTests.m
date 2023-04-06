@@ -79,6 +79,25 @@
     NSMutableURLRequest *urlRequest = [[NSMutableURLRequest alloc] initWithURL:url];
     [urlRequest setHTTPMethod:@"GET"];
     NSURLSessionDataTask *taskWithRequest = [session btDataTaskWithRequest:urlRequest completionHandler:^(NSData *data, NSURLResponse *response, NSError *error){}];
-}
 
+    // Custom metrics
+    NSNumber *expectedNumber = [NSNumber numberWithDouble:9.99];
+    NSString *numberKey = @"number";
+
+    NSString *expectedString = @"string_value";
+    NSString *stringKey = @"string";
+
+    [BlueTriangle setMetricsWithNsNumber:expectedNumber forKey:numberKey];
+    [BlueTriangle setMetrics:expectedString forKey:stringKey];
+
+    NSNumber *actualNumber = [BlueTriangle getMetricsForKey:numberKey];
+    XCTAssertEqual(actualNumber.doubleValue, expectedNumber.doubleValue);
+
+    NSString *actualString = [BlueTriangle getMetricsForKey:stringKey];
+    XCTAssertEqual(actualString, expectedString);
+
+    [BlueTriangle clearMetrics];
+    NSDictionary *actualMetrics = BlueTriangle.metrics;
+    XCTAssertNil(actualMetrics);
+}
 @end
