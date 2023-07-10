@@ -132,3 +132,43 @@ URLSession.shared.btDataTask(with: URL(string: "https://example.com")!) { data, 
     // ...
 }.resume()
 ```
+
+### Screen View Tracking
+
+All UIViewControllers view count can be tracked. Setting "enableScreenTracking"  configuration property to true will capture view counts of every UIViewController in your app. You can see each view controller name with there count on our dashboard.
+
+```swift
+ BlueTriangle.configure { config in
+         ...
+         config.enableScreenTracking = true
+     }
+```
+
+SwiftUI views are not captured automatically. You need to call bttTrackScreen(<screen Name>) modifier on each view which you want to track. Below example show usage of "bttTrackScreen(_ screenName: String)" to track About Us screen.
+
+```swift
+struct ContentView: View {
+    var body: some View {
+        VStack{
+            Text("Hello, world!")
+        }
+        .bttTrackScreen("Demo_Screen")
+    }
+}
+```
+
+### ANR Detection
+
+ANR(Application Not Responding) detects to main thread in which an app becomes unresponsive or stops responding to user input for an extended period of time. It can be enabled by setting "ANRMonitoring" configuration property to "true". And it can set Interval, to consider it an ANR situation by setting "ANRWarningTimeInterval" configuration property as shown below.
+
+
+```swift
+ BlueTriangle.configure { config in
+         ...
+         config.ANRMonitoring = true
+         config.ANRWarningTimeInterval = 3
+     }
+```
+By default, the ANR interval is set to 5 seconds.
+
+
