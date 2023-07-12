@@ -6,10 +6,8 @@
 //  Copyright © 2023 Blue Triangle. All rights reserved.
 //
 
-#if canImport(SwiftUI)
   import SwiftUI
 
- 
 internal struct ViewLifecycleTrackerModifier: ViewModifier {
     let name: String
     @State var id : String?
@@ -31,9 +29,9 @@ internal struct ViewLifecycleTrackerModifier: ViewModifier {
 }
 
 public extension View {
-    //Uses for manual screen tracking to log individual views in SwiftUI.
-    //To track screen, call "trackScreen(_ screenName: String)" on view which screen compose(which life cycle you want to track) like VStack().trackScreen("ContentView") or  ContentView().trackScreen("ContentView")
-    //This method track screen when this view appears on screen
+    ///Uses for manual screen tracking to log individual views in SwiftUI.
+    ///To track screen, call "trackScreen(_ screenName: String)" on view which screen compose(which life cycle you want to track) like VStack().trackScreen("ContentView") or  ContentView().trackScreen("ContentView")
+    ///This method track screen when this view appears on screen
     
     func bttTrackScreen(_ screenName: String) -> some View {
         BTTScreenLifecycleTracker.shared.setUpViewType(.SwiftUI)
@@ -41,5 +39,4 @@ public extension View {
     }
 }
 
-#endif
 

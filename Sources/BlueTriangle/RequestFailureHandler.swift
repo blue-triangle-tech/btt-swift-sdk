@@ -38,6 +38,7 @@ final class RequestFailureHandler: RequestFailureHandling {
                 self?.sendSaved()
             }.store(in: &cancellables)
 
+#if !os(watchOS)
         NotificationCenter.default.publisher(for: .willTerminate)
             .sink { [weak self] _ in
                 do {
@@ -46,6 +47,7 @@ final class RequestFailureHandler: RequestFailureHandling {
                     self?.log(error)
                 }
             }.store(in: &cancellables)
+#endif
     }
 
     func store(request: Request) {

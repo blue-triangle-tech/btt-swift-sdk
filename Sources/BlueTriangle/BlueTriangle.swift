@@ -434,10 +434,9 @@ extension BlueTriangle{
         BTTScreenLifecycleTracker.shared.setUpLogger(logger)
         
         if enabled {
-#if canImport(UIKit)
+#if os(iOS)
             UIViewController.setUp()
 #endif
-            
         }
     }
 }

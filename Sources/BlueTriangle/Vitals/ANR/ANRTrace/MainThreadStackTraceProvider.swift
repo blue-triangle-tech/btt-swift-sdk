@@ -62,6 +62,11 @@ class MainThreadTraceProvider{
         
         var count : Int = 0
         let trace = backtrace(mainThread, count: &count)
+        
+        guard count > 0 else {
+            return ""
+        }
+        
         var traceLines : [String] = []
         
         let buf = UnsafeBufferPointer(start: trace, count: count)

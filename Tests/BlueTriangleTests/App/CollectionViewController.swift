@@ -43,7 +43,7 @@ struct LayoutBuilder {
     }()
 }
 
-@available(iOS 14.0, *)
+@available(iOS 14.0, tvOS 14.0, *)
 final class CollectionViewController: UIViewController {
     typealias DataSource = UICollectionViewDiffableDataSource<SingleSection, Photo>
     typealias Snapshot = NSDiffableDataSourceSnapshot<SingleSection, Photo>
@@ -77,7 +77,9 @@ final class CollectionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         timer = BlueTriangle.startTimer(page: Page(pageName: "PerformanceTest"))
+#if os(iOS)
         view.backgroundColor = .systemBackground
+#endif
         view.addSubview(collectionView)
         NSLayoutConstraint.activate([
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),

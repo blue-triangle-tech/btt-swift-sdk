@@ -318,7 +318,7 @@ extension BlueTriangleTests {
 
 #if os(iOS) || os(tvOS)
 extension BlueTriangleTests {
-    @available(iOS 14.0, *)
+    @available(iOS 14.0, tvOS 14.0, *)
     func testDisplayLinkPerformanceMonitor() throws {
         let performanceMonitor = DisplayLinkPerformanceMonitor(minimumSampleInterval: 0.1,
                                                                resourceUsage: ResourceUsage.self)
@@ -383,7 +383,7 @@ extension BlueTriangleTests {
         XCTAssertNotEqual(performanceReport.avgMemory, 0)
     }
 
-    @available(iOS 14.0, *)
+    @available(iOS 14.0, tvOS 14.0, *)
     func testTimerPerformanceMonitor() throws {
         let performanceMonitor = TimerPerformanceMonitor(sampleInterval: 1 / 60,
                                                          resourceUsage: ResourceUsage.self)
@@ -447,7 +447,7 @@ extension BlueTriangleTests {
         XCTAssertNotEqual(performanceReport.avgMemory, 0)
     }
 
-    @available(iOS 14.0, *)
+    @available(iOS 14.0, tvOS 14.0, *)
     func testDispatchSourceTimerPerformanceMonitor() throws {
         let performanceMonitor = DispatchSourceTimerPerformanceMonitor(sampleInterval: 1 / 60,
                                                                        resourceUsage: ResourceUsage.self)
