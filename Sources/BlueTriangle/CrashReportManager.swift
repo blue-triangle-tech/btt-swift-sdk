@@ -87,7 +87,8 @@ private extension CrashReportManager {
                                  timer: timer,
                                  purchaseConfirmation: nil,
                                  performanceReport: nil,
-                                 excluded: Constants.excludedValue)
+                                 excluded: Constants.excludedValue,
+                                 isErrorTimer: true)
 
         return try Request(method: .post,
                            url: Constants.timerEndpoint,
@@ -111,8 +112,6 @@ private extension CrashReportManager {
             "os": Constants.os,
             "browser": Constants.browser,
             "browserVersion": Device.bvzn,
-            "NAflg": "1",
-            "ERR": "1",
             "device": Constants.device
         ]
 

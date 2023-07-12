@@ -15,6 +15,7 @@ struct TimerRequest: Equatable {
     let performanceReport: PerformanceReport?
     let excluded: String?
     let nativeAppProperties: NativeAppProperties?
+    let isErrorTimer: Bool
 
     init(
         session: Session,
@@ -23,7 +24,8 @@ struct TimerRequest: Equatable {
         purchaseConfirmation: PurchaseConfirmation? = nil,
         performanceReport: PerformanceReport? = nil,
         excluded: String? = nil,
-        nativeAppProperties : NativeAppProperties? = nil
+        nativeAppProperties : NativeAppProperties? = nil,
+        isErrorTimer : Bool = false
     ) {
         self.session = session
         self.page = page
@@ -32,6 +34,7 @@ struct TimerRequest: Equatable {
         self.performanceReport = performanceReport
         self.excluded = excluded
         self.nativeAppProperties = nativeAppProperties
+        self.isErrorTimer = isErrorTimer
     }
 }
 
@@ -144,6 +147,10 @@ extension TimerRequest: Codable {
         }
         
         try con.encode(1, forKey: .naflg)
+        
+        if isErrorTimer{
+            try con.encode(1, forKey: .err)
+        }
         
     }
 
@@ -263,6 +270,8 @@ extension TimerRequest: Codable {
         //NativeApp
         self.nativeAppProperties = try container.decodeIfPresent(NativeAppProperties.self, forKey: CodingKeys.nativeApp)
         self.excluded = try container.decodeIfPresent(String.self, forKey: .excluded)
+        let errValue = try container.decodeIfPresent(Int.self, forKey: .err) ?? 0
+        self.isErrorTimer = errValue > 0 ? true : false
     }
 
     enum CodingKeys: String, CodingKey {
@@ -354,6 +363,7 @@ extension TimerRequest: Codable {
         case avgMemory        
         //NativeApp
         
+        case err = "ERR"
         case naflg = "NAflg"
         case nativeApp = "NATIVEAPP"
     }
