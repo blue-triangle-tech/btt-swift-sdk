@@ -34,8 +34,12 @@
 #endif
 
 
+#if __APPLE__
+    #include "TargetConditionals.h"
+
 void* get_backtrace(thread_t thread, int *trace_size){
     
+#if TARGET_OS_IOS
     thread_t mainThread = mach_thread_self();
 
     _STRUCT_MCONTEXT machineContext;
@@ -67,4 +71,9 @@ void* get_backtrace(thread_t thread, int *trace_size){
     
     *trace_size = index - 1;
     return  traceBuffer;
+#else
+    return NULL;
+#endif
 }
+
+#endif

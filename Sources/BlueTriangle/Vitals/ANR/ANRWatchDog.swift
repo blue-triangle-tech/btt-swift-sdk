@@ -13,8 +13,13 @@ class ANRWatchDog{
     static let MIN_ERROR_INTERVAL_SEC: TimeInterval = 3
     static let MAX_ERROR_INTERVAL_SEC: TimeInterval = 100
     static let TIMER_PAGE_NAME = "ANRWarning"
+    private var anrStackTrace: Bool = false
     
     private var _errorTriggerInterval = ANRWatchDog.DEFAULT_ERROR_INTERVAL_SEC
+    
+    func setUpStackTrace(_ trace : Bool){
+        self.anrStackTrace = trace
+    }
     
     var errorTriggerInterval: TimeInterval {
         
@@ -100,7 +105,7 @@ class ANRWatchDog{
         logger.debug("ANR Watch Dog : Warning potential ANR detected...  ")
         
         do{
-            let trace = try MainThreadTraceProvider.shared.getTrace()
+            let trace = anrStackTrace ? try MainThreadTraceProvider.shared.getTrace() : ""
             let message = """
 Potential ANR Detected
 An task blocking main thread since \(errorTriggerInterval) seconds
@@ -146,7 +151,8 @@ Main Thread Trace
                                  timer: timer,
                                  purchaseConfirmation: nil,
                                  performanceReport: nil,
-                                 excluded: Constants.excludedValue)
+                                 excluded: Constants.excludedValue,
+                                 isErrorTimer: true)
 
         return try Request(method: .post,
                            url: Constants.timerEndpoint,
@@ -170,8 +176,6 @@ Main Thread Trace
             "os": Constants.os,
             "browser": Constants.browser,
             "browserVersion": Device.bvzn,
-            "NAflg": "1",
-            "ERR": "1",
             "device": Constants.device
         ]
 

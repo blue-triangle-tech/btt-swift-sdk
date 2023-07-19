@@ -418,7 +418,7 @@ extension BlueTriangle {
 extension BlueTriangle{
     static func configureANRTracking(with enabled: Bool, stackTrace : Bool, interval: TimeInterval){
         self.anrWatchDog.errorTriggerInterval = interval
-        MainThreadTraceProvider.shared.setUpStackTrace(stackTrace)
+        self.anrWatchDog.setUpStackTrace(stackTrace)
         if enabled {
             MainThreadObserver.live.setUpLogger(logger)
             MainThreadObserver.live.start()
@@ -434,10 +434,9 @@ extension BlueTriangle{
         BTTScreenLifecycleTracker.shared.setUpLogger(logger)
         
         if enabled {
-#if canImport(UIKit)
+#if os(iOS)
             UIViewController.setUp()
 #endif
-            
         }
     }
 }

@@ -46,12 +46,15 @@ extension Notification.Name {
         return NSApplication.willResignActiveNotification
         #endif
     }
-
+    
+    @available(watchOS 7.0, *)
     static var willTerminate: Self {
         #if os(iOS) || os(tvOS)
         return UIApplication.willTerminateNotification
         #elseif os(macOS)
         return NSApplication.willTerminateNotification
+        #elseif os(watchOS)
+            return WKExtension.applicationDidEnterBackgroundNotification
         #endif
     }
 }

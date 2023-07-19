@@ -7,13 +7,9 @@
 //
 
 
-#if canImport(UIKit)
+#if os(iOS)
 import Foundation
 import UIKit
-
-#if canImport(SwiftUI)
-import SwiftUI
-#endif
 
 fileprivate func swizzleMethod(_ `class`: AnyClass, _ original: Selector, _ swizzled: Selector) {
     
