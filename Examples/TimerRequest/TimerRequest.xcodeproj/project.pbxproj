@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		515903D62A74079E00B2048D /* TimerTest1View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 515903D52A74079E00B2048D /* TimerTest1View.swift */; };
+		519CD2A82A7775F60031D562 /* TimerTest2View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 519CD2A72A7775F60031D562 /* TimerTest2View.swift */; };
+		519CD2AA2A7776050031D562 /* TimerTest3View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 519CD2A92A7776050031D562 /* TimerTest3View.swift */; };
 		8405FEC82A40A80D00CC13B5 /* ANRTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8405FEC72A40A80D00CC13B5 /* ANRTests.swift */; };
 		84BE4B072A40A5E2004EF3D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84BE4B062A40A5E2004EF3D9 /* AppDelegate.swift */; };
 		C953395728970021003A3602 /* TimerRequestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C953395628970021003A3602 /* TimerRequestApp.swift */; };
@@ -48,8 +51,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		515903D52A74079E00B2048D /* TimerTest1View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerTest1View.swift; sourceTree = "<group>"; };
+		519CD2A72A7775F60031D562 /* TimerTest2View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerTest2View.swift; sourceTree = "<group>"; };
+		519CD2A92A7776050031D562 /* TimerTest3View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerTest3View.swift; sourceTree = "<group>"; };
 		8405FEC72A40A80D00CC13B5 /* ANRTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ANRTests.swift; path = ../../TestFactory/ANRTests/ANRTests.swift; sourceTree = "<group>"; };
 		84BE4B062A40A5E2004EF3D9 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B258A5992A7BDB090092DC8F /* FatalErrorCrash.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = FatalErrorCrash.txt; sourceTree = "<group>"; };
 		C953395328970021003A3602 /* TimerRequest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TimerRequest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C953395628970021003A3602 /* TimerRequestApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerRequestApp.swift; sourceTree = "<group>"; };
 		C953395A28970022003A3602 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -128,6 +135,7 @@
 			children = (
 				CFE733DD29FBE80500A86EC8 /* Info.plist */,
 				C953395628970021003A3602 /* TimerRequestApp.swift */,
+				B258A5992A7BDB090092DC8F /* FatalErrorCrash.txt */,
 				84BE4B062A40A5E2004EF3D9 /* AppDelegate.swift */,
 				8405FEC72A40A80D00CC13B5 /* ANRTests.swift */,
 				C953399628970FF8003A3602 /* Constants.swift */,
@@ -182,6 +190,9 @@
 				C953399A28971121003A3602 /* TimerRequestView.swift */,
 				C953399C2897113F003A3602 /* TimerView.swift */,
 				CFCA3AEE29C447BE00C25336 /* TestsHomeView.swift */,
+				515903D52A74079E00B2048D /* TimerTest1View.swift */,
+				519CD2A72A7775F60031D562 /* TimerTest2View.swift */,
+				519CD2A92A7776050031D562 /* TimerTest3View.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -375,6 +386,9 @@
 				8405FEC82A40A80D00CC13B5 /* ANRTests.swift in Sources */,
 				C953399F28971174003A3602 /* PreviewData.swift in Sources */,
 				C953395728970021003A3602 /* TimerRequestApp.swift in Sources */,
+				519CD2AA2A7776050031D562 /* TimerTest3View.swift in Sources */,
+				515903D62A74079E00B2048D /* TimerTest1View.swift in Sources */,
+				519CD2A82A7775F60031D562 /* TimerTest2View.swift in Sources */,
 				C953399728970FF8003A3602 /* Constants.swift in Sources */,
 				C953399928971100003A3602 /* LabeledView.swift in Sources */,
 			);
@@ -534,9 +548,9 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_ASSET_PATHS = "\"TimerRequest/Preview Content\"";
-				DEVELOPMENT_TEAM = 4UZ8DAVC89;
+				DEVELOPMENT_TEAM = RFX6NF2RC6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TimerRequest/Info.plist;
@@ -551,8 +565,12 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.bluetriangle.TimerRequest;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bluetriangle.TimerRequestDignose;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "TimerRequest/ANRTests/TimerRequest-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -568,9 +586,9 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_ASSET_PATHS = "\"TimerRequest/Preview Content\"";
-				DEVELOPMENT_TEAM = 4UZ8DAVC89;
+				DEVELOPMENT_TEAM = RFX6NF2RC6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = TimerRequest/Info.plist;
@@ -585,8 +603,12 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.bluetriangle.TimerRequest;
+				PRODUCT_BUNDLE_IDENTIFIER = com.bluetriangle.TimerRequestDignose;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "TimerRequest/ANRTests/TimerRequest-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
