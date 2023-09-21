@@ -16,10 +16,14 @@ final public class BlueTriangle: NSObject {
     private static let lock = NSLock()
     private static var configuration = BlueTriangleConfiguration()
     private static var activeTimers = [BTTimer]()
-    
-    
+#if os(iOS)
+    private static let matricKitWatchDog = MetricKitWatchDog()
+#endif
     internal static func addActiveTimer(_ timer : BTTimer){
         activeTimers.append(timer)
+#if os(iOS)
+        matricKitWatchDog.saveCurrentTimerData(timer)
+#endif
     }
     
     internal static func removeActiveTimer(_ timer : BTTimer){
@@ -221,10 +225,13 @@ extension BlueTriangle {
             if let crashConfig = configuration.crashTracking.configuration {
                 DispatchQueue.global(qos: .utility).async {
                     configureCrashTracking(with: crashConfig)
+#if os(iOS)
+                    matricKitWatchDog.start()
+#endif
                 }
             }
             
-            configureANRTracking(with: configuration.ANRMonitoring, stackTrace: configuration.ANRStackTrace,
+            configureANRTracking(with: configuration.ANRMonitoring, enableStackTrace: configuration.ANRStackTrace,
                                  interval: configuration.ANRWarningTimeInterval)
             configureScreenTracking(with: configuration.enableScreenTracking)
         }
@@ -416,9 +423,9 @@ extension BlueTriangle {
 
 //MARK: - ANR Tracking
 extension BlueTriangle{
-    static func configureANRTracking(with enabled: Bool, stackTrace : Bool, interval: TimeInterval){
+    static func configureANRTracking(with enabled: Bool, enableStackTrace : Bool, interval: TimeInterval){
         self.anrWatchDog.errorTriggerInterval = interval
-        self.anrWatchDog.setUpStackTrace(stackTrace)
+        self.anrWatchDog.enableStackTrace = enableStackTrace
         if enabled {
             MainThreadObserver.live.setUpLogger(logger)
             MainThreadObserver.live.start()
