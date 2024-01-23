@@ -22,6 +22,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             config.siteID = Constants.siteID
             config.enableDebugLogging = true
             config.performanceMonitorSampleRate = 1
+            config.networkSampleRate = 1
             config.crashTracking  = .nsException
             config.ANRMonitoring = true
             config.ANRWarningTimeInterval = 1
@@ -30,6 +31,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             config.enableMemoryWarning = true
             config.networkSampleRate = 1
             config.isPerformanceMonitorEnabled = true
+            config.cacheMemoryLimit = 5 * 1024
+            config.cacheExpiryDuration = 2 * 60 * 1000
         }
         
         runTest(onEvent: .OnAppLaunch)

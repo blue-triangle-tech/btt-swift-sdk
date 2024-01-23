@@ -54,6 +54,7 @@ final public class BlueTriangle: NSObject {
     private static var logger: Logging = {
         configuration.makeLogger()
     }()
+    
 
     private static var uploader: Uploading = {
         configuration.uploaderConfiguration.makeUploader(
@@ -103,12 +104,20 @@ final public class BlueTriangle: NSObject {
 
     private static var appEventObserver: AppEventObserver?
 
+    //Cache components
+    internal static var payloadCache : PayloadCacheProtocol = {
+        PayloadCache.init(configuration.cacheMemoryLimit,
+                          expiry: configuration.cacheExpiryDuration)
+    }()
+    
     //ANR components
     private static let anrWatchDog : ANRWatchDog = {
         ANRWatchDog(
             mainThreadObserver: MainThreadObserver.live,
             session: session,
-            uploader: configuration.uploaderConfiguration.makeUploader(logger: logger, failureHandler: nil),
+            uploader: configuration.uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
+                file: .requests,
+                logger: logger)),
             logger: BlueTriangle.logger)
     }()
     
@@ -116,7 +125,9 @@ final public class BlueTriangle: NSObject {
     private static let memoryWarningWatchDog : MemoryWarningWatchDog = {
         MemoryWarningWatchDog(
             session: session,
-            uploader: configuration.uploaderConfiguration.makeUploader(logger: logger, failureHandler: nil),
+            uploader: configuration.uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
+                file: .requests,
+                logger: logger)),
             logger: BlueTriangle.logger)
     }()
     
