@@ -14,7 +14,7 @@ import UIKit
 final public class BlueTriangle: NSObject {
     
     private static let lock = NSLock()
-    private static var configuration = BlueTriangleConfiguration()
+    internal static var configuration = BlueTriangleConfiguration()
     private static var activeTimers = [BTTimer]()
 #if os(iOS)
     private static let matricKitWatchDog = MetricKitWatchDog()
@@ -477,6 +477,7 @@ extension BlueTriangle{
     static func configureScreenTracking(with enabled: Bool){
         BTTScreenLifecycleTracker.shared.setLifecycleTracker(enabled)
         BTTScreenLifecycleTracker.shared.setUpLogger(logger)
+        BTTWebViewTracker.isEnableScreenTracking = enabled
         
         if enabled {
 #if os(iOS)
