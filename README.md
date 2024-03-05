@@ -4,70 +4,29 @@ Blue Triangle analytics SDK for iOS.
 
 ## Installation
 
-## Installation using Swift Packages
+### Installation using Swift Packages Manager
 
-To install BTT using Swift Packages in your iOS project, you need to follow these steps:
+To integrate BlueTriangle using Swift Packages Manager into your iOS project, you need to follow these steps:
 
-Xcode 13: go to **File > Add Packages…**, enter the package repository URL `https://github.com/blue-triangle-tech/btt-swift-sdk.git`, and click **Add Package**.
+ Go to **File > Add Packages…**, enter the package repository URL `https://github.com/blue-triangle-tech/btt-swift-sdk.git`, and click **Add Package**.
 
-Xcode 11 - 12: go to **File > Swift Packages > Add Package Dependency…** and enter the package repository URL `https://github.com/blue-triangle-tech/btt-swift-sdk.git`, then follow the instructions.
+ Xcode 11 - 12: go to **File > Swift Packages > Add Package Dependency…** and enter the package repository URL `https://github.com/blue-triangle-tech/btt-swift-sdk.git`, then follow the instructions.
 
-## Installation using CocoaPods
+### Installation using CocoaPods
 
-To install BTT using CocoaPods in your iOS project, you need to follow these steps:
-
-### Install CocoaPods (*Skip that step if already installed CocoaPods*)
-
-  1. **Install CocoaPods** : Open Terminal and execute following command:
- 
-  ```
-    sudo gem install cocoapods
-  ```
+To integrate BlueTriangle using CocoaPods into your iOS project, you need to follow these steps:
   
-  2. **Setup CocoaPods** : After installation done, Next, you need to setup the CocoaPods master repository. Type in the terminal:
- 
-  ```
-    pod setup
-  ```
-  
-   Once done, it will output "Setup Complete", and you can create your Xcode project and save it
-
-
-### Install BlueTriangle To Your Project
-  
-  1. **Create a Podfile** (*Skip that step if 'Podfile' already Exists*):  Navigate to your project directory in the terminal and create a Podfile by running:
- 
-   ```
-    pod init
-  ```
-  
-   2. **Open the Podfile:** : Then open your project's podfile by typing in terminal:
-  
-   ```
-    open -a Xcode Podfile
-  ```
-  
-   3. **Edit the Podfile:** : Your Podfile will get open in text mode. Initially there will be some default commands in there. Here is where you add following :
+   1. Open 'Podfile' in text mode and specify following commands:
   
    ```
       pod 'BlueTriangleSDK-Swift'     
   ```
 
-   4. **Install Pods**: Save the Podfile and run the following command in the terminal to install the dependencies:
+   2. Save the Podfile and run the following command in the terminal to install the dependencies:
     
     ```
       pod install     
     ```
-
-   5. **Open the Workspace**: Close your Xcode project and open the newly created .xcworkspace file. This file contains your project along with the CocoaPods dependencies.
-   
-   6. **Use the Pods**: You can now import and use the dependencies in your project. For example, to use BlueTriangle, you would import it in your Swift file:
-   
-    ```
-      import BlueTriangle
-    ```
-    
-      That's it! Your dependencies should now be installed and ready to use in your iOS project.
 
 
 ## Usage
