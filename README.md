@@ -18,7 +18,7 @@ To install BTT using CocoaPods in your iOS project, you need to follow these ste
 
 ### Install CocoaPods (*Skip that step if already installed CocoaPods*)
 
-  1. **Install CocoaPods** : Open Terminal and exicute following command:
+  1. **Install CocoaPods** : Open Terminal and execute following command:
  
   ```
     sudo gem install cocoapods
@@ -29,6 +29,7 @@ To install BTT using CocoaPods in your iOS project, you need to follow these ste
   ```
     pod setup
   ```
+  
    Once done, it will output "Setup Complete", and you can create your Xcode project and save it
 
 
@@ -65,7 +66,8 @@ To install BTT using CocoaPods in your iOS project, you need to follow these ste
     ```
       import BlueTriangle
     ```
-    That's it! Your dependencies should now be installed and ready to use in your iOS project.
+    
+      That's it! Your dependencies should now be installed and ready to use in your iOS project.
 
 
 ## Usage
