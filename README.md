@@ -19,11 +19,13 @@ To install BTT using CocoaPods in your iOS project, you need to follow these ste
 ### Install CocoaPods (*Skip that step if already installed CocoaPods*)
 
   1. **Install CocoaPods** : Open Terminal and exicute following command:
+ 
   ```
     sudo gem install cocoapods
   ```
   
   2. **Setup CocoaPods** : After installation done, Next, you need to setup the CocoaPods master repository. Type in the terminal:
+ 
   ```
     pod setup
   ```
@@ -51,6 +53,7 @@ To install BTT using CocoaPods in your iOS project, you need to follow these ste
   ```
 
    4. **Install Pods**: Save the Podfile and run the following command in the terminal to install the dependencies:
+    
     ```
       pod install     
     ```
