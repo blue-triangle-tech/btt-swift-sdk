@@ -24,9 +24,9 @@ To integrate BlueTriangle using CocoaPods into your iOS project, you need to fol
 
    2. Save the Podfile and run the following command in the terminal to install the dependencies:
     
-    ```
+   ```
       pod install     
-    ```
+  ```
 
 
 ## Usage
