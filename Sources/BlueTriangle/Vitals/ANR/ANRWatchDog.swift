@@ -100,23 +100,14 @@ class ANRWatchDog{
     private func raiseANRError(){
         logger.debug("ANR Watch Dog : Warning potential ANR detected...  ")
         
-        do{
-            let trace = enableStackTrace ? try MainThreadTraceProvider.shared.getTrace() : ""
-            let message = """
+        let message = """
 Potential ANR Detected
 An task blocking main thread since \(errorTriggerInterval) seconds
-
-Main Thread Trace
-\(trace)
 """
-            
-            let pageName = BlueTriangle.recentTimer()?.page.pageName
-            let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName)
-            uploadReports(session: session, report: report)
-            logger.debug(message)
-        }catch{
-            logger.error("Error uploading ANRWarning report: \(error)")
-        }
+        let pageName = BlueTriangle.recentTimer()?.page.pageName
+        let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName)
+        uploadReports(session: session, report: report)
+        logger.debug(message)
     }
     
     private func uploadReports(session: Session, report: CrashReport) {
