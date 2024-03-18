@@ -227,3 +227,63 @@ A "Memory Warning" is raise to a situation where an application is consuming a s
          config.enableTrackingNetworkState = true
      }
 ```
+
+
+
+### Offline Caching
+
+Offline caching is a feature that allows the BTT sdk to keep track of timers and other analytics data while the app is
+in offline mode. i.e, the BTT sdk cannot access the tracker urls.
+
+There is a memory limit as well as an expiration duration put on the cached data. If the cache exceeds the memory limit
+then additional tracker data will be added only after removing some old cached data. Similarly, cache data that has been
+stored for longer than the expiration duration would be discarded and won't be sent to the tracker server.
+
+On the portal, the offline cached data could be seen as a normal tracking data. There is no way so far to denote that
+which data has been taken our from cache or which is a live data.
+
+Memory limit and Expiry Duration can be set by using configuration property cacheMemoryLimit and cacheExpiryDuration as shown bellow:``
+
+    Offline or Failure request storage expiry period by default it is 2 day i.e 2 * 24 * 60 * 60  second
+    
+```swift
+ BlueTriangle.configure { config in
+         ...
+            config.cacheMemoryLimit = 50 * 1024 (Bytes)
+            config.cacheExpiryDuration = 50 * 60 * 1000 (Milisecond)
+     }
+```
+
+By default, the cacheMemoryLimit is set to 2 days (2 * 24 * 60 * 60 * 1000 Milisecond) and cacheExpiryDuration is set to 30 MB (30 * 1024 * 1024 ).
+
+
+### Hybrid Integration
+
+
+Hybrid Integration feature is used to track web page interfaces displayed in a WebView. To track the interface of webpages in the WebView, follow these steps: 
+
+
+1. Import BlueTriangle in the hosting iOS WebView class:
+
+  ```swift
+      import BlueTriangle
+  ```
+
+2. Set the allowFileAccessFromFileURLs property of the WebView configuration to true before loading URLs:
+
+  ```swift
+      webView.configuration.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
+  ```
+
+3. Conform to the WKNavigationDelegate protocol and implement the webView(_:didCommit:) method.
+
+4. Call the tracker method inside the webView(_:didCommit:) method:
+
+looks like below:
+
+  ```swift
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        BTTWebViewTracker.webView(webView, didCommit: navigation)
+    }
+  ``` 
+    
