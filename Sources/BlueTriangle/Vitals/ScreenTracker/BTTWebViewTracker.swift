@@ -5,9 +5,8 @@
 //  Created by Ashok Singh on 10/01/24.
 //
 
-#if canImport(WebKit)
+#if os(iOS)
 import WebKit
-#endif
 
 public class BTTWebViewTracker {
      
@@ -17,7 +16,7 @@ public class BTTWebViewTracker {
        
         let tracker = BTTWebViewTracker()
         
-        if #available(iOS 16.4, *) {
+        if #available(macOS 13.3, iOS 16.4, *)  {
             webView.isInspectable = true
         }
         
@@ -73,4 +72,4 @@ public class BTTWebViewTracker {
 }
 
 
-
+#endif

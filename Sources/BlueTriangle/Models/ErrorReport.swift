@@ -17,8 +17,7 @@ struct ErrorReport: Codable {
     let line: Int
     let column: Int
     let time: Millisecond
-
-        
+    
     func encode(to encoder: Encoder) throws {
         var con = encoder.container(keyedBy: CodingKeys.self)
         try con.encode(eCnt, forKey: .eCnt)
@@ -54,6 +53,21 @@ extension ErrorReport {
         line: UInt,
         time: Millisecond
     ) {
+        self.eTp = eTp
+        self.message = String(describing: error)
+        self.line = Int(line)
+        self.column = 1
+        self.time = time
+    }
+    
+    init(
+        nativeApp : NativeAppProperties,
+        eTp: String = BT_ErrorType.NativeAppCrash.rawValue,
+        error: Error,
+        line: UInt,
+        time: Millisecond
+    ) {
+        self.nativeApp = nativeApp
         self.eTp = eTp
         self.message = String(describing: error)
         self.line = Int(line)

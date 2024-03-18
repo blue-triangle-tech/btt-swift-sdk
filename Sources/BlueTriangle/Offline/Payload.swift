@@ -5,7 +5,7 @@
 //  Created by Ashok Singh on 23/11/23.
 //
 
-import UIKit
+import Foundation
 
 class Payload : Codable{
 

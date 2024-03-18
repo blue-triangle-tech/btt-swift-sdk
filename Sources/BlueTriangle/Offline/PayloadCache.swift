@@ -5,12 +5,9 @@
 //  Created by Ashok Singh on 23/11/23.
 //
 
-import UIKit
-
+import Foundation
 
 protocol PayloadCacheProtocol: AnyObject {
-    //var memoryLimit: UInt { get set }
-    //var expiryDuration : Millisecond { get set }
     func pickNext() throws -> Payload?
     func save(_ payload : Payload) throws
     func delete(_ payload : Payload) throws

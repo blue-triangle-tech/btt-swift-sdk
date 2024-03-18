@@ -477,13 +477,13 @@ extension BlueTriangle{
     static func configureScreenTracking(with enabled: Bool, ignoreVCs : Set<String>){
         BTTScreenLifecycleTracker.shared.setLifecycleTracker(enabled)
         BTTScreenLifecycleTracker.shared.setUpLogger(logger)
-        BTTWebViewTracker.isEnableScreenTracking = enabled
         
-        if enabled {
 #if os(iOS)
+        BTTWebViewTracker.isEnableScreenTracking = enabled
+        if enabled {
             UIViewController.setUp(ignoreVCs)
-#endif
         }
+#endif
     }
 }
 

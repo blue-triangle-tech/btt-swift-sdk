@@ -5,7 +5,7 @@
 //  Copyright © 2023 Blue Triangle. All rights reserved.
 //
 
-import UIKit
+import Foundation
 import Combine
 
 protocol BTTimerNetStateAccumulatorProtocol{
