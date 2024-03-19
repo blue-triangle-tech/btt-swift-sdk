@@ -15,11 +15,6 @@ public class BTTWebViewTracker {
     public static func webView( _ webView: WKWebView, didCommit navigation: WKNavigation!){
        
         let tracker = BTTWebViewTracker()
-        
-        if #available(macOS 13.3, iOS 16.4, *)  {
-            webView.isInspectable = true
-        }
-        
         tracker.injectSessionIdOnWebView(webView)
         tracker.injectWCDCollectionOnWebView(webView)
         tracker.injectVersionOnWebView(webView)

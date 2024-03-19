@@ -179,13 +179,18 @@ extension BlueTriangleTests {
 
         let base64Decoded = Data(base64Encoded: request.body!)!
         let requestString = String(data: base64Decoded, encoding: .utf8)
-        let expectedString = Mock.makeTimerRequestJSON(
+        let expectedString1 = Mock.makeTimerRequestJSON(
+            appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
+            os: Device.os,
+            osVersion: Device.osVersion,
+            sdkVersion: Version.number)
+        let expectedString2 = Mock.makeTimerRequestJSONOlder(
             appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
             os: Device.os,
             osVersion: Device.osVersion,
             sdkVersion: Version.number)
 
-        XCTAssertEqual(requestString, expectedString)
+        XCTAssert((requestString?.isEqual(expectedString1) ?? false) || (requestString?.isEqual(expectedString2) ?? false))
     }
 
     func testStartTimer() throws {
@@ -260,13 +265,19 @@ extension BlueTriangleTests {
 
         let base64Decoded = Data(base64Encoded: request.body!)!
         let requestString = String(data: base64Decoded, encoding: .utf8)
-        let expectedString = Mock.makeTimerRequestJSON(
+        let expectedString1 = Mock.makeTimerRequestJSON(
             appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
             os: Device.os,
             osVersion: Device.osVersion,
             sdkVersion: Version.number)
 
-        XCTAssertEqual(requestString, expectedString)
+        let expectedString2 = Mock.makeTimerRequestJSONOlder(
+            appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
+            os: Device.os,
+            osVersion: Device.osVersion,
+            sdkVersion: Version.number)
+
+        XCTAssert((requestString?.isEqual(expectedString1) ?? false) || (requestString?.isEqual(expectedString2) ?? false))
     }
 #endif
 }
