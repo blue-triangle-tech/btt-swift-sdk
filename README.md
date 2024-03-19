@@ -205,7 +205,7 @@ By default, the ANR interval is set to 5 seconds.
 
 ### Memory Warning
 
-A "Memory Warning" is raise to a situation where an application is consuming a significant amount of memory, and the operating system is notifying your app that it should release any unnecessary resources to free up memory. It can be enabled by setting "enableMemoryWarning" configuration property to "true".
+Track ios reported low memory worning. iOS reported meory wornings can be tracked by btt. It can be enabled by setting "enableMemoryWarning" configuration property to "true".
 
 
 ```swift
@@ -216,9 +216,11 @@ A "Memory Warning" is raise to a situation where an application is consuming a s
 ```
 
 
-### Network State
+### Network State Capture
 
- A "Network State" feature is used to monitoring state of network ( like - wifi, offline, online etc. ) and provided time period of each used state (i.e provide usege of each network state). It can be enabled by setting "enableTrackingNetworkState" configuration property to "true".
+ BlueTriangle SDK allows capturing of network state data. Network state refers to the availability of any network interfaces on the device. Network interfaces include wifi, ethernet, cellular, etc. Once Network state capturing is enabled, the Network state is associated with all Timers, Errors and Network Requests captured by the SDK.
+
+To enable Network state capture, use the enableTrackingNetworkState property on the configuration object as follows
 
 
 ```swift
@@ -239,12 +241,7 @@ There is a memory limit as well as an expiration duration put on the cached data
 then additional tracker data will be added only after removing some old cached data. Similarly, cache data that has been
 stored for longer than the expiration duration would be discarded and won't be sent to the tracker server.
 
-On the portal, the offline cached data could be seen as a normal tracking data. There is no way so far to denote that
-which data has been taken our from cache or which is a live data.
-
 Memory limit and Expiry Duration can be set by using configuration property cacheMemoryLimit and cacheExpiryDuration as shown bellow:``
-
-    Offline or Failure request storage expiry period by default it is 2 day i.e 2 * 24 * 60 * 60  second
     
 ```swift
  BlueTriangle.configure { config in
@@ -254,14 +251,12 @@ Memory limit and Expiry Duration can be set by using configuration property cach
      }
 ```
 
-By default, the cacheMemoryLimit is set to 2 days (2 * 24 * 60 * 60 * 1000 Milisecond) and cacheExpiryDuration is set to 30 MB (30 * 1024 * 1024 ).
+By default, the cacheMemoryLimit is set to 2 days and cacheExpiryDuration is set to 30 MB.
 
 
-### Hybrid Integration
+### WebView Tracking
 
-
-Hybrid Integration feature is used to track web page interfaces displayed in a WebView. To track the interface of webpages in the WebView, follow these steps: 
-
+Websites shown in webview  that are tracked by BlueTriangle can be tracked in the same session as the native app. To achieve this, follow the steps below to configure the WebView:
 
 1. Import BlueTriangle in the hosting iOS WebView class:
 
@@ -269,21 +264,14 @@ Hybrid Integration feature is used to track web page interfaces displayed in a W
       import BlueTriangle
   ```
 
-2. Set the allowFileAccessFromFileURLs property of the WebView configuration to true before loading URLs:
-
-  ```swift
-      webView.configuration.preferences.setValue(true, forKey: "allowFileAccessFromFileURLs")
-  ```
-
-3. Conform to the WKNavigationDelegate protocol and implement the webView(_:didCommit:) method.
-
-4. Call the tracker method inside the webView(_:didCommit:) method:
-
-looks like below:
+2. Conform to the WKNavigationDelegate protocol and implement the 'webView(_:didCommit:)' method as follows. 
 
   ```swift
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
         BTTWebViewTracker.webView(webView, didCommit: navigation)
     }
   ``` 
-    
+
+
+ or if you already have a WKNavigationDelegate porotool, just call the 'BTTWebViewTracker.webView(webView, didCommit: navigation)' in it's 'webView(_:didCommit:)' method.
+

@@ -23,7 +23,7 @@ protocol NetworkStateMonitorProtocol{
 
 
 protocol NetworkPathMonitorProtocol{
-    var pathUpdateHandler: (@Sendable(_ newPath: NWPath) -> Void)? { get set}
+    var pathUpdateHandler: (@Sendable (_ newPath: NWPath) -> Void)? { get set}
     func start(queue: DispatchQueue)
     func cancel()
 }
