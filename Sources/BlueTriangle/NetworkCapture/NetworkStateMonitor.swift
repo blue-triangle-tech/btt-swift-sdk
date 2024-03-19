@@ -42,7 +42,7 @@ class NetworkStateMonitor : NetworkStateMonitorProtocol{
         self.monitor.pathUpdateHandler = { [weak self] path  in
             if let self = self{
                 let networkState = self.extractState(path: path)
-                if networkState !=  state.value{
+                if networkState !=  self.state.value{
                     self.state.send(networkState)
                     self.logger.debug("Network state changed to \(networkState.rawValue.lowercased())")
                 }
