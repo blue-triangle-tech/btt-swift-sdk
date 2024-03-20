@@ -75,10 +75,21 @@ final public class BlueTriangleConfiguration: NSObject {
     ///
     /// The smallest allowed interval is one measurement every 1/60 of a second.
     @objc public var performanceMonitorSampleRate: TimeInterval = 1
+    
+    /// Boolean indicating whether performance monitoring is enabled.
+    @objc public var isPerformanceMonitorEnabled: Bool = false
 
     /// Percentage of sessions for which network calls will be captured. A value of `0.05`
     /// means that 5% of sessions will be tracked.
     @objc public var networkSampleRate: Double = 0.05
+    
+    /// Offline or Failure request storage expiry period by default it is 2 day i.e 2 * 24 * 60 * 60  1000 millisecond
+    /// Interval unit should be in Millisecond
+    @objc public var cacheExpiryDuration: Millisecond = 2 * 24 * 60 * 60 * 1000
+    
+    /// Offline or Failure request storage memory limit by default it is 30 Mb i.e 30 * 1024 * 1024 byte
+    /// Memory unit should be in Bytes
+    @objc public var cacheMemoryLimit: UInt = 30 * 1024 * 1024
 
     /// When enabled tasks running on main thread are monitored for there run duration time.
     ///
@@ -101,7 +112,22 @@ final public class BlueTriangleConfiguration: NSObject {
     @objc public var enableDebugLogging: Bool = false
     
     /// Boolean indicating whether screen tracking is enabled.
+    /// To track alll UIKit screen autometically, It should be enabled
+    /// To track swiftUI screen, It should be enabled
+    /// You can mannually track view by enabling that
+    /// When this is off, Non of above would  get  track
     @objc public var enableScreenTracking: Bool = false
+    
+    /// This is a  Set of ViewControllers  which developer does not want to track or want to ignore their track. This property can only ignore that screen, Which is being tracked autometically. And It can not ignore , Which is being tracked  manually.
+    /// Set an array of view controlles which user want to ignore
+    @objc public  var ignoreViewControllers: Set<String> = Set<String>()
+    
+    /// Track the network state during Timer Network State and Errors. State Includes wifi, cellular, ethernet and offline.
+    /// Default Value is false
+    @objc public var enableTrackingNetworkState: Bool = false
+    
+    /// Boolean indicating whether memory warning is enabled.
+    @objc public var enableMemoryWarning: Bool = false
 
     var timerConfiguration: BTTimer.Configuration = .live
 
@@ -156,6 +182,11 @@ extension BlueTriangleConfiguration {
     }
 
     func makePerformanceMonitorFactory() -> (() -> PerformanceMonitoring)? {
-        performanceMonitorBuilder.builder(performanceMonitorSampleRate)
+        
+        if isPerformanceMonitorEnabled{
+            return performanceMonitorBuilder.builder(performanceMonitorSampleRate)
+        }else{
+            return nil
+        }
     }
 }

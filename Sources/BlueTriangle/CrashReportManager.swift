@@ -67,7 +67,19 @@ final class CrashReportManager: CrashReportManaging {
         function: StaticString,
         line: UInt
     ) {
-        let report = ErrorReport(error: error, line: line, time: intervalProvider().milliseconds)
+        
+        let nativeApp = NativeAppProperties(
+            fullTime: 0,
+            loadTime: 0,
+            maxMainThreadUsage: 0,
+            viewType: nil,
+            offline: 0,
+            wifi:  0,
+            cellular:  0,
+            ethernet:  0,
+            other:  0,
+            netState: NetworkState.Other.rawValue)
+        let report = ErrorReport(nativeApp: nativeApp, eTp: BT_ErrorType.NativeAppCrash.rawValue, error: error, line: line, time: intervalProvider().milliseconds)
         let pageName = BlueTriangle.recentTimer()?.page.pageName
         do {
             try upload(session:sessionProvider() , report: report, pageName: pageName)
@@ -81,13 +93,15 @@ final class CrashReportManager: CrashReportManaging {
 private extension CrashReportManager {
     func makeTimerRequest(session: Session, report: ErrorReport, pageName : String?) throws -> Request {
         let page = Page(pageName: pageName ?? Constants.crashID, pageType: Device.name)
-        let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: 15)
+        let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
+        let nativeProperty =  report.nativeApp.copy(.Regular)
         let model = TimerRequest(session: session,
                                  page: page,
                                  timer: timer,
                                  purchaseConfirmation: nil,
                                  performanceReport: nil,
                                  excluded: Constants.excludedValue,
+                                 nativeAppProperties: nativeProperty,
                                  isErrorTimer: true)
 
         return try Request(method: .post,

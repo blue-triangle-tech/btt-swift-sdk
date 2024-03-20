@@ -12,9 +12,22 @@ final class CrashReportManagerTests: XCTestCase {
     struct TestError: Error {
         let message = "There as an error"
     }
-
-    let crashErrorReport = ErrorReport(message: "crash_message", line: 1, column: 2, time: 100)
-
+    
+    let crashErrorReport = ErrorReport(nativeApp:  NativeAppProperties(
+        fullTime: 0,
+        loadTime: 0,
+        maxMainThreadUsage: 0,
+        viewType: nil,
+        offline: 0,
+        wifi:  0,
+        cellular:  0,
+        ethernet:  0,
+        other:  0, 
+        netState: NetworkState.Other.rawValue),
+        eTp: BT_ErrorType.NativeAppCrash.rawValue,
+                                       message: "crash_message",
+                                       line: 1, column: 2,
+                                       time: 100)
     var crashReport: CrashReport {
         .init(sessionID: 100_000_000_000_000_001, pageName: "CrashReportManagerTests", report: crashErrorReport)
     }
@@ -101,7 +114,6 @@ final class CrashReportManagerTests: XCTestCase {
         wait(for: [uploadExpectation], timeout: 1.0)
 
         let actualReport = try JSONDecoder().decode([ErrorReport].self,from: errorRequest.body!.base64DecodedData()!).first!
-
         XCTAssertEqual(errorRequest.parameters!["nStart"], "\(crashErrorReport.time)")
         XCTAssertEqual(errorRequest.parameters!["sessionID"], "\(crashReport.sessionID)")
 

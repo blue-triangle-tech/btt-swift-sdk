@@ -4,9 +4,30 @@ Blue Triangle analytics SDK for iOS.
 
 ## Installation
 
-Xcode 13: go to **File > Add Packages…**, enter the package repository URL `https://github.com/blue-triangle-tech/btt-swift-sdk.git`, and click **Add Package**.
+### Installation using Swift Packages Manager
 
-Xcode 11 - 12: go to **File > Swift Packages > Add Package Dependency…** and enter the package repository URL `https://github.com/blue-triangle-tech/btt-swift-sdk.git`, then follow the instructions.
+To integrate BlueTriangle using Swift Packages Manager into your iOS project, you need to follow these steps:
+
+ Go to **File > Add Packages…**, enter the package repository URL `https://github.com/blue-triangle-tech/btt-swift-sdk.git`, and click **Add Package**.
+
+ Xcode 11 - 12: go to **File > Swift Packages > Add Package Dependency…** and enter the package repository URL `https://github.com/blue-triangle-tech/btt-swift-sdk.git`, then follow the instructions.
+
+### Installation using CocoaPods
+
+To integrate BlueTriangle using CocoaPods into your iOS project, you need to follow these steps:
+  
+   1. Open 'Podfile' in text mode and specify following commands:
+  
+   ```
+      pod 'BlueTriangleSDK-Swift'     
+  ```
+
+   2. Save the Podfile and run the following command in the terminal to install the dependencies:
+    
+   ```
+      pod install     
+  ```
+
 
 ## Usage
 
@@ -133,6 +154,16 @@ URLSession.shared.btDataTask(with: URL(string: "https://example.com")!) { data, 
 }.resume()
 ```
 
+### Mannual Network Capture
+
+For other network capture requirements, captured requests can be manually created and submitted to the tracker.
+
+```swift
+let tracker = NetworkCaptureTracker.init(url: "https://hub.dummyapis.com/delay?seconds=3", method: "post", requestBodylength: 9130)
+tracker.submit(200, responseBodyLength: 11120, contentType: "json")
+```
+
+
 ### Screen View Tracking
 
 All UIViewControllers view count can be tracked. Setting "enableScreenTracking"  configuration property to true will capture view counts of every UIViewController in your app. You can see each view controller name with there count on our dashboard.
@@ -171,4 +202,76 @@ ANR(Application Not Responding) detects to main thread in which an app becomes u
 ```
 By default, the ANR interval is set to 5 seconds.
 
+
+### Memory Warning
+
+Track ios reported low memory worning. iOS reported meory wornings can be tracked by btt. It can be enabled by setting "enableMemoryWarning" configuration property to "true".
+
+
+```swift
+ BlueTriangle.configure { config in
+         ...
+         config.enableMemoryWarning = true
+     }
+```
+
+
+### Network State Capture
+
+ BlueTriangle SDK allows capturing of network state data. Network state refers to the availability of any network interfaces on the device. Network interfaces include wifi, ethernet, cellular, etc. Once Network state capturing is enabled, the Network state is associated with all Timers, Errors and Network Requests captured by the SDK.
+
+To enable Network state capture, use the enableTrackingNetworkState property on the configuration object as follows
+
+
+```swift
+ BlueTriangle.configure { config in
+         ...
+         config.enableTrackingNetworkState = true
+     }
+```
+
+
+
+### Offline Caching
+
+Offline caching is a feature that allows the BTT sdk to keep track of timers and other analytics data while the app is
+in offline mode. i.e, the BTT sdk cannot access the tracker urls.
+
+There is a memory limit as well as an expiration duration put on the cached data. If the cache exceeds the memory limit
+then additional tracker data will be added only after removing some old cached data. Similarly, cache data that has been
+stored for longer than the expiration duration would be discarded and won't be sent to the tracker server.
+
+Memory limit and Expiry Duration can be set by using configuration property cacheMemoryLimit and cacheExpiryDuration as shown bellow:``
+    
+```swift
+ BlueTriangle.configure { config in
+         ...
+            config.cacheMemoryLimit = 50 * 1024 (Bytes)
+            config.cacheExpiryDuration = 50 * 60 * 1000 (Milisecond)
+     }
+```
+
+By default, the cacheMemoryLimit is set to 2 days and cacheExpiryDuration is set to 30 MB.
+
+
+### WebView Tracking
+
+Websites shown in webview  that are tracked by BlueTriangle can be tracked in the same session as the native app. To achieve this, follow the steps below to configure the WebView:
+
+1. Import BlueTriangle in the hosting iOS WebView class:
+
+  ```swift
+      import BlueTriangle
+  ```
+
+2. Conform to the WKNavigationDelegate protocol and implement the 'webView(_:didCommit:)' method as follows. 
+
+  ```swift
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        BTTWebViewTracker.webView(webView, didCommit: navigation)
+    }
+  ``` 
+
+
+ or if you already have a WKNavigationDelegate porotool, just call the 'BTTWebViewTracker.webView(webView, didCommit: navigation)' in it's 'webView(_:didCommit:)' method.
 
