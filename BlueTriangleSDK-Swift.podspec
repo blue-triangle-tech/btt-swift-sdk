@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
     s.homepage         = 'https://www.bluetriangle.com'
     s.license          = { :type => 'MIT', :file => 'LICENSE.md' }
     s.author           = { 'Blue Triangle SDK Support' => 'sdk-support@bluetriangle.com' }
-    s.source           = { :git => 'https://github.com/blue-triangle-tech/btt-swift-sdk.git', :tag => s.version.to_s }
+    s.source           = { :git => 'https://github.com/JP-aloha/btt-swift-sdk.git', :branch =>  'feature/privacy-manifest'}
     s.social_media_url = 'https://twitter.com/_BlueTriangle'
 
     s.module_name   = 'BlueTriangle'
@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
     s.tvos.deployment_target = '13.0'
     s.watchos.deployment_target = '6.0'
 
-    s.source_files = 'Sources/**/*.{swift,c,h, xcprivacy}'
-    s.resource_bundles = {"BlueTriangle" => ["Sources/PrivacyInfo.xcprivacy"]}
+    s.source_files = 'Sources/**/*.{swift,c,h}'
+    s.resource_bundles = {"BlueTriangle" => ["Sources/**/PrivacyInfo.xcprivacy"]}
 
   end
