@@ -21,5 +21,6 @@ Pod::Spec.new do |s|
     s.watchos.deployment_target = '6.0'
 
     s.source_files = 'Sources/**/*.{swift,c,h}'
+    s.resource_bundles = {"BlueTriangle" => ["Sources/PrivacyInfo.xcprivacy"]}
 
   end
