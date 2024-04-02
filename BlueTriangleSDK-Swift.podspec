@@ -9,7 +9,7 @@ Pod::Spec.new do |s|
     s.homepage         = 'https://www.bluetriangle.com'
     s.license          = { :type => 'MIT', :file => 'LICENSE.md' }
     s.author           = { 'Blue Triangle SDK Support' => 'sdk-support@bluetriangle.com' }
-    s.source           = { :git => 'https://github.com/JP-aloha/btt-swift-sdk.git', :branch =>  'feature/privacy-manifest'}
+    s.source           = { :git => 'https://github.com/blue-triangle-tech/btt-swift-sdk.git', :tag => s.version.to_s }
     s.social_media_url = 'https://twitter.com/_BlueTriangle'
 
     s.module_name   = 'BlueTriangle'
