@@ -50,6 +50,8 @@ BlueTriangle.configure { config in
 }
 ```
 
+**It is app developers responsibility to ensure privacy nutrition labels are according to usage of BlueTriangle SDK in your app. For instance if your app uses revenue tracking(Timers cartValue) its app developers responsibility to mention Purchase History in there apps privacy manifest data usage. For more detail see privacy manifest chapter bellow**
+
 ### Timers
 
 To measure the duration of a user interaction, initialize a `Page` object describing that interaction and pass it to `BlueTriangle.startTimer(page:timerType)` to receive a running timer instance.
@@ -274,4 +276,20 @@ Websites shown in webview  that are tracked by BlueTriangle can be tracked in th
 
 
  or if you already have a WKNavigationDelegate porotool, just call the 'BTTWebViewTracker.webView(webView, didCommit: navigation)' in it's 'webView(_:didCommit:)' method.
+
+### Privacy Manifest
+
+It is app developers responsibility to ensure privacy nutrition labels are according to usage of BlueTriangle SDK in your app. For instance if your app uses revenue tracking(Timers cartValue) its app developers responsibility to mention Purchase History in there apps privacy manifest data usage.**
+
+ Depending on how App developers are utilizing BlueTriangle SDK configurable features, it is their responsibility to accuratally metions their apps data uses in their app's Privacy Manifest. The table below could help to understand BlueTriangle feature and their applicable data nutrition label data type: 
+ 
+
+| #  | **DATA TYPE**               | **LINKED** | **TRACKING** |   **PURPOSE**        | ** SDKVersion** |  **BTT Feature**                                                            |
+|----|-----------------------------|---------   |--------------|----------------------|-----------------|-----------------------------------------------------------------------------|
+| 1. | Purchase history            |     NO     |  NO          |   Analytics          |   3.5.0         | if app using cartValue(PurchaseConfirmation) to our timer                   |
+| 2. | Product interaction         |     NO     |  NO          |   App Functionality  |   3.5.0         | if app using timers to track user action like button tap.                   |
+| 3. | Crash data                  |     NO     |  NO          |   App Functionality  |   3.5.0         | if app using crash tracking feature of Blue Triangle SDK.                   |
+| 4. | Performance data            |     NO     |  NO          |   App Functionality  |   3.5.0         | if app using performance data(memory and CPU) feature of Blue Triangle SDK  |
+| 5. | Other diagnostic data       |     NO     |  NO          |   App Functionality  |   3.5.0         | if app using any of the feature like timer and screen tracking etc          |                                                         
+                                                     
 
