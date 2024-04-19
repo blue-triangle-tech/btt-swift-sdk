@@ -6,6 +6,7 @@
 //
 
 import XCTest
+import Foundation
 import BlueTriangle
 
 final class PrivacyManifestTests: XCTestCase {
@@ -33,21 +34,13 @@ final class PrivacyManifestTests: XCTestCase {
         }
     }
     
-   /* public static func findFileInBundle(fileName: String) -> String? {
-        let bundle = Bundle(identifier: "blue-triangle_BlueTriangle.bundle")
-        let bundleID = bundle?.path(forResource: "PrivacyInfo", ofType: nil)
-        print("Bundle Identifier : \(bundle?.bundleIdentifier) - \(bundleID)")
-        if let filePath = bundle?.path(forResource: fileName, ofType: nil) {
-            print("Bundle Path: \(filePath)")
-        }
+    /*public static func findFileInBundle(fileName: String) -> String? {
+     
         let allBundles = Bundle.allBundles
         for bundle in allBundles {
-       
             print("Bundle Identifier : \(bundle.bundleIdentifier)")
-
             let path = bundle.path(forResource: fileName, ofType: nil)
             print("Bundle Path :\(path)")
-            
             if let filePath = bundle.path(forResource: fileName, ofType: nil) {
                 return filePath
             }
@@ -57,29 +50,7 @@ final class PrivacyManifestTests: XCTestCase {
     
     func testPrivacyInfoFile() {
         // Name of the file you want to check
-        
         let path = PrivacyManifestTests.findFileInBundle(fileName: "PrivacyInfo.xcprivacy")
-                
         print("Bundle Path: \(path)")
-        
-        let fileName = "DeviceTests.swift" //"PrivacyInfo.xcprivacy"
-        let allBundles = Bundle.allBundles
-        for bundle in allBundles {
-            let url = bundle.url(forResource: "BlueTriangleTests", withExtension: "swift")
-            print("Bundle URL: \(url)")
-            if let bundleIdentifier = bundle.path(forResource: fileName, ofType: nil) {
-                print("Bundle Identifier: \(bundleIdentifier)")
-            }
-        }
-        //All bundle array
-        //find resource
-        // Get the path of the file in the app's bundle
-       /* if let filePath = Bundle.main.path(forResource: fileName, ofType: "swift") {
-            // File exists in the bundle
-            XCTAssertTrue(true, "File exists in the bundle: \(fileName)")
-        } else {
-            // File does not exist in the bundle
-            XCTFail("File does not exist in the bundle: \(fileName)")
-        }*/
     }*/
 }
