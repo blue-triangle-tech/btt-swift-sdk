@@ -295,3 +295,4 @@ Websites shown in webview  that are tracked by BlueTriangle can be tracked in th
 | 5. | Other diagnostic data       |     NO     |  NO          |   App Functionality  | if app using any of the feature like timer and screen tracking etc.                               |                                                         
                                                      
 
+For details about data usage check documentation [here](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests)
