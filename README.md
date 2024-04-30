@@ -45,6 +45,7 @@ If you are using SwiftUI, it is recommended to add an init() constructor in your
 import BlueTriangle
 import SwiftUI
 
+@main
 struct YourApp: App {
     init() {
           
@@ -192,21 +193,21 @@ tracker.submit(200, responseBodyLength: 11120, contentType: "json")
 #### If you have urlRequest in request and urlResponse in response
 
 ```swift
-        let tracker = NetworkCaptureTracker.init(request: urlRequest)
-        tracker.submit(urlResponse) 
+let tracker = NetworkCaptureTracker.init(request: urlRequest)
+tracker.submit(urlResponse) 
 ```
 where urlRequest and urlResponse are of URLRequest and URLResponse types, respectively
 
 #### If you encounters an error during a network call
 
 ```swift
-        let tracker = NetworkCaptureTracker.init(url: "https://example.com", method: "post", requestBodylength: 9130)
-        tracker.failled(error)
+let tracker = NetworkCaptureTracker.init(url: "https://example.com", method: "post", requestBodylength: 9130)
+tracker.failled(error)
         
         OR 
         
-        let tracker = NetworkCaptureTracker.init(request: urlRequest)
-        tracker.failled(error) 
+let tracker = NetworkCaptureTracker.init(request: urlRequest)
+tracker.failled(error) 
 
 ```
 
@@ -253,7 +254,7 @@ To dissable screen tracking, You need to set the enableScreenTracking configurat
  BlueTriangle.configure { config in
          ...
          config.enableScreenTracking = false
-     }
+ }
 ```
 
 ## ANR Detection
@@ -264,7 +265,7 @@ BlueTriangle tracks Apps repulsiveness by monitoring main THREAD USAGE. If any t
  BlueTriangle.configure { config in
          ...
         config.ANRWarningTimeInterval = 3
-     }
+ }
 ```
 
 You can disable it by setting "ANRMonitoring" configuration property to "false" during configuration.
@@ -273,7 +274,7 @@ You can disable it by setting "ANRMonitoring" configuration property to "false" 
  BlueTriangle.configure { config in
          ...
          config.ANRMonitoring = false
-     }
+ }
 ```
 
 ### Memory Warning
@@ -286,7 +287,7 @@ You can disable it by setting "enableMemoryWarning" configuration property to "f
  BlueTriangle.configure { config in
          ...
          config.enableMemoryWarning = false
-     }
+ }
 ```
 
 ## Network State Capture
@@ -299,7 +300,7 @@ You can disable it by setting enableTrackingNetworkState property to "false" dur
  BlueTriangle.configure { config in
          ...
          config.enableTrackingNetworkState = false
-     }
+  }
 ```
 
 
@@ -319,7 +320,7 @@ Memory limit and Expiry Duration can be set by using configuration property cach
          ...
             config.cacheMemoryLimit = 50 * 1024 (Bytes)
             config.cacheExpiryDuration = 50 * 60 * 1000 (Milisecond)
-     }
+ }
 ```
 
 By default, the cacheMemoryLimit is set to 2 days and cacheExpiryDuration is set to 30 MB.
