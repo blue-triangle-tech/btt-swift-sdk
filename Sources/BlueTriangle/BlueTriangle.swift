@@ -26,6 +26,8 @@ final public class BlueTriangle: NSObject {
 #endif
     }
     
+    public static let launchMonitor = LaunchTimeMonitor()
+    
     internal static func removeActiveTimer(_ timer : BTTimer){
         
         var index = 0
@@ -129,6 +131,14 @@ final public class BlueTriangle: NSObject {
                 file: .requests,
                 logger: logger)),
             logger: BlueTriangle.logger)
+    }()
+    
+    private static let launchTimeReporter : LaunchTimeReporter = {
+        LaunchTimeReporter(session: session,
+                           uploader: configuration.uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
+                            file: .requests,
+                            logger: logger)),
+                           logger: BlueTriangle.logger)
     }()
     
     /// Blue Triangle Technologies-assigned site ID.
@@ -251,12 +261,13 @@ extension BlueTriangle {
 #endif
                 }
             }
-            
+          
             configureMemoryWarning(with: configuration.enableMemoryWarning)
             configureANRTracking(with: configuration.ANRMonitoring, enableStackTrace: configuration.ANRStackTrace,
                                  interval: configuration.ANRWarningTimeInterval)
             configureScreenTracking(with: configuration.enableScreenTracking, ignoreVCs: configuration.ignoreViewControllers)
             configureMonitoringNetworkState(with: configuration.enableTrackingNetworkState)
+            configureLaunchTime(with: configuration.enableLaunchTime)
         }
     }
 
@@ -492,6 +503,15 @@ extension BlueTriangle{
     static func configureMonitoringNetworkState(with enabled: Bool){
         if enabled {
             monitorNetwork = NetworkStateMonitor.init(logger)
+        }
+    }
+}
+
+// MARK: - LaunchTime
+extension BlueTriangle{
+    static func configureLaunchTime(with enabled: Bool){
+        if enabled {
+            launchTimeReporter.start()
         }
     }
 }
