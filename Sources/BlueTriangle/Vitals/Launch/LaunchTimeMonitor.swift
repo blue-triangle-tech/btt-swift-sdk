@@ -29,30 +29,25 @@ enum SystemEvent {
     case didBecomeActive(Date)
 }
 
-
-public class LaunchTimeMonitor : ObservableObject{
+ class LaunchTimeMonitor : ObservableObject{
     
-    private var logger: Logging?
+    private let logger: Logging
     private var  systemEventLog = [SystemEvent]()
     internal var  launchEventPubliser = CurrentValueSubject<LaunchEvent?, Never>(nil)
-      
-    init() {
+    
+    init(logger: Logging) {
+        self.logger  = logger
         self.restoreNotificationLogs()
         self.registerNotifications()
     }
     
     private func restoreNotificationLogs(){
-        let notifications = AppNotificationLogger.getNotifications()
-        notifications.forEach { notification in
+        AppNotificationLogger.getNotifications().forEach { notification in
             if let notificationLog = notification as? NotificationLog {
                 self.processNonification(notificationLog.notification, date: notificationLog.time)
             }
         }
         AppNotificationLogger.removeObserver()
-    }
-    
-    func setUpLogger(_ logger : Logging?){
-        self.logger = logger
     }
     
     private func notifyCold(){
@@ -67,12 +62,12 @@ public class LaunchTimeMonitor : ObservableObject{
                 let processTime = processStartTime()
                 let duration = endTime.timeIntervalSince1970 - processTime
                 self.launchEventPubliser.send(LaunchEvent.Cold(startTime, duration))
-                self.logger?.info("Notify cold launch at \(startTime)")
+                self.logger.info("Notify cold launch at \(startTime)")
             default:
-                self.logger?.error("Somthing went wrong to notify cold launch")
+                self.logger.error("Somthing went wrong to notify cold launch")
             }
         default:
-            self.logger?.error("Somthing went wrong to notify cold launch")
+            self.logger.error("Somthing went wrong to notify cold launch")
         }
     }
     
@@ -87,12 +82,12 @@ public class LaunchTimeMonitor : ObservableObject{
             case .didBecomeActive(let endTime):
                 let duration = endTime.timeIntervalSince1970 - startTime.timeIntervalSince1970
                 self.launchEventPubliser.send(LaunchEvent.Hot(startTime, duration))
-                self.logger?.info("Notify hot launch at \(startTime)")
+                self.logger.info("Notify hot launch at \(startTime)")
             default:
-                self.logger?.error("Somthing went wrong to notify hot launch")
+                self.logger.error("Somthing went wrong to notify hot launch")
             }
         default:
-            self.logger?.error("Somthing went wrong to notify hot launch")
+            self.logger.error("Somthing went wrong to notify hot launch")
         }
     }
     
@@ -124,7 +119,8 @@ extension LaunchTimeMonitor {
         NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil) { notification in
             self.processNonification(notification, date: Date())
         }
-        logger?.info("Launch time monitor started listining to system event")
+        
+        logger.info("Launch time monitor started listining to system event")
     }
 
     private func notifyLaunchTime(){

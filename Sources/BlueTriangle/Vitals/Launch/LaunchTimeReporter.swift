@@ -32,8 +32,7 @@ class LaunchTimeReporter : ObservableObject {
     }
 
     func start(){
-        
-        self.monitor.setUpLogger(logger)
+
         self.monitor.launchEventPubliser
             .sink { event in
                 if let event = event{
@@ -41,26 +40,24 @@ class LaunchTimeReporter : ObservableObject {
                     case .Cold(let date, let duration):
                         self.logger.info("Received cold launch at \(date)")
                         //page name prop
-                        self.uploadReports(true, date, duration)
+                        self.uploadReports(LaunchTimeReporter.COLD_LAUNCH_PAGE_NAME, date, duration)
                     case .Hot(let date, let duration):
                         self.logger.info("Received hot launch at \(date)")
-                        self.uploadReports(false, date, duration)
+                        self.uploadReports(LaunchTimeReporter.HOT_LAUNCH_PAGE_NAME, date, duration)
                     }
                 }
             }.store(in: &self.cancellables)
         
-        //Started launch time tracking
         logger.info("Setup to receive launch event")
     }
     
-    private func uploadReports(_ isCold : Bool, _ time : Date, _ duration : TimeInterval) {
+    private func uploadReports(_ pageName : String, _ time : Date, _ duration : TimeInterval) {
         DispatchQueue.global(qos: .utility).async { [weak self] in
             do {
                 guard let strongSelf = self else {
                     return
                 }
                 
-                let pageName = isCold ? LaunchTimeReporter.COLD_LAUNCH_PAGE_NAME : LaunchTimeReporter.HOT_LAUNCH_PAGE_NAME
                 let groupName = LaunchTimeReporter.LAUNCH_TIME_PAGE_GROUP
                 let timeMS = time.timeIntervalSince1970.milliseconds
                 let durationMS = duration.milliseconds
@@ -71,8 +68,7 @@ class LaunchTimeReporter : ObservableObject {
                                                                    pageName: pageName,
                                                                    pageGroup: groupName)
                 strongSelf.uploader.send(request: timerRequest)
-                //Launch time reported 
-                strongSelf.logger.info("Uploaded successfully \(isCold ? "cold" : "hot") launch at \(time)")
+                strongSelf.logger.info("Launch time reported at \(time)")
             } catch {
                 self?.logger.error(error.localizedDescription)
             }

@@ -26,8 +26,6 @@ final public class BlueTriangle: NSObject {
 #endif
     }
     
-    public static let launchMonitor = LaunchTimeMonitor()
-    
     internal static func removeActiveTimer(_ timer : BTTimer){
         
         var index = 0
@@ -131,6 +129,10 @@ final public class BlueTriangle: NSObject {
                 file: .requests,
                 logger: logger)),
             logger: BlueTriangle.logger)
+    }()
+    
+    private static let launchMonitor : LaunchTimeMonitor = {
+        LaunchTimeMonitor(logger: logger)
     }()
     
     private static let launchTimeReporter : LaunchTimeReporter = {

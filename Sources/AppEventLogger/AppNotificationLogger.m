@@ -10,6 +10,7 @@
 #import "NotificationLog.h"
 
 NSMutableArray<NotificationLog *> *appNotifications;
+NSMutableArray *observers;
 
 @interface AppNotificationLogger()
 
@@ -19,33 +20,27 @@ NSMutableArray<NotificationLog *> *appNotifications;
 
 + (void)load {
     
-    NSLog(@"AppInitLog::initialize...");
-    
+    observers = [[NSMutableArray alloc] init];
     appNotifications = [[NSMutableArray<NotificationLog *> alloc] init];
     
-    __block __weak id finishObserver = [NSNotificationCenter.defaultCenter addObserverForName:UIApplicationDidFinishLaunchingNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull notification) {
+    [observers addObject:[NSNotificationCenter.defaultCenter addObserverForName:UIApplicationDidFinishLaunchingNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull notification) {
         NotificationLog * notificationLog = [[NotificationLog alloc] initWithNotification:notification time:[NSDate date]];
         [appNotifications addObject:notificationLog];
-        NSLog(@"AppInitLog::UIApplicationDidFinishLaunchingNotification...");
-    }];
-     
-    __block __weak id backgroundObserver = [NSNotificationCenter.defaultCenter addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull notification) {
+    }]];
+    
+    [observers addObject:[NSNotificationCenter.defaultCenter addObserverForName:UIApplicationDidEnterBackgroundNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull notification) {
         [appNotifications removeAllObjects];
-        NSLog(@"AppInitLog::UIApplicationDidEnterBackgroundNotification...");
-    }];
+    }]];
       
-    __block __weak id forgroundObserver = [NSNotificationCenter.defaultCenter addObserverForName:UIApplicationWillEnterForegroundNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull notification) {
+    [observers addObject:[NSNotificationCenter.defaultCenter addObserverForName:UIApplicationWillEnterForegroundNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull notification) {
         NotificationLog * notificationLog = [[NotificationLog alloc] initWithNotification:notification time:[NSDate date]];
         [appNotifications addObject:notificationLog];
-        NSLog(@"AppInitLog::UIApplicationWillEnterForegroundNotification...");
-    }];
+    }]];
     
-    __block __weak id activeObserver = [NSNotificationCenter.defaultCenter addObserverForName:UIApplicationDidBecomeActiveNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull notification) {
+    [observers addObject:[NSNotificationCenter.defaultCenter addObserverForName:UIApplicationDidBecomeActiveNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull notification) {
         NotificationLog * notificationLog = [[NotificationLog alloc] initWithNotification:notification time:[NSDate date]];
         [appNotifications addObject:notificationLog];
-        NSLog(@"AppInitLog::UIApplicationDidBecomeActiveNotification...");
-    }];
-    
+    }]];
 }
 
 +(NSMutableArray<NotificationLog *> *)getNotifications{
@@ -53,16 +48,10 @@ NSMutableArray<NotificationLog *> *appNotifications;
 }
 
 +(void) removeObserver{
-    @try{
-        
-        [NSNotificationCenter.defaultCenter removeObserver:self name:UIApplicationDidFinishLaunchingNotification object:nil];
-        [NSNotificationCenter.defaultCenter removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
-        [NSNotificationCenter.defaultCenter removeObserver:self name:UIApplicationWillEnterForegroundNotification object:nil];
-        [NSNotificationCenter.defaultCenter removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
+    for (id observer in observers) {
+        [[NSNotificationCenter defaultCenter] removeObserver:observer];
     }
-    @catch(id exception) {
-        NSLog(@"AppInitLog::NSNotificationCenter...%@", exception);
-    }
+    observers = nil;
 }
 
     
