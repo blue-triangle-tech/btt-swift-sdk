@@ -13,39 +13,43 @@ class LaunchTimeReporter : ObservableObject {
     static let COLD_LAUNCH_PAGE_NAME = "ColdLaunchTime"
     static let HOT_LAUNCH_PAGE_NAME = "HotLaunchTime"
     static let LAUNCH_TIME_PAGE_GROUP = "LaunchTime"
-    
     private var cancellables = Set<AnyCancellable>()
-    private let launchMonitor = BlueTriangle.launchMonitor
     
-    let session: Session
-    let uploader: Uploading
-    let logger: Logging
+    private let session: Session
+    private let uploader: Uploading
+    private let logger: Logging
+    private let monitor : LaunchTimeMonitor
     
     init(session: Session,
          uploader: Uploading,
-         logger: Logging ) {
-        
+         logger: Logging ,
+         monitor : LaunchTimeMonitor) {
+        self.monitor    = monitor
         self.logger     = logger
         self.uploader   = uploader
         self.session    = session
+        
     }
 
     func start(){
         
-        launchMonitor.setUpLogger(logger)
-        
-        self.launchMonitor.launchEvents
+        self.monitor.setUpLogger(logger)
+        self.monitor.launchEventPubliser
             .sink { event in
-                switch event {
-                case .Cold(let date, let duration):
-                    self.logger.info("Received cold launch at \(date)")
-                    self.uploadReports(true, date, duration)
-                case .Hot(let date, let duration):
-                    self.logger.info("Received hot launch at \(date)")
-                    self.uploadReports(false, date, duration)
+                if let event = event{
+                    switch event {
+                    case .Cold(let date, let duration):
+                        self.logger.info("Received cold launch at \(date)")
+                        //page name prop
+                        self.uploadReports(true, date, duration)
+                    case .Hot(let date, let duration):
+                        self.logger.info("Received hot launch at \(date)")
+                        self.uploadReports(false, date, duration)
+                    }
                 }
             }.store(in: &self.cancellables)
         
+        //Started launch time tracking
         logger.info("Setup to receive launch event")
     }
     
@@ -67,6 +71,7 @@ class LaunchTimeReporter : ObservableObject {
                                                                    pageName: pageName,
                                                                    pageGroup: groupName)
                 strongSelf.uploader.send(request: timerRequest)
+                //Launch time reported 
                 strongSelf.logger.info("Uploaded successfully \(isCold ? "cold" : "hot") launch at \(time)")
             } catch {
                 self?.logger.error(error.localizedDescription)

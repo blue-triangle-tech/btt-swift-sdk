@@ -17,7 +17,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // ...
         
         // Configure BlueTriangle
-        BlueTriangle.configure { config in
+      /*  BlueTriangle.configure { config in
 
             config.siteID = Constants.siteID
             config.enableDebugLogging = true
@@ -33,7 +33,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             config.isPerformanceMonitorEnabled = true
             config.cacheMemoryLimit = 5 * 1024
             config.cacheExpiryDuration = 2 * 60 * 1000
-        }
+        }*/
         
         runTest(onEvent: .OnAppLaunch)
         

@@ -138,7 +138,8 @@ final public class BlueTriangle: NSObject {
                            uploader: configuration.uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
                             file: .requests,
                             logger: logger)),
-                           logger: BlueTriangle.logger)
+                           logger: BlueTriangle.logger, 
+                           monitor: launchMonitor)
     }()
     
     /// Blue Triangle Technologies-assigned site ID.

@@ -87,6 +87,24 @@ final class PhotoCollectionViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        BlueTriangle.configure { config in
+
+              config.siteID = Constants.siteID
+              config.enableDebugLogging = true
+              config.performanceMonitorSampleRate = 1
+              config.networkSampleRate = 1
+              config.crashTracking  = .nsException
+              config.ANRMonitoring = true
+              config.ANRWarningTimeInterval = 1
+              config.enableScreenTracking = true
+              config.enableTrackingNetworkState = true
+              config.enableMemoryWarning = true
+              config.networkSampleRate = 1
+              config.isPerformanceMonitorEnabled = true
+              config.cacheMemoryLimit = 5 * 1024
+              config.cacheExpiryDuration = 2 * 60 * 1000
+          }
+        
         // Start timer and retain reference to it
         let page = Page(pageName: "Album_Photos",
                         brandValue: 0.5,

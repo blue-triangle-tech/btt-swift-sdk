@@ -7,6 +7,7 @@
 
 import Foundation
 import Combine
+import AppEventLogger
 
 #if canImport(UIKit)
 import UIKit
@@ -14,6 +15,7 @@ import UIKit
 
 #if canImport(SwiftUI)
 import SwiftUI
+
 #endif
 
 enum LaunchEvent{
@@ -27,14 +29,26 @@ enum SystemEvent {
     case didBecomeActive(Date)
 }
 
+
 public class LaunchTimeMonitor : ObservableObject{
     
     private var logger: Logging?
     private var  systemEventLog = [SystemEvent]()
-    internal var launchEvents =  MultiValueSubject<LaunchEvent>()
+    internal var  launchEventPubliser = CurrentValueSubject<LaunchEvent?, Never>(nil)
       
     init() {
+        self.restoreNotificationLogs()
         self.registerNotifications()
+    }
+    
+    private func restoreNotificationLogs(){
+        let notifications = AppNotificationLogger.getNotifications()
+        notifications.forEach { notification in
+            if let notificationLog = notification as? NotificationLog {
+                self.processNonification(notificationLog.notification, date: notificationLog.time)
+            }
+        }
+        AppNotificationLogger.removeObserver()
     }
     
     func setUpLogger(_ logger : Logging?){
@@ -52,7 +66,7 @@ public class LaunchTimeMonitor : ObservableObject{
             case .didBecomeActive(let endTime):
                 let processTime = processStartTime()
                 let duration = endTime.timeIntervalSince1970 - processTime
-                self.launchEvents.send(LaunchEvent.Cold(startTime, duration))
+                self.launchEventPubliser.send(LaunchEvent.Cold(startTime, duration))
                 self.logger?.info("Notify cold launch at \(startTime)")
             default:
                 self.logger?.error("Somthing went wrong to notify cold launch")
@@ -72,7 +86,7 @@ public class LaunchTimeMonitor : ObservableObject{
             switch lastEvent {
             case .didBecomeActive(let endTime):
                 let duration = endTime.timeIntervalSince1970 - startTime.timeIntervalSince1970
-                self.launchEvents.send(LaunchEvent.Hot(startTime, duration))
+                self.launchEventPubliser.send(LaunchEvent.Hot(startTime, duration))
                 self.logger?.info("Notify hot launch at \(startTime)")
             default:
                 self.logger?.error("Somthing went wrong to notify hot launch")
@@ -89,19 +103,28 @@ public class LaunchTimeMonitor : ObservableObject{
 
 extension LaunchTimeMonitor {
     
-    private func registerNotifications() {
-         NotificationCenter.default.addObserver(forName: nil, object: nil, queue: nil) { notification in
-            if notification.name == UIApplication.didFinishLaunchingNotification {
-                self.systemEventLog.append(SystemEvent.didFinishLaunch(Date()))
-            } else if notification.name == UIApplication.willEnterForegroundNotification {
-                self.systemEventLog.append(SystemEvent.didEnterForeground(Date()))
-            }else if notification.name == UIApplication.didBecomeActiveNotification {
-                self.systemEventLog.append(SystemEvent.didBecomeActive(Date()))
-                self.notifyLaunchTime()
-             }
+    private func processNonification(_ notification: Notification, date : Date) {
+        if notification.name == UIApplication.didFinishLaunchingNotification {
+            self.systemEventLog.append(SystemEvent.didFinishLaunch(date))
+        } else if notification.name == UIApplication.willEnterForegroundNotification {
+            self.systemEventLog.append(SystemEvent.didEnterForeground(date))
+        }else if notification.name == UIApplication.didBecomeActiveNotification {
+            self.systemEventLog.append(SystemEvent.didBecomeActive(date))
+            self.notifyLaunchTime()
         }
-        
-        logger?.info("Setup to notify launch event")
+    }
+    
+    private func registerNotifications() {
+        NotificationCenter.default.addObserver(forName: UIApplication.didFinishLaunchingNotification, object: nil, queue: nil) { notification in
+            self.processNonification(notification, date: Date())
+        }
+        NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: nil) { notification in
+            self.processNonification(notification, date: Date())
+        }
+        NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil) { notification in
+            self.processNonification(notification, date: Date())
+        }
+        logger?.info("Launch time monitor started listining to system event")
     }
 
     private func notifyLaunchTime(){
@@ -130,42 +153,5 @@ extension LaunchTimeMonitor {
         let start_time = kinfo.kp_proc.p_starttime
         let processTime = Double(start_time.tv_sec) + Double(start_time.tv_usec) / 1e6
         return processTime
-    }
-}
-
-
-public class MultiValueSubject<Output>: Publisher {
-    public typealias Failure = Never
-    private var values: [Output] = []
-    private var subscribers: [AnySubscriber<Output, Never>] = []
-
-    public init() {}
-
-    public func receive<S>(subscriber: S) where S : Subscriber, Failure == S.Failure, Output == S.Input {
-        let subscription = Subscription(subscriber: AnySubscriber(subscriber), values: values)
-        subscribers.append(AnySubscriber(subscriber))
-        subscriber.receive(subscription: subscription)
-    }
-
-    public func send(_ value: Output) {
-        values.append(value)
-        subscribers.forEach { _ = $0.receive(value) }
-    }
-
-    private class Subscription: Combine.Subscription {
-        private var subscriber: AnySubscriber<Output, Never>?
-        private var values: [Output]
-
-        init(subscriber: AnySubscriber<Output, Never>, values: [Output]) {
-            self.subscriber = subscriber
-            self.values = values
-            values.forEach{_ = subscriber.receive($0)}
-        }
-
-        func request(_ demand: Subscribers.Demand) {}
-
-        func cancel() {
-            subscriber = nil
-        }
     }
 }
