@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import AppEventLogger
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -130,19 +131,8 @@ final public class BlueTriangle: NSObject {
                 logger: logger)),
             logger: BlueTriangle.logger)
     }()
-    
-    private static let launchMonitor : LaunchTimeMonitor = {
-        LaunchTimeMonitor(logger: logger)
-    }()
-    
-    private static let launchTimeReporter : LaunchTimeReporter = {
-        LaunchTimeReporter(session: session,
-                           uploader: configuration.uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
-                            file: .requests,
-                            logger: logger)),
-                           logger: BlueTriangle.logger, 
-                           monitor: launchMonitor)
-    }()
+        
+    private static var launchTimeReporter : LaunchTimeReporter?
     
     /// Blue Triangle Technologies-assigned site ID.
     @objc public static var siteID: String {
@@ -514,8 +504,17 @@ extension BlueTriangle{
 extension BlueTriangle{
     static func configureLaunchTime(with enabled: Bool){
         if enabled {
-            launchTimeReporter.start()
+            let launchMonitor = LaunchTimeMonitor(logger: logger)
+            launchTimeReporter = LaunchTimeReporter(session: session,
+                                                    uploader: configuration.uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
+                                                        file: .requests,
+                                                        logger: logger)),
+                                                    logger: BlueTriangle.logger,
+                                                    monitor: launchMonitor)
+            
         }
+        
+        AppNotificationLogger.removeObserver()
     }
 }
 

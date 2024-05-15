@@ -47,7 +47,6 @@ enum SystemEvent {
                 self.processNonification(notificationLog.notification, date: notificationLog.time)
             }
         }
-        AppNotificationLogger.removeObserver()
     }
     
     private func notifyCold(){

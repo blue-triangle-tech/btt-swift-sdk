@@ -28,10 +28,10 @@ class LaunchTimeReporter : ObservableObject {
         self.logger     = logger
         self.uploader   = uploader
         self.session    = session
-        
+        self.start()
     }
 
-    func start(){
+    private func start(){
 
         self.monitor.launchEventPubliser
             .sink { event in
@@ -39,7 +39,6 @@ class LaunchTimeReporter : ObservableObject {
                     switch event {
                     case .Cold(let date, let duration):
                         self.logger.info("Received cold launch at \(date)")
-                        //page name prop
                         self.uploadReports(LaunchTimeReporter.COLD_LAUNCH_PAGE_NAME, date, duration)
                     case .Hot(let date, let duration):
                         self.logger.info("Received hot launch at \(date)")
