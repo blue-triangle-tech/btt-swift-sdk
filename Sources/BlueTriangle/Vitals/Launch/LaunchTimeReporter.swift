@@ -34,6 +34,7 @@ class LaunchTimeReporter : ObservableObject {
     private func start(){
 
         self.monitor.launchEventPubliser
+            .receive(on: DispatchQueue.main)
             .sink { event in
                 if let event = event{
                     switch event {
