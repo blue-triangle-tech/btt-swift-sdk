@@ -65,8 +65,9 @@ enum SystemEvent {
             default:
                 self.logger.error("Somthing went wrong to notify cold launch")
             }
-        default:
-            self.logger.error("Somthing went wrong to notify cold launch")
+        default: 
+            //Ignore continous active/inactive notifications
+            break
         }
     }
     
@@ -85,8 +86,9 @@ enum SystemEvent {
             default:
                 self.logger.error("Somthing went wrong to notify hot launch")
             }
-        default:
-            self.logger.error("Somthing went wrong to notify hot launch")
+        default: 
+            //Ignore continous active/inactive notifications
+            break
         }
     }
     
@@ -132,7 +134,7 @@ extension LaunchTimeMonitor {
             case .didBecomeActive:
                 notifyCold()
             default:
-                notifyHot()
+                self.logger.error("Somthing went wrong to notify cold launch")
             }
         default:
             notifyHot()
