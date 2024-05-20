@@ -483,7 +483,7 @@ extension BlueTriangle{
         BTTScreenLifecycleTracker.shared.setUpLogger(logger)
         
 #if os(iOS)
-        BTTWebViewTracker.isEnableScreenTracking = enabled
+        BTTWebViewTracker.shouldCaptureRequests = shouldCaptureRequests
         if enabled {
             UIViewController.setUp(ignoreVCs)
         }

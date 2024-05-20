@@ -10,7 +10,7 @@ import WebKit
 
 public class BTTWebViewTracker {
      
-    static var isEnableScreenTracking = false
+    static var shouldCaptureRequests = false
     
     public static func webView( _ webView: WKWebView, didCommit navigation: WKNavigation!){
        
@@ -51,7 +51,7 @@ public class BTTWebViewTracker {
     private func injectWCDCollectionOnWebView(_ webView : WKWebView){
       
         
-        if BTTWebViewTracker.isEnableScreenTracking {
+        if BTTWebViewTracker.shouldCaptureRequests {
             //WCD
             let isEnableTracking = "on"
             let expiration = NSString(string:"\(Date.addCurrentTimeInMinut(18000))")
