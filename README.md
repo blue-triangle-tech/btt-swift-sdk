@@ -458,3 +458,37 @@ extension YourWebView {
                                                      
 
 For details about data usage check documentation [here](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests)
+
+
+## App Launch Time
+
+Launch time refers to the duration it takes for an app to become ready for user interaction after it has been started.
+
+### Cold App Launch
+
+   A Cold Launch occurs when the app is started from scratch, meaning it is not running in the background. This type of launch takes longer because the app's state needs to be initialized and all resources need to be loaded form disk.
+   
+   The BlueTriangle SDK measures the cold launch latency, which is the time between the process start time to the foreground-active state.
+   
+   So that The cold launch latency of an application refers to the time taken for methods like 'didFinishLaunchingWithOptions', 'applicationWillEnterForeground', and 'applicationDidBecomeActive' to execute
+   
+### Hot App Launch
+
+  A Hot Launch occurs when the app is already running in the background and is brought to the foreground. This type of launch is typically faster since the app's state is preserved in memory.
+  
+  The BlueTriangle SDK measures the cold launch latency, which is the time between receiving the UIApplicationWillEnterForegroundNotification to the UIApplicationDidBecomeActiveNotification.
+  
+  So that hot launch latency of an application refers to the time taken for method  'applicationDidBecomeActive' to execute.
+
+
+Since locking your device makes iOS treat the app is going to the background, and unlocking makes it treat the app is coming back to the foreground. So, locking and unlocking the device is considered a hot launch.
+
+
+You can disable it by setting "enableLaunchTime" configuration property to "false" during configuration. like
+ 
+ ```swift
+ BlueTriangle.configure { config in
+         ...
+         config.enableLaunchTime = false
+ }
+```
