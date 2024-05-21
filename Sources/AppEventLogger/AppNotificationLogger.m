@@ -5,9 +5,17 @@
 //  Created by jaiprakash bokhare on 07/05/24.
 //
 
+
+
+
+
 #import "AppNotificationLogger.h"
-#import <UIKit/UIKit.h>
 #import "NotificationLog.h"
+
+#if TARGET_OS_IOS
+#import <UIKit/UIKit.h>
+#endif
+
 
 NSMutableArray<NotificationLog *> *appNotifications;
 NSMutableArray *observers;
@@ -22,6 +30,8 @@ NSMutableArray *observers;
     
     observers = [[NSMutableArray alloc] init];
     appNotifications = [[NSMutableArray<NotificationLog *> alloc] init];
+
+#if TARGET_OS_IOS
     
     [observers addObject:[NSNotificationCenter.defaultCenter addObserverForName:UIApplicationDidFinishLaunchingNotification object:nil queue:nil usingBlock:^(NSNotification * _Nonnull notification) {
         NotificationLog * notificationLog = [[NotificationLog alloc] initWithNotification:notification time:[NSDate date]];
@@ -41,6 +51,7 @@ NSMutableArray *observers;
         NotificationLog * notificationLog = [[NotificationLog alloc] initWithNotification:notification time:[NSDate date]];
         [appNotifications addObject:notificationLog];
     }]];
+#endif
 }
 
 +(NSMutableArray<NotificationLog *> *)getNotifications{
@@ -54,6 +65,5 @@ NSMutableArray *observers;
     observers = nil;
 }
 
-    
 @end
 

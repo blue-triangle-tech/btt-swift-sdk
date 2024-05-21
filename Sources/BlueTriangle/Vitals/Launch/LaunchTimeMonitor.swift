@@ -5,6 +5,8 @@
 //  Created by Ashok Singh on 06/05/24.
 //
 
+
+
 import Foundation
 import Combine
 import AppEventLogger
@@ -15,7 +17,6 @@ import UIKit
 
 #if canImport(SwiftUI)
 import SwiftUI
-
 #endif
 
 enum LaunchEvent{
@@ -100,6 +101,7 @@ enum SystemEvent {
 extension LaunchTimeMonitor {
     
     private func processNonification(_ notification: Notification, date : Date) {
+#if os(iOS)
         if notification.name == UIApplication.didFinishLaunchingNotification {
             self.systemEventLog.append(SystemEvent.didFinishLaunch(date))
         } else if notification.name == UIApplication.willEnterForegroundNotification {
@@ -108,9 +110,11 @@ extension LaunchTimeMonitor {
             self.systemEventLog.append(SystemEvent.didBecomeActive(date))
             self.notifyLaunchTime()
         }
+#endif
     }
     
     private func registerNotifications() {
+#if os(iOS)
         NotificationCenter.default.addObserver(forName: UIApplication.didFinishLaunchingNotification, object: nil, queue: nil) { notification in
             self.processNonification(notification, date: Date())
         }
@@ -120,8 +124,9 @@ extension LaunchTimeMonitor {
         NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil) { notification in
             self.processNonification(notification, date: Date())
         }
-        
         logger.info("Launch time monitor started listining to system event")
+#endif
+        
     }
 
     private func notifyLaunchTime(){

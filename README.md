@@ -469,13 +469,13 @@ BlueTriangle tracks app launch performance. Launch time refers to the duration i
 
  A cold launch is launch when app process was already not in main memory. This can happen because iOS or user terminated your apps process or its first time launch after install/update/reboot.
 
- The BlueTriangle SDK measures the cold launch latency, which is the time between the process start time and end of 'applicationDidBecomeActive(_:)'. So that cold launch time is cumulative time taken to load the process and time taken by 'application(_:didFinishLaunchingWithOptions:)', 'applicationWillEnterForeground(_:)' and 'applicationDidBecomeActive(_:)'.
+ The BlueTriangle SDK measures the cold launch latency, which is the time between the process start time and end of 'applicationDidBecomeActive(:)'. So that cold launch time is cumulative time taken to load the process and time taken by 'application(:didFinishLaunchingWithOptions:)', 'applicationWillEnterForeground(:)' and 'applicationDidBecomeActive(:)'.
    
 ### Hot Launch
 
   A hot launch is launch when app process was already in main memory. This can happen when user launches the app from the background.
  
-  The BlueTriangle SDK measures the hot launch latency, which is the time between the end of 'applicationWillEnterForeground(_:)' and end of 'applicationDidBecomeActive(_:)'. So that hot launch time taken by 'applicationDidBecomeActive(_:)'.
+  The BlueTriangle SDK measures the hot launch latency, which is the time between the end of 'applicationWillEnterForeground(:)' and end of 'applicationDidBecomeActive(:)'. So that hot launch time taken by 'applicationDidBecomeActive(:)'.
 
   When user lock the device while app was on screen and unlocks it iOS gives background and forground notification. Hence unclocking followed by lock while app was active is tracked as Hot Launch
 
