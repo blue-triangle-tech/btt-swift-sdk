@@ -6,7 +6,10 @@
 //
 
 import Foundation
+#if canImport(AppEventLogger)
 import AppEventLogger
+#endif
+
 #if canImport(UIKit)
 import UIKit
 #endif

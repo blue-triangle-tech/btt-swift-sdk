@@ -9,7 +9,9 @@
 
 import Foundation
 import Combine
+#if canImport(AppEventLogger)
 import AppEventLogger
+#endif
 
 #if canImport(UIKit)
 import UIKit
