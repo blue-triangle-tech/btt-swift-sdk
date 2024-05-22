@@ -128,6 +128,9 @@ final public class BlueTriangleConfiguration: NSObject {
     
     /// Boolean indicating whether memory warning is enabled.
     @objc public var enableMemoryWarning: Bool = true
+    
+    /// Boolean indicating whether launch time is enabled.
+    @objc public var enableLaunchTime: Bool = true
 
     var timerConfiguration: BTTimer.Configuration = .live
 

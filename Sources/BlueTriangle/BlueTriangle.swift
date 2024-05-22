@@ -6,6 +6,10 @@
 //
 
 import Foundation
+#if canImport(AppEventLogger)
+import AppEventLogger
+#endif
+
 #if canImport(UIKit)
 import UIKit
 #endif
@@ -130,6 +134,8 @@ final public class BlueTriangle: NSObject {
                 logger: logger)),
             logger: BlueTriangle.logger)
     }()
+        
+    private static var launchTimeReporter : LaunchTimeReporter?
     
     /// Blue Triangle Technologies-assigned site ID.
     @objc public static var siteID: String {
@@ -251,12 +257,13 @@ extension BlueTriangle {
 #endif
                 }
             }
-            
+          
             configureMemoryWarning(with: configuration.enableMemoryWarning)
             configureANRTracking(with: configuration.ANRMonitoring, enableStackTrace: configuration.ANRStackTrace,
                                  interval: configuration.ANRWarningTimeInterval)
             configureScreenTracking(with: configuration.enableScreenTracking, ignoreVCs: configuration.ignoreViewControllers)
             configureMonitoringNetworkState(with: configuration.enableTrackingNetworkState)
+            configureLaunchTime(with: configuration.enableLaunchTime)
         }
     }
 
@@ -479,7 +486,7 @@ extension BlueTriangle{
         BTTScreenLifecycleTracker.shared.setUpLogger(logger)
         
 #if os(iOS)
-        BTTWebViewTracker.isEnableScreenTracking = enabled
+        BTTWebViewTracker.shouldCaptureRequests = shouldCaptureRequests
         if enabled {
             UIViewController.setUp(ignoreVCs)
         }
@@ -493,6 +500,24 @@ extension BlueTriangle{
         if enabled {
             monitorNetwork = NetworkStateMonitor.init(logger)
         }
+    }
+}
+
+// MARK: - LaunchTime
+extension BlueTriangle{
+    static func configureLaunchTime(with enabled: Bool){
+        if enabled {
+            let launchMonitor = LaunchTimeMonitor(logger: logger)
+            launchTimeReporter = LaunchTimeReporter(session: session,
+                                                    uploader: configuration.uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
+                                                        file: .requests,
+                                                        logger: logger)),
+                                                    logger: BlueTriangle.logger,
+                                                    monitor: launchMonitor)
+            
+        }
+        
+        AppNotificationLogger.removeObserver()
     }
 }
 

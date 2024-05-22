@@ -86,7 +86,7 @@ final class PhotoCollectionViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // Start timer and retain reference to it
         let page = Page(pageName: "Album_Photos",
                         brandValue: 0.5,
