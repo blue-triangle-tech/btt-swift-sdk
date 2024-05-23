@@ -531,7 +531,7 @@ Memory limit and Expiry Duration can be set by using configuration property cach
 
 By default, the cacheMemoryLimit is set to 48 hours and cacheExpiryDuration is set to 30 MB.
 
-## Network State Capture
+### Network State Capture
 
 BlueTriangle SDK allows capturing of network state data. Network state refers to the availability of any network interfaces on the device. Network interfaces include wifi, ethernet, cellular, etc. Once Network state capturing is enabled, the Network state is associated with all Timers, Errors and Network Requests captured by the SDK. This feature is enabled by default.
 
