@@ -376,7 +376,11 @@ BlueTriangle.configure { config in
 
 ### Custom Timers
 
-While **Screen Views are automatically tracked upon installation**, Custom Timers can also be configured if needed.
+While **Screen Views are automatically tracked upon installation**, Custom Timers can also be configured if needed. 
+The **automated timers capture** are following these events:
+
+![image](https://github.com/blue-triangle-tech/btt-swift-sdk/assets/147184142/4bcfadc7-c8e5-47ec-a518-e491c51ac11c)
+
 
 To measure the duration of a user interaction, initialize a `Page` object describing that interaction and pass it to `BlueTriangle.startTimer(page:timerType)` to receive a running timer instance.
 
