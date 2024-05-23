@@ -1,10 +1,34 @@
 # Blue Triangle SDK for iOS
 
-Blue Triangle analytics SDK for iOS.
+The Blue Triangle SDK for iOS enables application owners to track their users’ experience so they can focus on user experience issues that impact their business outcomes.
 
-## Installation
+## Supported metrics
+- Performance & Network Timings
+ - Main Timers
+ - Network Timers
+ - Custom Timers
+- Errors & Crashes
+- Application Not Responding (ANR)
+- HTTP Response Codes
+- App Crashes
+- Device Stats & Session Attributes
+ - OS/OS Version
+ - App Version
+ - Device Type
+ - Geographical/Country
+ - CPU Usage
+ - Memory Warnings
+ - Memory/Out of Memory
+ - Hot/Cold Launch
+Coming Soon
+- Network Type
+ 
 
-### Installation using Swift Packages Manager
+## Mandatory Installation- Steps
+
+### SDK Installation
+
+#### Installation using Swift Packages Manager
 
 To integrate BlueTriangle using Swift Packages Manager into your iOS project, you need to follow these steps:
 
@@ -12,7 +36,7 @@ To integrate BlueTriangle using Swift Packages Manager into your iOS project, yo
 
  Xcode 11 - 12: go to **File > Swift Packages > Add Package Dependency…** and enter the package repository URL `https://github.com/blue-triangle-tech/btt-swift-sdk.git`, then follow the instructions.
 
-### Installation using CocoaPods
+#### Installation using CocoaPods
 
 To integrate BlueTriangle using CocoaPods into your iOS project, you need to follow these steps:
   
@@ -29,7 +53,7 @@ To integrate BlueTriangle using CocoaPods into your iOS project, you need to fol
   ```
 
 
-## Configuration
+### Configuration- Mandatory
 
 In order to use `BlueTriangle`, you need to first configure `BlueTriangle` SDK. To configure it import `BlueTriangle` and call configure function with your siteID. It is recommended to do this in your `AppDelegate.application(_:didFinishLaunchingWithOptions:)` OR `SceneDelegate.scene(_ scene:, willConnectTo session:, options,connectionOptions:)` method:
 
@@ -68,9 +92,245 @@ struct YourApp: App {
 
 Replace `<BTT_SITE_ID>` with your **site ID**. You can find instructions on how to find your **site ID** [**here**](https://help.bluetriangle.com/hc/en-us/articles/28809592302483-How-to-find-your-Site-ID-for-the-BTT-SDK).
 
-### Privacy Manifest Note:
+### Privacy Manifest Note
 
-**It is app developers responsibility to ensure privacy nutrition labels are according to usage of BlueTriangle SDK in your app. For instance if your app uses revenue tracking(Timers cartValue) its app developers responsibility to mention Purchase History in there apps privacy manifest data usage.** For more detail see [privacy manifest chapter](#privacy-manifest)
+**It is the application developers' responsibility to ensure privacy nutrition labels are according to usage of BlueTriangle SDK in your app. For instance if your app uses revenue tracking(Timers cartValue) its app developers responsibility to mention Purchase History in there apps privacy manifest data usage.** For more detail see [privacy manifest chapter](#privacy-manifest)
+
+### Native View Performance Tracking- Mandatory
+
+All UIKit UIViewControllers view counts will be tracked automatically. You can see each view controller name with their count on our dashboard.
+
+SwiftUI views are not captured automatically. You need to call bttTrackScreen() modifier on each view which you want to track. Below example show usage of "bttTrackScreen(_ screenName: String)" to track About Us screen.
+
+```swift
+struct ContentView: View {
+    var body: some View {
+        VStack{
+            Text("Hello, world!")
+        }
+        .bttTrackScreen("Demo_Screen")
+    }
+}
+```
+
+To disable screen tracking, you need to set the enableScreenTracking configuration to false during configuration like bellow, This will ignore UIViewControllers activities and bttTrackScreen() modifier calls.
+
+```swift
+BlueTriangle.configure { config in
+         ...
+         config.enableScreenTracking = false
+ }
+```
+
+### Native View/WebView Tracking/Session Stitching- Mandatory
+
+Websites shown in webview that are tracked by BlueTriangle can be tracked in the same session as the native app. To achieve this, follow the steps below to configure the WebView:
+
+Implement WKNavigationDelegate protocol and call BTTWebViewTracker.webView(webView, didCommit: navigation) in 'webView(_:didCommit:)' delegate method as follows.
+
+```swift
+
+import BlueTriangle
+
+  //....
+
+ extension YourWebViewController: WKNavigationDelegate{
+
+  //....
+
+  func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+
+      //....
+
+      //Call BlueTringles 'webView(_:didCommit:)' method
+      BTTWebViewTracker.webView(webView, didCommit: navigation)
+    }
+
+ }
+```
+
+For more clarity, here is a Webview with UIViewController full example:
+
+```swift
+
+import UIKit
+import WebKit
+//Need to import BlueTriangle
+import BlueTriangle
+
+class YourWebViewController: UIViewController {
+  @IBOutlet weak var webView: WKWebView!
+
+  override func viewDidLoad() {
+      super.viewDidLoad()
+
+      //Set navigationDelegate
+      webView.navigationDelegate = self
+
+      //Load Url
+      if let htmlURL = URL(string: "https://example.com"){
+          webView.load(URLRequest(url: htmlURL))
+      }
+  }
+}
+
+//Implement Navigation Delagate
+extension YourWebViewController: WKNavigationDelegate {
+
+  func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+
+      //...
+
+      //Call BlueTringles 'webView(_:didCommit:)' method
+      BTTWebViewTracker.webView(webView, didCommit: navigation)
+  }
+}
+
+```
+
+Webview with SwiftUI full example:
+
+```swift
+
+import SwiftUI
+import WebKit
+//Need to import BlueTriangle
+import BlueTriangle
+
+struct YourWebView: UIViewRepresentable {
+
+  private let webView = WKWebView()
+
+  func makeCoordinator() -> YourWebView.Coordinator {
+      Coordinator()
+  }
+
+  func makeUIView(context: Context) -> some UIView {
+
+      //Set navigationDelegate
+      webView.navigationDelegate = context.coordinator
+
+      //Load Url
+      if let htmlURL = URL(string: "https://example.com"){
+          webView.load(URLRequest(url: htmlURL))
+      }
+      return webView
+  }
+}
+
+extension YourWebView {
+
+  //Implement Navigation Delegate  Coordinator
+
+  class Coordinator: NSObject, WKNavigationDelegate {
+
+      func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+
+          //...
+
+          //Call BlueTringles 'webView(_:didCommit:)' method
+          BTTWebViewTracker.webView(webView, didCommit: navigation)
+      }
+  }
+}
+
+```
+
+### Network Capture- Mandatory
+
+The Blue Triangle SDK supports capturing network requests using either the bt-prefixed URLSession methods or the NetworkCaptureSessionDelegate.
+
+Network requests using a URLSession with a NetworkCaptureSessionDelegate or made with one of the bt-prefixed URLSession methods will be associated with the last main timer to have been started at the time a request completes. Note that requests are only captured after at least one main timer has been started and they are not associated with a timer until the request ends.
+
+#### NetworkCaptureSessionDelegate
+
+You can use NetworkCaptureSessionDelegate or a subclass as your URLSession delegate to gather information about network requests when network capture is enabled:
+
+```swift
+let sesssion = URLSession(
+    configuration: .default,
+    delegate: NetworkCaptureSessionDelegate(),
+    delegateQueue: nil)
+
+let timer = BlueTriangle.startTimer(page: Page(pageName: "MY_PAGE"))
+...
+let (data, response) = try await session.data(from: URL(string: "https://example.com")!)
+```
+
+If you have already implemented and set URLSessionDelegate to URLSession, you can call NetworkCaptureSessionDelegate objects urlSession(session: task: didFinishCollecting:) method:
+
+
+```swift
+    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+
+     //Your code ...
+
+    let sessionDelegate = NetworkCaptureSessionDelegate()
+    sessionDelegate.urlSession(session, task: task, didFinishCollecting: metrics)
+}
+```
+
+#### URLSession Methods
+
+Alternatively, use bt-prefixed URLSession methods to capture network requests:
+
+| Standard                                     | Network Capture                                |  
+|----------------------------------------------|------------------------------------------------|
+| URLSession.dataTask(with:completionHandler:) | URLSession.btDataTask(with:completionHandler:) | 
+| URLSession.data(for:delegate:)               | URLSession.btData(for:delegate:)               | 
+| URLSession.dataTaskPublisher(for:)           | URLSession.btDataTaskPublisher(for:)           | 
+
+Use these methods just as you would their standard counterparts:
+
+```swift
+
+let timer = BlueTriangle.startTimer(page: Page(pageName: "MY_PAGE"))
+...
+URLSession.shared.btDataTask(with: URL(string: "https://example.com")!) { data, response, error in
+    // ...
+}.resume()
+
+```
+
+### Manual Network Capture
+
+For other network capture requirements, captured requests can be manually created and submitted to the tracker.
+
+**If you have the URL, method, and requestBodyLength in the request, and httpStatusCode, responseBodyLength, and contentType in the response**
+```swift
+
+let tracker = NetworkCaptureTracker.init(url: "https://example.com", method: "post", requestBodylength: 9130)
+tracker.submit(200, responseBodyLength: 11120, contentType: "json")
+
+```
+
+**If you have urlRequest in request and urlResponse in response**
+
+```swift
+
+let tracker = NetworkCaptureTracker.init(request: urlRequest)
+tracker.submit(urlResponse)
+
+```
+where urlRequest and urlResponse are of URLRequest and URLResponse types, respectively.
+
+**If you encounter an error during a network call**
+
+```swift
+let tracker = NetworkCaptureTracker.init(url: "https://example.com", method: "post", requestBodylength: 9130)
+tracker.failed(error)
+
+```
+        OR
+```swift
+let tracker = NetworkCaptureTracker.init(request: urlRequest)
+tracker.failed(error)
+
+```
+
+
+
+
 
 ## Timers
 
