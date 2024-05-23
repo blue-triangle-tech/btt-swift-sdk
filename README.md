@@ -581,7 +581,7 @@ You can disable it by setting "enableLaunchTime" configuration property to "fals
 
 ### Site ID
 
-Log onto your account on the [Blue Triangle Portal](https://portal.bluetriangle.com), head over to "Native App -> Perfomance overview" and see that you can observe some data.
+Log onto your account on the [Blue Triangle Portal](https://portal.bluetriangle.com), head over to "Native App -> Performance overview" and see that you can observe some data.
 
 ### Memory Warning
 
