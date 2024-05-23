@@ -24,7 +24,7 @@ Coming Soon
 - Network Type
  
 
-## Mandatory Installation- Steps
+## Mandatory Installation Steps
 
 ### SDK Installation
 
@@ -317,22 +317,66 @@ where urlRequest and urlResponse are of URLRequest and URLResponse types, respec
 **If you encounter an error during a network call**
 
 ```swift
+
 let tracker = NetworkCaptureTracker.init(url: "https://example.com", method: "post", requestBodylength: 9130)
 tracker.failed(error)
 
-```
         OR
-```swift
+
 let tracker = NetworkCaptureTracker.init(request: urlRequest)
 tracker.failed(error)
 
 ```
 
+## Recommended (Optional) Configurations
+
+### Network Capture Sample Rate
+
+Network sample rate indicates the percentage of session network requests that are captured. For example a value of 0.05 means that network capture will be randomly enabled for 5% of user sessions. Network sample rate value should be between 0.0 to 1.0 representing fraction value of percent 0 to 100. The default networkSampleRate value is 0.05, i.e only 5% of sessions network request are captured.
+
+To change the network capture sample rate set value of the 'config.networkSampleRate' to 0.5 to set is to 50%.
+
+```swift
+BlueTriangle.configure { config in
+    config.siteID = "<MY_SITE_ID>"
+    config.networkSampleRate = 0.5
+    ...
+}
+```
+
+To disable network capture set 0.0 to 'config.networkSampleRate' during configuration.
+
+It is recommended to have 100% sample rate while developing/debugging. By setting 'config.networkSampleRate' to 1.0 during configuration.
+
+### Blue Triangle Campaign Configuration Fields
+
+The following fields can be used to identify and segment users for optimized analytics contextualization. They can be configured in the SDK and modified in the app in real time, and they show in the Blue Triangle portal as parameters for reporting.
 
 
+| Field                                        | Implication                                                                                                                                                           |  
+|----------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| abTestID="MY_AB_TEST_ID"                     | Capture a variable that allows us to understand a live AB test of two variants in the app.                                                                            | 
+| campaignMedium="MY_CAMPAIGN_MEDIUM"          | Understand the general reason the journey started (email, paid search, organic search, etc)                                                                           | 
+| campaignName="MY_CAMPAIGN_NAME"              | Understand the campaign name that started the journey.                                                                                                                | 
+| campaignSource="MY_CAMPAIGN_SOURCE"          | Understanding the type of marketing campaign.                                                                                                                         | 
+| dataCenter="MY_DATA_CENTER"                  | Understand if you have multiple data centers that serve your customers you can group data by them.                                                                    | 
+| trafficSegmentName="MY_SEGMENT_NAME"         | This can be used to segment environment type.  For instance, we can use this to understand if you have beta vs prod but both are live versions of the app.            | 
+
+```swift
+BlueTriangle.configure { config in
+    config.abTestID = "MY_AB_TEST_ID"
+    config.campaignMedium = "MY_CAMPAIGN_MEDIUM"
+    config.campaignName = "MY_CAMPAIGN_NAME"
+    config.campaignSource = "MY_CAMPAIGN_SOURCE"
+    config.dataCenter = "MY_DATA_CANTER "
+    config.trafficSegmentName = "MY_TRAFFIC_SEGEMENT_NAME"
+}
+```
 
 
-## Timers
+### Custom Timers
+
+While **Screen Views are automatically tracked upon installation**, Custom Timers can also be configured if needed.
 
 To measure the duration of a user interaction, initialize a `Page` object describing that interaction and pass it to `BlueTriangle.startTimer(page:timerType)` to receive a running timer instance.
 
@@ -373,153 +417,12 @@ let purchaseConfirmation = PurchaseConfirmation(cartValue: 99.00)
 BlueTriangle.endTimer(timer, purchaseConfirmation: purchaseConfirmation)
 ```
 
-### Timer Types
 
-`BlueTriangle.makeTimer(page:timerType:)` and `BlueTriangle.startTimer(page:timerType:)` have a `timerType` parameter to specify the type of the timer they return. By default, both methods return main timers with the type `BTTimer.TimerType.main`. When network capture is enabled, requests made with one of the `bt`-prefixed `URLSession` methods will be associated with the last main timer to have been started at the time the request completes. It is recommended to only have a single main timer running at any given time. If you need overlapping timers, create additional custom timers by specifying a `BTTimer.TimerType.custom` timer type:
+## Optional Configuration Steps
 
-```swift
-let mainTimer = BlueTriangle.startTimer(page: Page(pageName: "MY_PAGE"))
-let customTimer = BlueTriangle.startTimer(page: Page(pageName: "MY_OTHER_TIMER"), timerType: .custom)
-// ...
-BlueTriangle.endTimer(mainTimer)
-// ...
-BlueTriangle.endTimer(customTimer)
-```
+### ANR Detection
 
-## Network Capture
-
-The Blue Triangle SDK supports capturing network requests using either the `NetworkCaptureSessionDelegate` or `bt`-prefixed `URLSession` methods.
-
-Network requests using a `URLSession` with a `NetworkCaptureSessionDelegate` or made with one of the `bt`-prefixed `URLSession` methods will be associated with the last main timer to have been started at the time a request completes. Note that requests are only captured after at least one main timer has been started and they are not associated with a timer until the request ends.
-
-### `NetworkCaptureSessionDelegate`
-
-You can use `NetworkCaptureSessionDelegate` or a subclass as your `URLSession` delegate to gather information about network requests when network capture is enabled:
-
-```swift
-let sesssion = URLSession(
-    configuration: .default,
-    delegate: NetworkCaptureSessionDelegate(),
-    delegateQueue: nil)
-
-let timer = BlueTriangle.startTimer(page: Page(pageName: "MY_PAGE"))
-...
-let (data, response) = try await session.data(from: URL(string: "https://example.com")!)
-```
-
-if you have already implemented and set URLSessionDelegate to URLSession. You can call  NetworkCaptureSessionDelegate objects urlSession(session: task: didFinishCollecting:) method like bellow.
-
-```swift
-    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-     
-     //Your code ...
-     
-    let sessionDelegate = NetworkCaptureSessionDelegate()
-    sessionDelegate.urlSession(session, task: task, didFinishCollecting: metrics)
-}
-```
-
-### `URLSession` Methods
-
-Alternatively, use `bt`-prefixed `URLSession` methods to capture network requests:
-
-| Standard                                       | Network Capture                                  |
-| :--                                            | :--                                              |
-| `URLSession.dataTask(with:completionHandler:)` | `URLSession.btDataTask(with:completionHandler:)` |
-| `URLSession.data(for:delegate:)`               | `URLSession.btData(for:delegate:)`               |
-| `URLSession.dataTaskPublisher(for:)`           | `URLSession.btDataTaskPublisher(for:)`           |
-
-Use these methods just as you would their standard counterparts:
-
-```swift
-let timer = BlueTriangle.startTimer(page: Page(pageName: "MY_PAGE"))
-...
-URLSession.shared.btDataTask(with: URL(string: "https://example.com")!) { data, response, error in
-    // ...
-}.resume()
-```
-
-### Mannual Network Capture
-
-For other network capture requirements, captured requests can be manually created and submitted to the tracker.
-
-#### If you have the URL, method, and requestBodyLength in the request, and httpStatusCode, responseBodyLength, and contentType in the response 
-
-```swift
-let tracker = NetworkCaptureTracker.init(url: "https://example.com", method: "post", requestBodylength: 9130)
-tracker.submit(200, responseBodyLength: 11120, contentType: "json")
-```
-
-#### If you have urlRequest in request and urlResponse in response
-
-```swift
-let tracker = NetworkCaptureTracker.init(request: urlRequest)
-tracker.submit(urlResponse) 
-```
-where urlRequest and urlResponse are of URLRequest and URLResponse types, respectively
-
-#### If you encounters an error during a network call
-
-```swift
-let tracker = NetworkCaptureTracker.init(url: "https://example.com", method: "post", requestBodylength: 9130)
-tracker.failled(error)
-        
-        OR 
-        
-let tracker = NetworkCaptureTracker.init(request: urlRequest)
-tracker.failled(error) 
-
-```
-
-### Network Capture Sample Rate
-
-Network sample rate indicate how many percent session  network request are captured. For exampme a value of `0.05` means that network capture will be randomly enabled for 5% of user sessions. Network sample rate value should be between 0.0 to 1.0 representing fraction value of percent 0 to 100.
-
-The default networkSampleRate value is 0.05, i.e  only 5% of sessions network request are captured.
-
-To change network capture sample rate set value to 'config.networkSampleRate' during configuration like bellow code sets sample rate to 50%.
-
-```swift
-BlueTriangle.configure { config in
-    config.siteID = "<MY_SITE_ID>"
-    config.networkSampleRate = 0.5
-    ...
-}
-```
-
-To dissable network capture set 0.0 to 'config.networkSampleRate' during configuration.
-
-It is recomended to have 100% sample rate while developing/debuging. By setting 'config.networkSampleRate' to 1.0 during configuration.
-
-## Screen View Tracking
-
-All UIKit UIViewControllers view count tracked automatically. You can see each view controller name with there count on our dashboard.
-
-SwiftUI views are not captured automatically. You need to call bttTrackScreen(<screen Name>) modifier on each view which you want to track. Below example show usage of "bttTrackScreen(_ screenName: String)" to track About Us screen.
-
-```swift
-struct ContentView: View {
-    var body: some View {
-        VStack{
-            Text("Hello, world!")
-        }
-        .bttTrackScreen("Demo_Screen")
-    }
-}
-```
-
-To dissable screen tracking, You need to set the enableScreenTracking configuration to false during configuration like bellow, This will ignore UIViewControllers activities and bttTrackScreen() modifier calls.
-
-```swift
- BlueTriangle.configure { config in
-         ...
-         config.enableScreenTracking = false
- }
-```
-
-## ANR Detection
-
-BlueTriangle tracks Apps repulsiveness by monitoring main THREAD USAGE. If any task blocking main thread for extended period of time causing app not responding, will be tracked as ANR Morning. By default this time interval is 5 Sec I.e. if any task blocking main thread more then 5 sec will be triggered as ANRWorning. This timinterval can be changed using "ANRWarningTimeInterval" Property below.  
+BlueTriangle tracks Apps responsiveness by monitoring main THREAD USAGE. If any task blocking main thread for extended period of time causing app not responding, will be tracked as ANR Morning. By default this time interval is 5 Sec I.e. if any task blocking main thread more then 5 sec will be triggered as ANRWorning. This timinterval can be changed using "ANRWarningTimeInterval" Property below.  
 
  ```swift
  BlueTriangle.configure { config in
@@ -550,9 +453,87 @@ You can disable it by setting "enableMemoryWarning" configuration property to "f
  }
 ```
 
+### Memory Usage
+
+Memory usage is the amount of memory used by the code during the Timer interval. This is measured in number of bytes.
+
+Against each timer, 3 Memory measurements are being sent, minimum, maximum and average.
+
+Memory usage refers to the amount memory (RAM) that is currently being used by application to store and manage data. In analytics.rcv payload data json, 'minMemory', 'maxMemory' and 'avgMemory' are being used to send the respective memory usage.
+
+To set the interval (in seconds) at which the Memory usage is being captured, set the following field:
+
+ ```swift
+ BlueTriangle.configure { config in
+         ...
+         config.performanceMonitorSampleRate = 1
+     }
+```
+
+To disable Memory usage set the following field:
+
+ ```swift
+BlueTriangle.configure { config in
+       ...
+       config.isPerformanceMonitorEnabled = false
+   }
+```
+
+### CPU Usage
+
+CPU Usage is the amount of CPU being used by the code during the Timer interval. This is measured in the form of 0-100%.
+
+Against each timer, 3 CPU measurements are being sent, minimum, maximum and average.
+
+CPU usage is being reported by xcode as X.100% format [where X is number of cores], it typically means that the system is utilizing the CPU resources heavily. To express this in a 0% to 100% format, Blue Triangle calculates the CPU usage by dividing number of CPU cores. This will give you a percentage value between 0% and 100%.
+
+**0% to 100% format = Total current CPU usage on Instruments / Number of CPU cores.**
+
+For example, if you have 4 CPU cores and your current usage is 300%. then actual BTT CPU usage 300% / 4 = 75%. This indicates that CPU is being utilized at 75% of its total capacity.
+ 
+
+To set the interval (in s) at which the CPU usage is being captured, set the following field in BlueTriangleConfiguration:
+
+```swift
+BlueTriangle.configure { config in
+         ...
+         config.performanceMonitorSampleRate = 1
+     }
+```
+
+To disable CPU usage set the following field in BlueTriangleConfiguration:
+
+```swift
+BlueTriangle.configure { config in
+       ...
+       config.isPerformanceMonitorEnabled = false
+   }
+```
+
+### Track Crashes
+
+#### Offline Caching
+
+Offline caching is a feature that allows the BTT SDK to keep track of timers and other analytics data while the app is in offline mode. i.e, the BTT SDK cannot send data back to Blue Triangle.
+
+There is a memory limit as well as an expiration duration put on the cached data. If the cache exceeds the memory limit then additional tracker data will be added only after removing some older, cached data (first in, first out). Similarly, cache data that has been stored for longer than the expiration duration would be discarded and won't be sent to the tracker server.
+
+Memory limit and Expiry Duration can be set by using configuration property cacheMemoryLimit and cacheExpiryDuration as shown below:
+
+```swift
+
+ BlueTriangle.configure { config in
+         ...
+            config.cacheMemoryLimit = 50 * 1024 (Bytes)
+            config.cacheExpiryDuration = 50 * 60 * 1000 (Millisecond)
+ }
+```
+
+By default, the cacheMemoryLimit is set to 48 hours and cacheExpiryDuration is set to 30 MB.
+
 ## Network State Capture
 
- BlueTriangle SDK allows capturing of network state data. Network state refers to the availability of any network interfaces on the device. Network interfaces include wifi, ethernet, cellular, etc. Once Network state capturing is enabled, the Network state is associated with all Timers, Errors and Network Requests captured by the SDK. This feature is enabled by default.
+BlueTriangle SDK allows capturing of network state data. Network state refers to the availability of any network interfaces on the device. Network interfaces include wifi, ethernet, cellular, etc. Once Network state capturing is enabled, the Network state is associated with all Timers, Errors and Network Requests captured by the SDK. This feature is enabled by default.
 
 You can disable it by setting enableTrackingNetworkState property to "false" during configuration.
 
@@ -563,175 +544,18 @@ You can disable it by setting enableTrackingNetworkState property to "false" dur
   }
 ```
 
-
-## Offline Caching
-
-Offline caching is a feature that allows the BTT sdk to keep track of timers and other analytics data while the app is
-in offline mode. i.e, the BTT sdk cannot access the tracker urls.
-
-There is a memory limit as well as an expiration duration put on the cached data. If the cache exceeds the memory limit
-then additional tracker data will be added only after removing some old cached data. Similarly, cache data that has been
-stored for longer than the expiration duration would be discarded and won't be sent to the tracker server.
-
-Memory limit and Expiry Duration can be set by using configuration property cacheMemoryLimit and cacheExpiryDuration as shown bellow:``
-    
-```swift
- BlueTriangle.configure { config in
-         ...
-            config.cacheMemoryLimit = 50 * 1024 (Bytes)
-            config.cacheExpiryDuration = 50 * 60 * 1000 (Milisecond)
- }
-```
-
-By default, the cacheMemoryLimit is set to 2 days and cacheExpiryDuration is set to 30 MB.
-
-
-## WebView Tracking
-
-Websites shown in webview  that are tracked by BlueTriangle can be tracked in the same session as the native app. To achieve this, follow the steps below to configure the WebView:
-
-Implement WKNavigationDelegate protocol and  call  BTTWebViewTracker.webView(webView, didCommit: navigation) in 'webView(_:didCommit:)' delegate method as follows. 
-
-  ```swift
-    import BlueTriangle
-   
-    //....
-   
-   extension YourWebViewController: WKNavigationDelegate{
-   
-    //....
-    
-    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
-        
-        //....
-        
-        //Call BlueTringles 'webView(_:didCommit:)' method
-        BTTWebViewTracker.webView(webView, didCommit: navigation)
-      }
-    
-   }
-   
-  ``` 
-
-See below full example code for more clarity
-
-Webviw with UIViewController full example
-  ```swift
-  
-import UIKit
-import WebKit
-//Need to import BlueTriagle
-import BlueTriangle
-
-class YourWebViewController: UIViewController {
-
-    @IBOutlet weak var webView: WKWebView!
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        //Set navigationDelegate
-        webView.navigationDelegate = self
-        
-        //Load Url
-        if let htmlURL = URL(string: "https://example.com"){
-            webView.load(URLRequest(url: htmlURL))
-        }
-    }
-}
-
-//Implement Navigation Delagate
-extension YourWebViewController: WKNavigationDelegate {
-    
-    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
-        
-        //...
-        
-        //Call BlueTringles 'webView(_:didCommit:)' method
-        BTTWebViewTracker.webView(webView, didCommit: navigation)
-    }
-}
-
-  ``` 
-
-Webviw with SwiftUI full example
-
-  ```swift
-  
-import SwiftUI
-import WebKit
-//Need to import BlueTriagle
-import BlueTriangle
-
-struct YourWebView: UIViewRepresentable {
-   
-    private let webView = WKWebView()
-    
-    func makeCoordinator() -> YourWebView.Coordinator {
-        Coordinator()
-    }
-
-    func makeUIView(context: Context) -> some UIView {
-    
-        //Set navigationDelegate
-        webView.navigationDelegate = context.coordinator
-        
-        //Load Url
-        if let htmlURL = URL(string: "https://example.com"){
-            webView.load(URLRequest(url: htmlURL))
-        }
-        return webView
-    }
-}
-
-extension YourWebView {
-    
-    //Implement Navigation Delagate  Coordinator
-    
-    class Coordinator: NSObject, WKNavigationDelegate {
-       
-        func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
-           
-            //...
-            
-            //Call BlueTringles 'webView(_:didCommit:)' method
-            BTTWebViewTracker.webView(webView, didCommit: navigation)
-        }
-    }
-}
-  ``` 
-
-## Privacy Manifest
-
-**It is the application developer's responsibility to ensure that the privacy nutrition labels are used according to the configuration and usage of the BlueTriangle SDK in your application. For instance, if your application uses revenue tracking, then it is the application developer's responsibility to mention Purchase History in their application's Privacy Manifest data usage.**
-
- Depending on how App developers are utilizing the BlueTriangle SDK's configurable features, it is their responsibility to accurately mention their apps data uses in the Privacy Manifest. The table below shows each BlueTriangle feature and their applicable data nutrition label data type: 
- 
-
-| #  | **DATA TYPE**               | **LINKED** | **TRACKING** |   **PURPOSE**        |  **BTT Feature**                                                                                 |
-|----|-----------------------------|---------   |--------------|----------------------|--------------------------------------------------------------------------------------------------|
-| 1. | Purchase history            |     NO     |  NO          |   Analytics          | if app using cartValue(PurchaseConfirmation) to our timer.                                        |
-| 2. | Product interaction         |     NO     |  NO          |   App Functionality  | if app using timers to track user action like button tap.                                        |
-| 3. | Crash data                  |     NO     |  NO          |   App Functionality  | if app using crash tracking feature of Blue Triangle SDK.                                        |
-| 4. | Performance data            |     NO     |  NO          |   App Functionality  | if app using performance data(memory and CPU) and ANR feature of Blue Triangle SDK.               |
-| 5. | Other diagnostic data       |     NO     |  NO          |   App Functionality  | if app using any of the feature like timer and screen tracking etc.                               |                                                         
-                                                     
-
-For details about data usage check documentation [here](https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_data_use_in_privacy_manifests)
-
-
-## Launch Time
+### Launch Time
 
 BlueTriangle tracks app launch performance. Launch time refers to the duration it takes for an app to become ready for user interaction after it has been started. BlueTriangle automatically tracks both hot launch and cold launch.
 
 
-### Cold Launch
+#### Cold Launch
 
  A cold launch is launch when app process was already not in main memory. This can happen because iOS or user terminated your apps process or its first time launch after install/update/reboot.
 
  The BlueTriangle SDK measures the cold launch latency, which is the time between the process start time and end of 'applicationDidBecomeActive(:)'. So that cold launch time is cumulative time taken to load the process and time taken by 'application(:didFinishLaunchingWithOptions:)', 'applicationWillEnterForeground(:)' and 'applicationDidBecomeActive(:)'.
    
-### Hot Launch
+#### Hot Launch
 
   A hot launch is launch when app process was already in main memory. This can happen when user launches the app from the background.
  
@@ -747,3 +571,39 @@ You can disable it by setting "enableLaunchTime" configuration property to "fals
          config.enableLaunchTime = false
  }
 ```
+
+
+## How to Test your iOS SDK Integration
+
+### Site ID
+
+Log onto your account on the [Blue Triangle Portal](https://portal.bluetriangle.com), head over to "Native App -> Perfomance overview" and see that you can observe some data.
+
+### Memory Warning
+
+To test Memory Warning, In the iOS Simulator, you can generate a memory warning using the following steps:
+
+1. Launch Simulator
+2. Go to XCode 'Debug' menu
+3. Select 'Simulate Memory Warning' to generate memory warning
+
+### ANR Tracking
+
+To test ANR Tracking, You can declare and call the following function on the main thread:
+
+```swift
+
+func testANRTracking(){  let startTime = Date()  while true {  if (Date().timeIntervalSince1970 - startTime.timeIntervalSince1970) > 30 {  break  }  }  }
+```
+
+### Crash Tracking
+
+To test Crash Tracking, you can declare and call the following function:
+
+```swift
+
+func testCrashTracking() {  let array = NSArray()  array.object(at: 99)  }
+
+```
+
+
