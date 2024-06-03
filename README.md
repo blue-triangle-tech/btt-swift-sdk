@@ -420,7 +420,26 @@ timer.end()
 let purchaseConfirmation = PurchaseConfirmation(cartValue: 99.00)
 BlueTriangle.endTimer(timer, purchaseConfirmation: purchaseConfirmation)
 ```
+### Checkout Event Data
+Upon a customer checkout, it is possible to configure the following data parameters for the event.
 
+Brand Value
+```swift
+let timer = BlueTriangle.startTimer( page: Page( pageName: "SignUp", brandValue: 100.0)) 
+BlueTriangle.endTimer(timer)
+```
+
+Cart Value, Order Number, Order Time
+```swift
+let timer = BlueTriangle.startTimer( 
+    page: Page( 
+        pageName: "Cart")) 
+BlueTriangle.endTimer( 
+    timer, 
+    purchaseConfirmation: PurchaseConfirmation( 
+        cartValue:99.0, 
+        orderNumber: "ORD-123345"))
+```
 
 ## Optional Configuration Steps
 
