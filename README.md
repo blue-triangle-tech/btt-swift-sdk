@@ -247,7 +247,7 @@ Network requests using a URLSession with a NetworkCaptureSessionDelegate or made
 You can use NetworkCaptureSessionDelegate or a subclass as your URLSession delegate to gather information about network requests when network capture is enabled:
 
 ```swift
-let sesssion = URLSession(
+let session = URLSession(
     configuration: .default,
     delegate: NetworkCaptureSessionDelegate(),
     delegateQueue: nil)
