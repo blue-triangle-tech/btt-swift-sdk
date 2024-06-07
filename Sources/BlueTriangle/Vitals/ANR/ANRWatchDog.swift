@@ -54,7 +54,8 @@ class ANRWatchDog{
     func start(){
         self.mainThreadObserver.start()
         startObservationTimer()
-        logger.info("ANR Watch Dog started. Main thread will be checked for every \(self.sampleTimeInterval) Sec. If a task is running longer then \(self.errorTriggerInterval) ANRWarning will be raised.")
+        let anrInfoMessage = "ANR Watch Dog started. Main thread will be checked for every \(self.sampleTimeInterval) Sec. If a task is running longer then \(self.errorTriggerInterval) ANRWarning will be raised."
+        logger.info(anrInfoMessage)
     }
     
    func stop(){
