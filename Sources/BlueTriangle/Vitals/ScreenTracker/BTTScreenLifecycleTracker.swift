@@ -204,7 +204,8 @@ class TimerMapActivity {
             
             BlueTriangle.endTimer(timer)
             
-            self.logger?.info("View tracker timer submited for screen :\(pageName)")
+            let pageInfoMessage = "View tracker timer submited for screen :\(self.pageName)"
+            self.logger?.info(pageInfoMessage)
         }
     }
                 
