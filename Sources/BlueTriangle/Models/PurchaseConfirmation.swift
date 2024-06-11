@@ -17,6 +17,12 @@ final public class PurchaseConfirmation: NSObject {
 
     /// The order number from the purchase on purchase confirmation steps.
     @objc public var orderNumber: String
+    
+    /// Cart count  for purchase confirmation steps.
+    @objc public var cartCount: Int = 0
+    
+    /// Cart checkout count  for purchase confirmation steps.
+    @objc public var cartCheckoutCount: Int = 0
 
     /// Order time and date.
     @objc public var orderTime: TimeInterval = 0.0
@@ -24,18 +30,24 @@ final public class PurchaseConfirmation: NSObject {
     /// Creates a purchase confirmation.
     /// - Parameters:
     ///   - cartValue: Purchase amount.
+    ///   - cartCount: Cart count.
+    ///   - cartCheckoutCount: Cart checkout count
     ///   - orderNumber: Order number.
     @objc
-    public init(cartValue: Decimal, orderNumber: String = "") {
+    public init(cartValue: Decimal, cartCount: Int = 0, cartCheckoutCount: Int = 0, orderNumber: String = "") {
         self.cartValue = cartValue
         self.orderNumber = orderNumber
+        self.cartCount = cartCount
+        self.cartCheckoutCount = cartCheckoutCount
     }
 
-    init(pageValue: Decimal = 0.0, cartValue: Decimal, orderNumber: String, orderTime: TimeInterval = 0.0) {
+    init(pageValue: Decimal = 0.0, cartValue: Decimal, cartCount: Int = 0, cartCheckoutCount: Int = 0, orderNumber: String, orderTime: TimeInterval = 0.0) {
         self.pageValue = pageValue
         self.cartValue = cartValue
         self.orderNumber = orderNumber
         self.orderTime = orderTime
+        self.cartCount = cartCount
+        self.cartCheckoutCount = cartCheckoutCount
     }
 }
 
