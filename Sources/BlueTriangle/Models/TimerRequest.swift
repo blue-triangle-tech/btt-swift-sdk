@@ -79,7 +79,7 @@ extension TimerRequest: Codable {
             try con.encode(purchaseConfirmation.pageValue, forKey: .pageValue)
             try con.encode(purchaseConfirmation.cartValue, forKey: .cartValue)
             try con.encode(purchaseConfirmation.cartCount, forKey: .cartCount)
-            try con.encode(purchaseConfirmation.cartCheckoutCount, forKey: .cartCheckoutCount)
+            try con.encode(purchaseConfirmation.cartCountCheckout, forKey: .cartCountCheckout)
             try con.encode(purchaseConfirmation.orderNumber, forKey: .orderNumber)
             try con.encode(purchaseConfirmation.orderTime.milliseconds, forKey: .orderTime)
         }
@@ -251,7 +251,7 @@ extension TimerRequest: Codable {
                 pageValue: pageValue,
                 cartValue: try container.decode(Decimal.self, forKey: CodingKeys.cartValue),
                 cartCount: try container.decode(Int.self, forKey: CodingKeys.cartCount),
-                cartCheckoutCount: try container.decode(Int.self, forKey: CodingKeys.cartCheckoutCount),
+                cartCountCheckout: try container.decode(Int.self, forKey: CodingKeys.cartCountCheckout),
                 orderNumber: try container.decode(String.self, forKey: CodingKeys.orderNumber),
                 orderTime: try container.decode(TimeInterval.self, forKey: CodingKeys.orderTime))
         } else {
@@ -321,7 +321,7 @@ extension TimerRequest: Codable {
         case orderNumber = "ONumBr"
         case orderTime = "orderTND"
         case cartCount = "c_count"
-        case cartCheckoutCount = "co_count"
+        case cartCountCheckout = "co_count"
         // CustomVariables
         case cv1 = "CV1"
         case cv2 = "CV2"

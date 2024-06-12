@@ -429,7 +429,7 @@ let timer = BlueTriangle.startTimer( page: Page( pageName: "SignUp", brandValue:
 BlueTriangle.endTimer(timer)
 ```
 
-Cart Value, Cart Count, Cart Checkout Count, Order Number, Order Time
+Cart Value, Cart Count, Cart Count Checkout, Order Number, Order Time
 ```swift
 let timer = BlueTriangle.startTimer( 
     page: Page( 
@@ -439,7 +439,7 @@ BlueTriangle.endTimer(
     purchaseConfirmation: PurchaseConfirmation( 
         cartValue:99.0, 
         cartCount: 2,
-        cartCheckoutCount : 2,
+        cartCountCheckout : 2,
         orderNumber: "ORD-123345"))
 ```
 
