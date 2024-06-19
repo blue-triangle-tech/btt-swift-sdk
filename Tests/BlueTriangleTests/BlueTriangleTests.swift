@@ -49,7 +49,7 @@ final class BlueTriangleTests: XCTestCase {
                            url: Constants.timerEndpoint,
                            headers: nil,
                            model: model,
-                           encode: { 
+                           encode: {
             try requestEncoder.encode($0).base64EncodedData()
             
         })
