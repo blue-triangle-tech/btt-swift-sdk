@@ -20,16 +20,6 @@ struct TimerRequestBuilder {
         return try Request(method: .post,
                            url: Constants.timerEndpoint,
                            headers: nil,
-                           model: model,
-                           encode: {
-            try requestEncoder.encode($0).base64EncodedData()
-            
-        })
+                           model: model)
     }
-    
-    static let requestEncoder: JSONEncoder = {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys]
-        return encoder
-    }()
 }
