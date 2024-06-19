@@ -49,7 +49,7 @@ final class BlueTriangleTests: XCTestCase {
                            url: Constants.timerEndpoint,
                            headers: nil,
                            model: model,
-                           encode: { 
+                           encode: {
             try requestEncoder.encode($0).base64EncodedData()
             
         })
@@ -112,11 +112,6 @@ extension BlueTriangleTests {
         let expectedInteractiveTime: TimeInterval = 1000
         let expectedEndTime: TimeInterval = 2000
 
-        // BlueTriangleConfiguration
-        let configuration = BlueTriangleConfiguration()
-        configuration.requestBuilder = Self.requestBuilder
-        Mock.configureBlueTriangle(configuration: configuration)
-        
         Self.timeIntervals = [
             expectedEndTime,
             expectedInteractiveTime,
@@ -150,6 +145,11 @@ extension BlueTriangleTests {
             request = req
             requestExpectation.fulfill()
         }
+
+        // BlueTriangleConfiguration
+        let configuration = BlueTriangleConfiguration()
+        Mock.configureBlueTriangle(configuration: configuration)
+        configuration.requestBuilder = Self.requestBuilder
 
         // Configure Blue Triangle
         BlueTriangle.reconfigure(
@@ -199,11 +199,6 @@ extension BlueTriangleTests {
         let expectedInteractiveTime: TimeInterval = 1000
         let expectedEndTime: TimeInterval = 2000
 
-        // BlueTriangleConfiguration
-        let configuration = BlueTriangleConfiguration()
-        configuration.requestBuilder = Self.requestBuilder
-        Mock.configureBlueTriangle(configuration: configuration)
-        
         Self.timeIntervals = [
             expectedEndTime,
             expectedInteractiveTime,
@@ -237,6 +232,11 @@ extension BlueTriangleTests {
             request = req
             requestExpectation.fulfill()
         }
+
+        // BlueTriangleConfiguration
+        let configuration = BlueTriangleConfiguration()
+        Mock.configureBlueTriangle(configuration: configuration)
+        configuration.requestBuilder = Self.requestBuilder
 
         // Configure Blue Triangle
         BlueTriangle.reconfigure(
@@ -304,11 +304,6 @@ extension BlueTriangleTests {
         let requestTimerIntervalProvider = {
             requestTimeIntervals.popLast()!
         }
-        
-        // BlueTriangleConfiguration
-        let configuration = BlueTriangleConfiguration()
-        configuration.requestBuilder = Self.requestBuilder
-        Mock.configureBlueTriangle(configuration: configuration)
 
         // Timer
         let timerFactory: (Page, BTTimer.TimerType) -> BTTimer = { page, timerType in
@@ -327,6 +322,11 @@ extension BlueTriangleTests {
             capturedRequest = req
             requestExpectation?.fulfill()
         }
+
+        // BlueTriangleConfiguration
+        let configuration = BlueTriangleConfiguration()
+        Mock.configureBlueTriangle(configuration: configuration)
+        configuration.requestBuilder = Self.requestBuilder
 
         // Configure Blue Triangle
         let requestCollector = Mock.makeRequestCollectorConfiguration()
