@@ -252,6 +252,7 @@ extension BlueTriangle {
             if let crashConfig = configuration.crashTracking.configuration {
                 DispatchQueue.global(qos: .utility).async {
                     configureCrashTracking(with: crashConfig)
+                    configureSignalCrash(with: crashConfig)
 #if os(iOS)
                     matricKitWatchDog.start()
 #endif
@@ -443,6 +444,8 @@ public extension BlueTriangle {
     }
 }
 
+private var btcrashReport: BTTSignalCrashReporter?
+
 // MARK: - Crash Reporting
 extension BlueTriangle {
     static func configureCrashTracking(with crashConfiguration: CrashReportConfiguration) {
@@ -450,8 +453,16 @@ extension BlueTriangle {
                                                 logger: logger,
                                                 uploader: uploader,
                                                 sessionProvider: { session })
-
+    
         CrashReportPersistence.configureCrashHandling(configuration: crashConfiguration)
+    }
+    
+    
+    static func configureSignalCrash(with crashConfiguration: CrashReportConfiguration) {
+        btcrashReport = BTTSignalCrashReporter(logger: logger,
+                                        uploader: uploader,
+                                        sessionProvider: { session })
+        btcrashReport?.startUploadingSignalCrashes()
     }
 
     /// Saves an exception to upload to the Blue Triangle portal on next launch.
