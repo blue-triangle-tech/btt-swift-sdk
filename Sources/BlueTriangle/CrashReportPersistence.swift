@@ -6,6 +6,9 @@
 //
 
 import Foundation
+#if canImport(AppEventLogger)
+import AppEventLogger
+#endif
 
 enum CrashReportConfiguration {
     case nsException
@@ -30,6 +33,7 @@ struct CrashReportPersistence: CrashReportPersisting {
         switch configuration {
         case .nsException:
             NSSetUncaughtExceptionHandler { exception in
+                SignalHandler.disableCrashTracking()
                 Self.save(
                     CrashReport(sessionID: BlueTriangle.sessionID,
                                 exception: exception, pageName: BlueTriangle.recentTimer()?.page.pageName))

@@ -18,6 +18,9 @@ import UIKit
 import SwiftUI
 #endif
 
+#if canImport(AppEventLogger)
+import AppEventLogger
+#endif
 
 protocol BTScreenLifecycleTracker{
     func loadStarted(_ id : String, _ name : String)
@@ -69,6 +72,7 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
     
     func manageTimer(_ pageName : String, id : String, type : TimerMapType){
         if self.enableLifecycleTracker{
+            SignalHandler.setCurrentPageName(pageName)
             let timerActivity = getTimerActivity(pageName, id: id)
             btTimeActivityrMap[id] = timerActivity
             timerActivity.manageTimeFor(type: type)

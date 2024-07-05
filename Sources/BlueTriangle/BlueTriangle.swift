@@ -459,10 +459,11 @@ extension BlueTriangle {
     
     
     static func configureSignalCrash(with crashConfiguration: CrashReportConfiguration) {
-        btcrashReport = BTTSignalCrashReporter(logger: logger,
+        SignalHandler.enableCrashTracking(withApp_version: Version.number, debug_log: true, bttSessionID: "\(sessionID)")
+        btcrashReport = BTTSignalCrashReporter(directory: SignalHandler.reportsFolderPath(), logger: logger,
                                         uploader: uploader,
                                         sessionProvider: { session })
-        btcrashReport?.startUploadingSignalCrashes()
+        btcrashReport?.configureSignalCrashHandling(configuration: crashConfiguration)
     }
 
     /// Saves an exception to upload to the Blue Triangle portal on next launch.

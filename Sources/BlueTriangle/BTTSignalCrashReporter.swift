@@ -6,6 +6,22 @@
 //
 
 import UIKit
+#if canImport(AppEventLogger)
+import AppEventLogger
+#endif
+
+struct SignalCrash: Codable {
+    var signal: String
+    var signo: Int
+    var errno: Int
+    var sig_code: Int
+    var exit_value: Int
+    var crash_time: UInt64
+    var app_version: String
+    var btt_session_id: String
+    var btt_page_name: String?
+}
+
 
 class BTTSignalCrashReporter {
     
@@ -23,7 +39,7 @@ class BTTSignalCrashReporter {
     private var startupTask: Task<Void, Error>?
 
     init(
-        directory: String = File.cacheRequestsFolder?.url.path ?? "",
+        directory: String,
         logger: Logging,
         uploader: Uploading,
         sessionProvider: @escaping () -> Session,
@@ -36,19 +52,27 @@ class BTTSignalCrashReporter {
         self.intervalProvider = intervalProvider
     }
     
-    func startUploadingSignalCrashes(){
+    func configureSignalCrashHandling(configuration: CrashReportConfiguration) {
+        switch configuration {
+        case .nsException:
+            self.startUploadingSignalCrashes()
+        }
+    }
+    
+    private func startUploadingSignalCrashes(){
         do{
+            let signal = SignalHandler.reportsFolderPath()
             let session = self.sessionProvider()
             let crashes = try self.getAllCrashes()
             for crash in crashes {
                  uploadSignalCrash(crash, session)
             }
         }catch{
-            logger.error(error.localizedDescription)
+            logger.error("BlueTriangle:SignalCrashReporter: \(error.localizedDescription)")
         }
     }
     
-    private func uploadSignalCrash(_ crash: BTTCrash, _ session: Session) {
+    private func uploadSignalCrash(_ crash: SignalCrash, _ session: Session) {
         DispatchQueue.global(qos: .utility).async { [weak self] in
             do {
                 guard let strongSelf = self else {
@@ -58,21 +82,21 @@ class BTTSignalCrashReporter {
                 if let sessionId = UInt64(crash.btt_session_id){
                     var sessionCopy = session
                     sessionCopy.sessionID = sessionId
-                    let pageName = crash.btt_page_name.count > 0 ? crash.btt_page_name : Constants.crashID
-                    let message = """
-                App crashed signal \(crash.signo) \(crash.signal)
-                errno : \(crash.errno)
-                signal code : \(crash.sig_code)
-                exit value : \(crash.exit_value)
-                """
-                    
+                    let pageName = (crash.btt_page_name ?? "").count > 0 ? crash.btt_page_name : Constants.crashID
+                let message = """
+App crashed \(crash.signal)
+signo : \(crash.signo)
+errno : \(crash.errno)
+signal code : \(crash.sig_code)
+exit value : \(crash.exit_value)
+"""
                     let exception = NSException(name: NSExceptionName("NSRangeException"), reason: message)
                     let crashReport = CrashReport(sessionID: sessionId, exception: exception, pageName: pageName, intervalProvider: TimeInterval(crash.crash_time))
                     try strongSelf.upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName)
                     try strongSelf.removeFile(crash)
                 }
             }catch {
-                self?.logger.error(error.localizedDescription)
+                self?.logger.error("BlueTriangle:SignalCrashReporter: \(error.localizedDescription)")
             }
         }
     }
@@ -138,7 +162,7 @@ private extension BTTSignalCrashReporter {
 extension BTTSignalCrashReporter{
     
     // Parse given file to BTTCrash
-    private func readFile(_ fileName : String) throws -> BTTCrash?{
+    private func readFile(_ fileName : String) throws -> SignalCrash?{
         let decoder = JSONDecoder()
         let url = URL(fileURLWithPath: self.directory)
         let file = File.init(directory: url, name: fileName)
@@ -152,14 +176,13 @@ extension BTTSignalCrashReporter{
             data = Data()
         }
         
-        return try decoder.decode(BTTCrash.self, from: data)
+        return try decoder.decode(SignalCrash.self, from: data)
     }
     
     // Get All BTTCrash form files
-    
-    private  func getAllCrashes() throws -> [BTTCrash]{
+    private  func getAllCrashes() throws -> [SignalCrash]{
         
-        var crashes = [BTTCrash]()
+        var crashes = [SignalCrash]()
         let files = try self.getAllFiles()
         
         for file in files {
@@ -183,21 +206,10 @@ extension BTTSignalCrashReporter{
         return fileList
     }
     
-    private  func removeFile(_ crash : BTTCrash) throws{
+    private  func removeFile(_ crash : SignalCrash) throws{
         let url = URL(fileURLWithPath: self.directory)
         let file = File.init(directory: url, name: "\(crash.crash_time).bttcrash")
         let persistence = Persistence.init(file: file)
         try persistence.clear()
     }
-}
-
-struct BTTCrash: Codable {
-    var signal: String
-    var signo: Int
-    var errno: Int
-    var sig_code: Int
-    var exit_value: Int
-    var crash_time: UInt64
-    var btt_session_id: String
-    var btt_page_name: String
 }
