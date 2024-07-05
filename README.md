@@ -535,27 +535,8 @@ BlueTriangle.configure { config in
    }
 ```
 
-### Crash tracking
 
-Blue triangle tracks app crashes to report crash revenue correlation. By default crash tracking is enabled.
-
-It is recommended to configure blue triangle sdk before any other crash tracking tool to not get conflict with other crash reporting tool. We advise to test your crash reporting before production to make sure crashes are reported to both blue triangle and your other crash tracking tool. Crash tracking tools may conflict each other, not configuring blue triangle sdk before other crash tracking tool may result in conflict which leads bluetriangle is not able to track crashes. Try changing order of configuration and disabling one another.
-
-To disable blue triangle crash tracking use following configuration
-
-```swift
-
-BlueTriangle.configure { config in
-    config.siteID = "<MY_SITE_ID>"
-    //Disable crash tracking
-   config.crashTracking = .none
-}
-```
-
-If by any reason you cant configure bluetriangle before your crash tracking tool configuration. You can use BlueTriangle.startCrashTracking(), this function allows bluetriangle to start crash tracking before configuring bluetriangle sdk. This helps in scenarios where you want to configure blue triangle sdk later after your another crash tracking tool is configured.
-
-
-#### Offline Caching
+### Offline Caching
 
 Offline caching is a feature that allows the BTT SDK to keep track of timers and other analytics data while the app is in offline mode. i.e, the BTT SDK cannot send data back to Blue Triangle.
 
@@ -614,6 +595,26 @@ You can disable it by setting "enableLaunchTime" configuration property to "fals
          config.enableLaunchTime = false
  }
 ```
+
+### Crash tracking
+
+Blue triangle tracks app crashes to report crash revenue correlation. By default crash tracking is enabled.
+
+It is recommended to configure blue triangle sdk before any other crash tracking tool to not get conflict with other crash reporting tool. We advise to test your crash reporting before production to make sure crashes are reported to both blue triangle and your other crash tracking tool. Crash tracking tools may conflict each other, not configuring blue triangle sdk before other crash tracking tool may result in conflict which leads bluetriangle is not able to track crashes. Try changing order of configuration and disabling one another.
+
+To disable blue triangle crash tracking use following configuration
+
+```swift
+
+BlueTriangle.configure { config in
+    config.siteID = "<MY_SITE_ID>"
+    //Disable crash tracking
+   config.crashTracking = .none
+}
+```
+
+If by any reason you cant configure bluetriangle before your crash tracking tool configuration. You can use BlueTriangle.startCrashTracking(), this function allows bluetriangle to start crash tracking before configuring bluetriangle sdk. This helps in scenarios where you want to configure blue triangle sdk later after your another crash tracking tool is configured.
+
 
 
 ## How to Test your iOS SDK Integration
