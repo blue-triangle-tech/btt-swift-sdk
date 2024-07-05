@@ -1,6 +1,6 @@
 //
 //  BTCrashReporter.swift
-//  
+//
 //
 //  Created by Ashok Singh on 01/07/24.
 //
@@ -25,19 +25,18 @@ struct SignalCrash: Codable {
 
 class BTTSignalCrashReporter {
     
-    //Given Crash Directory
     private let  directory : String
     
     private let logger: Logging
-
+    
     private let uploader: Uploading
-
+    
     private let sessionProvider: () -> Session
-
+    
     private let intervalProvider: () -> TimeInterval
-
+    
     private var startupTask: Task<Void, Error>?
-
+    
     init(
         directory: String,
         logger: Logging,
@@ -55,17 +54,16 @@ class BTTSignalCrashReporter {
     func configureSignalCrashHandling(configuration: CrashReportConfiguration) {
         switch configuration {
         case .nsException:
-            self.startUploadingSignalCrashes()
+            self.uploadAllStoredSignalCrashes()
         }
     }
     
-    private func startUploadingSignalCrashes(){
+    private func uploadAllStoredSignalCrashes(){
         do{
-            let signal = SignalHandler.reportsFolderPath()
             let session = self.sessionProvider()
             let crashes = try self.getAllCrashes()
             for crash in crashes {
-                 uploadSignalCrash(crash, session)
+                uploadSignalCrash(crash, session)
             }
         }catch{
             logger.error("BlueTriangle:SignalCrashReporter: \(error.localizedDescription)")
@@ -83,7 +81,7 @@ class BTTSignalCrashReporter {
                     var sessionCopy = session
                     sessionCopy.sessionID = sessionId
                     let pageName = (crash.btt_page_name ?? "").count > 0 ? crash.btt_page_name : Constants.crashID
-                let message = """
+                    let message = """
 App crashed \(crash.signal)
 signo : \(crash.signo)
 errno : \(crash.errno)
@@ -104,7 +102,7 @@ exit value : \(crash.exit_value)
 
 // MARK: - Private
 private extension BTTSignalCrashReporter {
-    func makeTimerRequest(session: Session, report: ErrorReport, pageName : String?) throws -> Request {
+    private  func makeTimerRequest(session: Session, report: ErrorReport, pageName : String?) throws -> Request {
         let page = Page(pageName: pageName ?? Constants.crashID, pageType: Device.name)
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
         let nativeProperty =  report.nativeApp.copy(.Regular)
@@ -116,13 +114,13 @@ private extension BTTSignalCrashReporter {
                                  excluded: Constants.excludedValue,
                                  nativeAppProperties: nativeProperty,
                                  isErrorTimer: true)
-
+        
         return try Request(method: .post,
                            url: Constants.timerEndpoint,
                            model: model)
     }
-
-    func makeErrorReportRequest(session: Session, report: ErrorReport, pageName : String?) throws -> Request {
+    
+    private  func makeErrorReportRequest(session: Session, report: ErrorReport, pageName : String?) throws -> Request {
         let params: [String: String] = [
             "siteID": session.siteID,
             "nStart": String(report.time),
@@ -141,14 +139,14 @@ private extension BTTSignalCrashReporter {
             "browserVersion": Device.bvzn,
             "device": Constants.device
         ]
-
+        
         return try Request(method: .post,
                            url: Constants.errorEndpoint,
                            parameters: params,
                            model: [report])
     }
-
-    func upload(session: Session, report: ErrorReport, pageName : String?) throws {
+    
+    private func upload(session: Session, report: ErrorReport, pageName : String?) throws {
         let timerRequest = try self.makeTimerRequest(session: session,
                                                      report: report, pageName: pageName)
         self.uploader.send(request: timerRequest)
@@ -161,7 +159,7 @@ private extension BTTSignalCrashReporter {
 
 extension BTTSignalCrashReporter{
     
-    // Parse given file to BTTCrash
+    // Parse given file to SignalCrash
     private func readFile(_ fileName : String) throws -> SignalCrash?{
         let decoder = JSONDecoder()
         let url = URL(fileURLWithPath: self.directory)
@@ -179,7 +177,7 @@ extension BTTSignalCrashReporter{
         return try decoder.decode(SignalCrash.self, from: data)
     }
     
-    // Get All BTTCrash form files
+    // Get All SignalCrash form files
     private  func getAllCrashes() throws -> [SignalCrash]{
         
         var crashes = [SignalCrash]()
@@ -202,7 +200,7 @@ extension BTTSignalCrashReporter{
         if let files = try? FileManager.default.contentsOfDirectory(atPath:directory).filter({ name in return name.contains(".bttcrash")}){
             fileList.append(contentsOf: files)
         }
-
+        
         return fileList
     }
     
