@@ -24,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void) debug_log:(NSString *)msg;
 
++ (void) setMaxCacheFileCount:(int) file_count;
+
 @end
 
 NS_ASSUME_NONNULL_END

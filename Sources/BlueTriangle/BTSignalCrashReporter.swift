@@ -54,7 +54,14 @@ class BTSignalCrashReporter {
     func configureSignalCrashHandling(configuration: CrashReportConfiguration) {
         switch configuration {
         case .nsException:
-            self.uploadAllStoredSignalCrashes()
+            self.startupTask = Task.delayed(byTimeInterval: Constants.startupDelay, priority: .utility) { [weak self] in
+                guard let strongSelf = self else {
+                    return
+                }
+                SignalHandler.setMaxCacheFileCount(Constants.maxSignalCacheCount)
+                strongSelf.uploadAllStoredSignalCrashes()
+                strongSelf.startupTask = nil
+            }
         }
     }
     
