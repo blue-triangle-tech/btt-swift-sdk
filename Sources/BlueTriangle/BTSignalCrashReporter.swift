@@ -18,7 +18,7 @@ struct SignalCrash: Codable {
     var exit_value: Int
     var crash_time: UInt64
     var app_version: String
-    var btt_session_id: String
+    var btt_session_id: String?
     var btt_page_name: String?
 }
 
@@ -80,11 +80,7 @@ class BTSignalCrashReporter {
     private func uploadSignalCrash(_ crash: SignalCrash, _ session: Session) {
         DispatchQueue.global(qos: .utility).async { [weak self] in
             do {
-                guard let strongSelf = self else {
-                    return
-                }
-                
-                if let sessionId = UInt64(crash.btt_session_id){
+                if let strongSelf = self, let session_id = crash.btt_session_id, session_id.count > 0, let sessionId = UInt64(session_id){
                     var sessionCopy = session
                     sessionCopy.sessionID = sessionId
                     let pageName = (crash.btt_page_name ?? "").count > 0 ? crash.btt_page_name : Constants.crashID
@@ -99,6 +95,8 @@ exit value : \(crash.exit_value)
                     let crashReport = CrashReport(sessionID: sessionId, exception: exception, pageName: pageName, intervalProvider: TimeInterval(crash.crash_time))
                     try strongSelf.upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName)
                     try strongSelf.removeFile(crash)
+                }else{
+                    try self?.removeFile(crash)
                 }
             }catch {
                 self?.logger.error("BlueTriangle:SignalCrashReporter: \(error.localizedDescription)")

@@ -44,6 +44,7 @@ static char* __report_folder_path = NULL;
 static char* __btt_session_id = "unknown";
 static NSString* __current_page_name = @"";
 static int __max_cache_files = 1;
+static bool __is_register = false;
 
 void register_btt_tracker(void){
     
@@ -359,6 +360,11 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
                 debug_log:(Boolean) debug_log
                 BTTSessionID:(NSString*) session_id{
     
+    if (__is_register) {
+        [self debug_log:[NSString stringWithFormat:@"Signal already registered."]];
+       return;
+    }
+        
     //Create report report folder if not found
     NSError *e = [self initReportFolderPath];
     if(e){
@@ -384,6 +390,8 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
     
     //Register all Signal handlers
     register_btt_tracker();
+    
+    __is_register = true;
     
     [self debug_log:[NSString stringWithFormat:@"Signal registration successful session %s, version %s", __btt_session_id, __app_version]];
 }

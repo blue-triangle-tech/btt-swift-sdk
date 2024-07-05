@@ -539,7 +539,7 @@ BlueTriangle.configure { config in
 
 Blue triangle tracks app crashes to report crash revenue correlation. By default crash tracking is enabled.
 
-It is recommended to configure blue triangle sdk before any other crash tracking tool to get conflicting crash reporting. We advise to test your crash reporting before production to make sure crashes are reported to both blue triangle and your other crash tracking tool. Crash tracking tools may conflict each other, not configuring blue triangle sdk before other crash tracking tool may result in conflict which leads bluetriangle is not able to track crashes. Try changing order of configuration and disabling one another.
+It is recommended to configure blue triangle sdk before any other crash tracking tool to not get conflict with other crash reporting tool. We advise to test your crash reporting before production to make sure crashes are reported to both blue triangle and your other crash tracking tool. Crash tracking tools may conflict each other, not configuring blue triangle sdk before other crash tracking tool may result in conflict which leads bluetriangle is not able to track crashes. Try changing order of configuration and disabling one another.
 
 To disable blue triangle crash tracking use following configuration
 
