@@ -444,7 +444,7 @@ public extension BlueTriangle {
     }
 }
 
-private var btcrashReport: BTTSignalCrashReporter?
+private var btcrashReport: BTSignalCrashReporter?
 
 // MARK: - Crash Reporting
 extension BlueTriangle {
@@ -460,7 +460,7 @@ extension BlueTriangle {
     
     static func configureSignalCrash(with crashConfiguration: CrashReportConfiguration) {
         SignalHandler.enableCrashTracking(withApp_version: Version.number, debug_log: true, bttSessionID: "\(sessionID)")
-        btcrashReport = BTTSignalCrashReporter(directory: SignalHandler.reportsFolderPath(), logger: logger,
+        btcrashReport = BTSignalCrashReporter(directory: SignalHandler.reportsFolderPath(), logger: logger,
                                         uploader: uploader,
                                         sessionProvider: { session })
         btcrashReport?.configureSignalCrashHandling(configuration: crashConfiguration)

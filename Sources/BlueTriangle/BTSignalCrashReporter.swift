@@ -23,7 +23,7 @@ struct SignalCrash: Codable {
 }
 
 
-class BTTSignalCrashReporter {
+class BTSignalCrashReporter {
     
     private let  directory : String
     
@@ -101,7 +101,7 @@ exit value : \(crash.exit_value)
 }
 
 // MARK: - Private
-private extension BTTSignalCrashReporter {
+private extension BTSignalCrashReporter {
     private  func makeTimerRequest(session: Session, report: ErrorReport, pageName : String?) throws -> Request {
         let page = Page(pageName: pageName ?? Constants.crashID, pageType: Device.name)
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
@@ -157,7 +157,7 @@ private extension BTTSignalCrashReporter {
     }
 }
 
-extension BTTSignalCrashReporter{
+extension BTSignalCrashReporter{
     
     // Parse given file to SignalCrash
     private func readFile(_ fileName : String) throws -> SignalCrash?{
