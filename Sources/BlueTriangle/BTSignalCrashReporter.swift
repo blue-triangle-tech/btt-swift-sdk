@@ -91,8 +91,7 @@ errno : \(crash.errno)
 signal code : \(crash.sig_code)
 exit value : \(crash.exit_value)
 """
-                    let exception = NSException(name: NSExceptionName("NSRangeException"), reason: message)
-                    let crashReport = CrashReport(sessionID: sessionId, exception: exception, pageName: pageName, intervalProvider: TimeInterval(crash.crash_time))
+                    let crashReport = CrashReport(sessionID: sessionId, message: message, pageName: pageName, intervalProvider: TimeInterval(crash.crash_time))
                     try strongSelf.upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName)
                     try strongSelf.removeFile(crash)
                 }else{

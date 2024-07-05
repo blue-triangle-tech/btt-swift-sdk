@@ -252,7 +252,7 @@ extension BlueTriangle {
             if let crashConfig = configuration.crashTracking.configuration {
                 DispatchQueue.global(qos: .utility).async {
                     configureCrashTracking(with: crashConfig)
-                    configureSignalCrash(with: crashConfig)
+                    configureSignalCrash(with: crashConfig, debugLog: configuration.enableDebugLogging)
 #if os(iOS)
                     matricKitWatchDog.start()
 #endif
@@ -458,8 +458,12 @@ extension BlueTriangle {
     }
     
     
-    static func configureSignalCrash(with crashConfiguration: CrashReportConfiguration) {
+    public static func startCrashTracking() {
         SignalHandler.enableCrashTracking(withApp_version: Version.number, debug_log: true, bttSessionID: "\(sessionID)")
+    }
+    
+    static func configureSignalCrash(with crashConfiguration: CrashReportConfiguration, debugLog : Bool) {
+        SignalHandler.enableCrashTracking(withApp_version: Version.number, debug_log: debugLog, bttSessionID: "\(sessionID)")
         btcrashReport = BTSignalCrashReporter(directory: SignalHandler.reportsFolderPath(), logger: logger,
                                         uploader: uploader,
                                         sessionProvider: { session })
