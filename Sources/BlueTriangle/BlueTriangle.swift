@@ -21,12 +21,12 @@ final public class BlueTriangle: NSObject {
     internal static var configuration = BlueTriangleConfiguration()
     private static var activeTimers = [BTTimer]()
 #if os(iOS)
-    private static let matricKitWatchDog = MetricKitWatchDog()
+   // private static let matricKitWatchDog = MetricKitWatchDog()
 #endif
     internal static func addActiveTimer(_ timer : BTTimer){
         activeTimers.append(timer)
 #if os(iOS)
-        matricKitWatchDog.saveCurrentTimerData(timer)
+       // matricKitWatchDog.saveCurrentTimerData(timer)
 #endif
     }
     
@@ -254,7 +254,7 @@ extension BlueTriangle {
                     configureCrashTracking(with: crashConfig)
                     configureSignalCrash(with: crashConfig, debugLog: configuration.enableDebugLogging)
 #if os(iOS)
-                    matricKitWatchDog.start()
+                 //   matricKitWatchDog.start()
 #endif
                 }
             }
