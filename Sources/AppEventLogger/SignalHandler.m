@@ -349,22 +349,22 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
 @implementation SignalHandler
 
 + (void) disableCrashTracking{
+    
+#if TARGET_OS_IOS
     reset_sig_handlers();
     register_prev_alt_stack();
     register_prev_handlers();
     
     [self debug_log:@"Disabled crash tracking. "];
+#endif
+    
 }
 
 + (void) enableCrashTrackingWithApp_version:(NSString*) app_version
                 debug_log:(Boolean) debug_log
                 BTTSessionID:(NSString*) session_id{
     
-    if (__is_register) {
-        [self debug_log:[NSString stringWithFormat:@"Signal already registered."]];
-       return;
-    }
-        
+#if TARGET_OS_IOS
     //Create report report folder if not found
     NSError *e = [self initReportFolderPath];
     if(e){
@@ -388,12 +388,19 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
     [session_id getCString:buff_session_id maxLength:session_id_size encoding:NSASCIIStringEncoding];
     __btt_session_id = buff_session_id;
     
+    if (__is_register) {
+        [self debug_log:[NSString stringWithFormat:@"Signal already registered."]];
+       return;
+    }
+    
     //Register all Signal handlers
     register_btt_tracker();
     
     __is_register = true;
     
     [self debug_log:[NSString stringWithFormat:@"Signal registration successful session %s, version %s", __btt_session_id, __app_version]];
+#endif
+    
 }
 
 + (NSString*) reportsFolderPath{
