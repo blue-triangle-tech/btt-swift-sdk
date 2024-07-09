@@ -100,8 +100,10 @@ void register_alt_stack(void){
     altStack.ss_size = SIGSTKSZ;
     altStack.ss_flags = 0;
     
+#if TARGET_OS_IOS
     if (sigaltstack(&altStack, &prevAltStack))
         [SignalHandler debug_log:@"Failed to register alt stack."];
+#endif
 }
 
 void register_prev_alt_stack(void){
@@ -110,8 +112,10 @@ void register_prev_alt_stack(void){
         return;
     }
     
+#if TARGET_OS_IOS
     if (sigaltstack(&prevAltStack, NULL))
         [SignalHandler debug_log:@"Failed to register previous alt stack."];
+#endif
 }
 
 void register_prev_handlers(void){
@@ -364,7 +368,6 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
                 debug_log:(Boolean) debug_log
                 BTTSessionID:(NSString*) session_id{
     
-#if TARGET_OS_IOS
     //Create report report folder if not found
     NSError *e = [self initReportFolderPath];
     if(e){
@@ -387,7 +390,8 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
     char *buff_session_id = calloc(session_id_size, sizeof(char));
     [session_id getCString:buff_session_id maxLength:session_id_size encoding:NSASCIIStringEncoding];
     __btt_session_id = buff_session_id;
-    
+
+#if TARGET_OS_IOS
     if (__is_register) {
         [self debug_log:[NSString stringWithFormat:@"Signal already registered."]];
        return;
