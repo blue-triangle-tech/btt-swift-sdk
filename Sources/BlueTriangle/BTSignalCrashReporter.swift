@@ -5,7 +5,7 @@
 //  Created by Ashok Singh on 01/07/24.
 //
 
-import UIKit
+import Foundation
 #if canImport(AppEventLogger)
 import AppEventLogger
 #endif
