@@ -196,9 +196,8 @@ extension BlueTriangleTests {
         XCTAssertEqual(timerRequest.session.dataCenter, "MY_DATA_CENTER")
         XCTAssertEqual(timerRequest.session.trafficSegmentName, "MY_SEGMENT_NAME")
         XCTAssertEqual(timerRequest.session.isReturningVisitor,true)
-        XCTAssertEqual(timerRequest.session.osInfo, "iOS")
+        XCTAssertEqual(timerRequest.session.osInfo, Device.os)
         XCTAssertEqual(timerRequest.session.globalUserID,888888888888888888)
-        XCTAssertEqual(timerRequest.session.osInfo, "iOS")
         
         
         XCTAssertEqual(timerRequest.page.pageName, "MY_PAGE_NAME")
@@ -362,9 +361,8 @@ extension BlueTriangleTests {
         XCTAssertEqual(timerRequest.session.dataCenter, "MY_DATA_CENTER")
         XCTAssertEqual(timerRequest.session.trafficSegmentName, "MY_SEGMENT_NAME")
         XCTAssertEqual(timerRequest.session.isReturningVisitor,true)
-        XCTAssertEqual(timerRequest.session.osInfo, "iOS")
+        XCTAssertEqual(timerRequest.session.osInfo, Device.os)
         XCTAssertEqual(timerRequest.session.globalUserID,888888888888888888)
-        XCTAssertEqual(timerRequest.session.osInfo, "iOS")
         
         
         XCTAssertEqual(timerRequest.page.pageName, "MY_PAGE_NAME")
