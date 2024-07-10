@@ -34,7 +34,6 @@ enum Constants {
     static let excludedValue = "20"
     static let startupDelay: TimeInterval = 10
     static let minPgTm : Millisecond = 15
-    static let maxSignalCacheCount: Int32 = 5
 
     // Logging
     static let loggingSubsystem = "com.bluetriangle.sdk"

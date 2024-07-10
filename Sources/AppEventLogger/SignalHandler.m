@@ -43,7 +43,7 @@ static char* __app_version = "unknown";
 static char* __report_folder_path = NULL;
 static char* __btt_session_id = "unknown";
 static NSString* __current_page_name = @"";
-static int __max_cache_files = 1;
+static int __max_cache_files = 5;
 static bool __is_register = false;
 
 void register_btt_tracker(void){
@@ -520,10 +520,6 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
              [fileList removeObjectAtIndex:0];
          }
      }
-}
-
-+ (void) setMaxCacheFileCount:(int) file_count{
-    __max_cache_files = file_count;
 }
 
 + (void) setCurrentPageName:(NSString*) page_name{

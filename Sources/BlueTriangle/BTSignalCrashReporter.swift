@@ -58,7 +58,6 @@ class BTSignalCrashReporter {
                 guard let strongSelf = self else {
                     return
                 }
-                SignalHandler.setMaxCacheFileCount(Constants.maxSignalCacheCount)
                 strongSelf.uploadAllStoredSignalCrashes()
                 strongSelf.startupTask = nil
             }
