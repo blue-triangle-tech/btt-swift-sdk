@@ -9,7 +9,7 @@ import Foundation
 
 struct CapturedRequest: Encodable, Equatable {
     /// Representation of field type.
-    enum InitiatorType: String, Encodable, Equatable {
+    enum InitiatorType: String, Encodable, Equatable, Decodable {
         // Unprocessed IANA media types (excludes `application` and `text`)
         case audio
         case example
@@ -336,6 +336,26 @@ extension CapturedRequest {
         if nativeAppProperty.netState.count > 0{
             try con.encode(nativeAppProperty, forKey: .nativeAppProperty)
         }
+    }
+}
+
+// MARK: - Supporting Types
+extension CapturedRequest : Decodable {
+    
+    init(from decoder: Decoder) throws {
+        let container: KeyedDecodingContainer<CodingKeys> = try decoder.container(keyedBy: CodingKeys.self)
+        self.domain = try container.decodeIfPresent(String.self, forKey: .domain) ?? ""
+        self.host = try container.decodeIfPresent(String.self, forKey: .host) ?? ""
+        self.url = try container.decodeIfPresent(String.self, forKey: .url) ?? ""
+        self.file = try container.decodeIfPresent(String.self, forKey: .file) ?? ""
+        self.statusCode = try container.decodeIfPresent(String.self, forKey: .statusCode) ?? ""
+        self.startTime = try container.decodeIfPresent(Millisecond.self, forKey: .startTime) ?? 0
+        self.endTime = try container.decodeIfPresent(Millisecond.self, forKey: .endTime) ?? 0
+        self.duration = try container.decodeIfPresent(Millisecond.self, forKey: .duration) ?? 0
+        self.initiatorType = try container.decodeIfPresent(InitiatorType.self, forKey: .initiatorType) ?? .other
+        self.decodedBodySize = try container.decodeIfPresent(Int64.self, forKey: .decodedBodySize) ?? 0
+        self.encodedBodySize = try container.decodeIfPresent(Int64.self, forKey: .encodedBodySize) ?? 0
+        self.nativeAppProperty = try container.decodeIfPresent(NativeAppProperties.self, forKey: .nativeAppProperty) ?? .nstEmpty
     }
 }
 
