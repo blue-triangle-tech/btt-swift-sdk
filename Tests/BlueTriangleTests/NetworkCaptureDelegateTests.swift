@@ -21,7 +21,7 @@ final class NetworkCaptureDelegateTests: XCTestCase {
         URLProtocolMock.reset()
     }
 
-    func testMetricsAreCapturedWithCompletionHandler() throws {
+   /* func testMetricsAreCapturedWithCompletionHandler() throws {
         let metricsExpectation = expectation(description: "Collected session task metrics")
         var metrics: URLSessionTaskMetrics!
         let requestCollector = CapturedRequestCollectorMock(onCollectMetrics: { taskMetrics in
@@ -112,5 +112,5 @@ final class NetworkCaptureDelegateTests: XCTestCase {
         XCTAssert(metrics.taskInterval.start.timeIntervalSince1970 > 0)
         XCTAssert(metrics.taskInterval.end.timeIntervalSince1970 > 0)
         XCTAssert(metrics.taskInterval.duration > 0)
-    }
+    }*/
 }

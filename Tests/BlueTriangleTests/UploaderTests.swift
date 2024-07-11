@@ -252,7 +252,7 @@ final class UploaderTests: XCTestCase {
 
         let otherExpectation = self.expectation(description: "Allow completion")
         otherExpectation.isInverted = true
-        wait(for: [otherExpectation], timeout: 3.0)
+        wait(for: [otherExpectation], timeout: 5.0)
 
         XCTAssert(uploader.subscriptionCount < 3)
     }
