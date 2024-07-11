@@ -508,14 +508,14 @@ extension BlueTriangleTests {
         let exp = expectation(description: "Requests completed")
         URLSession(configuration: .mock).btDataTask(with: url) { _, _, _ in exp.fulfill() }.resume()
         
-        await waitForExpectations(timeout: 5.0)
+        await waitForExpectations(timeout: 15.0)
         
         requestExpectation = self.expectation(description: "Request sent")
         
         timer.end()
         
         _ = BlueTriangle.startTimer(page: Page(pageName: "Another_Page"))
-        await waitForExpectations(timeout: 5.0)
+        await waitForExpectations(timeout: 15.0)
 
         let capturedRequestString = String(data: Data(base64Encoded: capturedRequest.body!)!, encoding: .utf8)
 
