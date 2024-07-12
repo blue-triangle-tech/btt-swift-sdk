@@ -20,13 +20,8 @@ jobs:
             destination: "platform=macOS"
           - name: iOS
             destination: "platform=iOS Simulator,name=iPhone 15,OS=17.4"
-        scheme: ['blue-triangle']
 
-    steps:
+      steps:
       - uses: actions/checkout@v2
-      - name: Build for ${{ matrix.platform }}
-        uses: mxcl/xcodebuild@v1
-        with:
-          xcode: ^15
-          platform: ${{ matrix.platform }}
-          scheme: ${{ matrix.scheme }}
+      - name: Test for ${{ matrix.platform }}
+        run xcodebuild test -scheme "blue-triangle" -destination ${{ matrix.platform }}
