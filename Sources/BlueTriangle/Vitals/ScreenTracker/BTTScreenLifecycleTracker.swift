@@ -72,12 +72,15 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
     
     func manageTimer(_ pageName : String, id : String, type : TimerMapType){
         if self.enableLifecycleTracker{
-            SignalHandler.setCurrentPageName(pageName)
+           
             let timerActivity = getTimerActivity(pageName, id: id)
             btTimeActivityrMap[id] = timerActivity
             timerActivity.manageTimeFor(type: type)
             if type == .disapear{
                 btTimeActivityrMap.removeValue(forKey: id)
+            }
+            else if (type == .load || type == .view){
+                SignalHandler.setCurrentPageName(pageName)
             }
         }
     }
