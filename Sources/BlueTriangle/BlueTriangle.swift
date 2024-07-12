@@ -252,9 +252,7 @@ extension BlueTriangle {
             if let crashConfig = configuration.crashTracking.configuration {
                 DispatchQueue.global(qos: .utility).async {
                     configureCrashTracking(with: crashConfig)
-#if os(iOS)
-                    matricKitWatchDog.start()
-#endif
+                    configureSignalCrash(with: crashConfig, debugLog: configuration.enableDebugLogging)
                 }
             }
           
@@ -443,6 +441,8 @@ public extension BlueTriangle {
     }
 }
 
+private var btcrashReport: BTSignalCrashReporter?
+
 // MARK: - Crash Reporting
 extension BlueTriangle {
     static func configureCrashTracking(with crashConfiguration: CrashReportConfiguration) {
@@ -450,8 +450,25 @@ extension BlueTriangle {
                                                 logger: logger,
                                                 uploader: uploader,
                                                 sessionProvider: { session })
-
+    
         CrashReportPersistence.configureCrashHandling(configuration: crashConfiguration)
+    }
+    
+    
+    public static func startCrashTracking() {
+#if DEBUG
+        SignalHandler.enableCrashTracking(withApp_version: Version.number, debug_log: true, bttSessionID: "\(sessionID)")
+#else
+        SignalHandler.enableCrashTracking(withApp_version: Version.number, debug_log: false, bttSessionID: "\(sessionID)")
+#endif
+    }
+    
+    static func configureSignalCrash(with crashConfiguration: CrashReportConfiguration, debugLog : Bool) {
+        SignalHandler.enableCrashTracking(withApp_version: Version.number, debug_log: debugLog, bttSessionID: "\(sessionID)")
+        btcrashReport = BTSignalCrashReporter(directory: SignalHandler.reportsFolderPath(), logger: logger,
+                                        uploader: uploader,
+                                        sessionProvider: { session })
+        btcrashReport?.configureSignalCrashHandling(configuration: crashConfiguration)
     }
 
     /// Saves an exception to upload to the Blue Triangle portal on next launch.

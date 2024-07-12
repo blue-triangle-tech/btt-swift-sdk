@@ -40,7 +40,7 @@ extension CrashReport {
     ) {
         self.sessionID = sessionID
         self.pageName =  pageName
-        self.report = ErrorReport(eTp: BT_ErrorType.NativeAppCrash.rawValue, message: message,
+        self.report = ErrorReport(eTp: BT_ErrorType.NativeAppCrash.rawValue, message: message.bttReportMessage,
                                   line: 1,
                                   column: 1,
                                   time: intervalProvider.milliseconds)
