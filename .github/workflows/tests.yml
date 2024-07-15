@@ -20,4 +20,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Test for ${{ matrix.platform }}
-        run: xcodebuild test -scheme "blue-triangle" -destination ${{ matrix.platform }}
+        run: xcodebuild test -scheme "blue-triangle" -destination '${{ matrix.platform }}'
