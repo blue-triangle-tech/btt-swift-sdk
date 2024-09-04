@@ -12,13 +12,24 @@ public class BTTWebViewTracker {
      
     static var shouldCaptureRequests = false
     static var logger : Logging?
+    private var webViews: [WeakWebView] = []
+    private static let tracker = BTTWebViewTracker()
   
     public static func webView( _ webView: WKWebView, didCommit navigation: WKNavigation!){
-       
-        let tracker = BTTWebViewTracker()
+        let weakWebView = WeakWebView(webView)
+        tracker.webViews.append(weakWebView)
         tracker.injectSessionIdOnWebView(webView)
         tracker.injectWCDCollectionOnWebView(webView)
         tracker.injectVersionOnWebView(webView)
+    }
+    
+    public static func updateSessionId(_ sessionID : Identifier){
+        tracker.cleanUpWebViews()
+        for web in tracker.webViews {
+            if let webView = web.weekWebView{
+                self.restitchWebView(webView, sessionID: sessionID)
+            }
+        }
     }
 
     public static func verifySessionStitchingOnWebView( _ webView: WKWebView, completion: @escaping (String?, Error?) -> Void){
@@ -152,6 +163,52 @@ extension BTTWebViewTracker {
                 }
             }
         }
+    }
+    
+    private static func hasBttTag(_ web: WKWebView, completion: @escaping (Bool) -> Void) {
+        DispatchQueue.main.async {
+            var hasTag = false
+            let bttJSVerificationTag = "_bttTagInit"
+            let bttJSSiteIdTag = "_bttUtil.prefix"
+            let siteId = "\(BlueTriangle.siteID)"
+            
+            web.evaluateJavaScript(bttJSVerificationTag) { (result, error) in
+                if let isBttJSAvailable = result as? Bool, isBttJSAvailable {
+                    web.evaluateJavaScript(bttJSSiteIdTag) { (result, error) in
+                        if let bttSiteID = result as? String, bttSiteID == siteId {
+                            hasTag = true
+                        }
+                        completion(hasTag)
+                    }
+                } else {
+                    completion(hasTag)
+                }
+            }
+        }
+    }
+    
+    private static func restitchWebView(_ webView : WKWebView, sessionID : Identifier) {
+        self.hasBttTag(webView) { hasBtt in
+            if (hasBtt) {
+                let sessionId = "\(sessionID)"
+                tracker.injectSessionIdOnWebView(webView)
+                tracker.injectWCDCollectionOnWebView(webView)
+                tracker.injectVersionOnWebView(webView)
+                BTTWebViewTracker.logger?.info("BlueTriangle: Session re-stitching was successfull with session \(sessionId)")
+            }
+        }
+    }
+    
+    private func cleanUpWebViews(){
+        webViews = webViews.filter { $0.weekWebView != nil }
+    }
+}
+
+class WeakWebView {
+    private(set) weak var weekWebView: WKWebView?
+    
+    init(_ webView: WKWebView) {
+        self.weekWebView = webView
     }
 }
 
