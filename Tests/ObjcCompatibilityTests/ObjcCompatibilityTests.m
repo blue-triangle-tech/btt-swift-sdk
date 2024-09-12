@@ -28,7 +28,7 @@
     // Configuration
     [BlueTriangle configure:^ (BlueTriangleConfiguration* config) {
         config.siteID = @"MY_SITE_ID";
-        config.sessionID = 1111;
+        //config.sessionID = 1111;
         config.globalUserID = 2222;
         config.isReturningVisitor = YES;
         config.abTestID = @"";
@@ -52,8 +52,9 @@
     Page *page = [[Page alloc] initWithPageName:@"MY_SITE_ID" brandValue:brandValue.decimalValue pageType:@"PAGE_TYPE" referringURL:@"REFERRING_URL" url:@"URL" customVariables:customVariables customCategories:customCategories customNumbers:customNumbers];
 
     NSNumber *cartValue = [NSNumber numberWithDouble:10.99];
-    PurchaseConfirmation *purchaseConfirmation = [[PurchaseConfirmation alloc] initWithCartValue:cartValue.decimalValue orderNumber:@"MY_ORDER_NUMBER"];
-
+    
+    PurchaseConfirmation *purchaseConfirmation = [[PurchaseConfirmation alloc] initWithCartValue:cartValue.decimalValue cartCount:2 cartCountCheckout:2 orderNumber:@"MY_ORDER_NUMBER"];
+    
     BTTimer *timer = [BlueTriangle makeTimerWithPage:page timerType:TimerTypeMain];
 
     [timer start];

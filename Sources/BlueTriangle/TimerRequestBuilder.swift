@@ -44,7 +44,8 @@ struct TimerRequestBuilder {
                              timer: timer.pageTimeInterval,
                              customMetrics: customMetrics,
                              purchaseConfirmation: purchase,
-                             performanceReport: timer.performanceReport))
+                             performanceReport: timer.performanceReport,
+                             nativeAppProperties : timer.nativeAppProperties))
 
             return Request(method: .post,
                            url: Constants.timerEndpoint,

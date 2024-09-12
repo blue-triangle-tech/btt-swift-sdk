@@ -6,20 +6,75 @@
 //
 
 import Foundation
+#if canImport(AppEventLogger)
+import AppEventLogger
+#endif
+
+#if canImport(UIKit)
+import UIKit
+#endif
+
+typealias SessionProvider = () -> Session
 
 /// The entry point for interacting with the Blue Triangle SDK.
 final public class BlueTriangle: NSObject {
-
+    
     private static let lock = NSLock()
-    private static var configuration = BlueTriangleConfiguration()
-
-    private static var session: Session = {
+    internal static var configuration = BlueTriangleConfiguration()
+    private static var activeTimers = [BTTimer]()
+#if os(iOS)
+    private static let matricKitWatchDog = MetricKitWatchDog()
+#endif
+    internal static func addActiveTimer(_ timer : BTTimer){
+        activeTimers.append(timer)
+#if os(iOS)
+        matricKitWatchDog.saveCurrentTimerData(timer)
+#endif
+    }
+    
+    internal static let sessionManager = SessionManager()
+    
+    internal static func removeActiveTimer(_ timer : BTTimer){
+        
+        var index = 0
+        var isTimerAvailable = false
+        
+        for timerObj in activeTimers{
+            if timerObj == timer { isTimerAvailable = true
+                break }
+            index = index + 1
+        }
+        
+        if isTimerAvailable {
+            activeTimers.remove(at: index)
+        }
+    }
+    
+    internal static func recentTimer() -> BTTimer?{
+        let timer = activeTimers.last
+        return timer
+    }
+    
+    internal static func updateSessionID(_ sessionId : Identifier){
+            _session.sessionID = sessionId
+#if os(iOS)
+            BTTWebViewTracker.updateSessionId(sessionId)
+#endif
+        SignalHandler.updateSessionID("\(sessionId)")
+    }
+    
+    private static var _session: Session = {
         configuration.makeSession()
     }()
-
+    
+    internal static func session() -> Session {
+        return _session
+    }
+    
     private static var logger: Logging = {
         configuration.makeLogger()
     }()
+    
 
     private static var uploader: Uploading = {
         configuration.uploaderConfiguration.makeUploader(
@@ -47,13 +102,15 @@ final public class BlueTriangle: NSObject {
     public private(set) static var initialized = false
 
     private static var crashReportManager: CrashReportManaging?
-
+    
+    static var monitorNetwork: NetworkStateMonitorProtocol?
+    
     private static var capturedRequestCollector: CapturedRequestCollecting? = {
         if shouldCaptureRequests {
             let collector = configuration.capturedRequestCollectorConfiguration.makeRequestCollector(
                 logger: logger,
                 networkCaptureConfiguration: .standard,
-                requestBuilder: CapturedRequestBuilder.makeBuilder { session },
+                requestBuilder: CapturedRequestBuilder.makeBuilder { session() },
                 uploader: uploader)
 
             Task {
@@ -67,43 +124,69 @@ final public class BlueTriangle: NSObject {
 
     private static var appEventObserver: AppEventObserver?
 
+    //Cache components
+    internal static var payloadCache : PayloadCacheProtocol = {
+        PayloadCache.init(configuration.cacheMemoryLimit,
+                          expiry: configuration.cacheExpiryDuration)
+    }()
+    
+    //ANR components
+    private static let anrWatchDog : ANRWatchDog = {
+        ANRWatchDog(
+            mainThreadObserver: MainThreadObserver.live,
+            session: {session()},
+            uploader: configuration.uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
+                file: .requests,
+                logger: logger)),
+            logger: BlueTriangle.logger)
+    }()
+    
+    //ANR components
+    private static let memoryWarningWatchDog : MemoryWarningWatchDog = {
+        MemoryWarningWatchDog(
+            session: {session()},
+            uploader: configuration.uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
+                file: .requests,
+                logger: logger)),
+            logger: BlueTriangle.logger)
+    }()
+        
+    private static var launchTimeReporter : LaunchTimeReporter?
+    
     /// Blue Triangle Technologies-assigned site ID.
     @objc public static var siteID: String {
-        lock.sync { session.siteID }
+        lock.sync { session().siteID }
     }
 
     /// Global User ID.
     @objc public static var globalUserID: Identifier {
-        lock.sync { session.globalUserID }
+        lock.sync { session().globalUserID }
     }
 
     /// Session ID.
     @objc public static var sessionID: Identifier {
         get {
-            lock.sync { session.sessionID }
-        }
-        set {
-            lock.sync { session.sessionID = newValue }
+            lock.sync { session().sessionID }
         }
     }
 
     /// Boolean value indicating whether user is a returning visitor.
     @objc public static var isReturningVisitor: Bool {
         get {
-            lock.sync { session.isReturningVisitor }
+            lock.sync { session().isReturningVisitor }
         }
         set {
-            lock.sync { session.isReturningVisitor = newValue }
+            lock.sync {_session.isReturningVisitor = newValue }
         }
     }
 
     /// A/B testing identifier.
     @objc public static var abTestID: String {
         get {
-            lock.sync { session.abTestID }
+            lock.sync { session().abTestID }
         }
         set {
-            lock.sync { session.abTestID = newValue }
+            lock.sync { _session.abTestID = newValue }
         }
     }
 
@@ -111,70 +194,70 @@ final public class BlueTriangle: NSObject {
     @available(*, deprecated, message: "Use `campaignName` instead.")
     @objc public static var campaign: String? {
         get {
-            lock.sync { session.campaign }
+            lock.sync { session().campaign }
         }
         set {
-            lock.sync { session.campaign = newValue }
+            lock.sync { _session.campaign = newValue}
         }
     }
 
     /// Campaign medium.
     @objc public static var campaignMedium: String {
         get {
-            lock.sync { session.campaignMedium }
+            lock.sync { session().campaignMedium }
         }
         set {
-            lock.sync { session.campaignMedium = newValue }
+            lock.sync { _session.campaignMedium = newValue}
         }
     }
 
     /// Campaign name.
     @objc public static var campaignName: String {
         get {
-            lock.sync { session.campaignName }
+            lock.sync { session().campaignName }
         }
         set {
-            lock.sync { session.campaignName = newValue }
+            lock.sync { _session.campaignName = newValue }
         }
     }
 
     /// Campaign source.
     @objc public static var campaignSource: String {
         get {
-            lock.sync { session.campaignSource }
+            lock.sync { session().campaignSource }
         }
         set {
-            lock.sync { session.campaignSource = newValue }
+            lock.sync { _session.campaignSource = newValue}
         }
     }
 
     /// Data center.
     @objc public static var dataCenter: String {
         get {
-            lock.sync { session.dataCenter }
+            lock.sync { session().dataCenter }
         }
         set {
-            lock.sync { session.dataCenter = newValue }
+            lock.sync { _session.dataCenter = newValue }
         }
     }
 
     /// Traffic segment.
     @objc public static var trafficSegmentName: String {
         get {
-            lock.sync { session.trafficSegmentName }
+            lock.sync { session().trafficSegmentName }
         }
         set {
-            lock.sync { session.trafficSegmentName = newValue }
+            lock.sync { _session.trafficSegmentName = newValue }
         }
     }
 
     /// Custom metrics.
     public static var metrics: [String: AnyCodable] {
         get {
-            lock.sync { session.metrics ?? [:] }
+            lock.sync { session().metrics ?? [:] }
         }
         set {
-            lock.sync { session.metrics = (newValue.isEmpty ? nil : newValue) }
+            lock.sync { self._session.metrics = (newValue.isEmpty ? nil : newValue) }
         }
     }
 
@@ -183,7 +266,7 @@ final public class BlueTriangle: NSObject {
     /// > Note: this member is provided for Objective-C compatibility; ``BlueTriangle/BlueTriangle/metrics``
     /// should be used when calling from Swift.
     @objc(metrics) public static var _metrics: [String: Any]? {
-        lock.sync { session.metrics?.anyValues }
+        lock.sync { self._session.metrics?.anyValues }
     }
 }
 
@@ -197,11 +280,20 @@ extension BlueTriangle {
             precondition(!Self.initialized, "BlueTriangle can only be initialized once.")
             initialized.toggle()
             configure(configuration)
+            configureSession(with: configuration.sessionExpiryDuration)
             if let crashConfig = configuration.crashTracking.configuration {
                 DispatchQueue.global(qos: .utility).async {
                     configureCrashTracking(with: crashConfig)
+                    configureSignalCrash(with: crashConfig, debugLog: configuration.enableDebugLogging)
                 }
             }
+          
+            configureMemoryWarning(with: configuration.enableMemoryWarning)
+            configureANRTracking(with: configuration.ANRMonitoring, enableStackTrace: configuration.ANRStackTrace,
+                                 interval: configuration.ANRWarningTimeInterval)
+            configureScreenTracking(with: configuration.enableScreenTracking, ignoreVCs: configuration.ignoreViewControllers)
+            configureMonitoringNetworkState(with: configuration.enableTrackingNetworkState)
+            configureLaunchTime(with: configuration.enableLaunchTime)
         }
     }
 
@@ -216,11 +308,13 @@ extension BlueTriangle {
         internalTimerFactory: (() -> InternalTimer)? = nil,
         requestCollector: CapturedRequestCollecting? = nil
     ) {
+        
         lock.sync {
+            
             self.configuration = configuration
             initialized = true
             if let session = session {
-                self.session = session
+                self._session = session
             }
             if let logger = logger {
                 self.logger = logger
@@ -289,7 +383,7 @@ public extension BlueTriangle {
         let request: Request
         lock.lock()
         do {
-            request = try configuration.requestBuilder.builder(session, timer, purchaseConfirmation)
+            request = try configuration.requestBuilder.builder(session(), timer, purchaseConfirmation)
             lock.unlock()
         } catch {
             lock.unlock()
@@ -313,13 +407,13 @@ public extension BlueTriangle {
         lock.lock()
         defer { lock.unlock() }
 
-        if session.metrics != nil {
-            session.metrics![key] = value
+        if _session.metrics != nil {
+            _session.metrics![key] = value
         } else {
             guard let value else {
                 return
             }
-            session.metrics = [key: value]
+            _session.metrics = [key: value]
         }
     }
 
@@ -389,14 +483,14 @@ public extension BlueTriangle {
     static func _getMetrics(forKey key: String) -> Any? {
         lock.lock()
         defer { lock.unlock() }
-        return session.metrics?[key]?.anyValue
+        return _session.metrics?[key]?.anyValue
     }
 
     /// Removes all custom metrics values.
     @objc
     static func clearMetrics() {
         lock.lock()
-        session.metrics = nil
+        _session.metrics = nil
         lock.unlock()
     }
 }
@@ -428,7 +522,15 @@ public extension BlueTriangle {
     ///   - timer: The request timer.
     ///   - data: The request response data.
     ///   - response: The request response.
-    static func captureRequest(timer: InternalTimer, data: Data?, response: URLResponse?) {
+    ///   - error: The response error
+    
+    static func captureRequest(timer: InternalTimer, response: URLResponse?) {
+        Task {
+            await capturedRequestCollector?.collect(timer: timer, response: response)
+        }
+    }
+    
+    internal static func captureRequest(timer: InternalTimer, response: CustomResponse) {
         Task {
             await capturedRequestCollector?.collect(timer: timer, response: response)
         }
@@ -443,23 +545,156 @@ public extension BlueTriangle {
             await capturedRequestCollector?.collect(timer: timer, response: tuple.1)
         }
     }
+    
+    static func captureRequest(timer: InternalTimer, request : URLRequest, error: Error?) {
+        Task {
+            await capturedRequestCollector?.collect(timer: timer, request: request, error: error)
+        }
+    }
 
     /// Captures a network request.
     /// - Parameter metrics: An object encapsulating the metrics for a session task.
-    static func captureRequest(metrics: URLSessionTaskMetrics) {
+    static func captureRequest(metrics: URLSessionTaskMetrics, error : Error?) {
         Task {
-            await capturedRequestCollector?.collect(metrics: metrics)
+            await capturedRequestCollector?.collect(metrics: metrics, error: error)
         }
     }
 }
 
+// MARK: - Error Tracking
+public extension BlueTriangle {
+
+    /// Uploads a crash timer and a corresponding report to Blue Triangle for processing.
+    /// - Parameter error: The error to upload.
+    static func logError<E: Error>(
+        _ error: E,
+        file: StaticString = #fileID,
+        function: StaticString = #function,
+        line: UInt = #line
+    ) {
+        crashReportManager?.uploadError(error, file: file, function: function, line: line)
+    }
+}
+
+private var btcrashReport: BTSignalCrashReporter?
+
 // MARK: - Crash Reporting
 extension BlueTriangle {
     static func configureCrashTracking(with crashConfiguration: CrashReportConfiguration) {
-        crashReportManager = CrashReportManager(crashConfiguration,
+        crashReportManager = CrashReportManager(crashReportPersistence: CrashReportPersistence.self,
                                                 logger: logger,
                                                 uploader: uploader,
-                                                sessionProvider: { session })
+                                                session: {session()})
+    
+        CrashReportPersistence.configureCrashHandling(configuration: crashConfiguration)
+    }
+    
+    
+    public static func startCrashTracking() {
+#if DEBUG
+        SignalHandler.enableCrashTracking(withApp_version: Version.number, debug_log: true, bttSessionID: "\(sessionID)")
+#else
+        SignalHandler.enableCrashTracking(withApp_version: Version.number, debug_log: false, bttSessionID: "\(sessionID)")
+#endif
+    }
+    
+    static func configureSignalCrash(with crashConfiguration: CrashReportConfiguration, debugLog : Bool) {
+        SignalHandler.enableCrashTracking(withApp_version: Version.number, debug_log: debugLog, bttSessionID: "\(sessionID)")
+        btcrashReport = BTSignalCrashReporter(directory: SignalHandler.reportsFolderPath(), logger: logger,
+                                              uploader: uploader, 
+                                              session: {session()})
+        btcrashReport?.configureSignalCrashHandling(configuration: crashConfiguration)
+    }
+
+    /// Saves an exception to upload to the Blue Triangle portal on next launch.
+    ///
+    /// Use this method to store exceptions caught by other exception handlers.
+    ///
+    /// - Parameter exception: The exception to upload.
+    public static func storeException(exception: NSException) {
+        let pageName = BlueTriangle.recentTimer()?.page.pageName
+        let crashReport = CrashReport(sessionID: sessionID, exception: exception, pageName: pageName)
+        CrashReportPersistence.save(crashReport)
+    }
+}
+
+//MARK: - ANR Tracking
+extension BlueTriangle{
+    static func configureANRTracking(with enabled: Bool, enableStackTrace : Bool, interval: TimeInterval){
+        self.anrWatchDog.errorTriggerInterval = interval
+        self.anrWatchDog.enableStackTrace = enableStackTrace
+        if enabled {
+            MainThreadObserver.live.setUpLogger(logger)
+            MainThreadObserver.live.start()
+            self.anrWatchDog.start()
+        }
+    }
+}
+
+// MARK: - Screen Tracking
+extension BlueTriangle{
+    static func configureScreenTracking(with enabled: Bool, ignoreVCs : Set<String>){
+        BTTScreenLifecycleTracker.shared.setLifecycleTracker(enabled)
+        BTTScreenLifecycleTracker.shared.setUpLogger(logger)
+        
+#if os(iOS)
+        BTTWebViewTracker.shouldCaptureRequests = shouldCaptureRequests
+        BTTWebViewTracker.logger = logger
+        if enabled {
+            UIViewController.setUp(ignoreVCs)
+        }
+#endif
+    }
+}
+
+// MARK: - Network State
+extension BlueTriangle{
+    static func configureMonitoringNetworkState(with enabled: Bool){
+        if enabled {
+            monitorNetwork = NetworkStateMonitor.init(logger)
+        }
+    }
+}
+
+
+// MARK: - LaunchTime
+extension BlueTriangle{
+    
+
+    static func configureLaunchTime(with enabled: Bool){
+        if enabled {
+
+            let launchMonitor = LaunchTimeMonitor(logger: logger)
+            launchTimeReporter = LaunchTimeReporter(using: {session()},
+                                                    uploader: configuration.uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
+                                                        file: .requests,
+                                                        logger: logger)),
+                                                    logger: BlueTriangle.logger,
+                                                    monitor: launchMonitor)
+            
+        }
+        
+        AppNotificationLogger.removeObserver()
+    }
+}
+
+//MARK: - Memory Warning
+extension BlueTriangle{
+    static func configureMemoryWarning(with enabled: Bool){
+        if enabled {
+#if os(iOS)
+            self.memoryWarningWatchDog.start()
+#endif
+        }
+    }
+}
+
+//MARK: - Session Expiry
+extension BlueTriangle{
+    static func configureSession(with expiry: Millisecond){
+#if os(iOS)
+        self.sessionManager.start(with: expiry)
+#endif
     }
 }
 

@@ -14,3 +14,11 @@ extension NSException {
             .joined(separator: Constants.crashReportLineSeparator)
     }
 }
+
+extension String {
+    var bttReportMessage: String {
+        self.components(separatedBy: .newlines)
+            .filter { !$0.isEmpty }
+            .joined(separator: Constants.crashReportLineSeparator)
+    }
+}

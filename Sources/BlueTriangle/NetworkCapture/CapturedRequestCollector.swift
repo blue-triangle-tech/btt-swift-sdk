@@ -21,7 +21,7 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
         timerManager: CaptureTimerManaging,
         requestBuilder: CapturedRequestBuilder,
         uploader: Uploading,
-        uploadTaskPriority: TaskPriority = .background
+        uploadTaskPriority: TaskPriority = .utility
     ) {
         self.logger = logger
         self.timerManager = timerManager
@@ -53,12 +53,20 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
         }
     }
 
-    func collect(timer: InternalTimer, response: URLResponse?) {
+    func collect(timer: InternalTimer, response: CustomResponse){
         requestCollection?.insert(timer: timer, response: response)
     }
+    
+    func collect(timer: InternalTimer, response: URLResponse?){
+        requestCollection?.insert(timer: timer, response: response)
+    }
+    
+    func collect(timer: InternalTimer, request : URLRequest, error: Error?){
+        requestCollection?.insert(timer: timer, request: request, error: error)
+    }
 
-    func collect(metrics: URLSessionTaskMetrics) {
-        requestCollection?.insert(metrics: metrics)
+    func collect(metrics: URLSessionTaskMetrics, error: Error?) {
+        requestCollection?.insert(metrics: metrics, error: error)
     }
 
     // Use `nonisolated` to enable capture by timerManager handler.

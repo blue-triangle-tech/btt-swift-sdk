@@ -6,6 +6,7 @@
 //  Copyright © 2022 Blue Triangle. All rights reserved.
 //
 
+import BlueTriangle
 import UIKit
 
 class RootViewController: UIViewController {
@@ -21,6 +22,16 @@ class RootViewController: UIViewController {
         return control
     }()
 
+    private lazy var errorButton: UIButton = {
+        let action = UIAction(title: "Error") { [weak self] _ in
+            self?.trackError()
+        }
+        let control = UIButton(configuration: .filled(), primaryAction: action)
+        control.tintColor = .orange
+        control.translatesAutoresizingMaskIntoConstraints = false
+        return control
+    }()
+
     private lazy var crashButton: UIButton = {
         let action = UIAction(title: "Crash") { [weak self] _ in
             self?.causeNSException()
@@ -31,14 +42,35 @@ class RootViewController: UIViewController {
         return control
     }()
 
+    private lazy var ANRtestButton: UIButton = {
+        let action = UIAction(title: "ANR Tests") { [weak self] _ in
+            self?.showTestHomeVC()
+        }
+        let control = UIButton(configuration: .filled(), primaryAction: action)
+        control.tintColor = .black
+        control.translatesAutoresizingMaskIntoConstraints = false
+        return control
+    }()
+    
     private lazy var buttonStackView: UIStackView = {
-        let view = UIStackView(arrangedSubviews: [galleryButton, crashButton])
+        let view = UIStackView(arrangedSubviews: [galleryButton, errorButton, crashButton, ANRtestButton, screenTrackingButton])
         view.axis = .vertical
         view.alignment = .fill
         view.distribution = .fillEqually
         view.spacing = 16.0
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
+    }()
+    
+    
+    private lazy var screenTrackingButton: UIButton = {
+        let action = UIAction(title: "Screen Tracking") { [weak self] _ in
+            self?.showScreenTrackingHomeVC()
+        }
+        let control = UIButton(configuration: .filled(), primaryAction: action)
+        control.tintColor = .gray
+        control.translatesAutoresizingMaskIntoConstraints = false
+        return control
     }()
 
     // MARK: - Lifecycle
@@ -72,9 +104,29 @@ class RootViewController: UIViewController {
         navigationController?.pushViewController(viewController, animated: true)
     }
 
+    private func trackError() {
+        let error = AppError(reason: "There was an error fooing", underlyingError: nil)
+        BlueTriangle.logError(error)
+    }
+
     private func causeNSException() {
         let array = NSArray()
         let crash = array.object(at: 99)
         print("CRASHED: \(crash)")
+    }
+    
+    private func showTestHomeVC() {
+        let storyboard = UIStoryboard(name: "ANRTests", bundle: nil)
+        if let vc = storyboard.instantiateViewController(withIdentifier: "TestsHomeViewController") as? TestsHomeViewController {
+            navigationController?.pushViewController(vc, animated: true)
+        }
+    }
+    
+    private func showScreenTrackingHomeVC() {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        if let vc = storyboard.instantiateViewController(withIdentifier: "HomeVC") as? HomeViewController {
+            navigationController?.pushViewController(vc, animated: true)
+        }
+       
     }
 }

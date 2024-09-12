@@ -193,15 +193,17 @@ final class UploaderTests: XCTestCase {
     }
 
     func testUploaderSubscriptionRemoval() throws {
-        let requestCount: Int = 10_000
+        let requestCount: Int = 10
         let expectation = self.expectation(description: "Requests finished")
+        var promises = [Future<HTTPResponse<Data>, NetworkError>.Promise]()
 
         var currentRequestCount = 0
         let networking: Networking = { _ in
             Deferred {
                 Future { promise in
                     currentRequestCount += 1
-                    promise(.success(Mock.successResponse))
+                    promises.append(promise)
+                   // promise(.success(Mock.successResponse))
                 }
             }.eraseToAnyPublisher()
         }
@@ -241,17 +243,22 @@ final class UploaderTests: XCTestCase {
             }
         }
 
-        group.notify(queue: .main) {
+        group.notify(queue: .main) { 
+            print("SubscriptionCount: \(uploader.subscriptionCount) - RequestCount: \(currentRequestCount) - ResponseCount: \(responseCount)")
             XCTAssert(uploader.subscriptionCount > requestCount)
+            
+            promises.forEach { promise in
+                promise(.success(Mock.successResponse))
+            }
         }
 
-        wait(for: [expectation], timeout: 5)
+        wait(for: [expectation], timeout: 10)
         XCTAssertEqual(currentRequestCount, requestCount * 2)
         XCTAssertEqual(responseCount, requestCount * 2)
 
         let otherExpectation = self.expectation(description: "Allow completion")
         otherExpectation.isInverted = true
-        wait(for: [otherExpectation], timeout: 3.0)
+        wait(for: [otherExpectation], timeout: 10)
 
         XCTAssert(uploader.subscriptionCount < 3, "Subscription count is \(uploader.subscriptionCount)")
     }

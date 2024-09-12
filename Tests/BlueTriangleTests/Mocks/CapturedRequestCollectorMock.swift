@@ -9,6 +9,7 @@
 import Foundation
 
 actor CapturedRequestCollectorMock: CapturedRequestCollecting {
+    
     var onStart: (Page, TimeInterval) -> Void
     var onCollectTimer: (InternalTimer, URLResponse?) -> Void
     var onCollectMetrics: (URLSessionTaskMetrics) -> Void
@@ -22,16 +23,20 @@ actor CapturedRequestCollectorMock: CapturedRequestCollecting {
         self.onCollectTimer = onCollectTimer
         self.onCollectMetrics = onCollectMetrics
     }
-
-    func start(page: Page, startTime: TimeInterval) {
+    
+    func start(page: Page, startTime: TimeInterval){
         onStart(page, startTime)
     }
-
-    func collect(timer: InternalTimer, response: URLResponse?) {
-        onCollectTimer(timer, response)
-    }
-
-    func collect(metrics: URLSessionTaskMetrics) {
+    
+    func collect(timer: InternalTimer, response: CustomResponse){}
+    
+    func collect(metrics: URLSessionTaskMetrics, error : Error?){
         onCollectMetrics(metrics)
     }
+    
+    func collect(timer: InternalTimer, response: URLResponse?){
+        onCollectTimer(timer, response)
+    }
+    
+    func collect(timer: InternalTimer, request : URLRequest, error: Error?){}
 }

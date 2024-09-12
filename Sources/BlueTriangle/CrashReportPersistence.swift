@@ -6,13 +6,20 @@
 //
 
 import Foundation
+#if canImport(AppEventLogger)
+import AppEventLogger
+#endif
 
-struct CrashReportPersistence {
+enum CrashReportConfiguration {
+    case nsException
+}
+
+struct CrashReportPersistence: CrashReportPersisting {
     private static let logger = BTLogger.live
 
     private static var persistence: Persistence? {
         guard let file = File.crashReport else {
-            logger.error("Failed to get URL for ")
+            logger.error("Failed to get URL for `File.crashReport`.")
             return nil
         }
         return Persistence(fileManager: .default, file: file)
@@ -22,12 +29,23 @@ struct CrashReportPersistence {
         persistence?.file.path ?? "MISSING"
     }
 
-    static func save(_ exception: NSException) {
-        let report = CrashReport(exception: exception)
+    static func configureCrashHandling(configuration: CrashReportConfiguration) {
+        switch configuration {
+        case .nsException:
+            NSSetUncaughtExceptionHandler { exception in
+                SignalHandler.disableCrashTracking()
+                Self.save(
+                    CrashReport(sessionID: BlueTriangle.sessionID,
+                                exception: exception, pageName: BlueTriangle.recentTimer()?.page.pageName))
+            }
+        }
+    }
+
+    static func save(_ crashReport: CrashReport) {
         do {
-            try persistence?.save(report)
+            try persistence?.save(crashReport)
         } catch {
-            logger.error("Error saving \(report) to \(path): \(error.localizedDescription)")
+            logger.error("Error saving \(crashReport) to \(path): \(error.localizedDescription)")
         }
     }
 
@@ -45,6 +63,14 @@ struct CrashReportPersistence {
             try persistence?.clear()
         } catch {
             logger.error("Error clearing data at \(path): \(error.localizedDescription)")
+        }
+    }
+    
+    static func saveCrash(crashReport: CrashReport) {
+        do {
+            try persistence?.save(crashReport)
+        } catch {
+            logger.error("Error saving \(crashReport) to \(path): \(error.localizedDescription)")
         }
     }
 }

@@ -16,16 +16,6 @@ final public class BlueTriangleConfiguration: NSObject {
     /// Blue Triangle Technologies-assigned site ID.
     @objc public var siteID: String = ""
 
-    /// Session ID.
-    @objc public var sessionID: Identifier {
-        get {
-            Identifier.random()
-        }
-        set {
-            customSessionID = newValue
-        }
-    }
-
     /// Global User ID.
     @objc public var globalUserID: Identifier {
         get {
@@ -69,19 +59,72 @@ final public class BlueTriangleConfiguration: NSObject {
     @objc public var trafficSegmentName: String = ""
 
     /// Crash tracking behavior.
-    @objc public var crashTracking: CrashTracking = .none
+    @objc public var crashTracking: CrashTracking = .nsException
 
     /// Controls the frequency at which app performance is sampled.
     ///
     /// The smallest allowed interval is one measurement every 1/60 of a second.
     @objc public var performanceMonitorSampleRate: TimeInterval = 1
+    
+    /// Boolean indicating whether performance monitoring is enabled.
+    @objc public var isPerformanceMonitorEnabled: Bool = true
 
     /// Percentage of sessions for which network calls will be captured. A value of `0.05`
     /// means that 5% of sessions will be tracked.
     @objc public var networkSampleRate: Double = 0.05
+    
+    /// Offline or Failure request storage expiry period by default it is 2 day i.e 2 * 24 * 60 * 60  1000 millisecond
+    /// Interval unit should be in Millisecond
+    @objc public var cacheExpiryDuration: Millisecond = 2 * 24 * 60 * 60 * 1000
+    
+    /// Offline or Failure request storage memory limit by default it is 30 Mb i.e 30 * 1024 * 1024 byte
+    /// Memory unit should be in Bytes
+    @objc public var cacheMemoryLimit: UInt = 30 * 1024 * 1024
+    
+   // Session storage expiry duration 2 * 60 * 1000 millisecond
+    internal var sessionExpiryDuration: Millisecond = 30 * 60 * 1000
 
+    /// When enabled tasks running on main thread are monitored for there run duration time.
+    ///
+    /// Any task on main thread taking longer (more then 2-3 seconds) will result unresponsive app during that period.
+    /// This monitor provides two valuable measurements related main thread usage.
+    ///     1. Max Main thread Usage: Each BTTimer will get maximum main thread usage during this BTTimer. How many seconds the longest task on main thread took during every BTTimer.
+    ///     2. ANR Warning : If any single task taking more then ``ANRWarningTimeInterval`` "ANRWarningTimeInterval" seconds a warning raised internally and this error reported to Blue Triangle portal.
+    /// Default is false
+    @objc public var ANRMonitoring: Bool = true
+    
+    ///ANR stack trace helps to identify ANR location
+    ///If its value is true, it send stack trace with ANR warning
+    /// Default is false
+    @objc public var ANRStackTrace: Bool = false
+    
+    /// Time interval for ANR Warning see ``ANRMonitoring`` "ANRMonitoring", default to 5 seconds, minimum is 3 sec, if set less then minimum allowed set value is ignored and used minimum interval.
+    @objc public var ANRWarningTimeInterval: TimeInterval = 5
+    
     /// Boolean indicating whether debug logging is enabled.
     @objc public var enableDebugLogging: Bool = false
+    
+    /// Boolean indicating whether screen tracking is enabled.
+    /// To track alll UIKit screen autometically, It should be enabled
+    /// To track swiftUI screen, It should be enabled
+    /// You can mannually track view by enabling that
+    /// When this is off, Non of above would  get  track
+    @objc public var enableScreenTracking: Bool = true
+    
+    /// This is a  Set of ViewControllers  which developer does not want to track or want to ignore their track. This property can only ignore that screen, Which is being tracked autometically. And It can not ignore , Which is being tracked  manually.
+    /// Set an array of view controlles which user want to ignore
+    @objc public  var ignoreViewControllers: Set<String> = Set<String>()
+    
+    /// Track the network state during Timer Network State and Errors. State Includes wifi, cellular, ethernet and offline.
+    /// Default Value is false
+    @objc public var enableTrackingNetworkState: Bool = true
+    
+    /// Boolean indicating whether memory warning is enabled.
+    @objc public var enableMemoryWarning: Bool = true
+    
+    /// Boolean indicating whether launch time is enabled.
+    @objc public var enableLaunchTime: Bool = true
+    
 
     var timerConfiguration: BTTimer.Configuration = .live
 
@@ -115,20 +158,21 @@ extension BlueTriangleConfiguration {
             }
         }
     }
-
+    
     func makeSession() -> Session {
-        Session(siteID: siteID,
-                globalUserID: customGlobalUserID ?? globalUserID,
-                sessionID: customSessionID ?? sessionID,
-                isReturningVisitor: isReturningVisitor,
-                abTestID: abTestID,
-                campaign: customCampaign,
-                campaignMedium: campaignMedium,
-                campaignName: campaignName,
-                campaignSource: campaignSource,
-                dataCenter: dataCenter,
-                trafficSegmentName: trafficSegmentName
-        )
+        
+        return Session(siteID: siteID,
+                       globalUserID: customGlobalUserID ?? globalUserID,
+                       sessionID: BlueTriangleConfiguration.currentSessionId,
+                       isReturningVisitor: isReturningVisitor,
+                       abTestID: abTestID,
+                       campaign: customCampaign,
+                       campaignMedium: campaignMedium,
+                       campaignName: campaignName,
+                       campaignSource: campaignSource,
+                       dataCenter: dataCenter,
+                       trafficSegmentName: trafficSegmentName
+               )
     }
 
     func makeLogger () -> Logging {
@@ -138,6 +182,15 @@ extension BlueTriangleConfiguration {
     }
 
     func makePerformanceMonitorFactory() -> (() -> PerformanceMonitoring)? {
-        performanceMonitorBuilder.builder(performanceMonitorSampleRate)
+        
+        if isPerformanceMonitorEnabled{
+            return performanceMonitorBuilder.builder(performanceMonitorSampleRate)
+        }else{
+            return nil
+        }
+    }
+    
+    private static var currentSessionId : Identifier {
+        return BlueTriangle.sessionManager.getSessionId()
     }
 }

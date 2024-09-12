@@ -15,15 +15,21 @@ struct TimerRequest: Equatable {
     let purchaseConfirmation: PurchaseConfirmation?
     let performanceReport: PerformanceReport?
     let excluded: String?
+    let trafficSegmentName: String?
+    let nativeAppProperties: NativeAppProperties?
+    let isErrorTimer: Bool
 
     init(
         session: Session,
         page: Page,
         timer: PageTimeInterval,
         customMetrics: String? = nil,
+        trafficSegmentName: String? = nil,
         purchaseConfirmation: PurchaseConfirmation? = nil,
         performanceReport: PerformanceReport? = nil,
-        excluded: String? = nil
+        excluded: String? = nil,
+        nativeAppProperties : NativeAppProperties? = nil,
+        isErrorTimer : Bool = false
     ) {
         self.session = session
         self.page = page
@@ -32,6 +38,9 @@ struct TimerRequest: Equatable {
         self.purchaseConfirmation = purchaseConfirmation
         self.performanceReport = performanceReport
         self.excluded = excluded
+        self.nativeAppProperties = nativeAppProperties
+        self.isErrorTimer = isErrorTimer
+        self.trafficSegmentName = trafficSegmentName
     }
 }
 
@@ -62,7 +71,7 @@ extension TimerRequest: Codable {
         try con.encode(session.campaignName, forKey: .campaignName)
         try con.encode(session.campaignSource, forKey: .campaignSource)
         try con.encode(session.dataCenter, forKey: .dataCenter)
-        try con.encode(session.trafficSegmentName, forKey: .trafficSegmentName)
+        try con.encode(trafficSegmentName ?? session.trafficSegmentName, forKey: .trafficSegmentName)
 
         // Page
         try con.encode(page.brandValue, forKey: .brandValue)
@@ -75,6 +84,8 @@ extension TimerRequest: Codable {
         if let purchaseConfirmation = purchaseConfirmation {
             try con.encode(purchaseConfirmation.pageValue, forKey: .pageValue)
             try con.encode(purchaseConfirmation.cartValue, forKey: .cartValue)
+            try con.encode(purchaseConfirmation.cartCount, forKey: .cartCount)
+            try con.encode(purchaseConfirmation.cartCountCheckout, forKey: .cartCountCheckout)
             try con.encode(purchaseConfirmation.orderNumber, forKey: .orderNumber)
             try con.encode(purchaseConfirmation.orderTime.milliseconds, forKey: .orderTime)
         }
@@ -141,6 +152,17 @@ extension TimerRequest: Codable {
             try con.encode(performanceReport.maxMemory, forKey: .maxMemory)
             try con.encode(performanceReport.avgMemory, forKey: .avgMemory)
         }
+        
+        if let nativeAppProperties = nativeAppProperties {
+            try con.encode(nativeAppProperties, forKey: .nativeApp)
+        }
+        
+        try con.encode(1, forKey: .NativeAppFlag)
+        
+        if isErrorTimer{
+            try con.encode(1, forKey: .err)
+        }
+        
     }
 
     init(from decoder: Decoder) throws {
@@ -240,6 +262,8 @@ extension TimerRequest: Codable {
             self.purchaseConfirmation = PurchaseConfirmation(
                 pageValue: pageValue,
                 cartValue: try container.decode(Decimal.self, forKey: CodingKeys.cartValue),
+                cartCount: try container.decode(Int.self, forKey: CodingKeys.cartCount),
+                cartCountCheckout: try container.decode(Int.self, forKey: CodingKeys.cartCountCheckout),
                 orderNumber: try container.decode(String.self, forKey: CodingKeys.orderNumber),
                 orderTime: try container.decode(TimeInterval.self, forKey: CodingKeys.orderTime))
         } else {
@@ -258,8 +282,13 @@ extension TimerRequest: Codable {
         } else {
             self.performanceReport = nil
         }
-
+        
+        //NativeApp
+        self.nativeAppProperties = try container.decodeIfPresent(NativeAppProperties.self, forKey: CodingKeys.nativeApp)
         self.excluded = try container.decodeIfPresent(String.self, forKey: .excluded)
+        let errValue = try container.decodeIfPresent(Int.self, forKey: .err) ?? 0
+        self.isErrorTimer = errValue > 0 ? true : false
+        self.trafficSegmentName = nil
     }
 
     enum CodingKeys: String, CodingKey {
@@ -305,6 +334,8 @@ extension TimerRequest: Codable {
         case cartValue
         case orderNumber = "ONumBr"
         case orderTime = "orderTND"
+        case cartCount = "c_count"
+        case cartCountCheckout = "co_count"
         // CustomVariables
         case cv1 = "CV1"
         case cv2 = "CV2"
@@ -349,6 +380,13 @@ extension TimerRequest: Codable {
         case avgCPU
         case minMemory
         case maxMemory
-        case avgMemory
+        case avgMemory        
+
+        //ERR flag indicates that this request is Error or ANR
+        case err = "ERR"
+        //Naflg flag indicates that this request is coming from a Native APP
+        case NativeAppFlag = "NAflg"
+        
+        case nativeApp = "NATIVEAPP"
     }
 }

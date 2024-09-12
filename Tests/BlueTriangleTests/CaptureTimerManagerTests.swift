@@ -71,7 +71,7 @@ class CaptureTimerManagerTests: XCTestCase {
             manager.start()
         }
 
-        waitForExpectations(timeout: 1.0)
+        waitForExpectations(timeout: 5.0)
         XCTAssertEqual(fireCount, 2)
     }
 

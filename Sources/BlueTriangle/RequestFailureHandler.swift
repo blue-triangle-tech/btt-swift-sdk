@@ -14,7 +14,9 @@ final class RequestFailureHandler: RequestFailureHandling {
     private let logger: Logging
     private let networkMonitor: NWPathMonitor
     private var cancellables = Set<AnyCancellable>()
-    var send: ((Request) -> Void)?
+    static var isUploading : Bool = false
+    var send: (() -> Void)?
+
 
     init(persistence: RequestCache, logger: Logging) {
         self.persistence = persistence
@@ -34,10 +36,11 @@ final class RequestFailureHandler: RequestFailureHandling {
     func configureSubscriptions(queue: DispatchQueue) {
         networkMonitor.publisher(queue: queue)
             .filter { $0.status == .satisfied }
-            .sink { [weak self] _ in
+            .sink { [weak self] status in
                 self?.sendSaved()
             }.store(in: &cancellables)
 
+#if !os(watchOS)
         NotificationCenter.default.publisher(for: .willTerminate)
             .sink { [weak self] _ in
                 do {
@@ -46,6 +49,7 @@ final class RequestFailureHandler: RequestFailureHandling {
                     self?.log(error)
                 }
             }.store(in: &cancellables)
+#endif
     }
 
     func store(request: Request) {
@@ -56,18 +60,32 @@ final class RequestFailureHandler: RequestFailureHandling {
         }
     }
 
-    func sendSaved() {
+    func migrateCache() {
         do {
-            guard let send = send, let requests = try persistence.read() else {
-                return
+            guard let requests = try persistence.read() else { return }
+            let cache = BlueTriangle.payloadCache
+            requests.forEach {
+                do {
+                    try cache.save(Payload(request: $0))
+                } catch{ log(error) }
             }
-
-            logger.info("Resending \(requests.count) requests.")
-            requests.forEach { send($0) }
-
             try persistence.clear()
         } catch {
             log(error)
+        }
+    }
+    
+    func sendSaved() {
+        
+        if !RequestFailureHandler.isUploading {
+           
+            RequestFailureHandler.isUploading = true
+            
+            self.migrateCache()
+            
+            if let send = send{
+                send()
+            }
         }
     }
 

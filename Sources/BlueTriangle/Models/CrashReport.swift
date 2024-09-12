@@ -8,39 +8,81 @@
 import Foundation
 
 struct CrashReport: Codable {
-    let message: String
-    let eCnt: Int
-    let eTp: String
-    let ver: String
-    let appName: String
-    let line: Int
-    let column: Int
-    let time: Millisecond
+    let sessionID: Identifier
+    let pageName: String?
+    let report: ErrorReport
+}
 
-    enum CodingKeys: String, CodingKey {
-        case message = "msg"
-        case eCnt
-        case eTp
-        case ver = "VER"
-        case appName = "url"
-        case line
-        case column = "col"
-        case time
+//Cunstructor to cunstruct Crash Report
+extension CrashReport {
+    
+    // For NS Exception
+    init(
+        sessionID: Identifier,
+        exception: NSException,
+        pageName:String?,
+        intervalProvider: TimeInterval =  Date().timeIntervalSince1970
+    ) {
+        self.sessionID = sessionID
+        self.pageName =  pageName
+        self.report = ErrorReport(eTp: BT_ErrorType.NativeAppCrash.rawValue, message: exception.bttCrashReportMessage,
+                                  line: 1,
+                                  column: 1,
+                                  time: intervalProvider.milliseconds)
+    }
+    
+    // For message
+    init(
+        sessionID: Identifier,
+        message: String,
+        pageName:String?,
+        intervalProvider: TimeInterval = Date().timeIntervalSince1970
+    ) {
+        self.sessionID = sessionID
+        self.pageName =  pageName
+        self.report = ErrorReport(eTp: BT_ErrorType.NativeAppCrash.rawValue, message: message.bttReportMessage,
+                                  line: 1,
+                                  column: 1,
+                                  time: intervalProvider.milliseconds)
     }
 }
 
+//ANR Warning
 extension CrashReport {
     init(
-        exception: NSException,
-        intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }
+        sessionID: Identifier,
+        ANRmessage: String,
+        pageName:String?,
+        intervalProvider: TimeInterval = Date().timeIntervalSince1970
     ) {
-        self.message = exception.bttCrashReportMessage
-        self.eCnt = 1
-        self.eTp = Constants.eTp
-        self.ver = Version.number
-        self.appName = Bundle.main.appName ?? "Unknown"
-        self.line = 1
-        self.column = 1
-        self.time = intervalProvider().milliseconds
+        self.sessionID = sessionID
+        self.pageName = pageName
+        self.report = ErrorReport(eTp: BT_ErrorType.ANRWarning.rawValue, message: ANRmessage,
+                                  line: 1,
+                                  column: 1,
+                                  time: intervalProvider.milliseconds)
     }
+}
+
+//MemoryWarning
+extension CrashReport {
+    init(
+        sessionID: Identifier,
+        memoryWarningMessage: String,
+        pageName:String?,
+        intervalProvider: TimeInterval = Date().timeIntervalSince1970
+    ) {
+        self.sessionID = sessionID
+        self.pageName = pageName
+        self.report = ErrorReport(eTp: BT_ErrorType.MemoryWarning.rawValue, message: memoryWarningMessage,
+                                  line: 1,
+                                  column: 1,
+                                  time: intervalProvider.milliseconds)
+    }
+}
+
+enum BT_ErrorType : String{
+    case NativeAppCrash
+    case ANRWarning
+    case MemoryWarning
 }

@@ -7,105 +7,107 @@
 
 import Foundation
 
-enum CrashReportConfiguration {
-    case nsException
-}
-
 final class CrashReportManager: CrashReportManaging {
+
+    private let crashReportPersistence: CrashReportPersisting.Type
 
     private let logger: Logging
 
     private let uploader: Uploading
 
-    private let sessionProvider: () -> Session
+    private let session: SessionProvider
+
+    private let intervalProvider: () -> TimeInterval
 
     private var startupTask: Task<Void, Error>?
 
     init(
-        _ configuration: CrashReportConfiguration,
+        crashReportPersistence: CrashReportPersisting.Type,
         logger: Logging,
         uploader: Uploading,
-        sessionProvider: @escaping () -> Session
+        session: @escaping SessionProvider,
+        intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }
     ) {
+        self.crashReportPersistence = crashReportPersistence
         self.logger = logger
         self.uploader = uploader
-        self.sessionProvider = sessionProvider
-        self.startupTask = Task.delayed(byTimeInterval: Constants.startupDelay) { [weak self] in
-            guard let session = self?.sessionProvider() else {
+        self.session = session
+        self.intervalProvider = intervalProvider
+        self.startupTask = Task.delayed(byTimeInterval: Constants.startupDelay, priority: .utility) { [weak self] in
+            guard let session = self?.session() else {
                 return
             }
 
-            self?.uploadReports(session: session)
+            self?.uploadCrashReport(session: session)
             self?.startupTask = nil
         }
-
-        configureErrorHandling(configuration: configuration)
     }
 
-    func uploadReports(session: Session) {
-        DispatchQueue.global(qos: .utility).async { [weak self] in
-            guard let crashReport = CrashReportPersistence.read() else {
-                return
-            }
-            do {
-                guard let strongSelf = self else {
-                    return
-                }
+    func uploadCrashReport(session: Session) {
+        guard let crashReport = crashReportPersistence.read() else {
+            return
+        }
 
-                let timerRequest = try strongSelf.makeTimerRequest(session: session,
-                                                                   crashTime: crashReport.time)
-                strongSelf.uploader.send(request: timerRequest)
+        // Update session to use values from when the app crashed
+        var sessionCopy = session
+        sessionCopy.sessionID = crashReport.sessionID
 
-                let reportRequest = try strongSelf.makeCrashReportRequest(session: session,
-                                                                          crashReport: crashReport)
-                strongSelf.uploader.send(request: reportRequest)
+        do {
+            try upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName)
 
-                CrashReportPersistence.clear()
-            } catch {
-                self?.logger.error(error.localizedDescription)
-            }
+            crashReportPersistence.clear()
+        } catch {
+            logger.error(error.localizedDescription)
         }
     }
 
-    // MARK: - Private
-
-    private func configureErrorHandling(configuration: CrashReportConfiguration) {
-        switch configuration {
-        case .nsException:
-            configureNSExceptionHandler()
+    func uploadError<E: Error>(
+        _ error: E,
+        file: StaticString,
+        function: StaticString,
+        line: UInt
+    ) {
+        
+        let nativeApp = NativeAppProperties.nstEmpty
+        let report = ErrorReport(nativeApp: nativeApp, eTp: BT_ErrorType.NativeAppCrash.rawValue, error: error, line: line, time: intervalProvider().milliseconds)
+        let pageName = BlueTriangle.recentTimer()?.page.pageName
+        do {
+            try upload(session:session() , report: report, pageName: pageName)
+        } catch {
+            logger.error(error.localizedDescription)
         }
     }
+}
 
-    private func configureNSExceptionHandler() {
-        NSSetUncaughtExceptionHandler { exception in
-            CrashReportPersistence.save(exception)
-        }
-    }
-
-    private func makeTimerRequest(session: Session, crashTime: Millisecond) throws -> Request {
-        let page = Page(pageName: Constants.crashID, pageType: Device.name)
-        let timer = PageTimeInterval(startTime: crashTime, interactiveTime: 0, pageTime: 0)
+// MARK: - Private
+private extension CrashReportManager {
+    func makeTimerRequest(session: Session, report: ErrorReport, pageName : String?) throws -> Request {
+        let page = Page(pageName: pageName ?? Constants.crashID, pageType: "")
+        let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
+        let nativeProperty =  report.nativeApp.copy(.Regular)
         let model = TimerRequest(session: session,
                                  page: page,
                                  timer: timer,
                                  purchaseConfirmation: nil,
                                  performanceReport: nil,
-                                 excluded: Constants.excludedValue)
+                                 excluded: Constants.excludedValue,
+                                 nativeAppProperties: nativeProperty,
+                                 isErrorTimer: true)
 
         return try Request(method: .post,
                            url: Constants.timerEndpoint,
                            model: model)
     }
 
-    private func makeCrashReportRequest(session: Session, crashReport: CrashReport) throws -> Request {
+    func makeErrorReportRequest(session: Session, report: ErrorReport, pageName : String?) throws -> Request {
         let params: [String: String] = [
             "siteID": session.siteID,
-            "nStart": String(crashReport.time),
-            "pageName": Constants.crashID,
+            "nStart": String(report.time),
+            "pageName": pageName ?? Constants.crashID,
             "txnName": session.trafficSegmentName,
             "sessionID": String(session.sessionID),
             "pgTm": "0",
-            "pageType": Device.name,
+            "pageType": "",
             "AB": session.abTestID,
             "DCTR": session.dataCenter,
             "CmpN": session.campaignName,
@@ -120,6 +122,16 @@ final class CrashReportManager: CrashReportManaging {
         return try Request(method: .post,
                            url: Constants.errorEndpoint,
                            parameters: params,
-                           model: [crashReport])
+                           model: [report])
+    }
+
+    func upload(session: Session, report: ErrorReport, pageName : String?) throws {
+        let timerRequest = try makeTimerRequest(session: session,
+                                                report: report, pageName: pageName)
+        uploader.send(request: timerRequest)
+
+        let reportRequest = try makeErrorReportRequest(session: session,
+                                                       report: report, pageName: pageName)
+        uploader.send(request: reportRequest)
     }
 }

@@ -16,7 +16,15 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "BlueTriangle",
+          name: "BlueTriangle",
+          dependencies: ["Backtrace","AppEventLogger"],
+          resources: [.copy("PrivacyInfo.xcprivacy")]
+        ),
+        .target(
+            name: "Backtrace",
+            dependencies: []),
+        .target(
+            name: "AppEventLogger",
             dependencies: []),
         .testTarget(
             name: "BlueTriangleTests",
