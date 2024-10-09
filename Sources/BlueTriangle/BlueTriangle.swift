@@ -257,7 +257,10 @@ final public class BlueTriangle: NSObject {
             lock.sync { session().metrics ?? [:] }
         }
         set {
-            lock.sync { self._session.metrics = (newValue.isEmpty ? nil : newValue) }
+            lock.sync { self._session.metrics = (newValue.isEmpty ? nil : newValue.compactMapValues{
+                if ($0 != .none){return $0}
+                return nil
+            })}
         }
     }
 
@@ -408,6 +411,10 @@ public extension BlueTriangle {
         defer { lock.unlock() }
 
         if _session.metrics != nil {
+            guard let value else {
+                _session.metrics!.removeValue(forKey: key)
+                return
+            }
             _session.metrics![key] = value
         } else {
             guard let value else {
