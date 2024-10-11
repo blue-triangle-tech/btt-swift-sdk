@@ -684,9 +684,9 @@ Then developer need to add custom variable code to native app like this:
           BlueTriangle.clearAllCustomVariables()
    ```
 
-where <VARIABLE NAME> is the value that the user added to the portal while creating the custom variable, and <VALUE> is whatever the developer wants to set in these fields.
+where <VARIABLE NAME> is the 'Variable Name' field value that the user added to the portal while creating the custom variable, and <VALUE> is whatever the developer wants to set in these fields.
 
-Once the value is set, it will be sent with each page view until it is updated to nil. 
+Once the value is set, it will be sent with each page view until it is removed. 
 
 To view one of the values on the portal, navigate to the path 'Menu > Native App Monitoring > Native App Performance Detail' and go to the Session Lookup Page. Then, search by session ID and see the Performance Measurement Details for the specific page.
 [**for more detail**](https://help.bluetriangle.com/hc/en-us/articles/12299711775635-Where-can-I-see-Custom-Variables) 
