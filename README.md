@@ -684,7 +684,7 @@ Then developer need to add custom variable code to native app like this:
           BlueTriangle.clearAllCustomVariables()
    ```
 
-where <VARIABLE NAME> is the 'Variable Name' field value that the user added to the portal while creating the custom variable, and <VALUE> is whatever the developer wants to set in these fields.
+where 'VARIABLE NAME' is the 'Variable Name' field value that the user added to the portal while creating the custom variable, and 'VALUE' is whatever the developer wants to set in these fields.
 
 Once the value is set, it will be sent with each page view until it is removed. 
 
