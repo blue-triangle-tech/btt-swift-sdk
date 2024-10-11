@@ -252,24 +252,13 @@ final public class BlueTriangle: NSObject {
     }
 
     /// Custom metrics.
-    public static var metrics: [String: AnyCodable] {
+     private static var metrics: [String: AnyCodable] {
         get {
             lock.sync { session().metrics ?? [:] }
         }
         set {
-            lock.sync { self._session.metrics = (newValue.isEmpty ? nil : newValue.compactMapValues{
-                if ($0 != .none){return $0}
-                return nil
-            })}
+            lock.sync { self._session.metrics = (newValue.isEmpty ? nil : newValue)}
         }
-    }
-
-    /// Custom metrics.
-    ///
-    /// > Note: this member is provided for Objective-C compatibility; ``BlueTriangle/BlueTriangle/metrics``
-    /// should be used when calling from Swift.
-    @objc(metrics) public static var _metrics: [String: Any]? {
-        lock.sync { self._session.metrics?.anyValues }
     }
 }
 
@@ -399,106 +388,151 @@ public extension BlueTriangle {
 
 // MARK: - Custom Metrics
 public extension BlueTriangle {
-    /// Updates the value stored in custom metrics for the given key, or adds a new key-value pair
-    /// if the key does not exist.
+    
+    private static func _setCustomVariable(_ value: Any?, _ key: String) {
+        if let value = value {
+            do {
+                let anyValue = try AnyCodable(value)
+                self.metrics[key] = anyValue
+            } catch {
+                logger.error("Unable to convert \(value) to an `Encodable` representation.")
+            }
+        }else{
+            self.metrics.removeValue(forKey: key)
+        }
+    }
+    
+    private static func _getCustomVariable(_ key: String) -> String? {
+        if let stringValue = self.metrics[key]?.stringValue {
+            return stringValue
+        } else if let doubleValue = self.metrics[key]?.doubleValue {
+            return String(doubleValue)
+        } else if let boolValue = self.metrics[key]?.boolValue{
+            return String(boolValue)
+        } else if let intValue = self.metrics[key]?.intValue {
+            return String(intValue)
+        } else if let int64Value = self.metrics[key]?.int64Value {
+            return String(int64Value)
+        } else if let uint64Value = self.metrics[key]?.uint64Value{
+            return String(uint64Value)
+        }
+        return nil
+    }
+    
+    /// Sets a custom variable with the specified name and string value.
+    ///
     /// - Parameters:
-    ///   - value: The new value to add to custom metrics.
-    ///   - key: The key to associate with value. If `key` already exists in the custom metrics,
+    ///   - name: The name of the custom variable to set.
+    ///   - value: The string value to associate with the variable.
+    ///            If the `name` already exists, `value` replaces the existing associated value. If `name`
+    ///            isn’t already a key in the dictionary, the `(name, value)` pair is added.
+    ///
+    /// This method allows setting a custom variable where the associated value is of type `String`.
+    ///
+    @objc(setCustomVariable:strValue:)
+    static func setCustomVariable(_ name: String, value: String) {
+        _setCustomVariable(value, name)
+    }
+    
+    /// Sets a custom variable with the specified name and value
+    ///
+    /// - Parameters:
+    ///   - name: The name of the custom variable to set.
+    ///   - value: The value to associate with the variable.
+    /// If `key` already exists,
     ///     `value` replaces the existing associated value. If `key` isn’t already a key of the
     ///     dictionary, the `(key, value)` pair is added.
-    private static func set(_ value: AnyCodable?, key: String) {
-        lock.lock()
-        defer { lock.unlock() }
-
-        if _session.metrics != nil {
-            guard let value else {
-                _session.metrics!.removeValue(forKey: key)
-                return
-            }
-            _session.metrics![key] = value
-        } else {
-            guard let value else {
-                return
-            }
-            _session.metrics = [key: value]
-        }
-    }
-
-    /// Updates the value stored in custom metrics for the given key, or adds a new key-value pair
-    /// if the key does not exist.
     ///
-    /// > Note: this member is provided for Objective-C compatibility; ``BlueTriangle/BlueTriangle/metrics``
-    /// should be used when calling from Swift.
-    /// 
+    ///This method allows setting a custom variable where the associated value is of type `NSNumber`.
+    ///
+    @objc(setCustomVariable:numValue:)
+    static func setCustomVariable(_ name: String, value: NSNumber) {
+        _setCustomVariable(value, name)
+    }
+    
+    /// Sets a custom variable with the specified name and value.
+    ///
     /// - Parameters:
-    ///   - value: The new value to add to custom metrics.
-    ///   - key: The key to associate with value. If `key` already exists in the custom metrics,
+    ///   - name: The name of the custom variable to set.
+    ///   - value: The value to associate with the variable, which is of a `Numeric` type (e.g., `Int`, `Double`).
+    ///            If the `name` already exists, `value` replaces the existing associated value. If `name`
+    ///            isn’t already a key in the dictionary, the `(name, value)` pair is added.
+    ///
+    /// This method provides a flexible way to associate numeric values with a custom variable name.
+    ///
+    static func setCustomVariable<T: Numeric>(_ name: String, value: T) {
+        _setCustomVariable(value, name)
+    }
+    
+    /// Sets a custom variable with the specified name and value
+    ///
+    /// - Parameters:
+    ///   - name: The name of the custom variable to set.
+    ///   - value: The value to associate with the variable.
+    /// If `key` already exists,
     ///     `value` replaces the existing associated value. If `key` isn’t already a key of the
     ///     dictionary, the `(key, value)` pair is added.
-    @objc(setMetrics:forKey:)
-    static func _setMetrics(_ value: Any?, forKey key: String) {
-        switch value {
-        case .none:
-            set(nil, key: key)
-        case .some(let wrapped):
-            do {
-                let value = try AnyCodable(wrapped)
-                set(value, key: key)
-            } catch {
-                logger.error("Unable to convert \(wrapped) to an `Encodable` representation.")
-            }
+    ///
+    ///This method allows setting a custom variable where the associated value is of type `Bool`.
+    ///
+    static func setCustomVariable(_ name: String, value: Bool) {
+        _setCustomVariable(value, name)
+    }
+    
+    /// Sets multiple custom variables based on the provided dictionary.
+    ///
+    /// - Parameter variables: A dictionary containing key-value pairs where
+    ///
+    @objc 
+    static func setCustomVariables(_ variables : [String: String] ) {
+        for (name, value) in variables {
+            self.setCustomVariable(name, value: value)
         }
     }
-
-    /// Updates the value stored in custom metrics for the given key, or adds a new key-value pair
-    /// if the key does not exist.
+    
+    /// Retrieves the value of a custom variable by its name.
     ///
-    /// Prefer this method over `setMetrics:forKey:` when using `NSNumber` values to ensure that values are
-    /// handled properly.
+    /// - Parameter name: The name of the custom variable to retrieve.
     ///
-    /// > Note: this member is provided for Objective-C compatibility; ``BlueTriangle/BlueTriangle/metrics``
-    /// should be used when calling from Swift.
+    /// - Returns: The value associated with the custom variable, or `nil`
+    ///   if the variable does not exist ..
     ///
-    /// - Parameters:
-    ///   - nsNumber: The new number vaue to add to custom metrics.
-    ///   - key: The key to associate with value. If `key` already exists in the custom metrics,
-    ///     `nsNumber` replaces the existing associated value. If `key` isn’t already a key of the
-    ///     dictionary, the `(key, nsNumber)` pair is added.
-    @objc(setMetricsWithNsNumber:forKey:)
-    static func _setMetrics(nsNumber: NSNumber?, forKey key: String) {
-        switch nsNumber {
-        case .none:
-            set(nil, key: key)
-        case .some(let wrapped):
-            do {
-                let value = try AnyCodable(wrapped)
-                set(value, key: key)
-            } catch {
-                logger.error("Unable to convert \(wrapped) to an `Encodable` representation.")
-            }
-        }
-    }
-
-    /// Returns the value associated with the given key if one exists.
-    ///
-    /// > Note: this member is provided for Objective-C compatibility; ``BlueTriangle/BlueTriangle/metrics``
-    /// should be used when calling from Swift.
-    ///
-    /// - Parameter key: The key to look up in custom metrics.
-    /// - Returns: The value associated with `key` in custom metrics or `nil` if none exists.
-    @objc(getMetricsForKey:)
-    static func _getMetrics(forKey key: String) -> Any? {
-        lock.lock()
-        defer { lock.unlock() }
-        return _session.metrics?[key]?.anyValue
-    }
-
-    /// Removes all custom metrics values.
     @objc
-    static func clearMetrics() {
-        lock.lock()
-        _session.metrics = nil
-        lock.unlock()
+    static func getCustomVariable(_ name: String) -> String?{
+        return _getCustomVariable(name)
+    }
+    
+    /// Retrieves custom variables in the form of a dictionary of key-value pairs.
+    ///
+    /// - Returns: A dictionary where the keys are the  names and the values are their corresponding string values.
+    ///
+    @objc
+    static func getCustomVariables() -> [String: String] {
+        var stringDict: [String: String] = [:]
+        for (key, _) in self.metrics {
+            if let stringValue = getCustomVariable(key){
+                stringDict[key] = stringValue
+            }
+        }
+        return stringDict
+    }
+    
+    /// Clear custom variable for name from the dictionary.
+    ///
+    /// - Parameter name: The name of the custom variable to clear.
+    ///
+    @objc
+    static func clearCustomVariable(_ name : String){
+        self.metrics.removeValue(forKey: name)
+    }
+    
+    /// Clears all custom variables from the dictionary.
+    ///
+    /// This function resets the  dictionary to an empty state, removing all previously set custom variables.
+    ///
+    @objc 
+    static func clearAllCustomVariables() {
+        self.metrics = [:]
     }
 }
 
