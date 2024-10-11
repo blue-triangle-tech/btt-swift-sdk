@@ -663,21 +663,21 @@ Then developer need to add custom variable code to native app like this:
           BlueTriangle.setCustomVariable(<VARIABLE NAME>, value: <VALUE>)
  ```
 
- ** To get the value of a custom variable, use below function **
+ **To get the value of a custom variable, use below function**
  
   ```swift
           ...
           let value = BlueTriangle.getCustomVariable(<VARIABLE NAME>)
   ```
 
-** To remove a custom variable, use below function **
+**To remove a custom variable, use below function**
 
  ```swift
           ...
           BlueTriangle.clearCustomVariable(<VARIABLE NAME>)
  ```
  
- ** To clear all custom variables, use below function: **
+ **To clear all custom variables, use below function:**
  
    ```swift
           ...
