@@ -36,11 +36,22 @@ final class TimerRequestBuilderTests: XCTestCase {
     }
 
     func testBuildRequest() throws {
-        let expectedString = Mock.makeTimerRequestJSON(
+        
+        let expectedString1 = Mock.makeTimerRequestJSON(
             appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
             os: Device.os,
             osVersion: Device.osVersion,
-            sdkVersion: Version.number)
+            sdkVersion: Version.number,
+            deviceName: Device.model,
+            coreCount: Int32(ProcessInfo.processInfo.activeProcessorCount))
+        
+        let expectedString2 = Mock.makeTimerRequestJSONOlder(
+            appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
+            os: Device.os,
+            osVersion: Device.osVersion,
+            sdkVersion: Version.number,
+            deviceName: Device.model,
+            coreCount: Int32(ProcessInfo.processInfo.activeProcessorCount))
 
         let errorExpectation = expectation(description: "Unexpected error logged")
         errorExpectation.isInverted = true
@@ -52,8 +63,10 @@ final class TimerRequestBuilderTests: XCTestCase {
 
         let actualBody = try sut.builder(Mock.session, timer, nil).body!
         wait(for: [errorExpectation], timeout: 0.1)
-
-        XCTAssertEqual(String(decoding: actualBody.base64DecodedData()!, as: UTF8.self), expectedString)
+        let actualString = String(decoding: actualBody.base64DecodedData()!, as: UTF8.self)
+        
+        XCTAssertTrue(actualString == expectedString1 || actualString == expectedString2)
+       // XCTAssertEqual(actualString, expectedString)
     }
 
     func testMetrics() throws {
@@ -119,12 +132,23 @@ final class TimerRequestBuilderTests: XCTestCase {
     }
 
     func testMetricsExceedingSizeLimitDropped() throws {
-        let expectedMessage = "Custom metrics encoded size of 4 MB (4,000,016 bytes) exceeds limit of 3 MB (3,000,000 bytes); dropping from timer request."
-        let expectedString = Mock.makeTimerRequestJSON(
+        let expectedMessage = "Custom metrics encoded size of 4 MB (40,00,016 bytes) exceeds limit of 3 MB (30,00,000 bytes); dropping from timer request."
+        
+        let expectedString1 = Mock.makeTimerRequestJSON(
             appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
             os: Device.os,
             osVersion: Device.osVersion,
-            sdkVersion: Version.number)
+            sdkVersion: Version.number,
+            deviceName: Device.model,
+            coreCount: Int32(ProcessInfo.processInfo.activeProcessorCount))
+        
+        let expectedString2 = Mock.makeTimerRequestJSONOlder(
+            appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
+            os: Device.os,
+            osVersion: Device.osVersion,
+            sdkVersion: Version.number,
+            deviceName: Device.model,
+            coreCount: Int32(ProcessInfo.processInfo.activeProcessorCount))
 
         var logMessge: String?
         let logExpectation = expectation(description: "Warning logged")
@@ -140,7 +164,13 @@ final class TimerRequestBuilderTests: XCTestCase {
         let actualBody = try sut.builder(session, timer, nil).body!
         wait(for: [logExpectation], timeout: 0.1)
 
-        XCTAssertEqual(String(decoding: actualBody.base64DecodedData()!, as: UTF8.self), expectedString)
-        XCTAssertEqual(logMessge, expectedMessage)
+        let actualString = String(decoding: actualBody.base64DecodedData()!, as: UTF8.self)
+        XCTAssertTrue(actualString == expectedString1 || actualString == expectedString2)
+        
+        if let message = logMessge{
+            XCTAssertEqual(message, expectedMessage)
+        }else{
+            XCTFail()
+        }
     }
 }

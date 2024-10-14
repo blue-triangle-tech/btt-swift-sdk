@@ -88,17 +88,18 @@
     NSString *expectedString = @"string_value";
     NSString *stringKey = @"string";
 
-    [BlueTriangle setMetricsWithNsNumber:expectedNumber forKey:numberKey];
-    [BlueTriangle setMetrics:expectedString forKey:stringKey];
+    [BlueTriangle setCustomVariable:numberKey numValue:expectedNumber];
+    [BlueTriangle setCustomVariable:stringKey strValue:expectedString];
 
-    NSNumber *actualNumber = [BlueTriangle getMetricsForKey:numberKey];
-    XCTAssertEqual(actualNumber.doubleValue, expectedNumber.doubleValue);
+    NSString *actualNumber = [BlueTriangle getCustomVariable:numberKey];
+    NSString *number = [expectedNumber stringValue];
+    XCTAssertEqual(actualNumber, number);
 
-    NSString *actualString = [BlueTriangle getMetricsForKey:stringKey];
+    NSString *actualString = [BlueTriangle getCustomVariable:stringKey];
     XCTAssertEqual(actualString, expectedString);
 
-    [BlueTriangle clearMetrics];
-    NSDictionary *actualMetrics = BlueTriangle.metrics;
-    XCTAssertNil(actualMetrics);
+    [BlueTriangle clearAllCustomVariables];
+    NSDictionary *actualMetrics = [BlueTriangle getCustomVariables];
+    XCTAssertEqual(actualMetrics.count , 0);
 }
 @end

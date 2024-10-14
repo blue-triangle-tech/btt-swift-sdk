@@ -191,7 +191,7 @@ final class UploaderTests: XCTestCase {
 
         waitForExpectations(timeout: 0.1)
     }
-
+    
     func testUploaderSubscriptionRemoval() throws {
         let requestCount: Int = 10
         let expectation = self.expectation(description: "Requests finished")
@@ -203,7 +203,7 @@ final class UploaderTests: XCTestCase {
                 Future { promise in
                     currentRequestCount += 1
                     promises.append(promise)
-                   // promise(.success(Mock.successResponse))
+                    promise(.success(Mock.successResponse))
                 }
             }.eraseToAnyPublisher()
         }
@@ -243,7 +243,8 @@ final class UploaderTests: XCTestCase {
             }
         }
 
-        group.notify(queue: .main) { 
+        group.notify(queue: .main) {
+            
             print("SubscriptionCount: \(uploader.subscriptionCount) - RequestCount: \(currentRequestCount) - ResponseCount: \(responseCount)")
             XCTAssert(uploader.subscriptionCount > requestCount)
             
@@ -260,6 +261,6 @@ final class UploaderTests: XCTestCase {
         otherExpectation.isInverted = true
         wait(for: [otherExpectation], timeout: 10)
 
-        XCTAssert(uploader.subscriptionCount < 3, "Subscription count is \(uploader.subscriptionCount)")
+        XCTAssert(uploader.subscriptionCount < 3)
     }
 }
