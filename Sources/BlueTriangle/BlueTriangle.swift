@@ -475,6 +475,7 @@ public extension BlueTriangle {
     ///
     ///This method allows setting a custom variable where the associated value is of type `Bool`.
     ///
+    @objc(setCustomVariable:boolValue:)
     static func setCustomVariable(_ name: String, value: Bool) {
         _setCustomVariable(value, name)
     }

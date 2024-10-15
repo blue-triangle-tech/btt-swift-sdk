@@ -66,7 +66,6 @@ final class TimerRequestBuilderTests: XCTestCase {
         let actualString = String(decoding: actualBody.base64DecodedData()!, as: UTF8.self)
         
         XCTAssertTrue(actualString == expectedString1 || actualString == expectedString2)
-       // XCTAssertEqual(actualString, expectedString)
     }
 
     func testMetrics() throws {
