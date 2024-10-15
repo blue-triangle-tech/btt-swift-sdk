@@ -203,7 +203,7 @@ final class UploaderTests: XCTestCase {
                 Future { promise in
                     currentRequestCount += 1
                     promises.append(promise)
-                    promise(.success(Mock.successResponse))
+                   // promise(.success(Mock.successResponse))
                 }
             }.eraseToAnyPublisher()
         }
