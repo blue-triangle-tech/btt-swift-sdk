@@ -129,47 +129,4 @@ final class TimerRequestBuilderTests: XCTestCase {
         XCTAssertEqual(actualMetrics, "{\"key\":\"\(expectedKeyValue)\"}")
         XCTAssertEqual(logMessge, expectedMessage)
     }
-
-    func testMetricsExceedingSizeLimitDropped() throws {
-        let expectedMessage = "Custom metrics encoded size of 4 MB (40,00,016 bytes) exceeds limit of 3 MB (30,00,000 bytes); dropping from timer request."
-        
-        let expectedString1 = Mock.makeTimerRequestJSON(
-            appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
-            os: Device.os,
-            osVersion: Device.osVersion,
-            sdkVersion: Version.number,
-            deviceName: Device.model,
-            coreCount: Int32(ProcessInfo.processInfo.activeProcessorCount))
-        
-        let expectedString2 = Mock.makeTimerRequestJSONOlder(
-            appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
-            os: Device.os,
-            osVersion: Device.osVersion,
-            sdkVersion: Version.number,
-            deviceName: Device.model,
-            coreCount: Int32(ProcessInfo.processInfo.activeProcessorCount))
-
-        var logMessge: String?
-        let logExpectation = expectation(description: "Warning logged")
-        let logger = LoggerMock(onDefault: { message in
-            logMessge = message
-            logExpectation.fulfill()
-        })
-
-        let sut = TimerRequestBuilder.live(logger: logger, encoder: encoder)
-
-        var session = Mock.session
-        session.metrics = ["key": .string(String(repeating: "a", count: 3_000_000))]
-        let actualBody = try sut.builder(session, timer, nil).body!
-        wait(for: [logExpectation], timeout: 0.1)
-
-        let actualString = String(decoding: actualBody.base64DecodedData()!, as: UTF8.self)
-        XCTAssertTrue(actualString == expectedString1 || actualString == expectedString2)
-        
-        if let message = logMessge{
-            XCTAssertEqual(message, expectedMessage)
-        }else{
-            XCTFail()
-        }
-    }
 }

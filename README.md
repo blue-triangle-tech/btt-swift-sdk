@@ -657,24 +657,25 @@ To introduce a custom variable, the developer first needs to create it on the Bl
 Then developer need to set custom variable using the below function:
 
 ```swift
-        BlueTriangle.setCustomVariable(<VARIABLE NAME>, value: <VALUE>)
+   BlueTriangle.setCustomVariable(<VARIABLE NAME>, value: <VALUE>)
 ```
+
 In order to get the custom variable value, call the following with the variable name:
 
 ```swift
-          let value = BlueTriangle.getCustomVariable(<VARIABLE NAME>)
+   let value = BlueTriangle.getCustomVariable(<VARIABLE NAME>)
 ```
 
 To remove a custom variable value, call the following function with the variable name:
 
 ```swift
-          BlueTriangle.clearCustomVariable(<VARIABLE NAME>)
+   BlueTriangle.clearCustomVariable(<VARIABLE NAME>)
 ```
 
 To remove all custom variable values, call the following function:
 
 ```swift
-          BlueTriangle.clearAllCustomVariables()
+   BlueTriangle.clearAllCustomVariables()
 ```
 
 where &lt;VARIABLE NAME&gt; is the variable name of the custom variable that the user added to the portal while creating the custom variable e.g. CV1, CV2, etc, and <VALUE> is whatever the developer wants to set in these fields.
