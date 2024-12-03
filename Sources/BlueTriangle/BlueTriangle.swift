@@ -32,7 +32,11 @@ final public class BlueTriangle: NSObject {
 #endif
     }
     
-    internal static let sessionManager = SessionManager()
+    private static let configRepo  =  BTTConfigurationRepo(BTTRemoteConfig.defaultConfig)
+    private static let configFetcher  =  BTTConfigurationFetcher()
+    private static let configAck  =  RemoteConfigAckReporter(logger: logger, uploader: uploader)
+    private static let configUpdater  =  BTTConfigurationUpdater(configFetcher: configFetcher, configRepo: configRepo, logger: logger, configAck: configAck)
+    internal static let sessionManager = SessionManager(logger, configRepo, configFetcher, configAck, configUpdater)
     
     internal static func removeActiveTimer(_ timer : BTTimer){
         
@@ -55,20 +59,57 @@ final public class BlueTriangle: NSObject {
         return timer
     }
     
-    internal static func updateSessionID(_ sessionId : Identifier){
-            _session.sessionID = sessionId
+    internal static func updateSession(_ session : SessionData){
+    
+        _session.sessionID = session.sessionID
 #if os(iOS)
-            BTTWebViewTracker.updateSessionId(sessionId)
+        BTTWebViewTracker.updateSessionId(session.sessionID)
 #endif
-        SignalHandler.updateSessionID("\(sessionId)")
+        SignalHandler.updateSessionID("\(session.sessionID)")
     }
     
+    internal static func updateNetworkSampleRate(_ rate : Double){
+        configuration.networkSampleRate = rate
+    }
+    
+    internal static func refreshCaptureRequests(){
+        shouldCaptureRequests = sessionManager.getSessionData().shouldNetworkCapture
+        if shouldCaptureRequests {
+            if let _ = capturedRequestCollector {} else{
+                capturedRequestCollector = makeCapturedRequestCollector()
+            }
+        }else{
+            capturedRequestCollector = makeCapturedRequestCollector()
+        }
+#if os(iOS)
+        BTTWebViewTracker.shouldCaptureRequests = shouldCaptureRequests
+#endif
+        NSLog("BlueTriangle sample rate : %.2f - value : %@ ", configuration.networkSampleRate , shouldCaptureRequests ? "true" : "false")
+    }
+
     private static var _session: Session = {
         configuration.makeSession()
     }()
     
     internal static func session() -> Session {
         return _session
+    }
+    
+    internal static func makeCapturedRequestCollector() -> CapturedRequestCollecting? {
+        if shouldCaptureRequests {
+            let collector = configuration.capturedRequestCollectorConfiguration.makeRequestCollector(
+                logger: logger,
+                networkCaptureConfiguration: .standard,
+                requestBuilder: CapturedRequestBuilder.makeBuilder { session() },
+                uploader: uploader)
+
+            Task {
+                await collector.configure()
+            }
+            return collector
+        } else {
+            return nil
+        }
     }
     
     private static var logger: Logging = {
@@ -95,9 +136,9 @@ final public class BlueTriangle: NSObject {
     }()
 
     private static var shouldCaptureRequests: Bool = {
-        .random(probability: configuration.networkSampleRate)
+        sessionManager.getSessionData().shouldNetworkCapture
     }()
-
+    
     /// A Boolean value indicating whether the SDK has been initialized.
     public private(set) static var initialized = false
 
@@ -106,20 +147,7 @@ final public class BlueTriangle: NSObject {
     static var monitorNetwork: NetworkStateMonitorProtocol?
     
     private static var capturedRequestCollector: CapturedRequestCollecting? = {
-        if shouldCaptureRequests {
-            let collector = configuration.capturedRequestCollectorConfiguration.makeRequestCollector(
-                logger: logger,
-                networkCaptureConfiguration: .standard,
-                requestBuilder: CapturedRequestBuilder.makeBuilder { session() },
-                uploader: uploader)
-
-            Task {
-                await collector.configure()
-            }
-            return collector
-        } else {
-            return nil
-        }
+        return makeCapturedRequestCollector()
     }()
 
     private static var appEventObserver: AppEventObserver?
@@ -268,7 +296,7 @@ extension BlueTriangle {
     /// - Parameter configure: A closure that enables mutation of the Blue Triangle SDK configuration.
     @objc
     public static func configure(_ configure: (BlueTriangleConfiguration) -> Void) {
-        lock.sync {
+        lock.sync { 
             precondition(!Self.initialized, "BlueTriangle can only be initialized once.")
             initialized.toggle()
             configure(configuration)
