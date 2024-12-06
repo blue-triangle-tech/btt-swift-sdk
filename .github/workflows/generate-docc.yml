@@ -14,7 +14,7 @@ env:
 
 jobs:
   Build-Github-Actions:
-    runs-on: macos-12
+    runs-on: macos-15
     steps:
     - name: Git Checkout main
       uses: actions/checkout@v3
