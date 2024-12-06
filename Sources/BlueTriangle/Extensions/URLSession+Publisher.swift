@@ -43,6 +43,43 @@ enum NetworkError: Error {
     }
 }
 
+extension NetworkError {
+    
+    func getErrorMessage () -> String{
+        
+        var errorMessage = self.localizedDescription
+        
+        switch self {
+            
+        case .malformedRequest:
+            errorMessage = "The request could not be created due to invalid parameters or formatting."
+
+        case .network(error: let error):
+            errorMessage = "A network error occurred: \(error.localizedDescription)."
+        
+        case .noData:
+            errorMessage = "The response did not contain any data."
+           
+        case .invalidResponse(let urlResponse):
+            errorMessage = "Received an invalid response for the URL: \(urlResponse?.url?.absoluteString ?? "Unknown URL")."
+
+        case .clientError(let response):
+            errorMessage = "A client error occurred with status code \(response.statusCode): \(self.localizedDescription)."
+
+        case .serverError(let response):
+            errorMessage = "A server error occurred with status code \(response.statusCode): \(self.localizedDescription)."
+
+        case .decoding(error: let error):
+            errorMessage = "A decoding error occurred: \(error.localizedDescription). Check the data format."
+
+        case .unknown(message: let message):
+            errorMessage = "An unknown error occurred with the message: \(message)."
+        }
+        
+        return errorMessage
+    }
+}
+
 struct HTTPResponse<T> {
     let value: T
     let response: HTTPURLResponse
@@ -53,16 +90,43 @@ struct HTTPResponse<T> {
 }
 
 extension HTTPResponse {
-    func validateStatus() throws {
+    init(_ tuple: (T?, URLResponse?, Error?)) throws {
+        if let error = tuple.2{
+            throw NetworkError.network(error: error)
+        }else{
+            guard let httpResponse = tuple.1 as? HTTPURLResponse, let value = tuple.0 else {
+                throw NetworkError.invalidResponse(tuple.1)
+            }
+            self.value = value
+            self.response = httpResponse
+        }
+    }
+}
+
+extension HTTPResponse {
+    
+    func validate() throws -> Self {
         switch response.statusCode {
+        // Informational
+        case (100..<200): return self
         // Success
-        case (200..<300): return
+        case (200..<300): return self
+        // Redirection
+        case (300..<400): return self
         // Client Error
         case (400..<500): throw NetworkError.clientError(response)
         // Server Error
         case (500..<600): throw NetworkError.serverError(response)
         default: throw NetworkError.unknown(message: "Unrecognized status code: \(response.statusCode)")
         }
+    }
+    
+    // Decode method for when T is Data
+    func decode<S: Decodable>(with decoder: JSONDecoder = .init()) throws -> S {
+        guard let data = value as? Data else {
+            throw NetworkError.decoding(error: NSError(domain: "Expected value to be of type Data.", code: 1001))
+        }
+        return try decoder.decode(S.self, from: data)
     }
 }
 

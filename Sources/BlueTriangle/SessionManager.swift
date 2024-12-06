@@ -3,6 +3,7 @@
 //  
 //
 //  Created by Ashok Singh on 19/08/24.
+//  Copyright © 2021 Blue Triangle. All rights reserved.
 //
 
 import Foundation
@@ -14,122 +15,179 @@ import UIKit
 import SwiftUI
 #endif
 
-class SessionData: Codable {
-    var sessionID: Identifier
-    var expiration: Millisecond
-
-    init(sessionID: Identifier, expiration: Millisecond) {
-        self.sessionID = sessionID
-        self.expiration = expiration
-    }
-}
-
-class SessionStore {
-    
-    private let sessionKey = "SAVED_SESSION_DATA"
-    
-    func saveSession(_ session: SessionData) {
-        if let encoded = try? JSONEncoder().encode(session) {
-            UserDefaults.standard.set(encoded, forKey: sessionKey)
-        }
-    }
-    
-    func retrieveSessionData() -> SessionData? {
-        if let savedSession = UserDefaults.standard.object(forKey: sessionKey) as? Data {
-            if let decodedSession = try? JSONDecoder().decode(SessionData.self, from: savedSession) {
-                return decodedSession
-            }
-        }
-        
-        return nil
-    }
-    
-    func isExpired() -> Bool{
-        
-        var isExpired : Bool = true
-        
-        if let session = retrieveSessionData(){
-            let currentTime = Int64(Date().timeIntervalSince1970) * 1000
-            if  currentTime > session.expiration{
-                isExpired = true
-            }else{
-                isExpired = false
-            }
-        }else{
-            isExpired = true
-        }
-        
-        return isExpired
-    }
-}
+import Combine
 
 class SessionManager {
    
-    private let lock = NSLock()
     private var expirationDurationInMS: Millisecond = 30 * 60 * 1000
-    private let  sessionStore = SessionStore()
+    private let lock = NSLock()
+    private let sessionStore = SessionStore()
+    private var cancellables = Set<AnyCancellable>()
+    private let queue = DispatchQueue(label: "com.bluetriangle.remote", qos: .userInitiated, autoreleaseFrequency: .workItem)
     private var currentSession : SessionData?
-    private let notificationQueue = OperationQueue()
+
+    private let configFetcher: BTTConfigurationFetcher
+    private let configRepo: BTTConfigurationRepo
+    private let logger: Logging
+    private let configAck: RemoteConfigAckReporter
+    private let updater: BTTConfigurationUpdater
     
-    public func start(with  expiry : Millisecond){
+    init(_ logger: Logging,
+         _ configRepo : BTTConfigurationRepo,
+         _ fetcher : BTTConfigurationFetcher,
+         _ configAck : RemoteConfigAckReporter,
+         _ updater : BTTConfigurationUpdater) {
         
-        expirationDurationInMS = expiry
+        self.logger = logger
+        self.configRepo = configRepo
+        self.configFetcher = fetcher
+        self.configAck = configAck
+        self.updater = updater
+    }
+    
+    public func start(with expiry : Millisecond){
+        self.expirationDurationInMS = expiry
         
 #if os(iOS)
-        NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: notificationQueue) { notification in
+        NotificationCenter.default.addObserver(forName: UIApplication.didEnterBackgroundNotification, object: nil, queue: nil) { notification in
             self.appOffScreen()
         }
 
-        NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: notificationQueue) { notification in
+        NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: nil) { notification in
             self.onLaunch()
         }
 #endif
-
+        self.observeRemoteConfig()
         self.updateSession()
     }
     
     private func appOffScreen(){
         if let session = currentSession {
             session.expiration = expiryDuration()
+            session.isNewSession = false
+            currentSession = session
             sessionStore.saveSession(session)
         }
     }
     
     private func onLaunch(){
         self.updateSession()
+        self.updateRemoteConfig()
     }
     
     private func invalidateSession() -> SessionData{
+       
+        var hasExpired = sessionStore.isExpired()
         
-        if sessionStore.isExpired(){
-            let session = SessionData(sessionID: generateSessionID(), expiration: expiryDuration())
+        if CommandLine.arguments.contains(Constants.NEW_SESSION_ON_LAUNCH_ARGUMENT) {
+            
+            if let currentSession = self.currentSession{
+                return currentSession
+            }
+            
+            hasExpired = true
+        }
+        
+        if hasExpired {
+            let session = SessionData(expiration: expiryDuration())
+            session.isNewSession = true
             currentSession = session
+            reloadSession()
             sessionStore.saveSession(session)
+            logger.info("BlueTriangle:SessionManager: New session \(session.sessionID) has been created")
+            
             return session
-        }else{
-            let session = sessionStore.retrieveSessionData()
-            return session!
+        }
+        else{
+            
+            guard let session = currentSession else {
+                let session = sessionStore.retrieveSessionData()
+                session!.isNewSession = false
+                currentSession = session
+                reloadSession()
+                sessionStore.saveSession(session!)
+                return session!
+            }
+            
+            return session
+        }
+    }
+    
+    public func getSessionData() -> SessionData {
+        lock.sync {
+            let updatedSession = self.invalidateSession()
+            return updatedSession
         }
     }
     
     private func updateSession(){
-        BlueTriangle.updateSessionID(self.getSessionId())
-    }
-
-    public func getSessionId() -> Identifier {
-        lock.sync {
-            let updatedSession = self.invalidateSession()
-            return updatedSession.sessionID
-        }
-    }
-     
-    
-    private func generateSessionID()-> Identifier {
-        return Identifier.random()
+        BlueTriangle.updateSession(getSessionData())
     }
     
     private func expiryDuration()-> Millisecond {
         let expiry = Int64(Date().timeIntervalSince1970) * 1000 + expirationDurationInMS
         return expiry
+    }
+}
+
+extension SessionManager {
+    
+    private func observeRemoteConfig(){
+        
+        configRepo.$currentConfig
+            .sink { changedConfig in
+                if let _ = changedConfig{
+                    self.reloadSession()
+                    BlueTriangle.refreshCaptureRequests()
+                }
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func updateRemoteConfig(){
+        queue.async { [weak self] in
+            if let isNewSession = self?.currentSession?.isNewSession {
+                self?.updater.update(isNewSession) {}
+            }
+        }
+    }
+    
+    private func reloadSession(){
+                
+        if let session = currentSession {
+            if session.isNewSession{
+                self.syncConfiguration()
+                session.networkSampleRate = BlueTriangle.configuration.networkSampleRate
+                session.shouldNetworkCapture =  .random(probability: BlueTriangle.configuration.networkSampleRate)
+                sessionStore.saveSession(session)
+            }else{
+                BlueTriangle.updateNetworkSampleRate(session.networkSampleRate)
+            }
+        }
+    }
+    
+    private func syncConfiguration(){
+        do{
+            if CommandLine.arguments.contains(Constants.FULL_SAMPLE_RATE_ARGUMENT) {
+                BlueTriangle.updateNetworkSampleRate(1.0)
+                return
+            }
+            
+            if let config = try configRepo.get(){
+                let sampleRate = config.networkSampleRateSDK ?? configRepo.defaultConfig.networkSampleRateSDK
+                if let rate = sampleRate{
+                    if rate == 0 {
+                        BlueTriangle.updateNetworkSampleRate(0.0)
+                    }else{
+                        BlueTriangle.updateNetworkSampleRate(Double(rate) / 100.0)
+                    }
+                    
+                    logger.info("BlueTriangle:SessionManager: Applied networkSampleRate - \(rate) %")
+                }
+            }
+        }
+        catch {
+            logger.error("BlueTriangle:SessionManager: Failed to retrieve remote configuration from the repository - \(error)")
+        }
     }
 }
