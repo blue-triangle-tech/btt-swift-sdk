@@ -1,6 +1,6 @@
 //
 //  BTTScreenLifecycleTracker.swift
-//  
+//
 //
 //  Created by JP on 13/06/23.
 //  Copyright © 2023 Blue Triangle. All rights reserved.
@@ -31,14 +31,13 @@ protocol BTScreenLifecycleTracker{
 
 public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
     
-    static let shared = BTTScreenLifecycleTracker()
     private var btTimeActivityrMap = [String: TimerMapActivity]()
     private var enableLifecycleTracker = false
     private var viewType = ViewType.UIKit
     private(set) var logger : Logging?
     private var startTimerPages = [String : String]()
     
-    private init() {
+    internal init() {
         registerAppForegroundAndBackgroundNotification()
     }
     
@@ -130,11 +129,18 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
     }
     
     @objc private func appMovedToBackground() {
-        BTTScreenLifecycleTracker.shared.stopActiveTimersWhenAppWentToBackground()
+        BlueTriangle.screenTracker?.stopActiveTimersWhenAppWentToBackground()
     }
     
     @objc private func appMovedToForeground() {
-        BTTScreenLifecycleTracker.shared.startInactiveTimersWhenAppCameToForeground()
+        BlueTriangle.screenTracker?.startInactiveTimersWhenAppCameToForeground()
+    }
+    
+    func stop(){
+#if os(iOS)
+        UIViewController.removeSetUp()
+        NotificationCenter.default.removeObserver(self)
+#endif
     }
 }
 
@@ -218,6 +224,8 @@ class TimerMapActivity {
                         
             let pageInfoMessage = "View tracker timer submited for screen :\(self.pageName)"
             self.logger?.info(pageInfoMessage)
+        }else{
+            self.timer.end()
         }
     }
                 

@@ -34,15 +34,23 @@ class MemoryWarningWatchDog {
         logger.info("Memory Warning WatchDog started.")
     }
     
+    func stop(){
+        removeObserver()
+    }
+    
     @objc func raiseMemoryWarning(){
        
+        guard let session = session() else {
+            return
+        }
+        
         logger.debug("Memory Warning WatchDog :Memory Warning detected...  ")
         
         let message = formatedMemoryWarningMessage()
         let pageName = BlueTriangle.recentTimer()?.page.pageName
         let report = CrashReport(sessionID: BlueTriangle.sessionID,
                                  memoryWarningMessage: message, pageName: pageName)
-        uploadReports(session: session(), report: report)
+        uploadReports(session: session, report: report)
         logger.debug(message)
     }
     

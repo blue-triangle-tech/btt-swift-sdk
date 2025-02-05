@@ -29,7 +29,7 @@ final class BTTConfigurationFetcherTests: XCTestCase {
     func testFetchConfigurationSuccess() {
 
         let mockNetworking: Networking = { request in
-            let mockConfig = BTTRemoteConfig(networkSampleRateSDK: 20, enableRemoteConfigAck: false, ignoreScreens: [])
+            let mockConfig = BTTRemoteConfig(networkSampleRateSDK: 20, enableRemoteConfigAck: false, enableAllTracking: true, ignoreScreens: [])
             let mockData = try! JSONEncoder().encode(mockConfig)
             
             let response = HTTPURLResponse(url: request.url,
@@ -44,7 +44,7 @@ final class BTTConfigurationFetcherTests: XCTestCase {
         }
         
         configurationFetcher = BTTConfigurationFetcher(
-            rootUrl: Constants.connfigEndPoint,
+            rootUrl: Constants.configEndPoint(for: BlueTriangle.siteID),
             cancellable: cancellables,
             networking: mockNetworking
         )
@@ -68,7 +68,7 @@ final class BTTConfigurationFetcherTests: XCTestCase {
         }
         
         configurationFetcher = BTTConfigurationFetcher(
-            rootUrl: Constants.connfigEndPoint,
+            rootUrl: Constants.configEndPoint(for: BlueTriangle.siteID),
             cancellable: Set<AnyCancellable>(),
             networking: mockNetworking
         )

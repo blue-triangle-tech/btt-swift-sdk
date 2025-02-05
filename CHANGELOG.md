@@ -1,4 +1,6 @@
 # Blue Triangle 3.13.2, Latest
+### New Features
+  - Added ability to disabling or enabling the SDK through the remote configuration system, providing full control over its functionality in real-time. When the SDK is disabled, all features, including data collection, processing, and network operations, are suspended.
 ### Bug Fixes and Improvements
 - Resolved an issue in the CaptureTimerManagerTests where asynchronous handler execution would sometimes occur after the test timeout.
 

@@ -19,16 +19,16 @@ class BTTConfigurationUpdater : ConfigurationUpdater {
     private let configFetcher : ConfigurationFetcher
     private let configRepo : ConfigurationRepo
     private let logger : Logging?
-    private var configAck: RemoteConfigAckReporter
+    private var configAck: RemoteConfigAckReporter?
         
-    init(configFetcher : ConfigurationFetcher, configRepo : ConfigurationRepo, logger: Logging, configAck :RemoteConfigAckReporter) {
+    init(configFetcher : ConfigurationFetcher, configRepo : ConfigurationRepo, logger: Logging, configAck :RemoteConfigAckReporter?) {
         self.configFetcher = configFetcher
         self.configRepo = configRepo
         self.logger = logger
         self.configAck = configAck
     }
     
-    func update(_ isNewSession : Bool, completion: @escaping () -> Void) {
+    func update(_ isForcedUpdate : Bool, completion: @escaping () -> Void) {
         
         var enableRemoteConfigAck = false
         
@@ -43,7 +43,7 @@ class BTTConfigurationUpdater : ConfigurationUpdater {
                 let timeIntervalSinceLastUpdate =  currentTime - savedConfig.dateSaved
                 
                 // Perform remote config update only if it's a new session or the update period has elapsed
-                if timeIntervalSinceLastUpdate < updatePeriod &&  !isNewSession {
+                if timeIntervalSinceLastUpdate < updatePeriod &&  !isForcedUpdate {
                    
                     self.logger?.info("BlueTriangle:BTTConfigurationUpdater - The update period has not yet elapsed.")
                     completion()
@@ -68,7 +68,7 @@ class BTTConfigurationUpdater : ConfigurationUpdater {
                         self.reportAck(enableRemoteConfigAck, config, nil)
                     }
                     
-                    self.logger?.info("BlueTriangle:BTTConfigurationUpdater - Remote config fetched successfully \(config.networkSampleRateSDK ?? 0)")
+                    self.logger?.info("BlueTriangle:BTTConfigurationUpdater - Remote config fetched successfully \(config.networkSampleRateSDK ?? 0) - sdk \(config.enableAllTracking ?? true ? "true" : "false")")
                 }
                 catch{
                     self.logger?.error("BlueTriangle:BTTConfigurationUpdater - Failed to save fetch remote config: \(error.localizedDescription)")
@@ -97,13 +97,10 @@ extension BTTConfigurationUpdater{
    
     private func reportAck(_ enableRemoteConfigAck : Bool, _ fetchedConfig : BTTRemoteConfig?,  _ error : String?){
         if enableRemoteConfigAck{
-           
             if let _ = fetchedConfig{
-               
                 reportSucessAck()
             }
             else{
-                
                 if let errorMessage = error{
                     reportFailAck(errorMessage)
                 }
@@ -112,10 +109,10 @@ extension BTTConfigurationUpdater{
     }
 
     private func reportFailAck(_ error : String){
-        configAck.reportFailAck(error)
+        configAck?.reportFailAck(error)
     }
     
     private func reportSucessAck(){
-        configAck.reportSuccessAck()
+        configAck?.reportSuccessAck()
     }
 }
