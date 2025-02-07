@@ -159,20 +159,24 @@ extension BlueTriangleConfiguration {
         }
     }
     
-    func makeSession() -> Session {
+    func makeSession() -> Session? {
         
-        return Session(siteID: siteID,
-                       globalUserID: customGlobalUserID ?? globalUserID,
-                       sessionID: BlueTriangleConfiguration.currentSessionId,
-                       isReturningVisitor: isReturningVisitor,
-                       abTestID: abTestID,
-                       campaign: customCampaign,
-                       campaignMedium: campaignMedium,
-                       campaignName: campaignName,
-                       campaignSource: campaignSource,
-                       dataCenter: dataCenter,
-                       trafficSegmentName: trafficSegmentName
-               )
+        if let sessionId = BlueTriangleConfiguration.currentSessionId{
+            return Session(siteID: siteID,
+                           globalUserID: customGlobalUserID ?? globalUserID,
+                           sessionID: sessionId,
+                           isReturningVisitor: isReturningVisitor,
+                           abTestID: abTestID,
+                           campaign: customCampaign,
+                           campaignMedium: campaignMedium,
+                           campaignName: campaignName,
+                           campaignSource: campaignSource,
+                           dataCenter: dataCenter,
+                           trafficSegmentName: trafficSegmentName
+            )
+        }
+
+        return nil
     }
 
     func makeLogger () -> Logging {
@@ -190,7 +194,7 @@ extension BlueTriangleConfiguration {
         }
     }
     
-    private static var currentSessionId : Identifier {
-        return BlueTriangle.sessionData().sessionID
+    private static var currentSessionId : Identifier? {
+        return BlueTriangle.sessionData()?.sessionID
     }
 }

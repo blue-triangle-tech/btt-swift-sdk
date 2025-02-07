@@ -59,6 +59,7 @@ class ANRWatchDog{
     }
     
    func stop(){
+        self.mainThreadObserver.stop()
         stopObservationTimer()
        logger.info("ANR Watch Dog Stopped.")
     }
@@ -99,6 +100,11 @@ class ANRWatchDog{
     }
     
     private func raiseANRError(){
+        
+        guard let session = session() else {
+            return
+        }
+        
         logger.debug("ANR Watch Dog : Warning potential ANR detected...  ")
         
         let message = """
@@ -107,7 +113,7 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
 """
         let pageName = BlueTriangle.recentTimer()?.page.pageName
         let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName)
-        uploadReports(session: session(), report: report)
+        uploadReports(session: session, report: report)
         logger.debug(message)
     }
     

@@ -78,6 +78,8 @@ final public class BTTimer: NSObject {
         default: return false
         }
     }
+    
+    let enableAllTracking = BlueTriangle.enableAllTracking
 
     var pageTimeInterval: PageTimeInterval {
         PageTimeInterval(
@@ -141,6 +143,10 @@ final public class BTTimer: NSObject {
     /// If already started, will log an error.
     @objc
     public func start() {
+        guard enableAllTracking else{
+            return
+        }
+        
         BlueTriangle.addActiveTimer(self)
         handle(.start)
         self.startNetState()
@@ -159,6 +165,11 @@ final public class BTTimer: NSObject {
     /// End the timer.
     @objc
     public func end() {
+        
+        guard enableAllTracking else{
+            return
+        }
+        
         self.stopNetState()
         
         if let pm = performanceMonitor{
@@ -205,7 +216,7 @@ final public class BTTimer: NSObject {
 
 extension BTTimer{
     func startNetState(){
-        if let monitor = BlueTriangle.monitorNetwork{
+        if let monitor = BlueTriangle.networkStateMonitor{
             self.networkAccumulator = BTTimerNetStateAccumulator(monitor)
             self.networkAccumulator?.start()
         }

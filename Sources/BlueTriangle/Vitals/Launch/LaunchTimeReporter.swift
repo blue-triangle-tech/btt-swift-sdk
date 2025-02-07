@@ -27,8 +27,8 @@ class LaunchTimeReporter : ObservableObject {
         self.start()
     }
 
-    private func start(){
-
+    func start(){
+        self.monitor.start()
         self.monitor.launchEventPubliser
             .receive(on: DispatchQueue.main)
             .sink { event in
@@ -47,20 +47,28 @@ class LaunchTimeReporter : ObservableObject {
         logger.info("Setup to receive launch event")
     }
     
+    func stop(){
+        self.monitor.stop()
+        self.cancellables.forEach { cancellable in
+            cancellable.cancel()
+        }
+        self.cancellables.removeAll()
+    }
+    
     private func uploadReports(_ pageName : String, _ time : Date, _ duration : TimeInterval) {
         DispatchQueue.global(qos: .utility).async { [weak self] in
             do {
-                guard let strongSelf = self else {
+                guard let strongSelf = self, let session = strongSelf.session() else {
                     return
                 }
                 
-                print("Session uploadReports: \(strongSelf.session().sessionID)")
+                print("Session uploadReports: \(session.sessionID)")
                 let groupName = Constants.LAUNCH_TIME_PAGE_GROUP
                 let trafficSegmentName = Constants.LAUNCH_TIME_TRAFFIC_SEGMENT
                 let timeMS = time.timeIntervalSince1970.milliseconds
                 let durationMS = duration.milliseconds
                 
-                let timerRequest = try strongSelf.makeTimerRequest(session: strongSelf.session(),
+                let timerRequest = try strongSelf.makeTimerRequest(session: session,
                                                                    time: timeMS,
                                                                    duration: durationMS,
                                                                    pageName: pageName,
@@ -85,5 +93,9 @@ class LaunchTimeReporter : ObservableObject {
         return try Request(method: .post,
                            url: Constants.timerEndpoint,
                            model: model)
+    }
+    
+    deinit {
+        stop()
     }
 }

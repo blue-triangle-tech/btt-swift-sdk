@@ -12,24 +12,29 @@ class BTTRemoteConfig: Codable, Equatable {
     var networkSampleRateSDK: Int?
     var enableRemoteConfigAck: Bool?
     var ignoreScreens : [String]?
+    var enableAllTracking: Bool?
     
     init(networkSampleRateSDK: Int?,
          enableRemoteConfigAck : Bool?,
+         enableAllTracking : Bool?,
          ignoreScreens : [String]?) {
         self.networkSampleRateSDK = networkSampleRateSDK
         self.enableRemoteConfigAck = enableRemoteConfigAck
         self.ignoreScreens = ignoreScreens
+        self.enableAllTracking = enableAllTracking
     }
     
     static func == (lhs: BTTRemoteConfig, rhs: BTTRemoteConfig) -> Bool {
         return lhs.networkSampleRateSDK == rhs.networkSampleRateSDK &&
         lhs.enableRemoteConfigAck == rhs.enableRemoteConfigAck  &&
-        lhs.ignoreScreens == rhs.ignoreScreens
+        lhs.ignoreScreens == rhs.ignoreScreens &&
+        lhs.enableAllTracking == rhs.enableAllTracking
     }
     
-    public static var defaultConfig: BTTSavedRemoteConfig {
+    internal static var defaultConfig: BTTSavedRemoteConfig {
         BTTSavedRemoteConfig(networkSampleRateSDK: Int(BlueTriangle.configuration.networkSampleRate * 100),
-                             enableRemoteConfigAck : false,
+                             enableRemoteConfigAck : false, 
+                             enableAllTracking: true,
                              ignoreScreens: Array(BlueTriangle.configuration.ignoreViewControllers),
                              dateSaved: Date().timeIntervalSince1970.milliseconds)
     }

@@ -16,6 +16,11 @@ public class BTTWebViewTracker {
     private static let tracker = BTTWebViewTracker()
   
     public static func webView( _ webView: WKWebView, didCommit navigation: WKNavigation!){
+        
+        guard BlueTriangle.enableAllTracking else{
+            return
+        }
+        
         let weakWebView = WeakWebView(webView)
         tracker.webViews.append(weakWebView)
         tracker.injectSessionIdOnWebView(webView)
@@ -24,6 +29,11 @@ public class BTTWebViewTracker {
     }
     
     public static func updateSessionId(_ sessionID : Identifier){
+       
+        guard BlueTriangle.enableAllTracking else{
+            return
+        }
+        
         tracker.cleanUpWebViews()
         for web in tracker.webViews {
             if let webView = web.weekWebView{
@@ -33,7 +43,11 @@ public class BTTWebViewTracker {
     }
 
     public static func verifySessionStitchingOnWebView( _ webView: WKWebView, completion: @escaping (String?, Error?) -> Void){
-
+        
+        guard BlueTriangle.enableAllTracking else{
+            return
+        }
+        
 #if DEBUG
         let sessionId = "\(BlueTriangle.sessionID)"
         let siteId = "\(BlueTriangle.siteID)"
@@ -45,7 +59,7 @@ public class BTTWebViewTracker {
         webView.evaluateJavaScript(bttJSVerificationTag) { (result, error) in
             
             if let isBttJSAvailable = result as? Bool{
-               
+                
                 if isBttJSAvailable {
                     
                     webView.evaluateJavaScript(bttJSSiteIdTag) { (result, error) in
@@ -97,7 +111,7 @@ public class BTTWebViewTracker {
             }
         }
 #else
-    completion(nil, nil)
+        completion(nil, nil)
 #endif
         
     }

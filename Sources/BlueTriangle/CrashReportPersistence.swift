@@ -40,6 +40,10 @@ struct CrashReportPersistence: CrashReportPersisting {
             }
         }
     }
+    
+    static func disableExaptionHandler(){
+        NSSetUncaughtExceptionHandler(nil)
+    }
 
     static func save(_ crashReport: CrashReport) {
         do {

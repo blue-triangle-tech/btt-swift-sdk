@@ -64,9 +64,18 @@ class BTSignalCrashReporter {
         }
     }
     
+    func stop(){
+        self.startupTask?.cancel()
+        self.startupTask = nil
+        SignalHandler.disableCrashTracking()
+        self.removeAllCrashes()
+    }
+    
     private func uploadAllStoredSignalCrashes(){
         do{
-            let session = self.session()
+            guard let session = session() else {
+                return
+            }
             let crashes = try self.getAllCrashes()
             for crash in crashes {
                 uploadSignalCrash(crash, session)
@@ -212,5 +221,16 @@ extension BTSignalCrashReporter{
         let file = File.init(directory: url, name: "\(crash.crash_time).bttcrash")
         let persistence = Persistence.init(file: file)
         try persistence.clear()
+    }
+    
+    private  func removeAllCrashes(){
+        do{
+            let crashes = try self.getAllCrashes()
+            for crash in crashes {
+                try self.removeFile(crash)
+            }
+        }catch{
+            logger.error("BlueTriangle:SignalCrashReporter: \(error.localizedDescription)")
+        }
     }
 }

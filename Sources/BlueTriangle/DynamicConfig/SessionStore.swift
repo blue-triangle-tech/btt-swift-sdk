@@ -45,6 +45,11 @@ class SessionStore {
         
         return isExpired
     }
+    
+    func removeSessionData() {
+        UserDefaults.standard.removeObject(forKey: sessionKey)
+        UserDefaults.standard.synchronize()
+    }
 }
 
 
@@ -55,7 +60,7 @@ class SessionData: Codable {
     var shouldNetworkCapture: Bool
     var networkSampleRate : Double
     var ignoreViewControllers: Set<String>
-
+    
     init(expiration: Millisecond) {
         self.expiration = expiration
         self.sessionID =  SessionData.generateSessionID()
