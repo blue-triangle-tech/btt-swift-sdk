@@ -734,8 +734,13 @@ func testCrashTracking() {  let array = NSArray()  array.object(at: 99)  }
 
 ```
 
+### Microsoft Clarity Integration
 
+Blue Triangle offers session playback via Microsoft Clarity integration. For help with this process, please reach out to your Blue Triangle representative.
 
+To get started, integrate and configure Microsoft Clarity as shown in the official [Microsoft Clarity Documentation](https://learn.microsoft.com/en-us/clarity/mobile-sdk/ios-sdk?tabs=swift-package-manager%2Cswift) using your Clarity project ID. 
+
+Blue Triangle automatically detects Clarity in your app and based on that it automatically does the session mapping between Blue Triangle and Microsoft Clarity.
 
 
 ## Troubleshooting
