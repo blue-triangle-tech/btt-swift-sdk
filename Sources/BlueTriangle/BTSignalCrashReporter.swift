@@ -118,9 +118,11 @@ private extension BTSignalCrashReporter {
         let page = Page(pageName: pageName ?? Constants.crashID, pageType: "")
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
         let nativeProperty =  report.nativeApp.copy(.Regular)
+        let customMetrics = session.customVarriables(logger: logger)
         let model = TimerRequest(session: session,
                                  page: page,
                                  timer: timer,
+                                 customMetrics: customMetrics,
                                  purchaseConfirmation: nil,
                                  performanceReport: nil,
                                  excluded: Constants.excludedValue,

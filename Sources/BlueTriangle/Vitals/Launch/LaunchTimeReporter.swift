@@ -85,9 +85,11 @@ class LaunchTimeReporter : ObservableObject {
     private func makeTimerRequest(session: Session, time : Millisecond, duration : Millisecond , pageName: String, pageGroup : String, trafficSegment : String) throws -> Request {
         let page = Page(pageName: pageName , pageType: pageGroup)
         let timer = PageTimeInterval(startTime: time, interactiveTime: 0, pageTime: duration)
+        let customMetrics = session.customVarriables(logger: logger)
         let model = TimerRequest(session: session,
                                  page: page,
                                  timer: timer,
+                                 customMetrics: customMetrics,
                                  trafficSegmentName: trafficSegment,
                                  nativeAppProperties: .nstEmpty)
         return try Request(method: .post,
