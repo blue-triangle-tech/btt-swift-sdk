@@ -203,7 +203,7 @@ class TimerMapActivity {
             }
             
             timer.trafficSegmentName = Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT
-            
+            timer.page.pageType = Constants.SCREEN_TRACKING_PAGE_GROUP
             let networkReport = timer.networkReport
             
             

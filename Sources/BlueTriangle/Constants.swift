@@ -53,6 +53,7 @@ enum Constants {
     static let HOT_LAUNCH_PAGE_NAME = "HotLaunchTime"
     static let LAUNCH_TIME_PAGE_GROUP = "LaunchTime"
     static let LAUNCH_TIME_TRAFFIC_SEGMENT = "LaunchTime"
+    static let SCREEN_TRACKING_PAGE_GROUP = "ScreenTracker"
     static let SCREEN_TRACKING_TRAFFIC_SEGMENT = "ScreenTracker"
     
     //Dynamic Config
