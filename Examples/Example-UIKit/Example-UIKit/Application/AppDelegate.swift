@@ -36,6 +36,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         runTest(onEvent: .OnAppLaunch)
         
+        BlueTriangle.setCustomVariable("CV3", value: "1024")
+        BlueTriangle.setCustomVariable("CV4", value: "656")
+        
         return true
     }
     

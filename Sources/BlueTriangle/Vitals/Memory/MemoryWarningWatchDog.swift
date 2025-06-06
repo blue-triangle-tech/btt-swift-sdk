@@ -110,9 +110,11 @@ extension MemoryWarningWatchDog {
         let page = Page(pageName: pageName ?? MemoryWarningWatchDog.DEFAULT_PAGE_NAME, pageType: "")
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
         let nativeProperty = BlueTriangle.recentTimer()?.nativeAppProperties ?? .empty
+        let customMetrics = session.customVarriables(logger: logger)
         let model = TimerRequest(session: session,
                                  page: page,
                                  timer: timer,
+                                 customMetrics: customMetrics,
                                  purchaseConfirmation: nil,
                                  performanceReport: nil,
                                  excluded: Constants.excludedValue,
