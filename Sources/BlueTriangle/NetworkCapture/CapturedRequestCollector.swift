@@ -53,6 +53,10 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
         }
     }
 
+    func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse){
+        requestCollection?.insert(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
+    }
+    
     func collect(timer: InternalTimer, response: CustomResponse){
         requestCollection?.insert(timer: timer, response: response)
     }

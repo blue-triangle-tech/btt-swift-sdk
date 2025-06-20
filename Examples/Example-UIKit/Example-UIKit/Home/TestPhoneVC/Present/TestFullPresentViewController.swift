@@ -23,15 +23,18 @@ class TestFullPresentViewController: UIViewController {
     }
     
     private func updateUI(){
-        
+        Thread.sleep(forTimeInterval: 1)
         self.title = "Present FullScreen"
-        
         lblTitle.text = "\(type(of: self))"
         lblId.text = "Id :" + "\n"  + String(describing: self)
         lblDesc.text = "This screen is an UIViewController sub class. Presented on UIViewController using func present(_ viewControllerToPresent: UIViewController, animated flag: Bool, completion: (() -> Void)? = nil) with  fullScreen modalPresentationStyle."
     }
     
-    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        BlueTriangle.setScreenName("CN-Full Present Screen")
+    }
+
     @IBAction func didSelectDissmiss(_ sender : Any){
         self.dismiss(animated: true)
     }

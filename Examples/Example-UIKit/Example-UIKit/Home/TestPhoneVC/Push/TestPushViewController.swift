@@ -26,7 +26,7 @@ class TestPushViewController: UIViewController {
     
     private func updateUI(){
         self.title = "Push"
-        
+        Thread.sleep(forTimeInterval: 1)
         lblTitle.text = "\(type(of: self))"
         lblId.text = "Id :" + "\n"  + String(describing: self)
         lblDesc.text = "This screen is an UIViewController sub class. Puh on UINavigationController using func pushViewController(_ viewController: UIViewController, animated: Bool)."
@@ -34,6 +34,11 @@ class TestPushViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        BlueTriangle.setScreenName("CN-Push Custom Screen")
     }
     
 }

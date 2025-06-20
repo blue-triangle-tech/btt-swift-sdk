@@ -98,6 +98,8 @@ final public class BTTimer: NSObject {
                 return NativeAppProperties(
                     fullTime: 0,
                     loadTime: 0,
+                    loadStartTime: 0,
+                    loadEndTime: 0,
                     maxMainThreadUsage: performanceReport?.maxMainThreadTask.milliseconds ?? 0,
                     viewType: nil,
                     offline: networkReport?.offline ?? 0,
@@ -123,6 +125,8 @@ final public class BTTimer: NSObject {
     var networkReport: NetworkReport? {
         return networkAccumulator?.makeReport()
     }
+    
+    var onEnd: (() -> Void)?
 
     init(page: Page,
          type: TimerType = .main,
@@ -180,6 +184,7 @@ final public class BTTimer: NSObject {
         
         BlueTriangle.removeActiveTimer(self)
         handle(.end)
+        onEnd?()
     }
 
     private func handle(_ action: Action) {

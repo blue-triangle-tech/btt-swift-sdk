@@ -9,7 +9,7 @@ import Foundation
 
 struct RequestCollection: Equatable {
     let page: Page
-    let startTime: Millisecond
+    var startTime: Millisecond
     var requests: [CapturedRequest]
 
     var isNotEmpty: Bool {
@@ -20,6 +20,14 @@ struct RequestCollection: Equatable {
         self.page = page
         self.startTime = startTime
         self.requests = requests
+    }
+    
+    mutating func insert(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) {
+        if let page = response.pageName{
+            self.page.pageName = page
+            self.startTime = groupStartTime
+        }
+        requests.append(CapturedRequest(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response))
     }
     
     mutating func insert(timer: InternalTimer, response: URLResponse?) {

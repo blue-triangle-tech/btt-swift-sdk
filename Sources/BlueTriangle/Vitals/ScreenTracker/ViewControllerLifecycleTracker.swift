@@ -99,7 +99,8 @@ extension UIViewController{
             "UIEditingOverlayViewController",  // Overlay for text editing
             "NavigationStackHostingController",// SwiftUI navigation stack
             "UIPredictionViewController",      // Predictive typing view
-            "UIPlaceholderPredictiveViewController" // Placeholder for predictions
+            "UIPlaceholderPredictiveViewController",  // Placeholder for predictions
+            "UlKeyboardMediaServiceRemoteViewController"
         ]
         
         let selfClassName = "\(type(of: self))"
@@ -127,30 +128,59 @@ extension UIViewController{
     
     @objc dynamic func viewDidLoad_Tracker() {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.loadStarted(String(describing: self), "\(type(of: self))")
+            BlueTriangle.screenTracker?.loadStarted(String(describing: self), getPageName())
         }
         viewDidLoad_Tracker()
     }
     
     @objc dynamic func viewWillAppear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.loadFinish(String(describing: self), "\(type(of: self))")
+            BlueTriangle.screenTracker?.loadFinish(String(describing: self), getPageName())
         }
         viewWillAppear_Tracker(animated)
     }
                                 
     @objc dynamic func viewDidAppear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.viewStart(String(describing: self), "\(type(of: self))")
+            BlueTriangle.screenTracker?.viewStart(String(describing: self), getPageName())
         }
         viewDidAppear_Tracker(animated)
     }
     
     @objc dynamic func viewDidDisappear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.viewingEnd(String(describing: self), "\(type(of: self))")
+            BlueTriangle.screenTracker?.viewingEnd(String(describing: self), getPageName())
         }
         viewDidDisappear_Tracker(animated)
+    }
+    
+    func getPageName() -> String {
+        
+        let viewName = "\(type(of: self))"
+        var pageName: String = viewName
+        let currentTitle = self.navigationItem.title ?? ""
+        
+        if currentTitle.count > 0 {
+            pageName = currentTitle
+        }
+        
+        let tab = self.tabBarController?.title ?? ""
+        let selectedItem = self.tabBarController?.tabBar.selectedItem?.title ?? ""
+        
+        if tab.count > 0, selectedItem.count > 0 {
+            pageName = tab + " : " + selectedItem
+        }
+        
+        let isGroupTimer = BlueTriangle.configuration.groupingEnabled
+        if !isGroupTimer {
+            pageName = viewName
+        } else {
+            if pageName != viewName {
+                pageName = viewName + " - " + pageName
+            }
+        }
+
+        return pageName
     }
 }
 

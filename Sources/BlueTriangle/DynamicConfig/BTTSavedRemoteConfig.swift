@@ -15,12 +15,16 @@ class BTTSavedRemoteConfig: BTTRemoteConfig {
     init(networkSampleRateSDK: Int?,
          enableRemoteConfigAck : Bool?,
          enableAllTracking : Bool?,
+         groupingEnabled : Bool?,
+         groupingIdleTime : Double?,
          ignoreScreens : [String]?,
          dateSaved: Millisecond) {
         self.dateSaved = dateSaved
         super.init(networkSampleRateSDK: networkSampleRateSDK,
                    enableRemoteConfigAck: enableRemoteConfigAck, 
                    enableAllTracking: enableAllTracking,
+                   groupingEnabled: groupingEnabled,
+                   groupingIdleTime: groupingIdleTime,
                    ignoreScreens: ignoreScreens)
     }
 

@@ -31,6 +31,8 @@ enum NativeAppType : CustomStringConvertible, Encodable, Decodable{
 struct NativeAppProperties: Equatable {
     let fullTime: Millisecond
     let loadTime: Millisecond
+    let loadStartTime: Millisecond
+    let loadEndTime: Millisecond
     let maxMainThreadUsage: Millisecond
     let numberOfCPUCores: Int32 = Int32(ProcessInfo.processInfo.activeProcessorCount)
     let viewType: ViewType?
@@ -44,6 +46,7 @@ struct NativeAppProperties: Equatable {
     var netState: String = BlueTriangle.networkStateMonitor?.state.value?.description.lowercased() ?? ""
     var deviceModel : String = Device.model
     var netStateSource : String = BlueTriangle.networkStateMonitor?.networkSource.value?.description ?? ""
+    var childViews:[String] = [String]()
 }
 
 extension NativeAppProperties: Codable{
@@ -57,6 +60,14 @@ extension NativeAppProperties: Codable{
         
         if loadTime > 0{
             try con.encode(loadTime, forKey: .loadTime)
+        }
+        
+        if loadStartTime > 0{
+            try con.encode(loadTime, forKey: .loadStartTime)
+        }
+        
+        if loadEndTime > 0{
+            try con.encode(loadTime, forKey: .loadEndTime)
         }
         
         if self.type != NativeAppType.NST.description{
@@ -99,6 +110,10 @@ extension NativeAppProperties: Codable{
             try con.encode(netStateSource, forKey: .netStateSource)
         }
         
+        if childViews.count > 0{
+            try con.encode(childViews, forKey: .childViews)
+        }
+        
         try con.encode(deviceModel, forKey: .deviceModel)
     }
     
@@ -106,6 +121,8 @@ extension NativeAppProperties: Codable{
         let container: KeyedDecodingContainer<CodingKeys> = try decoder.container(keyedBy: CodingKeys.self)
         self.fullTime = try container.decodeIfPresent(Millisecond.self, forKey: .fullTime)  ?? 0
         self.loadTime = try container.decodeIfPresent(Millisecond.self, forKey: .loadTime)  ?? 0
+        self.loadStartTime = try container.decodeIfPresent(Millisecond.self, forKey: .loadStartTime)  ?? 0
+        self.loadEndTime = try container.decodeIfPresent(Millisecond.self, forKey: .loadEndTime)  ?? 0
         self.maxMainThreadUsage = try container.decodeIfPresent(Millisecond.self, forKey: .maxMainThreadUsage)  ?? 0
         self.viewType = try container.decodeIfPresent(ViewType.self, forKey: .viewType)
         self.wifi = try container.decodeIfPresent(Millisecond.self, forKey: .wifi)  ?? 0
@@ -117,11 +134,14 @@ extension NativeAppProperties: Codable{
         self.type = try container.decodeIfPresent(String.self, forKey: .type) ?? NativeAppType.NST.description
         self.deviceModel = try container.decodeIfPresent(String.self, forKey: .deviceModel) ?? Device.model
         self.netStateSource = try container.decodeIfPresent(String.self, forKey: .netStateSource) ?? ""
+        self.childViews = try container.decodeIfPresent([String].self, forKey: .childViews) ?? []
     }
     
     enum CodingKeys: String, CodingKey {
         case fullTime
         case loadTime
+        case loadStartTime
+        case loadEndTime
         case maxMainThreadUsage
         case numberOfCPUCores
         case viewType
@@ -135,6 +155,7 @@ extension NativeAppProperties: Codable{
         case err
         case deviceModel
         case netStateSource
+        case childViews
     }
 }
 
@@ -144,6 +165,8 @@ extension NativeAppProperties {
         return  .init(
             fullTime: 0,
             loadTime: 0,
+            loadStartTime: 0,
+            loadEndTime: 0,
             maxMainThreadUsage: 0,
             viewType: nil,
             offline: 0,
@@ -158,6 +181,8 @@ extension NativeAppProperties {
     static var empty: Self = .init(
         fullTime: 0,
         loadTime: 0,
+        loadStartTime: 0,
+        loadEndTime: 0,
         maxMainThreadUsage: 0,
         viewType: nil,
         offline: 0,
@@ -170,6 +195,8 @@ extension NativeAppProperties {
         .init(
             fullTime: 0,
             loadTime: 0,
+            loadStartTime: 0,
+            loadEndTime: 0,
             maxMainThreadUsage: 0,
             viewType: nil,
             offline: 0,
@@ -185,6 +212,8 @@ extension NativeAppProperties {
         return .init(
             fullTime: self.fullTime,
             loadTime: self.loadTime,
+            loadStartTime: self.loadStartTime,
+            loadEndTime: self.loadEndTime,
             maxMainThreadUsage: self.maxMainThreadUsage,
             viewType: self.viewType,
             offline: self.offline,

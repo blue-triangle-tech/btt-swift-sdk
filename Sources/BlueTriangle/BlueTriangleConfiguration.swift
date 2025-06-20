@@ -83,6 +83,10 @@ final public class BlueTriangleConfiguration: NSObject {
     
    // Session storage expiry duration 2 * 60 * 1000 millisecond
     internal var sessionExpiryDuration: Millisecond =  30 * 60 * 1000
+    
+    /// Boolean indicating whether grouping  is enabled.
+    internal var groupingEnabled: Bool =  false
+    internal var groupingIdleTime: Double =  2.0
 
     /// When enabled tasks running on main thread are monitored for there run duration time.
     ///

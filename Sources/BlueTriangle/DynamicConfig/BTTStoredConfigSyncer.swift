@@ -38,7 +38,7 @@ class BTTStoredConfigSyncer {
     /// - Notes:
     ///   - This function ensures that the Blue triangle configuration is kept up-to-date.
     ///
-    func syncConfigurationFromStorage(){
+    func syncConfigurationOnNewSession(){
         do{
             if let config = try configRepo.get(){
                 
@@ -69,11 +69,15 @@ class BTTStoredConfigSyncer {
                    
                     BlueTriangle.updateIgnoreVcs(unianOfIgnoreScreens)
                 }
-                
             }
         }catch{
             logger.error("BlueTriangle:SessionManager: Failed to retrieve remote configuration from the repository - \(error)")
         }
+    }
+    
+    func syncConfigurationImidiatellyOnChange(){
+        self.updateAndApplySDKState()
+        self.updateGroupingState()
     }
     
     /// Evaluates the SDK's state based on the latest configuration and updates it accordingly.
@@ -84,7 +88,7 @@ class BTTStoredConfigSyncer {
     /// - Notes:
     ///   - This method ensures that the SDK's behavior is in sync with the remote configuration
     ///
-    func updateAndApplySDKState(){
+    private func updateAndApplySDKState(){
         do{
             if let config = try configRepo.get(){
                 let isEnable = config.enableAllTracking ?? true
@@ -97,6 +101,19 @@ class BTTStoredConfigSyncer {
         catch {
             logger.error("BlueTriangle:SessionManager: Failed to retrieve remote configuration from the repository - \(error)")
         }
-        
+    }
+    
+     func updateGroupingState(){
+        do{
+            if let config = try configRepo.get(){
+                if let groupingEnabled = config.groupingEnabled ?? configRepo.defaultConfig.groupingEnabled,
+                    let groupingIdleTime = config.groupingIdleTime ?? configRepo.defaultConfig.groupingIdleTime{
+                    BlueTriangle.updateGrouping(groupingEnabled, idleTime: groupingIdleTime)
+                }
+            }
+        }
+        catch {
+            logger.error("BlueTriangle:SessionManager: Failed to retrieve remote configuration from the repository - \(error)")
+        }
     }
 }

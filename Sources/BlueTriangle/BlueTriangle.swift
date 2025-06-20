@@ -19,6 +19,7 @@ typealias SessionProvider = () -> Session?
 /// The entry point for interacting with the Blue Triangle SDK.
 final public class BlueTriangle: NSObject {
     
+    internal static var groupTimer : BTTimerGroupManager = BTTimerGroupManager(logger: logger)
     internal static var configuration = BlueTriangleConfiguration()
     
     private static var _screenTracker: BTTScreenLifecycleTracker?
@@ -188,6 +189,11 @@ final public class BlueTriangle: NSObject {
         if let vcs = vcs{
             configuration.ignoreViewControllers = vcs
         }
+    }
+    
+    internal static func updateGrouping(_ isEnable : Bool, idleTime : Double){
+        configuration.groupingEnabled = isEnable
+        configuration.groupingIdleTime = idleTime
     }
     
     internal static func updateCaptureRequests() {
@@ -929,9 +935,13 @@ public extension BlueTriangle {
 
         Task {
             await capturedRequestCollector?.start(page: page, startTime: startTime)
+            print("Page Name 2:\(page.pageName)")
         }
     }
 
+    static func setScreenName(_ screenName: String) {
+        BlueTriangle.groupTimer.setGroupName(screenName)
+    }
     /// Returns a timer for network capture.
     static func startRequestTimer() -> InternalTimer? {
         guard shouldCaptureRequests else {
@@ -952,6 +962,12 @@ public extension BlueTriangle {
     static func captureRequest(timer: InternalTimer, response: URLResponse?) {
         Task {
             await capturedRequestCollector?.collect(timer: timer, response: response)
+        }
+    }
+    
+    internal static func captureRequest(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) {
+        Task {
+            await capturedRequestCollector?.collect(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
         }
     }
     

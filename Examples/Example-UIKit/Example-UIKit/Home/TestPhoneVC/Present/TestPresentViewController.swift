@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import BlueTriangle
 
 class TestPresentViewController: UIViewController {
 
@@ -21,9 +22,13 @@ class TestPresentViewController: UIViewController {
     private func updateUI(){
         
         self.title = "Present Default"
-        
         lblTitle.text = "\(type(of: self))"
         lblId.text = "Id :" + "\n"  + String(describing: self)
         lblDesc.text = "This screen is an UIViewController sub class. Presented on UIViewController using func present(_ viewControllerToPresent: UIViewController, animated flag: Bool, completion: (() -> Void)? = nil) with  default modalPresentationStyle."
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        BlueTriangle.setScreenName("CN-Present Screen")
     }
 }

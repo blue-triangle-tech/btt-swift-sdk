@@ -186,14 +186,13 @@ extension SessionManager {
     private func updateConfigurationOnChange(){
         self.syncStoredConfigToSessionAndApply()
         BlueTriangle.updateCaptureRequests()
-        configSyncer.updateAndApplySDKState()
     }
 
     private func syncStoredConfigToSessionAndApply(){
                 
         if let session = currentSession {
             if session.isNewSession{
-                configSyncer.syncConfigurationFromStorage()
+                configSyncer.syncConfigurationOnNewSession()
                 session.networkSampleRate = BlueTriangle.configuration.networkSampleRate
                 session.shouldNetworkCapture =  .random(probability: BlueTriangle.configuration.networkSampleRate)
                 session.ignoreViewControllers = BlueTriangle.configuration.ignoreViewControllers
@@ -202,6 +201,7 @@ extension SessionManager {
                 BlueTriangle.updateNetworkSampleRate(session.networkSampleRate)
                 BlueTriangle.updateIgnoreVcs(session.ignoreViewControllers)
             }
+            configSyncer.syncConfigurationImidiatellyOnChange()
         }
     }
 }

@@ -13,4 +13,5 @@ protocol CapturedRequestCollecting: Actor {
     func collect(metrics: URLSessionTaskMetrics, error : Error?)
     func collect(timer: InternalTimer, response: URLResponse?)
     func collect(timer: InternalTimer, request : URLRequest, error: Error?)
+    func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse)
 }
