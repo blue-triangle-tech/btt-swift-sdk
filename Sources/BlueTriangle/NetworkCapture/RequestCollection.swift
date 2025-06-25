@@ -10,24 +10,25 @@ import Foundation
 struct RequestCollection: Equatable {
     let page: Page
     var startTime: Millisecond
+    var isGroupTimer: Bool
     var requests: [CapturedRequest]
 
     var isNotEmpty: Bool {
         !requests.isEmpty
     }
 
-    init(page: Page, startTime: Millisecond, requests: [CapturedRequest] = []) {
+    init(page: Page, startTime: Millisecond, isGroupTimer: Bool = false, requests: [CapturedRequest] = []) {
         self.page = page
         self.startTime = startTime
         self.requests = requests
+        self.isGroupTimer = isGroupTimer
     }
     
-    mutating func insert(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) {
-        if let page = response.pageName{
-            self.page.pageName = page
-            self.startTime = groupStartTime
+    mutating func updateNetworkCapture(pageName : String, startTime: Millisecond) {
+        if isGroupTimer {
+            self.page.pageName = pageName
+            self.startTime = startTime
         }
-        requests.append(CapturedRequest(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response))
     }
     
     mutating func insert(timer: InternalTimer, response: URLResponse?) {

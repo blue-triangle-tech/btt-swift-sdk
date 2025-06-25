@@ -128,28 +128,28 @@ extension UIViewController{
     
     @objc dynamic func viewDidLoad_Tracker() {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.loadStarted(String(describing: self), getPageName())
+            BlueTriangle.screenTracker?.loadStarted(String(describing: self), getPageName(), isAutoTrack: true)
         }
         viewDidLoad_Tracker()
     }
     
     @objc dynamic func viewWillAppear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.loadFinish(String(describing: self), getPageName())
+            BlueTriangle.screenTracker?.loadFinish(String(describing: self), getPageName(), isAutoTrack: true)
         }
         viewWillAppear_Tracker(animated)
     }
                                 
     @objc dynamic func viewDidAppear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.viewStart(String(describing: self), getPageName())
+            BlueTriangle.screenTracker?.viewStart(String(describing: self), getPageName(), isAutoTrack: true)
         }
         viewDidAppear_Tracker(animated)
     }
     
     @objc dynamic func viewDidDisappear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.viewingEnd(String(describing: self), getPageName())
+            BlueTriangle.screenTracker?.viewingEnd(String(describing: self), getPageName(), isAutoTrack: true)
         }
         viewDidDisappear_Tracker(animated)
     }
@@ -159,16 +159,12 @@ extension UIViewController{
         let viewName = "\(type(of: self))"
         var pageName: String = viewName
         let currentTitle = self.navigationItem.title ?? ""
+        let selectedItem = self.tabBarController?.tabBar.selectedItem?.title ?? ""
         
         if currentTitle.count > 0 {
             pageName = currentTitle
-        }
-        
-        let tab = self.tabBarController?.title ?? ""
-        let selectedItem = self.tabBarController?.tabBar.selectedItem?.title ?? ""
-        
-        if tab.count > 0, selectedItem.count > 0 {
-            pageName = tab + " : " + selectedItem
+        } else if selectedItem.count > 0 {
+            pageName = selectedItem
         }
         
         let isGroupTimer = BlueTriangle.configuration.groupingEnabled

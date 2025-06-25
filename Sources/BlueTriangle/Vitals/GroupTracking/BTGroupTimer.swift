@@ -29,10 +29,10 @@ final class BTTimerGroup {
     init(logger: Logging, onGroupCompleted: @escaping (BTTimerGroup) -> Void) {
         self.logger = logger
         self.onGroupCompleted = onGroupCompleted
-        self.groupTimer = BlueTriangle.startTimer(page: Page(pageName: "BTTGroupPage"))
+        self.groupTimer = BlueTriangle.startTimer(page: Page(pageName: "BTTGroupPage"), isGroupedTimer: true)
     }
 
-    func forceEndAllTimers() {
+    func forcefullyEndAllTimers() {
         for timer in timers where !timer.hasEnded {
             let prop = timer.nativeAppProperties
             timer.nativeAppProperties = NativeAppProperties(
@@ -55,17 +55,74 @@ final class BTTimerGroup {
     
     func setGroupName(_ name: String?) {
         self.groupName = name
+        self.updatePageName()
     }
     
     func add(_ timer: BTTimer) {
         lock.sync {
-            guard !isGroupClosed else {
-                return
-            }
-            
+            guard !isGroupClosed else { return }
             timers.append(timer)
             observe(timer)
             resetIdleTimer()
+        }
+    }
+    
+    func submit() {
+        let timerCount = timers.count
+        let fullTime = timeInterval.milliseconds - groupTimer.startTime.milliseconds
+        let networkReport = self.groupTimer.networkReport
+        let maxMainThreadTask = self.groupTimer.performanceReport?.maxMainThreadTask.milliseconds ?? 0
+        var pgtm: Millisecond = 0
+        var pages = [String]()
+        var viewType: ViewType?
+        
+        for timer in timers {
+            let calculatedLoadTime = max((timer.nativeAppProperties.loadTime), Constants.minPgTm)
+            pgtm = pgtm + calculatedLoadTime
+            pages.append(timer.page.pageName)
+            viewType = timer.nativeAppProperties.viewType
+        }
+        
+        //Setup group native app property
+        self.groupTimer.nativeAppProperties = NativeAppProperties(
+            fullTime: fullTime,
+            loadTime: pgtm,
+            loadStartTime: 0,
+            loadEndTime: 0,
+            maxMainThreadUsage: maxMainThreadTask,
+            viewType: viewType,
+            offline: networkReport?.offline ?? 0,
+            wifi: networkReport?.wifi ?? 0,
+            cellular: networkReport?.cellular ?? 0,
+            ethernet: networkReport?.ethernet ?? 0,
+            other: networkReport?.other ?? 0,
+            netState: networkReport?.netState ?? "",
+            netStateSource: networkReport?.netSource ?? "",
+            childViews : pages.map { self.extractViewName(from: $0) })
+        
+        for timer in timers {
+            self.submitSingleRequest(groupTimer:self.groupTimer , timer: timer, group: self.groupTimer.page.pageName)
+        }
+        
+        self.groupTimer.pageTimeBuilder = {
+            return pgtm
+        }
+        
+        BlueTriangle.endTimer(self.groupTimer)
+        logger.info("Submitting group result: \(timerCount) timers with name: \(self.groupTimer.page.pageName)")
+    }
+
+    func flush() {
+        timers.removeAll()
+    }
+    
+    private func trySubmitGroup() {
+        guard isGroupClosed, !hasSubmitted else { return }
+        
+        let allTimersEnded = timers.allSatisfy { $0.hasEnded }
+        if allTimersEnded {
+            hasSubmitted = true
+            onGroupCompleted(self)
         }
     }
     
@@ -83,6 +140,7 @@ final class BTTimerGroup {
             logger.info("Group closed due to idle.")
             isGroupClosed = true
             idleTimer?.invalidate()
+            updatePageName()
             trySubmitGroup()
         }
     }
@@ -100,75 +158,27 @@ final class BTTimerGroup {
         }
     }
     
-    private func trySubmitGroup() {
-        guard isGroupClosed, !hasSubmitted else { return }
-        
-        let allTimersEnded = timers.allSatisfy { $0.hasEnded }
-        if allTimersEnded {
-            hasSubmitted = true
-            onGroupCompleted(self)
-        }
-    }
-    
-    func submit() {
-        let timerCount = timers.count
-        let fullTime = timeInterval.milliseconds - groupTimer.startTime.milliseconds
-        var pgtm: Millisecond = 0
+    private func updatePageName() {
         var pages = [String]()
-        var viewType: ViewType?
-        
         for timer in timers {
-            let calculatedLoadTime = max((timer.nativeAppProperties.loadTime), Constants.minPgTm)
-            pgtm = pgtm + calculatedLoadTime
             pages.append(timer.page.pageName)
-            viewType = timer.nativeAppProperties.viewType
         }
-        
-        let pageName : String =  groupName ?? self.lastPageName(from: pages)  + " Group"
+        let pageName : String =  groupName ?? self.extractLastPageName(from: pages)
         self.groupTimer.page.pageName = pageName
-        let networkReport = self.groupTimer.networkReport
-        let maxMainThreadTask = self.groupTimer.performanceReport?.maxMainThreadTask.milliseconds ?? 0
-        
-        self.groupTimer.nativeAppProperties = NativeAppProperties(
-            fullTime: fullTime,
-            loadTime: pgtm,
-            loadStartTime: 0,
-            loadEndTime: 0,
-            maxMainThreadUsage: maxMainThreadTask,
-            viewType: viewType,
-            offline: networkReport?.offline ?? 0,
-            wifi: networkReport?.wifi ?? 0,
-            cellular: networkReport?.cellular ?? 0,
-            ethernet: networkReport?.ethernet ?? 0,
-            other: networkReport?.other ?? 0,
-            netState: networkReport?.netState ?? "",
-            netStateSource: networkReport?.netSource ?? "",
-            childViews : pages)
-        
-        for timer in timers {
-            self.submitTimer(groupTimer:self.groupTimer , timer: timer, group: pageName)
-        }
-        
-        self.groupTimer.pageTimeBuilder = {
-            return pgtm
-        }
-        
-        BlueTriangle.endTimer(self.groupTimer)
-        logger.info("Submitting group result: \(timerCount) timers with name: \(pageName)")
-    }
-
-    func submitTimer( groupTimer : BTTimer, timer: BTTimer, group : String) {
-        let pageName =  self.firstPageName(from: timer.page.pageName)
-        BlueTriangle.captureRequest(startTime: timer.nativeAppProperties.loadStartTime, endTime: timer.nativeAppProperties.loadEndTime, groupStartTime: groupTimer.startTime.milliseconds, response: CustomPageResponse(file: pageName, url: pageName, domain: group, pageName: group))
+        BlueTriangle.captureRequest(pageName: pageName, startTime: groupTimer.startTime.milliseconds)
     }
     
-    func flush() {
-        timers.removeAll()
+    private func submitSingleRequest( groupTimer : BTTimer, timer: BTTimer, group : String) {
+        let pageName =  self.extractViewName(from: timer.page.pageName)
+        BlueTriangle.captureGroupRequest(startTime: timer.nativeAppProperties.loadStartTime,
+                                    endTime: timer.nativeAppProperties.loadEndTime,
+                                    groupStartTime: groupTimer.startTime.milliseconds,
+                                    response: CustomPageResponse(file: pageName, url: pageName, domain: group, pageName: group))
     }
 }
 
 extension BTTimerGroup {
-    private func lastPageName(from titles: [String]) -> String {
+    private func extractLastPageName(from titles: [String]) -> String {
         for title in titles.reversed() {
             if let part = title.components(separatedBy: "-").last,
                title.contains("-") {
@@ -178,7 +188,7 @@ extension BTTimerGroup {
         return titles.last ?? ""
     }
     
-    private func firstPageName(from title: String) -> String {
+    private func extractViewName(from title: String) -> String {
         if let part = title.components(separatedBy: "-").first,
            title.contains("-") {
             return part.trimmingCharacters(in: .whitespacesAndNewlines)

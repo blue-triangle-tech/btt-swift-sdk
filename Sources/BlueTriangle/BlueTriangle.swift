@@ -242,6 +242,23 @@ final public class BlueTriangle: NSObject {
         }
     }
     
+    private static func makeCapturedGroupRequestCollector() -> CapturedGroupRequestCollecting? {
+        if let _ = session(){
+            let groupCollector = configuration.capturedGroupRequestCollectorConfiguration.makeRequestCollector(
+                logger: logger,
+                networkCaptureConfiguration: .standard,
+                requestBuilder: CapturedRequestBuilder.makeBuilder {self.session()},
+                uploader: uploader)
+
+            Task {
+                await groupCollector.configure()
+            }
+            return groupCollector
+        } else {
+            return nil
+        }
+    }
+    
     private static var logger: Logging = {
         configuration.makeLogger()
     }()
@@ -255,7 +272,7 @@ final public class BlueTriangle: NSObject {
                 logger: logger))
     }()
 
-    private static var timerFactory: (Page, BTTimer.TimerType) -> BTTimer = {
+    private static var timerFactory: (Page, BTTimer.TimerType, Bool) -> BTTimer = {
         configuration.timerConfiguration.makeTimerFactory(
             logger: logger,
             performanceMonitorFactory: configuration.makePerformanceMonitorFactory())
@@ -282,7 +299,10 @@ final public class BlueTriangle: NSObject {
     private static var capturedRequestCollector: CapturedRequestCollecting? = {
         return makeCapturedRequestCollector()
     }()
-
+    
+    private static var capturedGroupRequestCollector: CapturedGroupRequestCollecting? = {
+        return makeCapturedGroupRequestCollector()
+    }()
 
     //Cache components
     internal static var payloadCache : PayloadCacheProtocol = {
@@ -655,7 +675,7 @@ extension BlueTriangle {
         session: Session? = nil,
         logger: Logging? = nil,
         uploader: Uploading? = nil,
-        timerFactory: ((Page, BTTimer.TimerType) -> BTTimer)? = nil,
+        timerFactory: ((Page, BTTimer.TimerType, Bool) -> BTTimer)? = nil,
         shouldCaptureRequests: Bool? = nil,
         internalTimerFactory: (() -> InternalTimer)? = nil,
         requestCollector: CapturedRequestCollecting? = nil
@@ -701,10 +721,10 @@ public extension BlueTriangle {
     ///   - timerType: The type of timer.
     /// - Returns: The new timer.
     @objc
-    static func makeTimer(page: Page, timerType: BTTimer.TimerType = .main) -> BTTimer {
+    static func makeTimer(page: Page, timerType: BTTimer.TimerType = .main, isGroupedTimer: Bool = false) -> BTTimer {
         lock.lock()
        // precondition(initialized, "BlueTriangle must be initialized before sending timers.")
-        let timer = timerFactory(page, timerType)
+        let timer = timerFactory(page, timerType, isGroupedTimer)
         lock.unlock()
         return timer
     }
@@ -718,8 +738,8 @@ public extension BlueTriangle {
     ///   - timerType: The type of timer.
     /// - Returns: The running timer.
     @objc
-    static func startTimer(page: Page, timerType: BTTimer.TimerType = .main) -> BTTimer {
-        let timer = makeTimer(page: page, timerType: timerType)
+    static func startTimer(page: Page, timerType: BTTimer.TimerType = .main, isGroupedTimer: Bool = false) -> BTTimer {
+        let timer = makeTimer(page: page, timerType: timerType, isGroupedTimer: isGroupedTimer)
         timer.start()
         return timer
     }
@@ -928,14 +948,19 @@ public extension BlueTriangle{
 
 // MARK: - Network Capture
 public extension BlueTriangle {
-    internal static func timerDidStart(_ type: BTTimer.TimerType, page: Page, startTime: TimeInterval) {
+    internal static func timerDidStart(_ type: BTTimer.TimerType, page: Page, startTime: TimeInterval, isGroupTimer: Bool = false) {
         guard case .main = type else {
             return
         }
 
         Task {
-            await capturedRequestCollector?.start(page: page, startTime: startTime)
-            print("Page Name 2:\(page.pageName)")
+            await capturedRequestCollector?.start(page: page, startTime: startTime, isGroupTimer: isGroupTimer)
+        }
+        
+        if isGroupTimer {
+            Task {
+                await capturedGroupRequestCollector?.start(page: page, startTime: startTime)
+            }
         }
     }
 
@@ -959,18 +984,25 @@ public extension BlueTriangle {
     ///   - response: The request response.
     ///   - error: The response error
     
+    internal static func captureGroupRequest(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) {
+        Task {
+            await capturedGroupRequestCollector?.collect(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
+        }
+    }
+    
+    internal static func captureRequest(pageName : String, startTime: Millisecond){
+        Task {
+            await capturedRequestCollector?.collect(pageName: pageName, startTime: startTime)
+            await capturedGroupRequestCollector?.collect(pageName: pageName, startTime: startTime)
+        }
+    }
+    
     static func captureRequest(timer: InternalTimer, response: URLResponse?) {
         Task {
             await capturedRequestCollector?.collect(timer: timer, response: response)
         }
     }
-    
-    internal static func captureRequest(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) {
-        Task {
-            await capturedRequestCollector?.collect(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
-        }
-    }
-    
+
     internal static func captureRequest(timer: InternalTimer, response: CustomResponse) {
         Task {
             await capturedRequestCollector?.collect(timer: timer, response: response)

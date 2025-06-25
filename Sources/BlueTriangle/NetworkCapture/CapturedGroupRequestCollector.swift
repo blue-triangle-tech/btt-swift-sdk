@@ -1,20 +1,20 @@
 //
-//  CapturedRequestCollector.swift
+//  CapturedGroupRequestCollector.swift
+//  blue-triangle
 //
-//  Created by Mathew Gacy on 2/20/22.
-//  Copyright © 2022 Blue Triangle. All rights reserved.
+//  Created by Ashok Singh on 25/06/25.
 //
+
 
 import Foundation
 
-actor CapturedRequestCollector: CapturedRequestCollecting {
+actor CapturedGroupRequestCollector: CapturedGroupRequestCollecting {
     private let logger: Logging
     private var timerManager: CaptureTimerManaging
     private let requestBuilder: CapturedRequestBuilder
     private let uploader: Uploading
     private let uploadTaskPriority: TaskPriority
-    private var requestCollection: RequestCollection?
-    private var groupRequestCollection: RequestCollection?
+    private var requestCollection: GroupRequestCollection?
     private(set) var hasBeenConfigured: Bool = false
 
     init(
@@ -43,35 +43,23 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
         timerManager.cancel()
     }
 
-    func start(page: Page, startTime: TimeInterval, isGroupTimer: Bool = false) {
+    func start(page: Page, startTime: TimeInterval) {
         timerManager.cancel()
         let previousCollection = requestCollection
-        requestCollection = RequestCollection(page: page, startTime: startTime.milliseconds, isGroupTimer: isGroupTimer)
+        requestCollection = GroupRequestCollection(page: page, startTime: startTime.milliseconds)
         timerManager.start()
-
+        
         if let collection = previousCollection, collection.isNotEmpty {
             upload(startTime: collection.startTime, page: collection.page, requests: collection.requests)
         }
     }
-
+    
     func collect(pageName : String, startTime: Millisecond){
         requestCollection?.updateNetworkCapture(pageName: pageName, startTime: startTime)
     }
-    
-    func collect(timer: InternalTimer, response: CustomResponse){
-        requestCollection?.insert(timer: timer, response: response)
-    }
-    
-    func collect(timer: InternalTimer, response: URLResponse?){
-        requestCollection?.insert(timer: timer, response: response)
-    }
-    
-    func collect(timer: InternalTimer, request : URLRequest, error: Error?){
-        requestCollection?.insert(timer: timer, request: request, error: error)
-    }
 
-    func collect(metrics: URLSessionTaskMetrics, error: Error?) {
-        requestCollection?.insert(metrics: metrics, error: error)
+    func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse){
+        requestCollection?.insert(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
     }
 
     // Use `nonisolated` to enable capture by timerManager handler.
@@ -102,7 +90,7 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
 }
 
 // MARK: - Supporting Types
-extension CapturedRequestCollector {
+extension CapturedGroupRequestCollector {
     struct Configuration {
         let timerManagingProvider: (NetworkCaptureConfiguration) -> CaptureTimerManaging
 
@@ -111,9 +99,9 @@ extension CapturedRequestCollector {
             networkCaptureConfiguration: NetworkCaptureConfiguration,
             requestBuilder: CapturedRequestBuilder,
             uploader: Uploading
-        ) -> CapturedRequestCollector {
+        ) -> CapturedGroupRequestCollector {
             let timerManager = timerManagingProvider(networkCaptureConfiguration)
-            return CapturedRequestCollector(logger: logger,
+            return CapturedGroupRequestCollector(logger: logger,
                                                  timerManager: timerManager,
                                                  requestBuilder: requestBuilder,
                                                  uploader: uploader)

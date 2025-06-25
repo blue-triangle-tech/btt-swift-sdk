@@ -137,6 +137,8 @@ final public class BlueTriangleConfiguration: NSObject {
     var uploaderConfiguration: Uploader.Configuration = .live
 
     var capturedRequestCollectorConfiguration: CapturedRequestCollector.Configuration = .live
+    
+    var capturedGroupRequestCollectorConfiguration: CapturedGroupRequestCollector.Configuration = .live
 
     var performanceMonitorBuilder: PerformanceMonitorBuilder = .live
 

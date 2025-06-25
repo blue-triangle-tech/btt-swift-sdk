@@ -101,7 +101,7 @@ class DisableModeSessionManager : SessionManagerProtocol {
      }
      
      private func updateConfigurationOnChange(){
-         configSyncer.syncConfigurationImidiatellyOnChange()
+         configSyncer.updateAndApplySDKState()
      }
 }
 

@@ -38,7 +38,7 @@ class BTTStoredConfigSyncer {
     /// - Notes:
     ///   - This function ensures that the Blue triangle configuration is kept up-to-date.
     ///
-    func syncConfigurationOnNewSession(){
+    func syncConfigurationFromStorage(){
         do{
             if let config = try configRepo.get(){
                 
@@ -74,12 +74,6 @@ class BTTStoredConfigSyncer {
             logger.error("BlueTriangle:SessionManager: Failed to retrieve remote configuration from the repository - \(error)")
         }
     }
-    
-    func syncConfigurationImidiatellyOnChange(){
-        self.updateAndApplySDKState()
-        self.updateGroupingState()
-    }
-    
     /// Evaluates the SDK's state based on the latest configuration and updates it accordingly.
     ///
     /// This method checks whether the SDK should be enabled or disabled based on the retrieved remote
@@ -88,27 +82,14 @@ class BTTStoredConfigSyncer {
     /// - Notes:
     ///   - This method ensures that the SDK's behavior is in sync with the remote configuration
     ///
-    private func updateAndApplySDKState(){
+
+    func updateAndApplySDKState(){
         do{
             if let config = try configRepo.get(){
                 let isEnable = config.enableAllTracking ?? true
                 if BlueTriangle.initialized && isEnable != BlueTriangle.enableAllTracking{
                     BlueTriangle.enableAllTracking = isEnable
                     BlueTriangle.applyAllTrackerState()
-                }
-            }
-        }
-        catch {
-            logger.error("BlueTriangle:SessionManager: Failed to retrieve remote configuration from the repository - \(error)")
-        }
-    }
-    
-     func updateGroupingState(){
-        do{
-            if let config = try configRepo.get(){
-                if let groupingEnabled = config.groupingEnabled ?? configRepo.defaultConfig.groupingEnabled,
-                    let groupingIdleTime = config.groupingIdleTime ?? configRepo.defaultConfig.groupingIdleTime{
-                    BlueTriangle.updateGrouping(groupingEnabled, idleTime: groupingIdleTime)
                 }
             }
         }

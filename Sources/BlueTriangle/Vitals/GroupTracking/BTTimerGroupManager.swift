@@ -22,7 +22,7 @@ final class BTTimerGroupManager {
                 logger.info("Adding timer to open group.")
                 openGroup.add(timer)
             } else {
-                self.submitForceFully()
+                self.submitGroupForcefully()
                 logger.info("No open group — creating new group.")
                 let newGroup = BTTimerGroup(logger: logger, onGroupCompleted: { [weak self] group in
                     self?.handleGroupCompletion(group)
@@ -32,19 +32,19 @@ final class BTTimerGroupManager {
             }
         }
     }
-    
-    func submitForceFully() {
-        if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted }), openGroup.isClosed {
-            openGroup.forceEndAllTimers()
-        }
-    }
-    
+
     func setGroupName(_ name: String) {
         if let openGroup = activeGroups.last(where: { !$0.isClosed }) {
             openGroup.setGroupName(name)
         }
     }
 
+    private func submitGroupForcefully() {
+        if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted }), openGroup.isClosed {
+            openGroup.forcefullyEndAllTimers()
+        }
+    }
+    
     private func handleGroupCompletion(_ group: BTTimerGroup) {
         group.submit()
         group.flush()
