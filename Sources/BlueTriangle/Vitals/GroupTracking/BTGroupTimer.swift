@@ -165,7 +165,7 @@ final class BTTimerGroup {
         }
         let pageName : String =  groupName ?? self.extractLastPageName(from: pages)
         self.groupTimer.page.pageName = pageName
-        BlueTriangle.captureRequest(pageName: pageName, startTime: groupTimer.startTime.milliseconds)
+        BlueTriangle.updateCaptureRequest(pageName: pageName, startTime: groupTimer.startTime.milliseconds)
     }
     
     private func submitSingleRequest( groupTimer : BTTimer, timer: BTTimer, group : String) {

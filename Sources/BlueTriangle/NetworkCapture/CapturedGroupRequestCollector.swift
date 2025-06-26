@@ -54,7 +54,7 @@ actor CapturedGroupRequestCollector: CapturedGroupRequestCollecting {
         }
     }
     
-    func collect(pageName : String, startTime: Millisecond){
+    func update(pageName : String, startTime: Millisecond){
         requestCollection?.updateNetworkCapture(pageName: pageName, startTime: startTime)
     }
 

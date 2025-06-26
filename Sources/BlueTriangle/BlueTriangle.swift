@@ -990,10 +990,10 @@ public extension BlueTriangle {
         }
     }
     
-    internal static func captureRequest(pageName : String, startTime: Millisecond){
+    internal static func updateCaptureRequest(pageName : String, startTime: Millisecond){
         Task {
-            await capturedRequestCollector?.collect(pageName: pageName, startTime: startTime)
-            await capturedGroupRequestCollector?.collect(pageName: pageName, startTime: startTime)
+            await capturedRequestCollector?.update(pageName: pageName, startTime: startTime)
+            await capturedGroupRequestCollector?.update(pageName: pageName, startTime: startTime)
         }
     }
     
