@@ -166,6 +166,7 @@ class TimerMapActivity {
         self.isAutoTrack = isAutoTrack
         
         if BlueTriangle.configuration.groupingEnabled && isAutoTrack {
+            BlueTriangle.groupTimer.startGroupIfNeeded()
             self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName), timerType: .custom)
         } else {
             self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName))
@@ -275,6 +276,6 @@ class TimerMapActivity {
     }
     
     private var isGroupedANDAutoTracked : Bool {
-        BlueTriangle.configuration.groupingEnabled && self.isAutoTrack
+        BlueTriangle.configuration.groupingEnabled //&& self.isAutoTrack
     }
 }

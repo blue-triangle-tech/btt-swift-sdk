@@ -181,38 +181,6 @@ final public class BlueTriangle: NSObject {
         SignalHandler.updateSessionID("\(session.sessionID)")
     }
     
-    internal static func updateNetworkSampleRate(_ rate : Double){
-        configuration.networkSampleRate = rate
-    }
-    
-    internal static func updateIgnoreVcs(_ vcs : Set<String>?){
-        if let vcs = vcs{
-            configuration.ignoreViewControllers = vcs
-        }
-    }
-    
-    internal static func updateGrouping(_ isEnable : Bool, idleTime : Double){
-        configuration.groupingEnabled = isEnable
-        configuration.groupingIdleTime = idleTime
-    }
-    
-    internal static func updateCaptureRequests() {
-        if let sessionData = sessionData(){
-            shouldCaptureRequests = sessionData.shouldNetworkCapture
-            if shouldCaptureRequests {
-                if capturedRequestCollector == nil {
-                    capturedRequestCollector = makeCapturedRequestCollector()
-                }
-            } else {
-                capturedRequestCollector = makeCapturedRequestCollector()
-            }
-            
-#if os(iOS)
-            BTTWebViewTracker.shouldCaptureRequests = shouldCaptureRequests
-#endif
-        }
-    }
-    
     private static var _session: Session? = {
         configuration.makeSession()
     }()
@@ -1219,6 +1187,46 @@ extension BlueTriangle {
         lock.sync {
             configuration = BlueTriangleConfiguration()
             initialized = false
+        }
+    }
+}
+
+// MARK: - Remote config
+extension BlueTriangle {
+   
+    internal static func updateNetworkSampleRate(_ rate : Double) {
+        configuration.networkSampleRate = rate
+    }
+    
+    internal static func updateIgnoreVcs(_ vcs : Set<String>?) {
+        if let vcs = vcs{
+            configuration.ignoreViewControllers = vcs
+        }
+    }
+    
+    internal static func updateGrouping(_ isEnable : Bool, idleTime : Double) {
+        configuration.groupingEnabled = isEnable
+        configuration.groupingIdleTime = idleTime
+    }
+    
+    internal static func updateScreenTracking(_ enable : Bool) {
+        configuration.enableScreenTracking = enable
+    }
+    
+    internal static func updateCaptureRequests() {
+        if let sessionData = sessionData(){
+            shouldCaptureRequests = sessionData.shouldNetworkCapture
+            if shouldCaptureRequests {
+                if capturedRequestCollector == nil {
+                    capturedRequestCollector = makeCapturedRequestCollector()
+                }
+            } else {
+                capturedRequestCollector = makeCapturedRequestCollector()
+            }
+            
+#if os(iOS)
+            BTTWebViewTracker.shouldCaptureRequests = shouldCaptureRequests
+#endif
         }
     }
 }

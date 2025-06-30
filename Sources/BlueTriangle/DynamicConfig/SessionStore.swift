@@ -59,6 +59,7 @@ class SessionData: Codable {
     var isNewSession: Bool
     var shouldNetworkCapture: Bool
     var networkSampleRate : Double
+    var enableScreenTracking: Bool
     var groupingEnabled: Bool
     var groupingIdleTime: Double
     var ignoreViewControllers: Set<String>
@@ -68,6 +69,7 @@ class SessionData: Codable {
         self.sessionID =  SessionData.generateSessionID()
         self.isNewSession = true
         self.shouldNetworkCapture = false
+        self.enableScreenTracking = BlueTriangle.configuration.enableScreenTracking
         self.groupingEnabled = BlueTriangle.configuration.groupingEnabled
         self.groupingIdleTime = BlueTriangle.configuration.groupingIdleTime
         self.networkSampleRate = BlueTriangle.configuration.networkSampleRate

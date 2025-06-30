@@ -15,6 +15,7 @@ class BTTSavedRemoteConfig: BTTRemoteConfig {
     init(networkSampleRateSDK: Int?,
          enableRemoteConfigAck : Bool?,
          enableAllTracking : Bool?,
+         enableScreenTracking: Bool?,
          groupingEnabled : Bool?,
          groupingIdleTime : Double?,
          ignoreScreens : [String]?,
@@ -23,6 +24,7 @@ class BTTSavedRemoteConfig: BTTRemoteConfig {
         super.init(networkSampleRateSDK: networkSampleRateSDK,
                    enableRemoteConfigAck: enableRemoteConfigAck, 
                    enableAllTracking: enableAllTracking,
+                   enableScreenTracking: enableScreenTracking,
                    groupingEnabled: groupingEnabled,
                    groupingIdleTime: groupingIdleTime,
                    ignoreScreens: ignoreScreens)

@@ -70,11 +70,15 @@ class BTTStoredConfigSyncer {
                     BlueTriangle.updateIgnoreVcs(unianOfIgnoreScreens)
                 }
                 
+                // Sync Enable Screen tracking
+                if let enableScreenTracking = config.enableScreenTracking ?? configRepo.defaultConfig.enableScreenTracking {
+                    BlueTriangle.updateScreenTracking(enableScreenTracking)
+                }
+                
                 // Sync Grouping
                 if let groupingEnabled = config.groupingEnabled ?? configRepo.defaultConfig.groupingEnabled, let groupingIdleTime = config.groupingIdleTime ?? configRepo.defaultConfig.groupingIdleTime {
                     BlueTriangle.updateGrouping(groupingEnabled, idleTime: groupingIdleTime)
                 }
-                 
             }
         }catch{
             logger.error("BlueTriangle:SessionManager: Failed to retrieve remote configuration from the repository - \(error)")
