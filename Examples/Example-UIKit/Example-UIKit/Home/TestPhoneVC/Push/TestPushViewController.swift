@@ -38,7 +38,7 @@ class TestPushViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        BlueTriangle.setScreenName("CN-Push Custom Screen")
+        BlueTriangle.setGroupName("CN-Push Custom Screen")
     }
     
 }

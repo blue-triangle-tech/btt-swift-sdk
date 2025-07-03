@@ -27,7 +27,7 @@ class NetworkTrackingViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        BlueTriangle.setScreenName("CN-Network Screen")
+        BlueTriangle.setGroupName("CN-Network Screen")
     }
     
     private lazy var buttonStackView: UIStackView = {

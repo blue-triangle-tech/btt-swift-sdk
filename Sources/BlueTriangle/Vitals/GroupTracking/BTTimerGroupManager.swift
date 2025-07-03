@@ -10,6 +10,8 @@ import Foundation
 final class BTTimerGroupManager {
     private var activeGroups: [BTTimerGroup] = []
     private let logger: Logging
+    private var lastTimer: BTTimer?
+    private var lastActionTime = Date().timeIntervalSince1970.milliseconds
     private let lock = NSLock()
     
     init(logger: Logging) {
@@ -23,12 +25,17 @@ final class BTTimerGroupManager {
             } else {
                 startNewGroup()
             }
+            lastTimer = timer
         }
     }
     
     func startGroupIfNeeded() {
         lock.sync {
+            print("Timer : \(lastTimer?.startTime.milliseconds ?? 0) - \(self.lastActionTime)")
             guard activeGroups.last(where: { !$0.isClosed }) == nil else {
+                if let lastTimer = lastTimer, lastTimer.startTime.milliseconds < self.lastActionTime {
+                    self.startNewGroup()
+                }
                 return
             }
             self.startNewGroup()
@@ -41,8 +48,13 @@ final class BTTimerGroupManager {
         }
     }
     
+    func setLastAction(_ time: Date) {
+        self.lastActionTime = time.timeIntervalSince1970.milliseconds
+    }
+    
     private func startNewGroup() {
         self.submitGroupForcefully()
+        print("Start new group")
         let newGroup = BTTimerGroup(logger: logger, onGroupCompleted: { [weak self] group in
             self?.handleGroupCompletion(group)
         })

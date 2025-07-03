@@ -17,7 +17,7 @@ class PagerViewController: UIViewController{
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        BlueTriangle.setScreenName("CN-Pager Screen")
+        BlueTriangle.setGroupName("CN-Pager Screen")
         self.loadSlidePages()
     }
     

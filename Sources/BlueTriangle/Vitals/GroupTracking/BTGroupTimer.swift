@@ -17,6 +17,8 @@ final class BTTimerGroup {
     private let lock = NSLock()
     private let onGroupCompleted: (BTTimerGroup) -> Void
     private(set) var groupName: String?
+    private(set) var capturedRequestCollectorConfiguration: CapturedGroupRequestCollector.Configuration = .live
+    private(set) var collector: CapturedGroupRequestCollecting?
     
     var isClosed: Bool {
         lock.sync { isGroupClosed }
@@ -29,30 +31,10 @@ final class BTTimerGroup {
     init(logger: Logging, onGroupCompleted: @escaping (BTTimerGroup) -> Void) {
         self.logger = logger
         self.onGroupCompleted = onGroupCompleted
+        self.collector = BlueTriangle.makeCapturedGroupRequestCollector()
         self.groupTimer = BlueTriangle.startTimer(page: Page(pageName: "BTTGroupPage"), isGroupedTimer: true)
     }
 
-    func forcefullyEndAllTimers() {
-        for timer in timers where !timer.hasEnded {
-            let prop = timer.nativeAppProperties
-            timer.nativeAppProperties = NativeAppProperties(
-                fullTime: timeInterval.milliseconds - prop.loadStartTime,
-                loadTime: prop.loadTime,
-                loadStartTime: prop.loadStartTime,
-                loadEndTime: prop.loadEndTime,
-                maxMainThreadUsage: prop.maxMainThreadUsage,
-                viewType: prop.viewType,
-                offline: prop.offline,
-                wifi: prop.wifi,
-                cellular: prop.cellular,
-                ethernet: prop.ethernet,
-                other: prop.other,
-                netState: prop.netState,
-                netStateSource: prop.netStateSource)
-            timer.end()
-        }
-    }
-    
     func setGroupName(_ name: String?) {
         self.groupName = name
         self.updatePageName()
@@ -100,16 +82,35 @@ final class BTTimerGroup {
             netStateSource: networkReport?.netSource ?? "",
             childViews : pages.map { self.extractViewName(from: $0) })
         
-        for timer in timers {
-            self.submitSingleRequest(groupTimer:self.groupTimer , timer: timer, group: self.groupTimer.page.pageName)
-        }
-        
         self.groupTimer.pageTimeBuilder = {
             return pgtm
         }
         
         BlueTriangle.endTimer(self.groupTimer)
+        self.submitWcdRequests()
         logger.info("Submitting group result: \(timerCount) timers with name: \(self.groupTimer.page.pageName)")
+    }
+    
+    func forcefullyEndAllTimers() {
+        self.updatePageName()
+        for timer in timers where !timer.hasEnded {
+            let prop = timer.nativeAppProperties
+            timer.nativeAppProperties = NativeAppProperties(
+                fullTime: timeInterval.milliseconds - prop.loadStartTime,
+                loadTime: prop.loadTime,
+                loadStartTime: prop.loadStartTime,
+                loadEndTime: prop.loadEndTime,
+                maxMainThreadUsage: prop.maxMainThreadUsage,
+                viewType: prop.viewType,
+                offline: prop.offline,
+                wifi: prop.wifi,
+                cellular: prop.cellular,
+                ethernet: prop.ethernet,
+                other: prop.other,
+                netState: prop.netState,
+                netStateSource: prop.netStateSource)
+            timer.end()
+        }
     }
 
     func flush() {
@@ -122,6 +123,8 @@ final class BTTimerGroup {
         let allTimersEnded = timers.allSatisfy { $0.hasEnded }
         if allTimersEnded {
             hasSubmitted = true
+            isGroupClosed = true
+            idleTimer?.invalidate()
             onGroupCompleted(self)
         }
     }
@@ -136,11 +139,10 @@ final class BTTimerGroup {
     private func closeGroup() {
         lock.sync {
             guard !isGroupClosed else { return }
-            
             logger.info("Group closed due to idle.")
+            self.updatePageName()
             isGroupClosed = true
             idleTimer?.invalidate()
-            updatePageName()
             trySubmitGroup()
         }
     }
@@ -170,10 +172,10 @@ final class BTTimerGroup {
     
     private func submitSingleRequest( groupTimer : BTTimer, timer: BTTimer, group : String) {
         let pageName =  self.extractViewName(from: timer.page.pageName)
-        BlueTriangle.captureGroupRequest(startTime: timer.nativeAppProperties.loadStartTime,
+        self.captureGroupRequest(startTime: timer.nativeAppProperties.loadStartTime,
                                     endTime: timer.nativeAppProperties.loadEndTime,
                                     groupStartTime: groupTimer.startTime.milliseconds,
-                                    response: CustomPageResponse(file: pageName, url: pageName, domain: group, pageName: group))
+                                    response: CustomPageResponse(file: pageName, url: pageName, domain: group))
     }
 }
 
@@ -199,6 +201,32 @@ extension BTTimerGroup {
     private var timeInterval : TimeInterval{
         Date().timeIntervalSince1970
     }
+    
+    private func submitWcdRequests() {
+        self.startGroupTimerRequest(page: Page(pageName: self.groupTimer.page.pageName), startTime: self.groupTimer.startTime)
+        for timer in timers {
+            self.submitSingleRequest(groupTimer:self.groupTimer , timer: timer, group: self.groupTimer.page.pageName)
+        }
+        self.uploadCollectedRequests()
+    }
+    
+    private func startGroupTimerRequest(page : Page, startTime : TimeInterval) {
+        Task {
+            await collector?.start(page: page, startTime: startTime)
+        }
+    }
+    
+    private func captureGroupRequest(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) {
+        Task {
+            await collector?.collect(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
+        }
+    }
+    
+    private func uploadCollectedRequests() {
+        Task {
+            await collector?.uploadCollectedRequests()
+        }
+    }
 }
 
 
@@ -206,5 +234,4 @@ struct CustomPageResponse{
     let file: String?
     let url: String?
     let domain: String?
-    let pageName: String?
 }

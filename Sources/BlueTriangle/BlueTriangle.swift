@@ -210,17 +210,13 @@ final public class BlueTriangle: NSObject {
         }
     }
     
-    private static func makeCapturedGroupRequestCollector() -> CapturedGroupRequestCollecting? {
+    internal static func makeCapturedGroupRequestCollector() -> CapturedGroupRequestCollecting? {
         if let _ = session(){
             let groupCollector = configuration.capturedGroupRequestCollectorConfiguration.makeRequestCollector(
                 logger: logger,
                 networkCaptureConfiguration: .standard,
                 requestBuilder: CapturedRequestBuilder.makeBuilder {self.session()},
                 uploader: uploader)
-
-            Task {
-                await groupCollector.configure()
-            }
             return groupCollector
         } else {
             return nil
@@ -230,7 +226,6 @@ final public class BlueTriangle: NSObject {
     private static var logger: Logging = {
         configuration.makeLogger()
     }()
-    
 
     private static var uploader: Uploading = {
         configuration.uploaderConfiguration.makeUploader(
@@ -268,10 +263,6 @@ final public class BlueTriangle: NSObject {
         return makeCapturedRequestCollector()
     }()
     
-    private static var capturedGroupRequestCollector: CapturedGroupRequestCollecting? = {
-        return makeCapturedGroupRequestCollector()
-    }()
-
     //Cache components
     internal static var payloadCache : PayloadCacheProtocol = {
         PayloadCache.init(configuration.cacheMemoryLimit,
@@ -504,6 +495,7 @@ extension BlueTriangle {
     // Starts screen tracking if not already configured
     private static func startScreenTracking(){
         if screenTracker == nil{
+            
             configureScreenTracking(with: configuration.enableScreenTracking)
         }
         
@@ -924,16 +916,6 @@ public extension BlueTriangle {
         Task {
             await capturedRequestCollector?.start(page: page, startTime: startTime, isGroupTimer: isGroupTimer)
         }
-        
-        if isGroupTimer {
-            Task {
-                await capturedGroupRequestCollector?.start(page: page, startTime: startTime)
-            }
-        }
-    }
-
-    static func setScreenName(_ screenName: String) {
-        BlueTriangle.groupTimer.setGroupName(screenName)
     }
     /// Returns a timer for network capture.
     static func startRequestTimer() -> InternalTimer? {
@@ -944,24 +926,14 @@ public extension BlueTriangle {
         timer.start()
         return timer
     }
-
-    /// Captures a network request.
-    /// - Parameters:
-    ///   - timer: The request timer.
-    ///   - data: The request response data.
-    ///   - response: The request response.
-    ///   - error: The response error
     
-    internal static func captureGroupRequest(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) {
-        Task {
-            await capturedGroupRequestCollector?.collect(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
-        }
+    static func setGroupName(_ screenName: String) {
+        BlueTriangle.groupTimer.setGroupName(screenName)
     }
     
     internal static func updateCaptureRequest(pageName : String, startTime: Millisecond){
         Task {
             await capturedRequestCollector?.update(pageName: pageName, startTime: startTime)
-            await capturedGroupRequestCollector?.update(pageName: pageName, startTime: startTime)
         }
     }
     
@@ -1110,7 +1082,6 @@ extension BlueTriangle{
 // MARK: - LaunchTime
 extension BlueTriangle{
     
-
     static func configureLaunchTime(with enabled: Bool){
         if enabled{
             let launchMonitor = LaunchTimeMonitor(logger: logger)
@@ -1209,8 +1180,13 @@ extension BlueTriangle {
         configuration.groupingIdleTime = idleTime
     }
     
-    internal static func updateScreenTracking(_ enable : Bool) {
-        configuration.enableScreenTracking = enable
+    internal static func updateScreenTracking(_ enabled : Bool) {
+        configuration.enableScreenTracking = enabled
+        if enabled {
+            UIViewController.setUp()
+        } else {
+            UIViewController.removeSetUp()
+        }
     }
     
     internal static func updateCaptureRequests() {

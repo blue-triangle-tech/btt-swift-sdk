@@ -29,6 +29,6 @@ class TestPresentViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        BlueTriangle.setScreenName("CN-Present Screen")
+        BlueTriangle.setGroupName("CN-Present Screen")
     }
 }

@@ -32,7 +32,7 @@ class TestFullPresentViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        BlueTriangle.setScreenName("CN-Full Present Screen")
+        BlueTriangle.setGroupName("CN-Full Present Screen")
     }
 
     @IBAction func didSelectDissmiss(_ sender : Any){

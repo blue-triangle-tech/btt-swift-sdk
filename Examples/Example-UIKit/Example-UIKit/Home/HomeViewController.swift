@@ -14,27 +14,10 @@ class HomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = "Home"
-        print("Home View Load")
-        
-       /* DispatchQueue.main.asyncAfter(deadline: .now()) {
-            Thread.sleep(forTimeInterval: 2.5)
-             print("Delayed 0.5s")
-         }
-
-         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-             Thread.sleep(forTimeInterval: 0.5)
-             print("Delayed another 0.5s")
-         }
-
-         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-             Thread.sleep(forTimeInterval: 1.0)
-             print("Delayed another 1.0s")
-         }*/
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        print("Home View Did Aprear")
     }
                                                                 
 }
