@@ -42,6 +42,8 @@ struct NativeAppProperties: Equatable {
     let ethernet: Millisecond
     let other: Millisecond
     var err: String?
+    var sdkVersion: String = Device.sdkVersion
+    var appVersion: String = Device.appVersion
     var type : String = NativeAppType.Regular.description
     var netState: String = BlueTriangle.networkStateMonitor?.state.value?.description.lowercased() ?? ""
     var deviceModel : String = Device.model
@@ -115,6 +117,8 @@ extension NativeAppProperties: Codable{
         }
         
         try con.encode(deviceModel, forKey: .deviceModel)
+        try con.encode(appVersion, forKey: .appVersion)
+        try con.encode(sdkVersion, forKey: .sdkVersion)
     }
     
     init(from decoder: Decoder) throws {
@@ -133,6 +137,8 @@ extension NativeAppProperties: Codable{
         self.netState = try container.decodeIfPresent(String.self, forKey: .netState) ?? ""
         self.type = try container.decodeIfPresent(String.self, forKey: .type) ?? NativeAppType.NST.description
         self.deviceModel = try container.decodeIfPresent(String.self, forKey: .deviceModel) ?? Device.model
+        self.appVersion = try container.decodeIfPresent(String.self, forKey: .appVersion) ?? Device.appVersion
+        self.sdkVersion = try container.decodeIfPresent(String.self, forKey: .sdkVersion) ?? Device.sdkVersion
         self.netStateSource = try container.decodeIfPresent(String.self, forKey: .netStateSource) ?? ""
         self.childViews = try container.decodeIfPresent([String].self, forKey: .childViews) ?? []
     }
@@ -156,6 +162,8 @@ extension NativeAppProperties: Codable{
         case deviceModel
         case netStateSource
         case childViews
+        case appVersion
+        case sdkVersion
     }
 }
 
