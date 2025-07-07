@@ -10,7 +10,7 @@ import Foundation
 final class BTTimerGroupManager {
     private var activeGroups: [BTTimerGroup] = []
     private let logger: Logging
-    private var lastTimer: BTTimer?
+    private var lastTimerTime: Millisecond?
     private var lastActionTime = Date().timeIntervalSince1970.milliseconds
     private let lock = NSLock()
     
@@ -25,15 +25,14 @@ final class BTTimerGroupManager {
             } else {
                 startNewGroup()
             }
-            lastTimer = timer
+            lastTimerTime = timer.startTime.milliseconds
         }
     }
     
     func startGroupIfNeeded() {
         lock.sync {
-            print("Timer : \(lastTimer?.startTime.milliseconds ?? 0) - \(self.lastActionTime)")
             guard activeGroups.last(where: { !$0.isClosed }) == nil else {
-                if let lastTimer = lastTimer, lastTimer.startTime.milliseconds < self.lastActionTime {
+                if let lastTime = lastTimerTime, lastTime < self.lastActionTime {
                     self.startNewGroup()
                 }
                 return
@@ -43,26 +42,25 @@ final class BTTimerGroupManager {
     }
 
     func setGroupName(_ name: String) {
-        if let openGroup = activeGroups.last(where: { !$0.isClosed }) {
-            openGroup.setGroupName(name)
-        }
+        self.startNewGroup(name)
     }
     
     func setLastAction(_ time: Date) {
         self.lastActionTime = time.timeIntervalSince1970.milliseconds
     }
     
-    private func startNewGroup() {
+    private func startNewGroup(_ groupName : String? = nil) {
         self.submitGroupForcefully()
-        print("Start new group")
-        let newGroup = BTTimerGroup(logger: logger, onGroupCompleted: { [weak self] group in
+        let newGroup = BTTimerGroup(logger: logger, groupName: groupName, onGroupCompleted: { [weak self] group in
             self?.handleGroupCompletion(group)
         })
+        lastTimerTime = nil
         activeGroups.append(newGroup)
     }
 
     private func submitGroupForcefully() {
-        if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted }), openGroup.isClosed {
+        if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted })/*, openGroup.isClosed*/ {
+            print("Forecfully submitted")
             openGroup.forcefullyEndAllTimers()
         }
     }

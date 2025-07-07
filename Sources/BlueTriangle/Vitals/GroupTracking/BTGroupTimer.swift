@@ -14,9 +14,9 @@ final class BTTimerGroup {
     private let logger: Logging
     private var isGroupClosed = false
     private var hasSubmitted = false
+    private var hasMannualGroup = false
     private let lock = NSLock()
     private let onGroupCompleted: (BTTimerGroup) -> Void
-    private(set) var groupName: String?
     private(set) var capturedRequestCollectorConfiguration: CapturedGroupRequestCollector.Configuration = .live
     private(set) var collector: CapturedGroupRequestCollecting?
     
@@ -28,18 +28,14 @@ final class BTTimerGroup {
         lock.sync { hasSubmitted }
     }
     
-    init(logger: Logging, onGroupCompleted: @escaping (BTTimerGroup) -> Void) {
+    init(logger: Logging, groupName: String? = nil, onGroupCompleted: @escaping (BTTimerGroup) -> Void) {
         self.logger = logger
+        self.hasMannualGroup = (groupName != nil) ? true : false
         self.onGroupCompleted = onGroupCompleted
         self.collector = BlueTriangle.makeCapturedGroupRequestCollector()
-        self.groupTimer = BlueTriangle.startTimer(page: Page(pageName: "BTTGroupPage"), isGroupedTimer: true)
+        self.groupTimer = BlueTriangle.startTimer(page: Page(pageName: groupName ?? "BTTGroupPage"), isGroupedTimer: true)
     }
 
-    func setGroupName(_ name: String?) {
-        self.groupName = name
-        self.updatePageName()
-    }
-    
     func add(_ timer: BTTimer) {
         lock.sync {
             guard !isGroupClosed else { return }
@@ -50,6 +46,11 @@ final class BTTimerGroup {
     }
     
     func submit() {
+        guard timers.count > 0 else {
+            self.groupTimer.end()
+            return
+        }
+        
         let timerCount = timers.count
         let fullTime = timeInterval.milliseconds - groupTimer.startTime.milliseconds
         let networkReport = self.groupTimer.networkReport
@@ -93,6 +94,7 @@ final class BTTimerGroup {
     
     func forcefullyEndAllTimers() {
         self.updatePageName()
+        self.closeGroup()
         for timer in timers where !timer.hasEnded {
             let prop = timer.nativeAppProperties
             timer.nativeAppProperties = NativeAppProperties(
@@ -161,13 +163,15 @@ final class BTTimerGroup {
     }
     
     private func updatePageName() {
-        var pages = [String]()
-        for timer in timers {
-            pages.append(timer.page.pageName)
+        if !hasMannualGroup {
+            var pages = [String]()
+            for timer in timers {
+                pages.append(timer.page.pageName)
+            }
+            let pageName : String =  self.extractLastPageName(from: pages)
+            self.groupTimer.page.pageName = pageName
         }
-        let pageName : String =  groupName ?? self.extractLastPageName(from: pages)
-        self.groupTimer.page.pageName = pageName
-        BlueTriangle.updateCaptureRequest(pageName: pageName, startTime: groupTimer.startTime.milliseconds)
+        BlueTriangle.updateCaptureRequest(pageName: self.groupTimer.page.pageName, startTime: groupTimer.startTime.milliseconds)
     }
     
     private func submitSingleRequest( groupTimer : BTTimer, timer: BTTimer, group : String) {
