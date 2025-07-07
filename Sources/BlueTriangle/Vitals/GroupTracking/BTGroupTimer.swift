@@ -121,7 +121,6 @@ final class BTTimerGroup {
     
     private func trySubmitGroup() {
         guard isGroupClosed, !hasSubmitted else { return }
-        
         let allTimersEnded = timers.allSatisfy { $0.hasEnded }
         if allTimersEnded {
             hasSubmitted = true
@@ -202,10 +201,6 @@ extension BTTimerGroup {
         return title
     }
     
-    private var timeInterval : TimeInterval{
-        Date().timeIntervalSince1970
-    }
-    
     private func submitWcdRequests() {
         self.startGroupTimerRequest(page: Page(pageName: self.groupTimer.page.pageName), startTime: self.groupTimer.startTime)
         for timer in timers {
@@ -231,8 +226,11 @@ extension BTTimerGroup {
             await collector?.uploadCollectedRequests()
         }
     }
+    
+    private var timeInterval : TimeInterval{
+        Date().timeIntervalSince1970
+    }
 }
-
 
 struct CustomPageResponse{
     let file: String?

@@ -276,6 +276,6 @@ class TimerMapActivity {
     }
     
     private var isGroupedANDAutoTracked : Bool {
-        BlueTriangle.configuration.groupingEnabled //&& self.isAutoTrack
+        BlueTriangle.configuration.groupingEnabled && self.isAutoTrack
     }
 }
