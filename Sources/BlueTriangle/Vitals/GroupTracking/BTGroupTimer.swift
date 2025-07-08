@@ -14,7 +14,8 @@ final class BTTimerGroup {
     private let logger: Logging
     private var isGroupClosed = false
     private var hasSubmitted = false
-    private var hasMannualGroup = false
+    private var hasForcedGroup = false
+    private var groupName: String?
     private let lock = NSLock()
     private let onGroupCompleted: (BTTimerGroup) -> Void
     private(set) var capturedRequestCollectorConfiguration: CapturedGroupRequestCollector.Configuration = .live
@@ -30,7 +31,7 @@ final class BTTimerGroup {
     
     init(logger: Logging, groupName: String? = nil, onGroupCompleted: @escaping (BTTimerGroup) -> Void) {
         self.logger = logger
-        self.hasMannualGroup = (groupName != nil) ? true : false
+        self.hasForcedGroup = (groupName != nil) ? true : false
         self.onGroupCompleted = onGroupCompleted
         self.collector = BlueTriangle.makeCapturedGroupRequestCollector()
         self.groupTimer = BlueTriangle.startTimer(page: Page(pageName: groupName ?? "BTTGroupPage"), isGroupedTimer: true)
@@ -43,6 +44,10 @@ final class BTTimerGroup {
             observe(timer)
             resetIdleTimer()
         }
+    }
+    
+    func setGroupName(_ groupName: String) {
+        self.groupName = groupName
     }
     
     func submit() {
@@ -162,12 +167,12 @@ final class BTTimerGroup {
     }
     
     private func updatePageName() {
-        if !hasMannualGroup {
+        if !hasForcedGroup {
             var pages = [String]()
             for timer in timers {
                 pages.append(timer.page.pageName)
             }
-            let pageName : String =  self.extractLastPageName(from: pages)
+            let pageName : String =  self.groupName ?? self.extractLastPageName(from: pages)
             self.groupTimer.page.pageName = pageName
         }
         BlueTriangle.updateCaptureRequest(pageName: self.groupTimer.page.pageName, startTime: groupTimer.startTime.milliseconds)

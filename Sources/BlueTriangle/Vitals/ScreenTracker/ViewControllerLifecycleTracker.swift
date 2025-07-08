@@ -179,13 +179,10 @@ extension UIViewController{
         let viewName = "\(type(of: self))"
         var pageName: String = viewName
         let currentTitle = self.navigationItem.title ?? ""
-        let selectedItem = self.tabBarController?.tabBar.selectedItem?.title ?? ""
         
         if currentTitle.count > 0 {
             pageName = currentTitle
-        } else if selectedItem.count > 0 {
-            pageName = selectedItem
-        }
+        } 
         
         let isGroupTimer = BlueTriangle.configuration.groupingEnabled
         if !isGroupTimer {

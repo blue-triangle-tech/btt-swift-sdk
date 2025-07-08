@@ -927,8 +927,12 @@ public extension BlueTriangle {
         return timer
     }
     
-    static func setGroupName(_ screenName: String) {
-        BlueTriangle.groupTimer.setGroupName(screenName)
+    static func setGroupName(_ groupName: String) {
+        BlueTriangle.groupTimer.setGroupName(groupName)
+    }
+    
+    static func setNewGroup(_ newGroup: String) {
+        BlueTriangle.groupTimer.setNewGroup(newGroup)
     }
     
     internal static func updateCaptureRequest(pageName : String, startTime: Millisecond){

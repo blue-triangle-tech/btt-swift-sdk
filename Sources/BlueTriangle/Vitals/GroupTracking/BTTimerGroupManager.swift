@@ -41,8 +41,14 @@ final class BTTimerGroupManager {
         }
     }
 
-    func setGroupName(_ name: String) {
-        self.startNewGroup(name)
+    func setNewGroup(_ newGroup: String) {
+        self.startNewGroup(newGroup)
+    }
+    
+    func setGroupName(_ groupName: String) {
+        if let openGroup = activeGroups.last(where: { !$0.isClosed }) {
+            openGroup.setGroupName(groupName)
+        }
     }
     
     func setLastAction(_ time: Date) {
