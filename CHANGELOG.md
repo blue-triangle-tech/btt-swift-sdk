@@ -1,8 +1,13 @@
-# Blue Triangle 3.14.0, Latest
+# Blue Triangle 3.14.1, Latest
+### Bug Fixes and Improvements
+  - Added custom varriable to exclude 20 payload
+  - Added "ScreenTracker" as the value for TrafficSegment and PageType to automatic timer.
+  
+# Blue Triangle 3.14.0, April 8 2025
 ### New Features
   - Added support for Blutriange and Microsoft clarity session mapping. Added ability to detect clarity sdk present in host app, if present associate clarity session url with timers
 
-# Blue Triangle 3.13.2, Feb 7 2015
+# Blue Triangle 3.13.2, Feb 7 2025
 ### New Features
   - Added ability to disabling or enabling the SDK through the remote configuration system, providing full control over its functionality in real-time. When the SDK is disabled, all features, including data collection, processing, and network operations, are suspended.
 ### Bug Fixes and Improvements
