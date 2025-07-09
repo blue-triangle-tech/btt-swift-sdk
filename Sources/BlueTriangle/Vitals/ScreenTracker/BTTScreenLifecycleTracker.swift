@@ -169,7 +169,7 @@ class TimerMapActivity {
         
         if BlueTriangle.configuration.groupingEnabled && isAutoTrack {
             BlueTriangle.groupTimer.startGroupIfNeeded()
-            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName), timerType: .custom)
+            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName), timerType: .custom, isGroupedTimer: true)
         } else {
             self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName))
         }

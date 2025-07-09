@@ -155,7 +155,11 @@ final public class BTTimer: NSObject {
             return
         }
         
-        BlueTriangle.addActiveTimer(self)
+        let isInActiveTimer = isGroupTimer && type == .custom
+        if !isInActiveTimer {
+            BlueTriangle.addActiveTimer(self)
+        }
+
         handle(.start)
         self.startNetState()
     }

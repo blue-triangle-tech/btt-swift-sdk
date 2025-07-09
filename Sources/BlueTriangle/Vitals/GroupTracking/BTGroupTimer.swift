@@ -41,6 +41,7 @@ final class BTTimerGroup {
         lock.sync {
             guard !isGroupClosed else { return }
             timers.append(timer)
+            self.updatePageName()
             observe(timer)
             resetIdleTimer()
         }
