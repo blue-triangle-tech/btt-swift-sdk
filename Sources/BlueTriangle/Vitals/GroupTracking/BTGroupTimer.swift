@@ -48,6 +48,7 @@ final class BTTimerGroup {
     
     func setGroupName(_ groupName: String) {
         self.groupName = groupName
+        self.updatePageName()
     }
     
     func submit() {
