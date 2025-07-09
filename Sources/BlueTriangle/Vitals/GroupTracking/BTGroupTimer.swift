@@ -181,8 +181,10 @@ final class BTTimerGroup {
     
     private func submitSingleRequest( groupTimer : BTTimer, timer: BTTimer, group : String) {
         let pageName =  self.extractViewName(from: timer.page.pageName)
-        self.captureGroupRequest(startTime: timer.nativeAppProperties.loadStartTime,
-                                    endTime: timer.nativeAppProperties.loadEndTime,
+        let loadStartTime = timer.nativeAppProperties.loadStartTime > 0 ? timer.nativeAppProperties.loadStartTime : timer.startTime.milliseconds
+        let loadEndTime = timer.nativeAppProperties.loadEndTime > 0 ? timer.nativeAppProperties.loadEndTime : loadStartTime + Constants.minPgTm
+        self.captureGroupRequest(startTime: loadStartTime,
+                                    endTime: loadEndTime,
                                     groupStartTime: groupTimer.startTime.milliseconds,
                                     response: CustomPageResponse(file: pageName, url: pageName, domain: group))
     }

@@ -154,7 +154,6 @@ class TimerMapActivity {
     private let isAutoTrack : Bool
     private var pageName : String
     private let viewType : ViewType
-    private var startTime : Millisecond
     private var loadTime : Millisecond?
     private var viewTime : Millisecond?
     private var disapearTime : Millisecond?
@@ -165,7 +164,6 @@ class TimerMapActivity {
         self.viewType = viewType
         self.logger = logger
         self.isAutoTrack = isAutoTrack
-        self.startTime = Date().timeIntervalSince1970.milliseconds
         
         if BlueTriangle.configuration.groupingEnabled && isAutoTrack {
             BlueTriangle.groupTimer.startGroupIfNeeded()
@@ -202,13 +200,13 @@ class TimerMapActivity {
         }
         else if type == .disapear {
             if loadTime == nil {
-                loadTime = startTime
+                loadTime = self.timer.startTime.milliseconds
                 let loginfo = "Load life cycle methods are not called for page :\(self.pageName)"
                 self.logger?.info(loginfo)
                 self.submitTimerOfType(.load)
             }
             if viewTime == nil {
-                viewTime = (loadTime ?? startTime) + Constants.minPgTm
+                viewTime = (loadTime ?? self.timer.startTime.milliseconds) + Constants.minPgTm
                 let loginfo = "View lifecycle methods are not called for page :\(self.pageName)"
                 self.logger?.info(loginfo)
                 self.submitTimerOfType(.view)
