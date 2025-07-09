@@ -98,7 +98,6 @@ final class BTTimerGroup {
     }
     
     func forcefullyEndAllTimers() {
-        self.updatePageName()
         self.closeGroup()
         for timer in timers where !timer.hasEnded {
             let prop = timer.nativeAppProperties

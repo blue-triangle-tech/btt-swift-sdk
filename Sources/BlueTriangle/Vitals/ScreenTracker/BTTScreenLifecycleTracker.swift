@@ -154,9 +154,10 @@ class TimerMapActivity {
     private let isAutoTrack : Bool
     private var pageName : String
     private let viewType : ViewType
-    private var loadTime : TimeInterval?
-    private var viewTime : TimeInterval?
-    private var disapearTime : TimeInterval?
+    private var startTime : Millisecond
+    private var loadTime : Millisecond?
+    private var viewTime : Millisecond?
+    private var disapearTime : Millisecond?
     private(set) var logger : Logging?
     
     init(pageName: String, viewType : ViewType, logger : Logging?, isAutoTrack: Bool = false) {
@@ -164,6 +165,7 @@ class TimerMapActivity {
         self.viewType = viewType
         self.logger = logger
         self.isAutoTrack = isAutoTrack
+        self.startTime = Date().timeIntervalSince1970.milliseconds
         
         if BlueTriangle.configuration.groupingEnabled && isAutoTrack {
             BlueTriangle.groupTimer.startGroupIfNeeded()
@@ -185,29 +187,33 @@ class TimerMapActivity {
     func manageTimeFor(type : TimerMapType) {
         
         if type == .load {
-            loadTime = timeInterval
+            loadTime = timeInMilliseconds
             self.submitTimerOfType(.load)
         }
         else if type == .finish {
             if loadTime == nil {
-                loadTime = timeInterval
+                loadTime = timeInMilliseconds
                 self.submitTimerOfType(.load)
             }
         }
         else if type == .view {
-            if loadTime == nil {
-                loadTime = timeInterval
-                self.submitTimerOfType(.load)
-            }
-            viewTime = timeInterval
+            viewTime = timeInMilliseconds
             self.submitTimerOfType(.view)
         }
         else if type == .disapear {
-            if viewTime == nil{
-                viewTime = timeInterval
+            if loadTime == nil {
+                loadTime = startTime
+                let loginfo = "Load life cycle methods are not called for page :\(self.pageName)"
+                self.logger?.info(loginfo)
+                self.submitTimerOfType(.load)
+            }
+            if viewTime == nil {
+                viewTime = (loadTime ?? startTime) + Constants.minPgTm
+                let loginfo = "View lifecycle methods are not called for page :\(self.pageName)"
+                self.logger?.info(loginfo)
                 self.submitTimerOfType(.view)
             }
-            disapearTime = timeInterval
+            disapearTime = timeInMilliseconds
             self.submitTimerOfType(.disapear)
         }
     }
@@ -219,7 +225,7 @@ class TimerMapActivity {
             }
             if type == .view {
                 if let viewTime = viewTime, let loadTime = loadTime {
-                    self.updateTrackingTimer(loadTime: loadTime, viewTime: viewTime, disapearTime: timeInterval)
+                    self.updateTrackingTimer(loadTime: loadTime, viewTime: viewTime, disapearTime: timeInMilliseconds)
                 }
             } else {
                 if let viewTime = viewTime, let loadTime = loadTime, let disapearTime = disapearTime {
@@ -243,10 +249,10 @@ class TimerMapActivity {
         }
     }
 
-    private func updateTrackingTimer(loadTime: TimeInterval, viewTime: TimeInterval, disapearTime: TimeInterval) {
+    private func updateTrackingTimer(loadTime: Millisecond, viewTime: Millisecond, disapearTime: Millisecond) {
          //When "pgtm" is zero then fallback mechanism triggered that calculate performence time as screen time automatically. So to avoiding "pgtm" zero value setting default value 15 milliseconds.
          // Default "pgtm" should be minimum 0.01 sec (15 milliseconds). Because timer is not reflecting on dot chat bellow to that interval.
-        let calculatedLoadTime = max(viewTime.milliseconds - loadTime.milliseconds, Constants.minPgTm)
+        let calculatedLoadTime = max(viewTime - loadTime, Constants.minPgTm)
         let networkReport = timer.networkReport
 
         timer.pageTimeBuilder = {
@@ -255,10 +261,10 @@ class TimerMapActivity {
         
         timer.trafficSegmentName = Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT
         timer.nativeAppProperties = NativeAppProperties(
-            fullTime: disapearTime.milliseconds - loadTime.milliseconds,
+            fullTime: disapearTime - loadTime,
             loadTime: calculatedLoadTime,
-            loadStartTime: loadTime.milliseconds,
-            loadEndTime: viewTime.milliseconds,
+            loadStartTime: loadTime,
+            loadEndTime: viewTime,
             maxMainThreadUsage: timer.performanceReport?.maxMainThreadTask.milliseconds ?? 0,
             viewType: self.viewType,
             offline: networkReport?.offline ?? 0,
@@ -271,8 +277,8 @@ class TimerMapActivity {
         )
     }
     
-    private var timeInterval : TimeInterval {
-        Date().timeIntervalSince1970
+    private var timeInMilliseconds : Millisecond {
+        Date().timeIntervalSince1970.milliseconds
     }
     
     private var isGroupedANDAutoTracked : Bool {
