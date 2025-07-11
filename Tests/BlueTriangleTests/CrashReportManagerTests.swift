@@ -16,6 +16,8 @@ final class CrashReportManagerTests: XCTestCase {
     let crashErrorReport = ErrorReport(nativeApp:  NativeAppProperties(
         fullTime: 0,
         loadTime: 0,
+        loadStartTime: 0,
+        loadEndTime: 0,
         maxMainThreadUsage: 0,
         viewType: nil,
         offline: 0,

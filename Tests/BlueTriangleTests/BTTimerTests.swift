@@ -29,7 +29,7 @@ final class BTTimerTests: XCTestCase {
         let timerFactory = timerConfiguration.makeTimerFactory(logger: LoggerMock())
 
         let pageModel = Page(pageName: "MY_PAGE_NAME")
-        let timer = timerFactory(pageModel, .main)
+        let timer = timerFactory(pageModel, .main, false)
 
         timer.start()
         timer.markInteractive()
@@ -63,7 +63,7 @@ final class BTTimerTests: XCTestCase {
         let timerFactory = timerConfiguration.makeTimerFactory(logger: LoggerMock())
 
         let pageModel = Page(pageName: "MY_PAGE_NAME")
-        let timer = timerFactory(pageModel, .main)
+        let timer = timerFactory(pageModel, .main, false)
         timer.start()
         timer.start()
         timer.markInteractive()
@@ -91,7 +91,7 @@ final class BTTimerTests: XCTestCase {
         let timerFactory = timerConfiguration.makeTimerFactory(logger: LoggerMock())
 
         let pageModel = Page(pageName: "MY_PAGE_NAME")
-        let timer = timerFactory(pageModel, .main)
+        let timer = timerFactory(pageModel, .main, false)
 
         XCTAssertEqual(timer.state, .initial)
         timer.markInteractive()
