@@ -55,7 +55,7 @@
     
     PurchaseConfirmation *purchaseConfirmation = [[PurchaseConfirmation alloc] initWithCartValue:cartValue.decimalValue cartCount:2 cartCountCheckout:2 orderNumber:@"MY_ORDER_NUMBER"];
     
-    BTTimer *timer = [BlueTriangle makeTimerWithPage:page timerType:TimerTypeMain];
+    BTTimer *timer = [BlueTriangle makeTimerWithPage:page timerType:TimerTypeMain isGroupedTimer : false];
 
     [timer start];
 
@@ -65,12 +65,12 @@
 
     [BlueTriangle endTimer:timer purchaseConfirmation:purchaseConfirmation];
 
-    BTTimer *timer2 = [BlueTriangle startTimerWithPage:page timerType:TimerTypeCustom];
+    BTTimer *timer2 = [BlueTriangle startTimerWithPage:page timerType:TimerTypeCustom isGroupedTimer : false];
 
     [BlueTriangle endTimer:timer2 purchaseConfirmation:nil];
 
     // Network Capture
-    BTTimer *timer3 = [BlueTriangle makeTimerWithPage:page timerType:TimerTypeMain];
+    BTTimer *timer3 = [BlueTriangle makeTimerWithPage:page timerType:TimerTypeMain isGroupedTimer : false];
 
     NSURLSession *session = [NSURLSession sharedSession];
 

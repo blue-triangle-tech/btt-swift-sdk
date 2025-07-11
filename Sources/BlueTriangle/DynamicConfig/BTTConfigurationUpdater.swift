@@ -68,7 +68,7 @@ class BTTConfigurationUpdater : ConfigurationUpdater {
                         self.reportAck(enableRemoteConfigAck, config, nil)
                     }
                     
-                    self.logger?.info("BlueTriangle:BTTConfigurationUpdater - Remote config fetched successfully \(config.networkSampleRateSDK ?? 0) - sdk \(config.enableAllTracking ?? true ? "true" : "false")")
+                    self.logger?.info("BlueTriangle:BTTConfigurationUpdater - Remote config fetched successfully \(config.networkSampleRateSDK ?? 0) - sdk \(config.enableAllTracking ?? true ? "true" : "false") - grouping : \(config.groupingEnabled ?? false ? "true" : "false") , screenTracking: \(config.enableScreenTracking ?? false ? "true" : "false") ")
                 }
                 catch{
                     self.logger?.error("BlueTriangle:BTTConfigurationUpdater - Failed to save fetch remote config: \(error.localizedDescription)")

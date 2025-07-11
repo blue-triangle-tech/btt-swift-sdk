@@ -41,11 +41,13 @@ final public class BTTimer: NSObject {
     private let lock = NSLock()
     private let logger: Logging
     private let timeIntervalProvider: () -> TimeInterval
-    private let onStart: (TimerType, Page, TimeInterval) -> Void
+    private let onStart: (TimerType, Page, TimeInterval, Bool) -> Void
     private let performanceMonitor: PerformanceMonitoring?
     private var networkAccumulator : BTTimerNetStateAccumulatorProtocol?
     private var nativeAppProp : NativeAppProperties?
-
+    
+    @objc public var isGroupTimer: Bool = false
+    
     /// The type of the timer.
     @objc public let type: TimerType
 
@@ -98,6 +100,8 @@ final public class BTTimer: NSObject {
                 return NativeAppProperties(
                     fullTime: 0,
                     loadTime: 0,
+                    loadStartTime: 0,
+                    loadEndTime: 0,
                     maxMainThreadUsage: performanceReport?.maxMainThreadTask.milliseconds ?? 0,
                     viewType: nil,
                     offline: networkReport?.offline ?? 0,
@@ -123,14 +127,18 @@ final public class BTTimer: NSObject {
     var networkReport: NetworkReport? {
         return networkAccumulator?.makeReport()
     }
+    
+    var onEnd: (() -> Void)?
 
     init(page: Page,
+         isGroupTimer : Bool = false,
          type: TimerType = .main,
          logger: Logging,
          intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 },
-         onStart: @escaping (TimerType, Page, TimeInterval) -> Void = { _, _, _ in },
+         onStart: @escaping (TimerType, Page, TimeInterval, Bool) -> Void = { _, _, _, _ in },
          performanceMonitor: PerformanceMonitoring? = nil) {
         self.page = page
+        self.isGroupTimer = isGroupTimer
         self.type = type
         self.logger = logger
         self.timeIntervalProvider = intervalProvider
@@ -147,7 +155,11 @@ final public class BTTimer: NSObject {
             return
         }
         
-        BlueTriangle.addActiveTimer(self)
+        let isInActiveTimer = isGroupTimer && type == .custom
+        if !isInActiveTimer {
+            BlueTriangle.addActiveTimer(self)
+        }
+
         handle(.start)
         self.startNetState()
     }
@@ -180,6 +192,7 @@ final public class BTTimer: NSObject {
         
         BlueTriangle.removeActiveTimer(self)
         handle(.end)
+        onEnd?()
     }
 
     private func handle(_ action: Action) {
@@ -189,7 +202,7 @@ final public class BTTimer: NSObject {
                 startTime = timeIntervalProvider()
                 performanceMonitor?.start()
                 state = .started
-                onStart(type, page, startTime)
+                onStart(type, page, startTime, isGroupTimer)
             case (.started, .markInteractive):
                 interactiveTime = timeIntervalProvider()
                 state = .interactive
@@ -234,11 +247,14 @@ extension BTTimer {
 
         func makeTimerFactory(
             logger: Logging,
-            onStart: @escaping (TimerType, Page, TimeInterval) -> Void = BlueTriangle.timerDidStart(_:page:startTime:),
+            isGroupTimer: Bool = false,
+            onStart: @escaping (TimerType, Page, TimeInterval, Bool) -> Void = BlueTriangle.timerDidStart(_:page:startTime:isGroupTimer:),
             performanceMonitorFactory: (() -> PerformanceMonitoring)? = nil
-        ) -> (Page, BTTimer.TimerType) -> BTTimer {
-            { page, timerType in
+        ) -> (Page, BTTimer.TimerType, Bool) -> BTTimer {
+            { page, timerType, isGroupTimer  in
+                
                 BTTimer(page: page,
+                        isGroupTimer: isGroupTimer,
                         type: timerType,
                         logger: logger,
                         intervalProvider: timeIntervalProvider,

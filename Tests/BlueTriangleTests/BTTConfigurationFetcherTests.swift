@@ -29,7 +29,13 @@ final class BTTConfigurationFetcherTests: XCTestCase {
     func testFetchConfigurationSuccess() {
 
         let mockNetworking: Networking = { request in
-            let mockConfig = BTTRemoteConfig(networkSampleRateSDK: 20, enableRemoteConfigAck: false, enableAllTracking: true, ignoreScreens: [])
+            let mockConfig = BTTRemoteConfig(networkSampleRateSDK: 20,
+                                             enableRemoteConfigAck: false,
+                                             enableAllTracking: true,
+                                             enableScreenTracking: true,
+                                             groupingEnabled: false,
+                                             groupingIdleTime: 2,
+                                             ignoreScreens: [])
             let mockData = try! JSONEncoder().encode(mockConfig)
             
             let response = HTTPURLResponse(url: request.url,

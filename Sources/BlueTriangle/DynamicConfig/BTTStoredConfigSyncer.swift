@@ -70,12 +70,20 @@ class BTTStoredConfigSyncer {
                     BlueTriangle.updateIgnoreVcs(unianOfIgnoreScreens)
                 }
                 
+                // Sync Enable Screen tracking
+                if let enableScreenTracking = config.enableScreenTracking ?? configRepo.defaultConfig.enableScreenTracking {
+                    BlueTriangle.updateScreenTracking(enableScreenTracking)
+                }
+                
+                // Sync Grouping
+                if let groupingEnabled = config.groupingEnabled ?? configRepo.defaultConfig.groupingEnabled, let groupingIdleTime = config.groupingIdleTime ?? configRepo.defaultConfig.groupingIdleTime {
+                    BlueTriangle.updateGrouping(groupingEnabled, idleTime: groupingIdleTime)
+                }
             }
         }catch{
             logger.error("BlueTriangle:SessionManager: Failed to retrieve remote configuration from the repository - \(error)")
         }
     }
-    
     /// Evaluates the SDK's state based on the latest configuration and updates it accordingly.
     ///
     /// This method checks whether the SDK should be enabled or disabled based on the retrieved remote
@@ -84,6 +92,7 @@ class BTTStoredConfigSyncer {
     /// - Notes:
     ///   - This method ensures that the SDK's behavior is in sync with the remote configuration
     ///
+
     func updateAndApplySDKState(){
         do{
             if let config = try configRepo.get(){
@@ -97,6 +106,5 @@ class BTTStoredConfigSyncer {
         catch {
             logger.error("BlueTriangle:SessionManager: Failed to retrieve remote configuration from the repository - \(error)")
         }
-        
     }
 }

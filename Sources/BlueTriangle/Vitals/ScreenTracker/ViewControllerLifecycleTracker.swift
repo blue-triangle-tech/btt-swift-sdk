@@ -21,6 +21,22 @@ fileprivate func swizzleMethod(_ `class`: AnyClass, _ original: Selector, _ swiz
     }
 }
 
+extension UIApplication {
+    @objc func swizzled_sendEvent(_ event: UIEvent) {
+        if let touches = event.allTouches {
+            for touch in touches {
+                switch touch.phase {
+                case .began:
+                    BlueTriangle.groupTimer.setLastAction(Date())
+                default:
+                    break
+                }
+            }
+        }
+        swizzled_sendEvent(event)
+    }
+}
+
 extension UIViewController{
     
     private static var isSwizzled = false
@@ -34,6 +50,9 @@ extension UIViewController{
                 swizzleMethod(UIViewController.self, #selector(UIViewController.viewWillAppear(_:)), #selector(UIViewController.viewWillAppear_Tracker(_:)))
                 swizzleMethod(UIViewController.self, #selector(UIViewController.viewDidAppear(_:)), #selector(UIViewController.viewDidAppear_Tracker(_:)))
                 swizzleMethod(UIViewController.self, #selector(UIViewController.viewDidDisappear(_:)), #selector(UIViewController.viewDidDisappear_Tracker(_:)))
+                
+                swizzleMethod(UIApplication.self, #selector(UIApplication.sendEvent(_:)), #selector(UIApplication.swizzled_sendEvent(_:)))
+                
                 BlueTriangle.screenTracker?.logger?.debug("View Screen Tracker: setup completed.")
                 isSwizzled = true
             }
@@ -47,6 +66,7 @@ extension UIViewController{
                 swizzleMethod(UIViewController.self, #selector(UIViewController.viewWillAppear(_:)), #selector(UIViewController.viewWillAppear_Tracker(_:)))
                 swizzleMethod(UIViewController.self, #selector(UIViewController.viewDidAppear(_:)), #selector(UIViewController.viewDidAppear_Tracker(_:)))
                 swizzleMethod(UIViewController.self, #selector(UIViewController.viewDidDisappear(_:)), #selector(UIViewController.viewDidDisappear_Tracker(_:)))
+                swizzleMethod(UIApplication.self, #selector(UIApplication.sendEvent(_:)), #selector(UIApplication.swizzled_sendEvent(_:)))
                 BlueTriangle.screenTracker?.logger?.debug("View Screen Tracker: setup removed.")
                 isSwizzled = false
             }
@@ -99,7 +119,8 @@ extension UIViewController{
             "UIEditingOverlayViewController",  // Overlay for text editing
             "NavigationStackHostingController",// SwiftUI navigation stack
             "UIPredictionViewController",      // Predictive typing view
-            "UIPlaceholderPredictiveViewController" // Placeholder for predictions
+            "UIPlaceholderPredictiveViewController",  // Placeholder for predictions
+            "UlKeyboardMediaServiceRemoteViewController"
         ]
         
         let selfClassName = "\(type(of: self))"
@@ -127,30 +148,52 @@ extension UIViewController{
     
     @objc dynamic func viewDidLoad_Tracker() {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.loadStarted(String(describing: self), "\(type(of: self))")
+            BlueTriangle.screenTracker?.loadStarted(String(describing: self), getPageName(), isAutoTrack: true)
         }
         viewDidLoad_Tracker()
     }
     
     @objc dynamic func viewWillAppear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.loadFinish(String(describing: self), "\(type(of: self))")
+            BlueTriangle.screenTracker?.loadFinish(String(describing: self), getPageName(), isAutoTrack: true)
         }
         viewWillAppear_Tracker(animated)
     }
                                 
     @objc dynamic func viewDidAppear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.viewStart(String(describing: self), "\(type(of: self))")
+            BlueTriangle.screenTracker?.viewStart(String(describing: self), getPageName(), isAutoTrack: true)
         }
         viewDidAppear_Tracker(animated)
     }
     
     @objc dynamic func viewDidDisappear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.viewingEnd(String(describing: self), "\(type(of: self))")
+            BlueTriangle.screenTracker?.viewingEnd(String(describing: self), getPageName(), isAutoTrack: true)
         }
         viewDidDisappear_Tracker(animated)
+    }
+
+    func getPageName() -> String {
+        
+        let viewName = "\(type(of: self))"
+        var pageName: String = viewName
+        let currentTitle = self.navigationItem.title ?? ""
+        
+        if currentTitle.count > 0 {
+            pageName = currentTitle
+        } 
+        
+        let isGroupTimer = BlueTriangle.configuration.groupingEnabled
+        if !isGroupTimer {
+            pageName = viewName
+        } else {
+            if pageName != viewName {
+                pageName = viewName + " - " + pageName
+            }
+        }
+
+        return pageName
     }
 }
 

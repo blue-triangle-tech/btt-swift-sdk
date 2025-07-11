@@ -135,11 +135,19 @@ extension CapturedRequest.InitiatorType {
 
 extension CapturedRequest {
     
+    init(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) {
+        self.init(
+            startTime: startTime - groupStartTime,
+            endTime:  endTime - groupStartTime,
+            duration: endTime - startTime,
+            response: response)
+    }
+    
     init(timer: InternalTimer, relativeTo startTime: Millisecond, response: URLResponse?) {
         self.init(
             startTime: timer.startTime.milliseconds - startTime,
             endTime: timer.endTime.milliseconds - startTime,
-            duration: timer.endTime.milliseconds - timer.startTime.milliseconds,
+            duration: timer.endTime.milliseconds - timer.startTime.milliseconds < 15 ? 15 : timer.endTime.milliseconds - timer.startTime.milliseconds,
             decodedBodySize: response?.expectedContentLength ?? 0,
             encodedBodySize: 0,
             response: response)
@@ -187,6 +195,24 @@ extension CapturedRequest {
                 request: lastMetric?.request,
                 error: error)
         }
+    }
+    
+    init(
+        startTime: Millisecond,
+        endTime: Millisecond,
+        duration: Millisecond,
+        response: CustomPageResponse
+    ) {
+        self.host = ""
+        self.domain = ""
+        self.url = response.url ?? ""
+        self.initiatorType = .other
+        self.file =  response.file
+        self.startTime = startTime
+        self.endTime = endTime
+        self.duration = duration
+        self.decodedBodySize = 0
+        self.encodedBodySize = 0
     }
     
     init(

@@ -189,16 +189,20 @@ extension SessionManager {
         configSyncer.updateAndApplySDKState()
     }
 
-    private func syncStoredConfigToSessionAndApply(){
-                
+    private func syncStoredConfigToSessionAndApply() {
         if let session = currentSession {
-            if session.isNewSession{
+            if session.isNewSession {
                 configSyncer.syncConfigurationFromStorage()
                 session.networkSampleRate = BlueTriangle.configuration.networkSampleRate
+                session.enableScreenTracking = BlueTriangle.configuration.enableScreenTracking
+                session.groupingEnabled = BlueTriangle.configuration.groupingEnabled
+                session.groupingIdleTime = BlueTriangle.configuration.groupingIdleTime
                 session.shouldNetworkCapture =  .random(probability: BlueTriangle.configuration.networkSampleRate)
                 session.ignoreViewControllers = BlueTriangle.configuration.ignoreViewControllers
                 sessionStore.saveSession(session)
-            }else{
+            } else {
+                BlueTriangle.updateScreenTracking(session.enableScreenTracking)
+                BlueTriangle.updateGrouping(session.groupingEnabled, idleTime: session.groupingIdleTime)
                 BlueTriangle.updateNetworkSampleRate(session.networkSampleRate)
                 BlueTriangle.updateIgnoreVcs(session.ignoreViewControllers)
             }

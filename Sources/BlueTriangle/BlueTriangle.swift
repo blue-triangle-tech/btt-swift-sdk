@@ -19,6 +19,7 @@ typealias SessionProvider = () -> Session?
 /// The entry point for interacting with the Blue Triangle SDK.
 final public class BlueTriangle: NSObject {
     
+    internal static var groupTimer : BTTimerGroupManager = BTTimerGroupManager(logger: logger)
     internal static var configuration = BlueTriangleConfiguration()
     
     private static var _screenTracker: BTTScreenLifecycleTracker?
@@ -180,33 +181,6 @@ final public class BlueTriangle: NSObject {
         SignalHandler.updateSessionID("\(session.sessionID)")
     }
     
-    internal static func updateNetworkSampleRate(_ rate : Double){
-        configuration.networkSampleRate = rate
-    }
-    
-    internal static func updateIgnoreVcs(_ vcs : Set<String>?){
-        if let vcs = vcs{
-            configuration.ignoreViewControllers = vcs
-        }
-    }
-    
-    internal static func updateCaptureRequests() {
-        if let sessionData = sessionData(){
-            shouldCaptureRequests = sessionData.shouldNetworkCapture
-            if shouldCaptureRequests {
-                if capturedRequestCollector == nil {
-                    capturedRequestCollector = makeCapturedRequestCollector()
-                }
-            } else {
-                capturedRequestCollector = makeCapturedRequestCollector()
-            }
-            
-#if os(iOS)
-            BTTWebViewTracker.shouldCaptureRequests = shouldCaptureRequests
-#endif
-        }
-    }
-    
     private static var _session: Session? = {
         configuration.makeSession()
     }()
@@ -236,10 +210,22 @@ final public class BlueTriangle: NSObject {
         }
     }
     
+    internal static func makeCapturedGroupRequestCollector() -> CapturedGroupRequestCollecting? {
+        if let _ = session(){
+            let groupCollector = configuration.capturedGroupRequestCollectorConfiguration.makeRequestCollector(
+                logger: logger,
+                networkCaptureConfiguration: .standard,
+                requestBuilder: CapturedRequestBuilder.makeBuilder {self.session()},
+                uploader: uploader)
+            return groupCollector
+        } else {
+            return nil
+        }
+    }
+    
     private static var logger: Logging = {
         configuration.makeLogger()
     }()
-    
 
     private static var uploader: Uploading = {
         configuration.uploaderConfiguration.makeUploader(
@@ -249,7 +235,7 @@ final public class BlueTriangle: NSObject {
                 logger: logger))
     }()
 
-    private static var timerFactory: (Page, BTTimer.TimerType) -> BTTimer = {
+    private static var timerFactory: (Page, BTTimer.TimerType, Bool) -> BTTimer = {
         configuration.timerConfiguration.makeTimerFactory(
             logger: logger,
             performanceMonitorFactory: configuration.makePerformanceMonitorFactory())
@@ -276,8 +262,7 @@ final public class BlueTriangle: NSObject {
     private static var capturedRequestCollector: CapturedRequestCollecting? = {
         return makeCapturedRequestCollector()
     }()
-
-
+    
     //Cache components
     internal static var payloadCache : PayloadCacheProtocol = {
         PayloadCache.init(configuration.cacheMemoryLimit,
@@ -510,6 +495,7 @@ extension BlueTriangle {
     // Starts screen tracking if not already configured
     private static func startScreenTracking(){
         if screenTracker == nil{
+            
             configureScreenTracking(with: configuration.enableScreenTracking)
         }
         
@@ -649,7 +635,7 @@ extension BlueTriangle {
         session: Session? = nil,
         logger: Logging? = nil,
         uploader: Uploading? = nil,
-        timerFactory: ((Page, BTTimer.TimerType) -> BTTimer)? = nil,
+        timerFactory: ((Page, BTTimer.TimerType, Bool) -> BTTimer)? = nil,
         shouldCaptureRequests: Bool? = nil,
         internalTimerFactory: (() -> InternalTimer)? = nil,
         requestCollector: CapturedRequestCollecting? = nil
@@ -695,10 +681,10 @@ public extension BlueTriangle {
     ///   - timerType: The type of timer.
     /// - Returns: The new timer.
     @objc
-    static func makeTimer(page: Page, timerType: BTTimer.TimerType = .main) -> BTTimer {
+    static func makeTimer(page: Page, timerType: BTTimer.TimerType = .main, isGroupedTimer: Bool = false) -> BTTimer {
         lock.lock()
        // precondition(initialized, "BlueTriangle must be initialized before sending timers.")
-        let timer = timerFactory(page, timerType)
+        let timer = timerFactory(page, timerType, isGroupedTimer)
         lock.unlock()
         return timer
     }
@@ -712,8 +698,8 @@ public extension BlueTriangle {
     ///   - timerType: The type of timer.
     /// - Returns: The running timer.
     @objc
-    static func startTimer(page: Page, timerType: BTTimer.TimerType = .main) -> BTTimer {
-        let timer = makeTimer(page: page, timerType: timerType)
+    static func startTimer(page: Page, timerType: BTTimer.TimerType = .main, isGroupedTimer: Bool = false) -> BTTimer {
+        let timer = makeTimer(page: page, timerType: timerType, isGroupedTimer: isGroupedTimer)
         timer.start()
         return timer
     }
@@ -922,16 +908,15 @@ public extension BlueTriangle{
 
 // MARK: - Network Capture
 public extension BlueTriangle {
-    internal static func timerDidStart(_ type: BTTimer.TimerType, page: Page, startTime: TimeInterval) {
+    internal static func timerDidStart(_ type: BTTimer.TimerType, page: Page, startTime: TimeInterval, isGroupTimer: Bool = false) {
         guard case .main = type else {
             return
         }
 
         Task {
-            await capturedRequestCollector?.start(page: page, startTime: startTime)
+            await capturedRequestCollector?.start(page: page, startTime: startTime, isGroupTimer: isGroupTimer)
         }
     }
-
     /// Returns a timer for network capture.
     static func startRequestTimer() -> InternalTimer? {
         guard shouldCaptureRequests else {
@@ -941,20 +926,27 @@ public extension BlueTriangle {
         timer.start()
         return timer
     }
-
-    /// Captures a network request.
-    /// - Parameters:
-    ///   - timer: The request timer.
-    ///   - data: The request response data.
-    ///   - response: The request response.
-    ///   - error: The response error
+    
+    static func setGroupName(_ groupName: String) {
+        BlueTriangle.groupTimer.setGroupName(groupName)
+    }
+    
+    static func setNewGroup(_ newGroup: String) {
+        BlueTriangle.groupTimer.setNewGroup(newGroup)
+    }
+    
+    internal static func updateCaptureRequest(pageName : String, startTime: Millisecond){
+        Task {
+            await capturedRequestCollector?.update(pageName: pageName, startTime: startTime)
+        }
+    }
     
     static func captureRequest(timer: InternalTimer, response: URLResponse?) {
         Task {
             await capturedRequestCollector?.collect(timer: timer, response: response)
         }
     }
-    
+
     internal static func captureRequest(timer: InternalTimer, response: CustomResponse) {
         Task {
             await capturedRequestCollector?.collect(timer: timer, response: response)
@@ -1094,7 +1086,6 @@ extension BlueTriangle{
 // MARK: - LaunchTime
 extension BlueTriangle{
     
-
     static func configureLaunchTime(with enabled: Bool){
         if enabled{
             let launchMonitor = LaunchTimeMonitor(logger: logger)
@@ -1171,6 +1162,51 @@ extension BlueTriangle {
         lock.sync {
             configuration = BlueTriangleConfiguration()
             initialized = false
+        }
+    }
+}
+
+// MARK: - Remote config
+extension BlueTriangle {
+   
+    internal static func updateNetworkSampleRate(_ rate : Double) {
+        configuration.networkSampleRate = rate
+    }
+    
+    internal static func updateIgnoreVcs(_ vcs : Set<String>?) {
+        if let vcs = vcs{
+            configuration.ignoreViewControllers = vcs
+        }
+    }
+    
+    internal static func updateGrouping(_ isEnable : Bool, idleTime : Double) {
+        configuration.groupingEnabled = isEnable
+        configuration.groupingIdleTime = idleTime
+    }
+    
+    internal static func updateScreenTracking(_ enabled : Bool) {
+        configuration.enableScreenTracking = enabled
+        if enabled {
+            UIViewController.setUp()
+        } else {
+            UIViewController.removeSetUp()
+        }
+    }
+    
+    internal static func updateCaptureRequests() {
+        if let sessionData = sessionData(){
+            shouldCaptureRequests = sessionData.shouldNetworkCapture
+            if shouldCaptureRequests {
+                if capturedRequestCollector == nil {
+                    capturedRequestCollector = makeCapturedRequestCollector()
+                }
+            } else {
+                capturedRequestCollector = makeCapturedRequestCollector()
+            }
+            
+#if os(iOS)
+            BTTWebViewTracker.shouldCaptureRequests = shouldCaptureRequests
+#endif
         }
     }
 }
