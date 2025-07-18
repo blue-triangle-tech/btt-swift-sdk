@@ -153,9 +153,12 @@ class TimerMapActivity {
     private let timer : BTTimer
     private let pageName : String
     private let viewType : ViewType
-    private var loadTime : TimeInterval?
-    private var viewTime : TimeInterval?
-    private var disapearTime : TimeInterval?
+    private var loadTime : Millisecond?
+    private var willViewTime : Millisecond?
+    private var viewTime : Millisecond?
+    private var disapearTime : Millisecond?
+    private var confidenceRate : Int32? = 100
+    private var confidenceMsg : String? = ""
     private(set) var logger : Logging?
     
     init(pageName: String, viewType : ViewType, logger : Logging?) {
@@ -168,25 +171,46 @@ class TimerMapActivity {
     func manageTimeFor(type : TimerMapType){
         
         if type == .load{
-            loadTime = timeInterval
+            loadTime = timeInMillisecond
         }
         else if type == .finish{
-            if loadTime == nil{
-                loadTime = timeInterval
-            }
+            willViewTime = timeInMillisecond
         }
         else if type == .view{
-            if loadTime == nil{
-                loadTime = timeInterval
-            }
-            viewTime = timeInterval
+            viewTime = timeInMillisecond
         }
         else if type == .disapear{
-            if viewTime == nil{
-                viewTime = timeInterval
+            self.evaluateConfidence()
+            
+            if loadTime == nil{
+                loadTime = willViewTime ?? self.timer.startTime.milliseconds
             }
-            disapearTime = timeInterval
+            if viewTime == nil{
+                viewTime = (loadTime ?? self.timer.startTime.milliseconds) + Constants.minPgTm
+            }
+            
+            disapearTime = timeInMillisecond
             self.submitTimer()
+        }
+    }
+    
+    private func evaluateConfidence() {
+        switch (loadTime, willViewTime, viewTime) {
+        case (nil, nil, _):
+            confidenceRate = 0
+            confidenceMsg = "DidLoad and WillView time are missing"
+            
+        case (_, _, nil):
+            confidenceRate = 0
+            confidenceMsg = "DidView time is missing."
+            
+        case (nil, _, _):
+            confidenceRate = 50
+            confidenceMsg = "DidLoad time is missing."
+            
+        default:
+            confidenceRate = 100
+            confidenceMsg = ""
         }
     }
     
@@ -196,7 +220,7 @@ class TimerMapActivity {
            
             //When "pgtm" is zero then fallback mechanism triggered that calculate performence time as screen time automatically. So to avoiding "pgtm" zero value setting default value 15 milliseconds.
             // Default "pgtm" should be minimum 0.01 sec (15 milliseconds). Because timer is not reflecting on dot chat bellow to that interval.
-            let calculatedLoadTime = max((viewTime.milliseconds - loadTime.milliseconds), Constants.minPgTm)
+            let calculatedLoadTime = max((viewTime - loadTime), Constants.minPgTm)
             
             timer.pageTimeBuilder = {
                 return calculatedLoadTime
@@ -208,7 +232,7 @@ class TimerMapActivity {
             
             
             timer.nativeAppProperties = NativeAppProperties(
-                fullTime: disapearTime.milliseconds - loadTime.milliseconds,
+                fullTime: disapearTime - loadTime,
                 loadTime: calculatedLoadTime,
                 maxMainThreadUsage: timer.performanceReport?.maxMainThreadTask.milliseconds ?? 0,
                 viewType: self.viewType,
@@ -217,6 +241,8 @@ class TimerMapActivity {
                 cellular: networkReport?.cellular  ?? 0,
                 ethernet: networkReport?.ethernet  ?? 0,
                 other: networkReport?.other  ?? 0,
+                confidenceRate: self.confidenceRate,
+                confidenceMsg: self.confidenceMsg,
                 netState: networkReport?.netState ?? "",
                 netStateSource: networkReport?.netSource ?? "")
             
@@ -233,7 +259,7 @@ class TimerMapActivity {
         return pageName
     }
     
-    private var timeInterval : TimeInterval{
-        Date().timeIntervalSince1970
+    private var timeInMillisecond : Millisecond{
+        Date().timeIntervalSince1970.milliseconds
     }
 }
