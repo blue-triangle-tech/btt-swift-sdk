@@ -13,12 +13,15 @@ class BTTRemoteConfig: Codable, Equatable {
     var enableRemoteConfigAck: Bool?
     var ignoreScreens : [String]?
     var enableAllTracking: Bool?
+    var enableScreenTracking : Bool?
     
     init(networkSampleRateSDK: Int?,
          enableRemoteConfigAck : Bool?,
          enableAllTracking : Bool?,
+         enableScreenTracking: Bool?,
          ignoreScreens : [String]?) {
         self.networkSampleRateSDK = networkSampleRateSDK
+        self.enableScreenTracking = enableScreenTracking
         self.enableRemoteConfigAck = enableRemoteConfigAck
         self.ignoreScreens = ignoreScreens
         self.enableAllTracking = enableAllTracking
@@ -28,6 +31,7 @@ class BTTRemoteConfig: Codable, Equatable {
         return lhs.networkSampleRateSDK == rhs.networkSampleRateSDK &&
         lhs.enableRemoteConfigAck == rhs.enableRemoteConfigAck  &&
         lhs.ignoreScreens == rhs.ignoreScreens &&
+        lhs.enableScreenTracking == rhs.enableScreenTracking &&
         lhs.enableAllTracking == rhs.enableAllTracking
     }
     
@@ -35,6 +39,7 @@ class BTTRemoteConfig: Codable, Equatable {
         BTTSavedRemoteConfig(networkSampleRateSDK: Int(BlueTriangle.configuration.networkSampleRate * 100),
                              enableRemoteConfigAck : false, 
                              enableAllTracking: true,
+                             enableScreenTracking: BlueTriangle.configuration.enableScreenTracking,
                              ignoreScreens: Array(BlueTriangle.configuration.ignoreViewControllers),
                              dateSaved: Date().timeIntervalSince1970.milliseconds)
     }

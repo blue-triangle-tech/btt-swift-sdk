@@ -1,4 +1,9 @@
-# Blue Triangle 3.14.1, Latest
+# Blue Triangle 3.14.2, Latest
+### New Features
+ - Ability to remotely update enableScreenTracking.
+ - Added appVersion, sdkVersion, confidenceRate and confidenceMsg to NativeApp.
+
+# Blue Triangle 3.14.1, Jun 6 2025
 ### Bug Fixes and Improvements
   - Added custom varriable to exclude 20 payload
   - Added "ScreenTracker" as the value for TrafficSegment and PageType to automatic timer.

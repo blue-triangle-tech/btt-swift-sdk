@@ -1079,6 +1079,15 @@ extension BlueTriangle{
         }
 #endif
     }
+    
+    internal static func updateScreenTracking(_ enabled : Bool) {
+        configuration.enableScreenTracking = enabled
+        if enabled {
+            UIViewController.setUp()
+        } else {
+            UIViewController.removeSetUp()
+        }
+    }
 }
 
 // MARK: - Network State

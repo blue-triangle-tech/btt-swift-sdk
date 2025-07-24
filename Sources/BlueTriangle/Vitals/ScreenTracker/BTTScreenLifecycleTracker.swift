@@ -198,15 +198,15 @@ class TimerMapActivity {
         switch (loadTime, willViewTime, viewTime) {
         case (nil, nil, _):
             confidenceRate = 0
-            confidenceMsg = "DidLoad and WillView time are missing"
+            confidenceMsg = "viewDidLoad and viewWillAppear super calls are missing"
             
         case (_, _, nil):
             confidenceRate = 0
-            confidenceMsg = "DidView time is missing."
+            confidenceMsg = "viewDidAppear super call is missing."
             
         case (nil, _, _):
             confidenceRate = 50
-            confidenceMsg = "DidLoad time is missing."
+            confidenceMsg = "viewDidLoad super call is missing."
             
         default:
             confidenceRate = 100
