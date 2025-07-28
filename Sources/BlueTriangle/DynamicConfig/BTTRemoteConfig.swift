@@ -10,26 +10,29 @@ import Foundation
 
 class BTTRemoteConfig: Codable, Equatable {
     var networkSampleRateSDK: Int?
+    var groupedViewSampleRate: Int?
     var enableRemoteConfigAck: Bool?
     var ignoreScreens : [String]?
     var enableAllTracking: Bool?
     var enableScreenTracking : Bool?
-    var groupingEnabled: Bool?
+    var enableGrouping: Bool?
     var groupingIdleTime: Double?
     
     init(networkSampleRateSDK: Int?,
+         groupedViewSampleRate: Int?,
          enableRemoteConfigAck : Bool?,
          enableAllTracking : Bool?,
          enableScreenTracking: Bool?,
-         groupingEnabled : Bool?,
+         enableGrouping : Bool?,
          groupingIdleTime : Double?,
          ignoreScreens : [String]?) {
         self.networkSampleRateSDK = networkSampleRateSDK
+        self.groupedViewSampleRate = groupedViewSampleRate
         self.enableRemoteConfigAck = enableRemoteConfigAck
         self.ignoreScreens = ignoreScreens
         self.enableAllTracking = enableAllTracking
         self.enableScreenTracking = enableScreenTracking
-        self.groupingEnabled = groupingEnabled
+        self.enableGrouping = enableGrouping
         self.groupingIdleTime = groupingIdleTime
     }
     
@@ -39,16 +42,17 @@ class BTTRemoteConfig: Codable, Equatable {
         lhs.ignoreScreens == rhs.ignoreScreens &&
         lhs.enableAllTracking == rhs.enableAllTracking &&
         lhs.enableScreenTracking == rhs.enableScreenTracking &&
-        lhs.groupingEnabled == rhs.groupingEnabled &&
+        lhs.enableGrouping == rhs.enableGrouping &&
         lhs.groupingIdleTime == rhs.groupingIdleTime
     }
     
     internal static var defaultConfig: BTTSavedRemoteConfig {
         BTTSavedRemoteConfig(networkSampleRateSDK: Int(BlueTriangle.configuration.networkSampleRate * 100),
-                             enableRemoteConfigAck : false, 
+                             groupedViewSampleRate: Int(BlueTriangle.configuration.groupedViewSampleRate * 100),
+                             enableRemoteConfigAck : false,
                              enableAllTracking: true,
                              enableScreenTracking: BlueTriangle.configuration.enableScreenTracking,
-                             groupingEnabled: BlueTriangle.configuration.groupingEnabled,
+                             enableGrouping: BlueTriangle.configuration.enableGrouping,
                              groupingIdleTime: BlueTriangle.configuration.groupingIdleTime,
                              ignoreScreens: Array(BlueTriangle.configuration.ignoreViewControllers),
                              dateSaved: Date().timeIntervalSince1970.milliseconds)

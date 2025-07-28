@@ -211,7 +211,7 @@ final public class BlueTriangle: NSObject {
     }
     
     internal static func makeCapturedGroupRequestCollector() -> CapturedGroupRequestCollecting? {
-        if let _ = session(){
+        if let _ = session(), shouldGroupedCaptureRequests{
             let groupCollector = configuration.capturedGroupRequestCollectorConfiguration.makeRequestCollector(
                 logger: logger,
                 networkCaptureConfiguration: .standard,
@@ -249,6 +249,10 @@ final public class BlueTriangle: NSObject {
         sessionData()?.shouldNetworkCapture ?? false
     }()
     
+    private static var shouldGroupedCaptureRequests: Bool = {
+        sessionData()?.shouldGroupedViewCapture ?? false
+    }()
+    
     /// A Boolean value indicating  whether the SDK has been successfully configured and initialized.
     ///
     /// - `true`: The SDK has been configured and is ready to function. This means
@@ -261,6 +265,10 @@ final public class BlueTriangle: NSObject {
     
     private static var capturedRequestCollector: CapturedRequestCollecting? = {
         return makeCapturedRequestCollector()
+    }()
+    
+    private static var capturedGroupedViewRequestCollector: CapturedGroupRequestCollecting? = {
+        return makeCapturedGroupRequestCollector()
     }()
     
     //Cache components
@@ -976,6 +984,25 @@ public extension BlueTriangle {
             await capturedRequestCollector?.collect(metrics: metrics, error: error)
         }
     }
+    
+    //Grouped
+    internal static func startGroupTimerRequest(page : Page, startTime : TimeInterval) {
+        Task {
+            await capturedGroupedViewRequestCollector?.start(page: page, startTime: startTime)
+        }
+    }
+    
+    internal static func captureGroupRequest(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) {
+        Task {
+            await capturedGroupedViewRequestCollector?.collect(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
+        }
+    }
+    
+    internal static func uploadGroupedViewCollectedRequests() {
+        Task {
+            await capturedGroupedViewRequestCollector?.uploadCollectedRequests()
+        }
+    }
 }
 
 // MARK: - Error Tracking
@@ -1173,6 +1200,10 @@ extension BlueTriangle {
         configuration.networkSampleRate = rate
     }
     
+    internal static func updateGroupedViewSampleRate(_ rate : Double) {
+        configuration.groupedViewSampleRate = rate
+    }
+    
     internal static func updateIgnoreVcs(_ vcs : Set<String>?) {
         if let vcs = vcs{
             configuration.ignoreViewControllers = vcs
@@ -1180,7 +1211,7 @@ extension BlueTriangle {
     }
     
     internal static func updateGrouping(_ isEnable : Bool, idleTime : Double) {
-        configuration.groupingEnabled = isEnable
+        configuration.enableGrouping = isEnable
         configuration.groupingIdleTime = idleTime
     }
     
@@ -1207,6 +1238,19 @@ extension BlueTriangle {
 #if os(iOS)
             BTTWebViewTracker.shouldCaptureRequests = shouldCaptureRequests
 #endif
+        }
+    }
+    
+    internal static func updateGroupedViewCaptureRequest() {
+        if let sessionData = sessionData(){
+            shouldGroupedCaptureRequests = sessionData.shouldGroupedViewCapture
+            if shouldGroupedCaptureRequests {
+                if capturedGroupedViewRequestCollector == nil {
+                    capturedGroupedViewRequestCollector = makeCapturedGroupRequestCollector()
+                }
+            } else {
+                capturedGroupedViewRequestCollector = makeCapturedGroupRequestCollector()
+            }
         }
     }
 }

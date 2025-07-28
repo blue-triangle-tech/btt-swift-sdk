@@ -184,7 +184,7 @@ extension UIViewController{
             pageName = currentTitle
         } 
         
-        let isGroupTimer = BlueTriangle.configuration.groupingEnabled
+        let isGroupTimer = BlueTriangle.configuration.enableGrouping
         if !isGroupTimer {
             pageName = viewName
         } else {

@@ -195,14 +195,17 @@ extension SessionManager {
                 configSyncer.syncConfigurationFromStorage()
                 session.networkSampleRate = BlueTriangle.configuration.networkSampleRate
                 session.enableScreenTracking = BlueTriangle.configuration.enableScreenTracking
-                session.groupingEnabled = BlueTriangle.configuration.groupingEnabled
+                session.groupedViewSampleRate = BlueTriangle.configuration.groupedViewSampleRate
+                session.enableGrouping = BlueTriangle.configuration.enableGrouping
                 session.groupingIdleTime = BlueTriangle.configuration.groupingIdleTime
-                session.shouldNetworkCapture =  .random(probability: BlueTriangle.configuration.networkSampleRate)
+                session.shouldNetworkCapture = .random(probability: BlueTriangle.configuration.networkSampleRate)
+                session.shouldGroupedViewCapture = .random(probability: BlueTriangle.configuration.groupedViewSampleRate)
                 session.ignoreViewControllers = BlueTriangle.configuration.ignoreViewControllers
                 sessionStore.saveSession(session)
             } else {
+                BlueTriangle.updateGroupedViewSampleRate(session.groupedViewSampleRate)
                 BlueTriangle.updateScreenTracking(session.enableScreenTracking)
-                BlueTriangle.updateGrouping(session.groupingEnabled, idleTime: session.groupingIdleTime)
+                BlueTriangle.updateGrouping(session.enableGrouping, idleTime: session.groupingIdleTime)
                 BlueTriangle.updateNetworkSampleRate(session.networkSampleRate)
                 BlueTriangle.updateIgnoreVcs(session.ignoreViewControllers)
             }

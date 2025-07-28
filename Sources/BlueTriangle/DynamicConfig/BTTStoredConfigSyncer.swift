@@ -38,35 +38,39 @@ class BTTStoredConfigSyncer {
     /// - Notes:
     ///   - This function ensures that the Blue triangle configuration is kept up-to-date.
     ///
-    func syncConfigurationFromStorage(){
+    func syncConfigurationFromStorage() {
         do{
-            if let config = try configRepo.get(){
+            if let config = try configRepo.get() {
                 
                 //Sync Sample Rate
                 let sampleRate = config.networkSampleRateSDK ?? configRepo.defaultConfig.networkSampleRateSDK
-                
                 if CommandLine.arguments.contains(Constants.FULL_SAMPLE_RATE_ARGUMENT) {
                     BlueTriangle.updateNetworkSampleRate(1.0)
-                }
-                else if let rate = sampleRate{
+                } else if let rate = sampleRate {
                     if rate == 0 {
                         BlueTriangle.updateNetworkSampleRate(0.0)
-                    }else{
+                    } else {
                         BlueTriangle.updateNetworkSampleRate(Double(rate) / 100.0)
+                    }
+                }
+                
+                //Sync Grouped View Sample Rate
+                let groupedViewRate = config.groupedViewSampleRate ?? configRepo.defaultConfig.groupedViewSampleRate
+                if let rate = groupedViewRate {
+                    if rate == 0 {
+                        BlueTriangle.updateGroupedViewSampleRate(0.0)
+                    } else {
+                        BlueTriangle.updateGroupedViewSampleRate(Double(rate) / 100.0)
                     }
                 }
                 
                // Sync Ignore Screens
                 let ignoreScreens = config.ignoreScreens ?? configRepo.defaultConfig.ignoreScreens
-                
-                if let ignoreVcs = ignoreScreens{
-                                       
+                if let ignoreVcs = ignoreScreens {
                     var unianOfIgnoreScreens = Set(ignoreVcs)
-                    
-                    if let defaultScreens = configRepo.defaultConfig.ignoreScreens{
+                    if let defaultScreens = configRepo.defaultConfig.ignoreScreens {
                         unianOfIgnoreScreens = unianOfIgnoreScreens.union(Set(defaultScreens))
                     }
-                   
                     BlueTriangle.updateIgnoreVcs(unianOfIgnoreScreens)
                 }
                 
@@ -76,11 +80,11 @@ class BTTStoredConfigSyncer {
                 }
                 
                 // Sync Grouping
-                if let groupingEnabled = config.groupingEnabled ?? configRepo.defaultConfig.groupingEnabled, let groupingIdleTime = config.groupingIdleTime ?? configRepo.defaultConfig.groupingIdleTime {
-                    BlueTriangle.updateGrouping(groupingEnabled, idleTime: groupingIdleTime)
+                if let enableGrouping = config.enableGrouping ?? configRepo.defaultConfig.enableGrouping, let groupingIdleTime = config.groupingIdleTime ?? configRepo.defaultConfig.groupingIdleTime {
+                    BlueTriangle.updateGrouping(enableGrouping, idleTime: groupingIdleTime)
                 }
             }
-        }catch{
+        } catch {
             logger.error("BlueTriangle:SessionManager: Failed to retrieve remote configuration from the repository - \(error)")
         }
     }

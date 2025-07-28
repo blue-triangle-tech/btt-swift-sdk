@@ -18,8 +18,6 @@ final class BTTimerGroup {
     private var groupName: String?
     private let lock = NSLock()
     private let onGroupCompleted: (BTTimerGroup) -> Void
-    private(set) var capturedRequestCollectorConfiguration: CapturedGroupRequestCollector.Configuration = .live
-    private(set) var collector: CapturedGroupRequestCollecting?
     
     var isClosed: Bool {
         lock.sync { isGroupClosed }
@@ -33,7 +31,6 @@ final class BTTimerGroup {
         self.logger = logger
         self.hasForcedGroup = (groupName != nil) ? true : false
         self.onGroupCompleted = onGroupCompleted
-        self.collector = BlueTriangle.makeCapturedGroupRequestCollector()
         self.groupTimer = BlueTriangle.startTimer(page: Page(pageName: groupName ?? "BTTGroupPage"), isGroupedTimer: true)
     }
 
@@ -183,7 +180,7 @@ final class BTTimerGroup {
         let pageName =  self.extractViewName(from: timer.page.pageName)
         let loadStartTime = timer.nativeAppProperties.loadStartTime > 0 ? timer.nativeAppProperties.loadStartTime : timer.startTime.milliseconds
         let loadEndTime = timer.nativeAppProperties.loadEndTime > 0 ? timer.nativeAppProperties.loadEndTime : loadStartTime + Constants.minPgTm
-        self.captureGroupRequest(startTime: loadStartTime,
+        BlueTriangle.captureGroupRequest(startTime: loadStartTime,
                                     endTime: loadEndTime,
                                     groupStartTime: groupTimer.startTime.milliseconds,
                                     response: CustomPageResponse(file: pageName, url: pageName, domain: group))
@@ -210,29 +207,11 @@ extension BTTimerGroup {
     }
     
     private func submitWcdRequests() {
-        self.startGroupTimerRequest(page: Page(pageName: self.groupTimer.page.pageName), startTime: self.groupTimer.startTime)
+        BlueTriangle.startGroupTimerRequest(page: Page(pageName: self.groupTimer.page.pageName), startTime: self.groupTimer.startTime)
         for timer in timers {
             self.submitSingleRequest(groupTimer:self.groupTimer , timer: timer, group: self.groupTimer.page.pageName)
         }
-        self.uploadCollectedRequests()
-    }
-    
-    private func startGroupTimerRequest(page : Page, startTime : TimeInterval) {
-        Task {
-            await collector?.start(page: page, startTime: startTime)
-        }
-    }
-    
-    private func captureGroupRequest(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) {
-        Task {
-            await collector?.collect(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
-        }
-    }
-    
-    private func uploadCollectedRequests() {
-        Task {
-            await collector?.uploadCollectedRequests()
-        }
+        BlueTriangle.uploadGroupedViewCollectedRequests()
     }
     
     private var timeInterval : TimeInterval{

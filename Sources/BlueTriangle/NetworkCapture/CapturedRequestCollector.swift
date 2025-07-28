@@ -14,7 +14,6 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
     private let uploader: Uploading
     private let uploadTaskPriority: TaskPriority
     private var requestCollection: RequestCollection?
-    private var groupRequestCollection: RequestCollection?
     private(set) var hasBeenConfigured: Bool = false
 
     init(
@@ -77,7 +76,7 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
     // Use `nonisolated` to enable capture by timerManager handler.
     nonisolated private func batchRequests() {
         Task {
-            await self.batchCapturedRequests()
+        await self.batchCapturedRequests()
         }
     }
 

@@ -27,7 +27,7 @@ enum Constants {
     static let errorEndpoint: URL = "https://d.btttag.com/err.rcv"
     static let timerEndpoint: URL = "https://d.btttag.com/analytics.rcv"
     static func configEndPoint(for siteId: String) -> URL? {
-        guard let url = URL(string: "https://\(siteId).btttag.com/config.php") else {
+        guard let url = URL(string: "https://d.btttag.com/config.php?siteID=\(siteId)&os=\(Constants.os)&osver=\(Device.osVersion)&app=\(Device.appVersion)&sdk=\(Device.sdkVersion)") else {
             return nil
         }
         return url

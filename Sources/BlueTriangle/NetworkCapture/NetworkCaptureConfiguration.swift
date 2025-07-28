@@ -20,5 +20,5 @@ struct NetworkCaptureConfiguration {
 }
 
 extension NetworkCaptureConfiguration {
-    static let standard: Self = .init(spanCount: 2, initialSpanDuration: 20, subsequentSpanDuration: 10)
+    static let standard: Self = .init(spanCount: 0, initialSpanDuration: 20, subsequentSpanDuration: 10)
 }

@@ -13,19 +13,21 @@ class BTTSavedRemoteConfig: BTTRemoteConfig {
     var dateSaved: Millisecond
 
     init(networkSampleRateSDK: Int?,
+         groupedViewSampleRate: Int?,
          enableRemoteConfigAck : Bool?,
          enableAllTracking : Bool?,
          enableScreenTracking: Bool?,
-         groupingEnabled : Bool?,
+         enableGrouping : Bool?,
          groupingIdleTime : Double?,
          ignoreScreens : [String]?,
          dateSaved: Millisecond) {
         self.dateSaved = dateSaved
         super.init(networkSampleRateSDK: networkSampleRateSDK,
-                   enableRemoteConfigAck: enableRemoteConfigAck, 
+                   groupedViewSampleRate: groupedViewSampleRate,
+                   enableRemoteConfigAck: enableRemoteConfigAck,
                    enableAllTracking: enableAllTracking,
                    enableScreenTracking: enableScreenTracking,
-                   groupingEnabled: groupingEnabled,
+                   enableGrouping: enableGrouping,
                    groupingIdleTime: groupingIdleTime,
                    ignoreScreens: ignoreScreens)
     }
