@@ -39,7 +39,9 @@ final class CaptureTimerManager: CaptureTimerManaging {
     }
 
     func start() {
-        handle(.start)
+        if configuration.spanCount > 0 {
+            handle(.start)
+        }
     }
 
     func cancel() {

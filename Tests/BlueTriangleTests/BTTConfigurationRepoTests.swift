@@ -24,11 +24,12 @@ final class BTTConfigurationRepoTests: XCTestCase {
     }
 
     func testSaveConfig() {
-        let config = BTTRemoteConfig(networkSampleRateSDK: 5, 
-                                     enableRemoteConfigAck: false, 
+        let config = BTTRemoteConfig(networkSampleRateSDK: 5,
+                                     groupedViewSampleRate: 5,
+                                     enableRemoteConfigAck: false,
                                      enableAllTracking: true,
                                      enableScreenTracking: true,
-                                     groupingEnabled: false,
+                                     enableGrouping: false,
                                      groupingIdleTime: 2,
                                      ignoreScreens: [])
         configurationRepo.save(config)
@@ -42,10 +43,11 @@ final class BTTConfigurationRepoTests: XCTestCase {
     func testGetConfigSuccess() {
         
         let savedConfig = BTTSavedRemoteConfig(networkSampleRateSDK: 5,
-                                               enableRemoteConfigAck: false, 
+                                               groupedViewSampleRate: 5,
+                                               enableRemoteConfigAck: false,
                                                enableAllTracking: true,
                                                enableScreenTracking: true,
-                                               groupingEnabled: false,
+                                               enableGrouping: false,
                                                groupingIdleTime: 2,
                                                ignoreScreens: [],
                                                dateSaved: Date().timeIntervalSince1970.milliseconds)
