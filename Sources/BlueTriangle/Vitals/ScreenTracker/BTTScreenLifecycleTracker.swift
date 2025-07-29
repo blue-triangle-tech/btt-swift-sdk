@@ -160,6 +160,7 @@ class TimerMapActivity {
     private var confidenceRate : Int32? = 100
     private var confidenceMsg : String? = ""
     private(set) var logger : Logging?
+    private let maxPGTMTime : Millisecond = 20_000
     
     init(pageName: String, viewType : ViewType, logger : Logging?) {
         self.pageName = pageName
@@ -196,21 +197,39 @@ class TimerMapActivity {
     
     private func evaluateConfidence() {
         switch (loadTime, willViewTime, viewTime) {
-        case (nil, nil, _):
-            confidenceRate = 0
-            confidenceMsg = "viewDidLoad and viewWillAppear super calls are missing"
+        case let (_, willView?, nil):
+            self.viewTime = willView
+            confidenceRate = 50
+            confidenceMsg = "viewDidAppear tracking information is missing."
             
-        case (_, _, nil):
-            confidenceRate = 0
-            confidenceMsg = "viewDidAppear super call is missing."
+        case let (load?, nil, view?):
+            let timeGap = view - load
+            if timeGap >= maxPGTMTime {
+                confidenceRate = 50
+                confidenceMsg = "viewDidLoad tracking correct information is missing."
+            }else {
+                confidenceRate = 100
+                confidenceMsg = ""
+            }
+            
+        case  let (load?, willView?, _):
+            let timeGap = (willView - load)
+            if timeGap >= maxPGTMTime {
+                self.loadTime = willView
+                confidenceRate = 50
+                confidenceMsg = "viewDidLoad tracking correct information are missing."
+            } else {
+                confidenceRate = 100
+                confidenceMsg = ""
+            }
             
         case (nil, _, _):
-            confidenceRate = 50
-            confidenceMsg = "viewDidLoad super call is missing."
-            
-        default:
             confidenceRate = 100
             confidenceMsg = ""
+            
+        default:
+            confidenceRate = 0
+            confidenceMsg = "Lifecycle tracking information are missing"
         }
     }
     
@@ -220,7 +239,7 @@ class TimerMapActivity {
            
             //When "pgtm" is zero then fallback mechanism triggered that calculate performence time as screen time automatically. So to avoiding "pgtm" zero value setting default value 15 milliseconds.
             // Default "pgtm" should be minimum 0.01 sec (15 milliseconds). Because timer is not reflecting on dot chat bellow to that interval.
-            let calculatedLoadTime = max((viewTime - loadTime), Constants.minPgTm)
+            let calculatedLoadTime = min(max((viewTime - loadTime), Constants.minPgTm), self.maxPGTMTime)
             
             timer.pageTimeBuilder = {
                 return calculatedLoadTime
