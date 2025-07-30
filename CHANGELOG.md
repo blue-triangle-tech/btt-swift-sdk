@@ -1,7 +1,7 @@
 # Blue Triangle 3.14.2, Latest
 ### New Features
  - Added the ability to remotely enable or disable screen tracking through the remote configuration system, allowing dynamic control over this feature in real-time for tracking both SwiftUI and UIKit views.
- - Include sdkVersion and appVersion in reporting.
+ - Improved sdkVersion and appVersion reporting.
  - Include confidenceRate and confidenceMsg to show the trust level in pgTM.
  - Update the remote configuration URL to include siteID, os, app, and osVersion parameters. This will enable to apply configuration for selective audiences.
 
