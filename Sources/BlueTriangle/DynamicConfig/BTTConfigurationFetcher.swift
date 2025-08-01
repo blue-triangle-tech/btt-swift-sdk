@@ -57,7 +57,7 @@ class BTTConfigurationFetcher : ConfigurationFetcher {
             return Fail(error: NetworkError.malformedRequest)
                 .eraseToAnyPublisher()
         }
-        
+
         let request = Request(url: url, accept: .json)
         return networking(request)
             .tryMap { httpResponse in

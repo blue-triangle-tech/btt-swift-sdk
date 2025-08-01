@@ -39,7 +39,11 @@ struct NativeAppProperties: Equatable {
     let cellular: Millisecond
     let ethernet: Millisecond
     let other: Millisecond
+    var confidenceRate: Int32?
+    var confidenceMsg: String?
     var err: String?
+    var sdkVersion: String = Device.sdkVersion
+    var appVersion: String = Device.appVersion
     var type : String = NativeAppType.Regular.description
     var netState: String = BlueTriangle.networkStateMonitor?.state.value?.description.lowercased() ?? ""
     var deviceModel : String = Device.model
@@ -99,7 +103,17 @@ extension NativeAppProperties: Codable{
             try con.encode(netStateSource, forKey: .netStateSource)
         }
         
+        if let confidenceRate = confidenceRate {
+            try con.encode(confidenceRate, forKey: .confidenceRate)
+        }
+        
+        if let confidenceMsg = confidenceMsg {
+            try con.encode(confidenceMsg, forKey: .confidenceMsg)
+        }
+        
         try con.encode(deviceModel, forKey: .deviceModel)
+        try con.encode(appVersion, forKey: .appVersion)
+        try con.encode(sdkVersion, forKey: .sdkVersion)
     }
     
     init(from decoder: Decoder) throws {
@@ -116,7 +130,12 @@ extension NativeAppProperties: Codable{
         self.netState = try container.decodeIfPresent(String.self, forKey: .netState) ?? ""
         self.type = try container.decodeIfPresent(String.self, forKey: .type) ?? NativeAppType.NST.description
         self.deviceModel = try container.decodeIfPresent(String.self, forKey: .deviceModel) ?? Device.model
+        self.appVersion = try container.decodeIfPresent(String.self, forKey: .appVersion) ?? Device.appVersion
+        self.sdkVersion = try container.decodeIfPresent(String.self, forKey: .sdkVersion) ?? Device.sdkVersion
         self.netStateSource = try container.decodeIfPresent(String.self, forKey: .netStateSource) ?? ""
+        self.confidenceRate = try container.decodeIfPresent(Int32.self, forKey: .confidenceRate) ?? 0
+        self.confidenceMsg = try container.decodeIfPresent(String.self, forKey: .confidenceMsg) ?? ""
+
     }
     
     enum CodingKeys: String, CodingKey {
@@ -135,6 +154,10 @@ extension NativeAppProperties: Codable{
         case err
         case deviceModel
         case netStateSource
+        case appVersion
+        case sdkVersion
+        case confidenceRate
+        case confidenceMsg
     }
 }
 
