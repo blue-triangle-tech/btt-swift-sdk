@@ -9,6 +9,7 @@ import Foundation
 
 final class BTTimerGroup {
     private var timers: [BTTimer] = []
+    private var groupActions: [String] = []
     private var idleTimer: Timer?
     private var groupTimer:BTTimer
     private let logger: Logging
@@ -47,6 +48,10 @@ final class BTTimerGroup {
     func setGroupName(_ groupName: String) {
         self.groupName = groupName
         self.updatePageName()
+    }
+    
+    func setGroupActions(_ action: String) {
+        self.groupActions.append(action)
     }
     
     func submit() {

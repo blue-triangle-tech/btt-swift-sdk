@@ -39,6 +39,7 @@ class BTTRemoteConfig: Codable, Equatable {
     static func == (lhs: BTTRemoteConfig, rhs: BTTRemoteConfig) -> Bool {
         return lhs.networkSampleRateSDK == rhs.networkSampleRateSDK &&
         lhs.enableRemoteConfigAck == rhs.enableRemoteConfigAck  &&
+        lhs.groupedViewSampleRate == rhs.groupedViewSampleRate  &&
         lhs.ignoreScreens == rhs.ignoreScreens &&
         lhs.enableAllTracking == rhs.enableAllTracking &&
         lhs.enableScreenTracking == rhs.enableScreenTracking &&

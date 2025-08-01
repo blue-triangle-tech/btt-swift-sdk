@@ -186,6 +186,7 @@ extension SessionManager {
     private func updateConfigurationOnChange(){
         self.syncStoredConfigToSessionAndApply()
         BlueTriangle.updateCaptureRequests()
+        BlueTriangle.updateGroupedViewCaptureRequest()
         configSyncer.updateAndApplySDKState()
     }
 

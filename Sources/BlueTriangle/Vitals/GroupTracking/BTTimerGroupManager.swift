@@ -46,13 +46,19 @@ final class BTTimerGroupManager {
     }
     
     func setGroupName(_ groupName: String) {
-        if let openGroup = activeGroups.last(where: { !$0.isClosed }) {
+        if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted }) {
             openGroup.setGroupName(groupName)
         }
     }
     
     func setLastAction(_ time: Date) {
         self.lastActionTime = time.timeIntervalSince1970.milliseconds
+    }
+    
+    func setGroupAction(_ action: String) {
+        if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted }) {
+            openGroup.setGroupActions(action)
+        }
     }
     
     private func startNewGroup(_ groupName : String? = nil) {
