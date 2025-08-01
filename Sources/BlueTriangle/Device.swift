@@ -54,6 +54,16 @@ enum Device {
     static var bvzn: String {
         "\(Constants.browser)-\(Bundle.main.releaseVersionNumber ?? "0.0")-\(os) \(osVersion)"
     }
+    
+    /// Native app version
+    static var appVersion: String {
+        "\(Bundle.main.releaseVersionNumber ?? "0.0")"
+    }
+    
+    /// Native app version
+    static var sdkVersion: String {
+        Version.number
+    }
 
     /// The User-Agent token.
     static var userAgentToken: String {

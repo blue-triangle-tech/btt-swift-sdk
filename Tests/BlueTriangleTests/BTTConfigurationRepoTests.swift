@@ -27,6 +27,7 @@ final class BTTConfigurationRepoTests: XCTestCase {
         let config = BTTRemoteConfig(networkSampleRateSDK: 5, 
                                      enableRemoteConfigAck: false, 
                                      enableAllTracking: true,
+                                     enableScreenTracking: true,
                                      ignoreScreens: [])
         configurationRepo.save(config)
         
@@ -40,7 +41,8 @@ final class BTTConfigurationRepoTests: XCTestCase {
         
         let savedConfig = BTTSavedRemoteConfig(networkSampleRateSDK: 5,
                                                enableRemoteConfigAck: false, 
-                                               enableAllTracking: true, 
+                                               enableAllTracking: true,
+                                               enableScreenTracking: true, 
                                                ignoreScreens: [],
                                                dateSaved: Date().timeIntervalSince1970.milliseconds)
         configurationRepo.store[key] = savedConfig
