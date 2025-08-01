@@ -1082,6 +1082,7 @@ extension BlueTriangle{
     
     internal static func updateScreenTracking(_ enabled : Bool) {
         configuration.enableScreenTracking = enabled
+        screenTracker?.setLifecycleTracker(enabled)
 #if os(iOS)
         if enabled {
             UIViewController.setUp()
