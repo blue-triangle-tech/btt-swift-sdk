@@ -71,7 +71,7 @@ final class BTTimerGroupManager {
     }
 
     private func submitGroupForcefully() {
-        if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted })/*, openGroup.isClosed*/ {
+        if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted }){
             print("Forecfully submitted")
             openGroup.forcefullyEndAllTimers()
         }

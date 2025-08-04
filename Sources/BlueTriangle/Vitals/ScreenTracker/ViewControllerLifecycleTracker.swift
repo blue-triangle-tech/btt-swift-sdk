@@ -22,15 +22,98 @@ fileprivate func swizzleMethod(_ `class`: AnyClass, _ original: Selector, _ swiz
 }
 
 extension UIApplication {
+    
+    func getReadableName(from view: UIView) -> String? {
+        
+        let className = String(describing: type(of: view))
+        // UISegmentedControl
+        if let segmented = view as? UISegmentedControl {
+             let selectedIndex = segmented.selectedSegmentIndex
+             if selectedIndex != UISegmentedControl.noSegment {
+                 return "\(className) \(selectedIndex)"
+             }
+         }
+        
+        // UIButton title
+        if let button = view as? UIButton,
+           let title = button.title(for: .normal),
+           !title.isEmpty {
+            return title
+        }
+
+        // UILabel text
+        if let label = view as? UILabel,
+           let text = label.text,
+           !text.isEmpty {
+            return text
+        }
+
+        // Tab bar item label
+        if let tabBarButton = view.superview,
+           String(describing: type(of: tabBarButton)).contains("UITabBarButton"),
+           let label = tabBarButton.subviews.compactMap({ $0 as? UILabel }).first,
+           let text = label.text,
+           !text.isEmpty {
+            return text
+        }
+
+        // UIBarButtonItem (e.g. back button)
+        if String(describing: type(of: view)).contains("UIButtonBarButton"),
+           let label = view.subviews.compactMap({ $0 as? UILabel }).first,
+           let text = label.text,
+           !text.isEmpty {
+            return text
+        }
+
+        // Accessibility label
+        if view is UIControl {
+            if let accLabel = view.accessibilityLabel, !accLabel.isEmpty {
+                return accLabel
+            }
+        }
+
+        // Only recurse into subviews
+        if view is UIControl || String(describing: type(of: view)).contains("Button") {
+            for subview in view.subviews {
+                if let name = getReadableName(from: subview) {
+                    return name
+                }
+            }
+        }
+
+        // Otherwise, return nil
+        return nil
+    }
+    
+    private func getActionableAncestor(from view: UIView?) -> UIView? {
+        var current = view
+        while let v = current {
+            if v is UIControl ||
+                v is UITableViewCell ||
+                v is UICollectionViewCell ||
+                String(describing: type(of: v)).contains("Button") ||
+                String(describing: type(of: v)).contains("Cell") {
+                return v
+            }
+            current = v.superview
+        }
+        return nil
+    }
+    
     @objc func swizzled_sendEvent(_ event: UIEvent) {
         if let touches = event.allTouches {
             for touch in touches {
-                switch touch.phase {
-                case .began:
-                    BlueTriangle.groupTimer.setLastAction(Date())
-                default:
-                    break
+                guard touch.phase == .began else { continue }
+                let location = touch.location(in: touch.window)
+                if let tappedView = touch.window?.hitTest(location, with: event), let actionableView = self.getActionableAncestor(from: tappedView) {
+                    if let name = getReadableName(from: actionableView), touch.tapCount > 0 {
+                        let isDoubleTap = touch.tapCount == 2
+                        let actionString = "User \(isDoubleTap ? "Double" : "") Tapped: \(name)"
+                        print(actionString)
+                        BlueTriangle.groupTimer.setGroupAction(actionString)
+                    }
                 }
+                BlueTriangle.groupTimer.setLastAction(Date())
             }
         }
         swizzled_sendEvent(event)

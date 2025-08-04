@@ -212,6 +212,7 @@ extension BTTimerGroup {
     }
     
     private func submitWcdRequests() {
+        self.logger.info("Added Group Actions : \(self.groupActions)")
         BlueTriangle.startGroupTimerRequest(page: Page(pageName: self.groupTimer.page.pageName), startTime: self.groupTimer.startTime)
         for timer in timers {
             self.submitSingleRequest(groupTimer:self.groupTimer , timer: timer, group: self.groupTimer.page.pageName)
