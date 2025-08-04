@@ -26,14 +26,14 @@ class BTTRemoteConfig: Codable, Equatable {
          enableGrouping : Bool?,
          groupingIdleTime : Double?,
          ignoreScreens : [String]?) {
-        self.networkSampleRateSDK = networkSampleRateSDK
-        self.groupedViewSampleRate = groupedViewSampleRate
-        self.enableRemoteConfigAck = enableRemoteConfigAck
-        self.ignoreScreens = ignoreScreens
-        self.enableAllTracking = enableAllTracking
-        self.enableScreenTracking = enableScreenTracking
-        self.enableGrouping = enableGrouping
-        self.groupingIdleTime = groupingIdleTime
+             self.networkSampleRateSDK = networkSampleRateSDK
+             self.groupedViewSampleRate = groupedViewSampleRate
+             self.enableRemoteConfigAck = enableRemoteConfigAck
+             self.ignoreScreens = ignoreScreens
+             self.enableAllTracking = enableAllTracking
+             self.enableScreenTracking = enableScreenTracking
+             self.enableGrouping = enableGrouping
+             self.groupingIdleTime = groupingIdleTime
     }
     
     static func == (lhs: BTTRemoteConfig, rhs: BTTRemoteConfig) -> Bool {

@@ -155,9 +155,13 @@ class TimerMapActivity {
     private var pageName : String
     private let viewType : ViewType
     private var loadTime : Millisecond?
+    private var willViewTime : Millisecond?
     private var viewTime : Millisecond?
     private var disapearTime : Millisecond?
+    private var confidenceRate : Int32? = 100
+    private var confidenceMsg : String? = ""
     private(set) var logger : Logging?
+    private let maxPGTMTime : Millisecond = 20_000
     
     init(pageName: String, viewType : ViewType, logger : Logging?, isAutoTrack: Bool = false) {
         self.pageName = pageName
@@ -178,42 +182,86 @@ class TimerMapActivity {
         self.pageName = pageName
     }
     
-    func getPageName()-> String {
-        return pageName
-    }
-    
-    func manageTimeFor(type : TimerMapType) {
+    func manageTimeFor(type : TimerMapType){
         
-        if type == .load {
-            loadTime = timeInMilliseconds
-            self.submitTimerOfType(.load)
+        if type == .load{
+            self.setLoadTime(timeInMillisecond)
         }
         else if type == .finish {
-            if loadTime == nil {
-                loadTime = timeInMilliseconds
-                self.submitTimerOfType(.load)
-            }
+            willViewTime = timeInMillisecond
         }
         else if type == .view {
-            viewTime = timeInMilliseconds
-            self.submitTimerOfType(.view)
+            self.setViewTime(timeInMillisecond)
         }
-        else if type == .disapear {
-            if loadTime == nil {
-                loadTime = self.timer.startTime.milliseconds
-                let loginfo = "Load life cycle methods are not called for page :\(self.pageName)"
-                self.logger?.info(loginfo)
-                self.submitTimerOfType(.load)
+        else if type == .disapear{
+            self.evaluateConfidence()
+            
+           /* if loadTime == nil{
+                loadTime = willViewTime ?? self.timer.startTime.milliseconds
             }
-            if viewTime == nil {
+            if viewTime == nil{
                 viewTime = (loadTime ?? self.timer.startTime.milliseconds) + Constants.minPgTm
-                let loginfo = "View lifecycle methods are not called for page :\(self.pageName)"
-                self.logger?.info(loginfo)
-                self.submitTimerOfType(.view)
-            }
-            disapearTime = timeInMilliseconds
-            self.submitTimerOfType(.disapear)
+            }*/
+            
+            self.setDisappearTime(timeInMillisecond)
         }
+    }
+    
+    private func setLoadTime(_ time : Millisecond){
+        self.loadTime = time
+        self.submitTimerOfType(.load)
+    }
+    
+    private func setViewTime(_ time : Millisecond){
+        self.viewTime = time
+        self.submitTimerOfType(.view)
+    }
+    
+    private func setDisappearTime(_ time : Millisecond){
+        self.disapearTime = time
+        self.submitTimerOfType(.disapear)
+    }
+    
+    private func evaluateConfidence() {
+        switch (loadTime, willViewTime, viewTime) {
+        case let (_, willView?, nil):
+            self.setViewTime(willView)
+            confidenceRate = 50
+            confidenceMsg = "viewDidAppear tracking information is missing."
+            
+        case let (load?, nil, view?):
+            let timeGap = view - load
+            if timeGap >= maxPGTMTime {
+                confidenceRate = 50
+                confidenceMsg = "viewDidLoad tracking correct information is missing."
+            }else {
+                confidenceRate = 100
+                confidenceMsg = ""
+            }
+            
+        case  let (load?, willView?, _):
+            let timeGap = (willView - load)
+            if timeGap >= maxPGTMTime {
+                self.setLoadTime(willView)
+                confidenceRate = 50
+                confidenceMsg = "viewDidLoad tracking correct information are missing."
+            } else {
+                confidenceRate = 100
+                confidenceMsg = ""
+            }
+            
+        case (nil, _, _):
+            confidenceRate = 100
+            confidenceMsg = ""
+            
+        default:
+            confidenceRate = 0
+            confidenceMsg = "Lifecycle tracking information are missing"
+        }
+    }
+
+    func getPageName()-> String {
+        return pageName
     }
     
     private func submitTimerOfType(_ type : TimerMapType) {
@@ -281,5 +329,9 @@ class TimerMapActivity {
     
     private var isGroupedANDAutoTracked : Bool {
         BlueTriangle.configuration.enableGrouping && self.isAutoTrack
+    }
+    
+    private var timeInMillisecond : Millisecond{
+        Date().timeIntervalSince1970.milliseconds
     }
 }

@@ -73,7 +73,7 @@ class BTTStoredConfigSyncer {
                     }
                     BlueTriangle.updateIgnoreVcs(unianOfIgnoreScreens)
                 }
-                
+
                 // Sync Enable Screen tracking
                 if let enableScreenTracking = config.enableScreenTracking ?? configRepo.defaultConfig.enableScreenTracking {
                     BlueTriangle.updateScreenTracking(enableScreenTracking)

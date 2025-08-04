@@ -41,6 +41,8 @@ struct NativeAppProperties: Equatable {
     let cellular: Millisecond
     let ethernet: Millisecond
     let other: Millisecond
+    var confidenceRate: Int32?
+    var confidenceMsg: String?
     var err: String?
     var sdkVersion: String = Device.sdkVersion
     var appVersion: String = Device.appVersion
@@ -116,6 +118,14 @@ extension NativeAppProperties: Codable{
             try con.encode(childViews, forKey: .childViews)
         }
         
+        if let confidenceRate = confidenceRate {
+            try con.encode(confidenceRate, forKey: .confidenceRate)
+        }
+        
+        if let confidenceMsg = confidenceMsg {
+            try con.encode(confidenceMsg, forKey: .confidenceMsg)
+        }
+        
         try con.encode(deviceModel, forKey: .deviceModel)
         try con.encode(appVersion, forKey: .appVersion)
         try con.encode(sdkVersion, forKey: .sdkVersion)
@@ -141,6 +151,8 @@ extension NativeAppProperties: Codable{
         self.sdkVersion = try container.decodeIfPresent(String.self, forKey: .sdkVersion) ?? Device.sdkVersion
         self.netStateSource = try container.decodeIfPresent(String.self, forKey: .netStateSource) ?? ""
         self.childViews = try container.decodeIfPresent([String].self, forKey: .childViews) ?? []
+        self.confidenceRate = try container.decodeIfPresent(Int32.self, forKey: .confidenceRate) ?? 0
+        self.confidenceMsg = try container.decodeIfPresent(String.self, forKey: .confidenceMsg) ?? ""
     }
     
     enum CodingKeys: String, CodingKey {
@@ -164,6 +176,8 @@ extension NativeAppProperties: Codable{
         case childViews
         case appVersion
         case sdkVersion
+        case confidenceRate
+        case confidenceMsg
     }
 }
 

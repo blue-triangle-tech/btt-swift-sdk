@@ -29,8 +29,11 @@ final class BTTConfigurationRepoTests: XCTestCase {
                                      enableRemoteConfigAck: false,
                                      enableAllTracking: true,
                                      enableScreenTracking: true,
+<<<<<<< HEAD
                                      enableGrouping: false,
                                      groupingIdleTime: 2,
+=======
+>>>>>>> master
                                      ignoreScreens: [])
         configurationRepo.save(config)
         

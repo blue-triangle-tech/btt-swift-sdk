@@ -37,6 +37,7 @@ final class BTTConfigurationFetcherTests: XCTestCase {
                                              enableGrouping: false,
                                              groupingIdleTime: 2,
                                              ignoreScreens: [])
+            
             let mockData = try! JSONEncoder().encode(mockConfig)
             
             let response = HTTPURLResponse(url: request.url,

@@ -205,10 +205,11 @@ extension SessionManager {
                 sessionStore.saveSession(session)
             } else {
                 BlueTriangle.updateGroupedViewSampleRate(session.groupedViewSampleRate)
-                BlueTriangle.updateScreenTracking(session.enableScreenTracking)
                 BlueTriangle.updateGrouping(session.enableGrouping, idleTime: session.groupingIdleTime)
+                BlueTriangle.updateScreenTracking(session.enableScreenTracking)
                 BlueTriangle.updateNetworkSampleRate(session.networkSampleRate)
                 BlueTriangle.updateIgnoreVcs(session.ignoreViewControllers)
+                sessionStore.saveSession(session)
             }
         }
     }

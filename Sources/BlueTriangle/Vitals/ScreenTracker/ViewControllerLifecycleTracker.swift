@@ -11,14 +11,17 @@
 import Foundation
 import UIKit
 
-fileprivate func swizzleMethod(_ `class`: AnyClass, _ original: Selector, _ swizzled: Selector) {
-    
-    if let original = class_getInstanceMethod(`class`, original), let swizzled = class_getInstanceMethod(`class`, swizzled) {
-        method_exchangeImplementations(original, swizzled)
+fileprivate func swizzleMethod(_ cls: AnyClass, original: Selector, swizzled: Selector) -> (Method, Method)? {
+    guard
+        let originalMethod = class_getInstanceMethod(cls, original),
+        let swizzledMethod = class_getInstanceMethod(cls, swizzled)
+    else {
+        BlueTriangle.screenTracker?.logger?.error("Swizzling failed: \(cls) \(original) ↔︎ \(swizzled)")
+        return nil
     }
-    else{
-        BlueTriangle.screenTracker?.logger?.error("View Screen Tracker: failed to swizzle: \(`class`.self), '\(original)', '\(swizzled)'")
-    }
+
+    method_exchangeImplementations(originalMethod, swizzledMethod)
+    return (originalMethod, swizzledMethod)
 }
 
 extension UIApplication {
@@ -123,42 +126,47 @@ extension UIApplication {
 extension UIViewController{
     
     private static var isSwizzled = false
-   
-    static func setUp(){
+    private static var swizzledPairs: [(Method, Method)] = []
     
-        let  _ : () = {
-            
-            if !isSwizzled {
-                swizzleMethod(UIViewController.self, #selector(UIViewController.viewDidLoad), #selector(UIViewController.viewDidLoad_Tracker))
-                swizzleMethod(UIViewController.self, #selector(UIViewController.viewWillAppear(_:)), #selector(UIViewController.viewWillAppear_Tracker(_:)))
-                swizzleMethod(UIViewController.self, #selector(UIViewController.viewDidAppear(_:)), #selector(UIViewController.viewDidAppear_Tracker(_:)))
-                swizzleMethod(UIViewController.self, #selector(UIViewController.viewDidDisappear(_:)), #selector(UIViewController.viewDidDisappear_Tracker(_:)))
-                
-                swizzleMethod(UIApplication.self, #selector(UIApplication.sendEvent(_:)), #selector(UIApplication.swizzled_sendEvent(_:)))
-                
-                BlueTriangle.screenTracker?.logger?.debug("View Screen Tracker: setup completed.")
-                isSwizzled = true
-            }
-        }()
+    static func setUp() {
+        guard !isSwizzled else { return }
+        
+        if let didLoadPair = swizzleMethod(UIViewController.self, original: #selector(viewDidLoad), swizzled: #selector(viewDidLoad_Tracker)) {
+            swizzledPairs.append(didLoadPair)
+        }
+        if let willAppearPair = swizzleMethod(UIViewController.self, original: #selector(viewWillAppear(_:)), swizzled: #selector(viewWillAppear_Tracker(_:))) {
+            swizzledPairs.append(willAppearPair)
+        }
+        if let didAppearPair = swizzleMethod(UIViewController.self, original: #selector(viewDidAppear(_:)), swizzled: #selector(viewDidAppear_Tracker(_:))) {
+            swizzledPairs.append(didAppearPair)
+        }
+        if let didDisappearPair = swizzleMethod(UIViewController.self, original: #selector(viewDidDisappear(_:)), swizzled: #selector(viewDidDisappear_Tracker(_:))) {
+            swizzledPairs.append(didDisappearPair)
+        }
+        
+        if let sendEventPair = swizzleMethod(UIApplication.self, original: #selector(UIApplication.sendEvent(_:)), swizzled: #selector(UIApplication.swizzled_sendEvent(_:))) {
+            swizzledPairs.append(sendEventPair)
+        }
+        
+        isSwizzled = true
+        BlueTriangle.screenTracker?.logger?.debug("View Screen Tracker: setup completed.")
     }
     
     static func removeSetUp() {
-        let  _ : () = {
-            if isSwizzled {
-                swizzleMethod(UIViewController.self, #selector(UIViewController.viewDidLoad), #selector(UIViewController.viewDidLoad_Tracker))
-                swizzleMethod(UIViewController.self, #selector(UIViewController.viewWillAppear(_:)), #selector(UIViewController.viewWillAppear_Tracker(_:)))
-                swizzleMethod(UIViewController.self, #selector(UIViewController.viewDidAppear(_:)), #selector(UIViewController.viewDidAppear_Tracker(_:)))
-                swizzleMethod(UIViewController.self, #selector(UIViewController.viewDidDisappear(_:)), #selector(UIViewController.viewDidDisappear_Tracker(_:)))
-                swizzleMethod(UIApplication.self, #selector(UIApplication.sendEvent(_:)), #selector(UIApplication.swizzled_sendEvent(_:)))
-                BlueTriangle.screenTracker?.logger?.debug("View Screen Tracker: setup removed.")
-                isSwizzled = false
-            }
-        }()
+        guard isSwizzled else { return }
+        
+        for (original, swizzled) in swizzledPairs {
+            method_exchangeImplementations(swizzled, original)
+        }
+        
+        swizzledPairs.removeAll()
+        isSwizzled = false
+        BlueTriangle.screenTracker?.logger?.debug("View Screen Tracker: setup removed.")
     }
     
     /// Checks if the given object belongs to an Apple framework class.
-        /// - Parameter object: The object to be checked.
-        /// - Returns: `true` if the object's class is defined within an Apple framework; otherwise, `false`.
+    /// - Parameter object: The object to be checked.
+    /// - Returns: `true` if the object's class is defined within an Apple framework; otherwise, `false`.
     private func isAppleClass(_ object: AnyObject) -> Bool {
         let objectBundle = Bundle(for: type(of: object))
         return objectBundle.bundleIdentifier?.starts(with: "com.apple") ?? false
