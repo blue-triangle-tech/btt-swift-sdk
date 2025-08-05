@@ -10,6 +10,7 @@
 #if os(iOS)
 import Foundation
 import UIKit
+import SwiftUI
 
 fileprivate func swizzleMethod(_ cls: AnyClass, original: Selector, swizzled: Selector) -> (Method, Method)? {
     guard
@@ -27,66 +28,83 @@ fileprivate func swizzleMethod(_ cls: AnyClass, original: Selector, swizzled: Se
 extension UIApplication {
     
     func getReadableName(from view: UIView) -> String? {
-        
         let className = String(describing: type(of: view))
-        
         var name: String?
-        
+
         // UISegmentedControl
         if name == nil, let segmented = view as? UISegmentedControl {
             let selectedIndex = segmented.selectedSegmentIndex
             if selectedIndex != UISegmentedControl.noSegment {
-                name = "\(className) \(selectedIndex)"
+                name = "\(className): index \(selectedIndex)"
             }
         }
-        
-        //  Table Cell detection
+
+        // Table Cell
         if name == nil, let cell = view.superview(of: UITableViewCell.self),
            let tableView = cell.superview(of: UITableView.self),
            let indexPath = tableView.indexPath(for: cell) {
             name = "TableCell [\(indexPath.section), \(indexPath.row)]"
         }
-        
-        //  Collection Cell detection
+
+        // Collection Cell
         if name == nil, let cell = view.superview(of: UICollectionViewCell.self),
            let collectionView = cell.superview(of: UICollectionView.self),
            let indexPath = collectionView.indexPath(for: cell) {
             name = "CollectionCell [\(indexPath.section), \(indexPath.item)]"
         }
-        
-        // Tab bar item
+
+        // Tab Bar Item
         if name == nil, let tabBarButton = view.superview(ofClassNamed: "UITabBarButton"),
            let tabBar = tabBarButton.superview,
            let index = tabBar.subviews.firstIndex(of: tabBarButton) {
             name = "TabBarItem: index \(index)"
         }
-        
-        // Navigation bar button
+
+        // Navigation Bar Item
         if name == nil, let navView = view.superview(ofClassNamed: "_UINavigationBarContentView"),
            let index = navView.subviews.firstIndex(of: view) {
             name = "NavBarItem: index \(index)"
         }
-        
-        if name == nil, let button = view as? UIButton, let parent = button.superview, let index = parent.subviews.firstIndex(of: button) {
+
+        // UIButton index
+        if name == nil, let button = view as? UIButton,
+           let parent = button.superview,
+           let index = parent.subviews.firstIndex(of: button) {
             name = "UIButton in \(type(of: parent)): index \(index)"
         }
-        
+
+        // UITextField (including SwiftUI.TextField)
+        if name == nil, view is UITextField {
+            name = "UITextField"
+        }
+
+        // Gesture-based views (e.g., SwiftUI TapGesture)
+        if name == nil, className.contains("Gesture") || className.contains("Hosting") {
+            name = "\(className)"
+        }
+
         return name
     }
     
     private func getActionableAncestor(from view: UIView?) -> UIView? {
         var current = view
-        while let v = current {
-            if v is UIControl ||
-                v is UITableViewCell ||
-                v is UICollectionViewCell ||
-                String(describing: type(of: v)).contains("Button") ||
-                String(describing: type(of: v)).contains("Cell") {
-                return v
-            }
-            current = v.superview
-        }
-        return nil
+           while let v = current {
+               let className = String(describing: type(of: v))
+
+               if v is UIControl ||
+                   v is UITableViewCell ||
+                   v is UICollectionViewCell ||
+                   v is UITextField ||
+                   className.contains("Button") ||
+                   className.contains("Cell") ||
+                   className.contains("Gesture") ||
+                   className.contains("Hosting") {
+                   return v
+               }
+
+               current = v.superview
+           }
+           return nil
     }
     
     @objc func swizzled_sendEvent(_ event: UIEvent) {
@@ -98,7 +116,7 @@ extension UIApplication {
                     if let name = getReadableName(from: actionableView), touch.tapCount > 0 {
                         let isDoubleTap = touch.tapCount == 2
                         let actionString = "User \(isDoubleTap ? "Double" : "") Tapped: \(name)"
-                        print(actionString)
+                        print("User Papped Action found : \(actionString)")
                         BlueTriangle.groupTimer.setGroupAction(actionString)
                     }
                 }
@@ -274,8 +292,6 @@ extension UIViewController{
     }
 }
 
-#endif
-
 extension UIView {
     func superview<T: UIView>(of type: T.Type) -> T? {
         return superview as? T ?? superview?.superview(of: type)
@@ -289,3 +305,4 @@ extension UIView {
         }
     }
 }
+#endif
