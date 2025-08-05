@@ -29,63 +29,49 @@ extension UIApplication {
     func getReadableName(from view: UIView) -> String? {
         
         let className = String(describing: type(of: view))
-        // UISegmentedControl
-        if let segmented = view as? UISegmentedControl {
-             let selectedIndex = segmented.selectedSegmentIndex
-             if selectedIndex != UISegmentedControl.noSegment {
-                 return "\(className) \(selectedIndex)"
-             }
-         }
         
-        // UIButton title
-        if let button = view as? UIButton,
-           let title = button.title(for: .normal),
-           !title.isEmpty {
-            return title
-        }
-
-        // UILabel text
-        if let label = view as? UILabel,
-           let text = label.text,
-           !text.isEmpty {
-            return text
-        }
-
-        // Tab bar item label
-        if let tabBarButton = view.superview,
-           String(describing: type(of: tabBarButton)).contains("UITabBarButton"),
-           let label = tabBarButton.subviews.compactMap({ $0 as? UILabel }).first,
-           let text = label.text,
-           !text.isEmpty {
-            return text
-        }
-
-        // UIBarButtonItem (e.g. back button)
-        if String(describing: type(of: view)).contains("UIButtonBarButton"),
-           let label = view.subviews.compactMap({ $0 as? UILabel }).first,
-           let text = label.text,
-           !text.isEmpty {
-            return text
-        }
-
-        // Accessibility label
-        if view is UIControl {
-            if let accLabel = view.accessibilityLabel, !accLabel.isEmpty {
-                return accLabel
+        var name: String?
+        
+        // UISegmentedControl
+        if name == nil, let segmented = view as? UISegmentedControl {
+            let selectedIndex = segmented.selectedSegmentIndex
+            if selectedIndex != UISegmentedControl.noSegment {
+                name = "\(className) \(selectedIndex)"
             }
         }
-
-        // Only recurse into subviews
-        if view is UIControl || String(describing: type(of: view)).contains("Button") {
-            for subview in view.subviews {
-                if let name = getReadableName(from: subview) {
-                    return name
-                }
-            }
+        
+        //  Table Cell detection
+        if name == nil, let cell = view.superview(of: UITableViewCell.self),
+           let tableView = cell.superview(of: UITableView.self),
+           let indexPath = tableView.indexPath(for: cell) {
+            name = "TableCell [\(indexPath.section), \(indexPath.row)]"
         }
-
-        // Otherwise, return nil
-        return nil
+        
+        //  Collection Cell detection
+        if name == nil, let cell = view.superview(of: UICollectionViewCell.self),
+           let collectionView = cell.superview(of: UICollectionView.self),
+           let indexPath = collectionView.indexPath(for: cell) {
+            name = "CollectionCell [\(indexPath.section), \(indexPath.item)]"
+        }
+        
+        // Tab bar item
+        if name == nil, let tabBarButton = view.superview(ofClassNamed: "UITabBarButton"),
+           let tabBar = tabBarButton.superview,
+           let index = tabBar.subviews.firstIndex(of: tabBarButton) {
+            name = "TabBarItem: index \(index)"
+        }
+        
+        // Navigation bar button
+        if name == nil, let navView = view.superview(ofClassNamed: "_UINavigationBarContentView"),
+           let index = navView.subviews.firstIndex(of: view) {
+            name = "NavBarItem: index \(index)"
+        }
+        
+        if name == nil, let button = view as? UIButton, let parent = button.superview, let index = parent.subviews.firstIndex(of: button) {
+            name = "UIButton in \(type(of: parent)): index \(index)"
+        }
+        
+        return name
     }
     
     private func getActionableAncestor(from view: UIView?) -> UIView? {
@@ -289,3 +275,17 @@ extension UIViewController{
 }
 
 #endif
+
+extension UIView {
+    func superview<T: UIView>(of type: T.Type) -> T? {
+        return superview as? T ?? superview?.superview(of: type)
+    }
+
+    func superview(ofClassNamed className: String) -> UIView? {
+        if NSStringFromClass(type(of: self)).contains(className) {
+            return self
+        } else {
+            return self.superview?.superview(ofClassNamed: className)
+        }
+    }
+}
