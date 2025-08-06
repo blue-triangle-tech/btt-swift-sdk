@@ -8,7 +8,7 @@
 import Foundation
 
 final class BTTimerGroup {
-    private var timers: [BTTimer] = []
+    private var timers: Set<BTTimer> = []
     private var groupActions: [String] = []
     private var idleTimer: Timer?
     private var groupTimer:BTTimer
@@ -38,7 +38,7 @@ final class BTTimerGroup {
     func add(_ timer: BTTimer) {
         lock.sync {
             guard !isGroupClosed else { return }
-            timers.append(timer)
+            timers.insert(timer)
             self.updatePageName()
             observe(timer)
             resetIdleTimer()
