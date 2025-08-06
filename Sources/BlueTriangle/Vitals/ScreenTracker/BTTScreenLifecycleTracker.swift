@@ -191,13 +191,14 @@ class TimerMapActivity {
             if loadTime == nil {
                 self.submitTimerOfType(.load)
             }
-            willViewTime = timeInMillisecond
+            self.setWillViewTime(timeInMillisecond)
         }
         else if type == .view {
             if loadTime == nil {
                 self.submitTimerOfType(.load)
             }
             self.setViewTime(timeInMillisecond)
+            BlueTriangle.groupTimer.refreshGroupName()
         }
         else if type == .disapear{
             self.evaluateConfidence()
@@ -208,16 +209,24 @@ class TimerMapActivity {
     private func setLoadTime(_ time : Millisecond){
         self.loadTime = time
         self.submitTimerOfType(.load)
+        BlueTriangle.groupTimer.refreshGroupName()
+    }
+    
+    private func setWillViewTime(_ time : Millisecond){
+        self.willViewTime = time
+        BlueTriangle.groupTimer.refreshGroupName()
     }
     
     private func setViewTime(_ time : Millisecond){
         self.viewTime = time
         self.submitTimerOfType(.view)
+        BlueTriangle.groupTimer.refreshGroupName()
     }
     
     private func setDisappearTime(_ time : Millisecond){
         self.disapearTime = time
         self.submitTimerOfType(.disapear)
+        BlueTriangle.groupTimer.refreshGroupName()
     }
     
     private func evaluateConfidence() {
@@ -274,6 +283,8 @@ class TimerMapActivity {
             } else {
                 if let viewTime = viewTime, let loadTime = loadTime, let disapearTime = disapearTime {
                     self.updateTrackingTimer(loadTime: loadTime, viewTime: viewTime, disapearTime: disapearTime)
+                    timer.end()
+                } else if type == .disapear {
                     timer.end()
                 }
             }

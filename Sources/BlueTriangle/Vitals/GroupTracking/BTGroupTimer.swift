@@ -50,6 +50,10 @@ final class BTTimerGroup {
         self.updatePageName()
     }
     
+    func refreshGroupName() {
+        self.updatePageName()
+    }
+    
     func setGroupActions(_ action: String) {
         self.groupActions.append(action)
     }

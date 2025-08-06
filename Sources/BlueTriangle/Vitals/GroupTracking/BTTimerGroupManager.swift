@@ -51,6 +51,12 @@ final class BTTimerGroupManager {
         }
     }
     
+    func refreshGroupName() {
+        if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted }) {
+            openGroup.refreshGroupName()
+        }
+    }
+    
     func setLastAction(_ time: Date) {
         self.lastActionTime = time.timeIntervalSince1970.milliseconds
     }
