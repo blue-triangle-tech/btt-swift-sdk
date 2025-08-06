@@ -25,7 +25,7 @@ class RemoteConfigAckReporter {
         queue.async {
             do {
                 if let session = BlueTriangle.session() {
-                    let pageName = "BTTConfigUpdate"
+                    let pageName = "BTTConfigUpdate" + Constants.EVENT_SUFFIX
                     let pageGroup = "BTTConfigUpdate"
                     let trafficSegment = "BTTConfigUpdate"
                     try self.upload(session: session,
@@ -43,7 +43,7 @@ class RemoteConfigAckReporter {
         queue.async {
             do {
                 if let session = BlueTriangle.session(){
-                    let pageName = "BTTConfigUpdate"
+                    let pageName = "BTTConfigUpdate" + Constants.EVENT_SUFFIX
                     let pageGroup = "BTTConfigUpdate"
                     let trafficSegment = "BTTConfigUpdate"
                     let message = "\(BT_ErrorType.BTTConfigUpdateError.rawValue) : \(error)"

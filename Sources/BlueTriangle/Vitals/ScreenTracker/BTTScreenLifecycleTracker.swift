@@ -188,21 +188,19 @@ class TimerMapActivity {
             self.setLoadTime(timeInMillisecond)
         }
         else if type == .finish {
+            if loadTime == nil {
+                self.submitTimerOfType(.load)
+            }
             willViewTime = timeInMillisecond
         }
         else if type == .view {
+            if loadTime == nil {
+                self.submitTimerOfType(.load)
+            }
             self.setViewTime(timeInMillisecond)
         }
         else if type == .disapear{
             self.evaluateConfidence()
-            
-           /* if loadTime == nil{
-                loadTime = willViewTime ?? self.timer.startTime.milliseconds
-            }
-            if viewTime == nil{
-                viewTime = (loadTime ?? self.timer.startTime.milliseconds) + Constants.minPgTm
-            }*/
-            
             self.setDisappearTime(timeInMillisecond)
         }
     }
@@ -280,7 +278,9 @@ class TimerMapActivity {
                 }
             }
         } else {
-            submitTimer()
+            if type == .disapear {
+                submitTimer()
+            }
         }
     }
     

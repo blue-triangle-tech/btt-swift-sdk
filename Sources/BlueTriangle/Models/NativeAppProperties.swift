@@ -43,6 +43,7 @@ struct NativeAppProperties: Equatable {
     let other: Millisecond
     var confidenceRate: Int32?
     var confidenceMsg: String?
+    var grouped: Bool?
     var err: String?
     var sdkVersion: String = Device.sdkVersion
     var appVersion: String = Device.appVersion
@@ -126,6 +127,10 @@ extension NativeAppProperties: Codable{
             try con.encode(confidenceMsg, forKey: .confidenceMsg)
         }
         
+        if let grouped = grouped {
+            try con.encode(grouped, forKey: .grouped)
+        }
+        
         try con.encode(deviceModel, forKey: .deviceModel)
         try con.encode(appVersion, forKey: .appVersion)
         try con.encode(sdkVersion, forKey: .sdkVersion)
@@ -175,6 +180,7 @@ extension NativeAppProperties: Codable{
         case netStateSource
         case childViews
         case appVersion
+        case grouped
         case sdkVersion
         case confidenceRate
         case confidenceMsg
