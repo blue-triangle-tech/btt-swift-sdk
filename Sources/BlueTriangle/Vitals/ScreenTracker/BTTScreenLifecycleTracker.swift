@@ -285,7 +285,7 @@ class TimerMapActivity {
                     self.updateTrackingTimer(loadTime: loadTime, viewTime: viewTime, disapearTime: disapearTime)
                     timer.end()
                 } else if type == .disapear {
-                    timer.end()
+                    submitTimer()
                 }
             }
         } else {
