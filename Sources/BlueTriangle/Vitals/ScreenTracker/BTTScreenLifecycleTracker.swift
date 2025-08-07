@@ -178,8 +178,10 @@ class TimerMapActivity {
     }
     
     func setPageName(_ pageName : String){
-        self.timer.page.pageName = pageName
-        self.pageName = pageName
+        if timer.isGroupTimer {
+            self.timer.page.pageName = pageName
+            self.pageName = pageName
+        }
     }
     
     func manageTimeFor(type : TimerMapType){
