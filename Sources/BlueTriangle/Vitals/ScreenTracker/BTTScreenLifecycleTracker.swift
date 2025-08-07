@@ -283,9 +283,13 @@ class TimerMapActivity {
             } else {
                 if let viewTime = viewTime, let loadTime = loadTime, let disapearTime = disapearTime {
                     self.updateTrackingTimer(loadTime: loadTime, viewTime: viewTime, disapearTime: disapearTime)
-                    timer.end()
+                    if timer.isGroupTimer {
+                        timer.end()
+                    } else {
+                        submitTimer()
+                    }
                 } else if type == .disapear {
-                    submitTimer()
+                    timer.end()
                 }
             }
         } else {
