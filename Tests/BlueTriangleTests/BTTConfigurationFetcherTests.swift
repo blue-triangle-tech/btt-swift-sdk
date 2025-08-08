@@ -34,7 +34,7 @@ final class BTTConfigurationFetcherTests: XCTestCase {
                                              enableRemoteConfigAck: false,
                                              enableAllTracking: true,
                                              enableScreenTracking: true,
-                                             enableGrouping: false,
+                                             enableGrouping: true,
                                              groupingIdleTime: 2,
                                              ignoreScreens: [])
             
