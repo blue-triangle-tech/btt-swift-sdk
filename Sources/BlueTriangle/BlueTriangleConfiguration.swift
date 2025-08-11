@@ -85,7 +85,7 @@ final public class BlueTriangleConfiguration: NSObject {
     internal var sessionExpiryDuration: Millisecond =  30 * 60 * 1000
     
     /// Boolean indicating whether grouping  is enabled.
-    internal var enableGrouping: Bool =  false
+    internal var enableGrouping: Bool =  true
     internal var groupingIdleTime: Double =  2.0
     
     /// Percentage of sessions for which grouped childs calls will be captured. A value of `0.05`

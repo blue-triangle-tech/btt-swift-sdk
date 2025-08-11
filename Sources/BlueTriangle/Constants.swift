@@ -60,4 +60,6 @@ enum Constants {
     static let FULL_SAMPLE_RATE_ARGUMENT  = "-FullSampleRate"
     static let NEW_SESSION_ON_LAUNCH_ARGUMENT  = "-NewSessionOnLaunch"
 
+    static let GROUP_SUFFIX  = "_Group"
+    static let EVENT_SUFFIX  = "_Event"
 }

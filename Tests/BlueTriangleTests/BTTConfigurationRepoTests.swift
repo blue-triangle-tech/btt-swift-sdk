@@ -29,7 +29,7 @@ final class BTTConfigurationRepoTests: XCTestCase {
                                      enableRemoteConfigAck: false,
                                      enableAllTracking: true,
                                      enableScreenTracking: true,
-                                     enableGrouping: false,
+                                     enableGrouping: true,
                                      groupingIdleTime: 2,
                                      ignoreScreens: [])
         configurationRepo.save(config)
@@ -47,7 +47,7 @@ final class BTTConfigurationRepoTests: XCTestCase {
                                                enableRemoteConfigAck: false,
                                                enableAllTracking: true,
                                                enableScreenTracking: true,
-                                               enableGrouping: false,
+                                               enableGrouping: true,
                                                groupingIdleTime: 2,
                                                ignoreScreens: [],
                                                dateSaved: Date().timeIntervalSince1970.milliseconds)

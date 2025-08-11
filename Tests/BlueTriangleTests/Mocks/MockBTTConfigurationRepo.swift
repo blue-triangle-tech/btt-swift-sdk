@@ -27,7 +27,7 @@ class MockBTTConfigurationRepo: ConfigurationRepo {
                                              enableGrouping: config.enableGrouping,
                                              groupingIdleTime: config.groupingIdleTime,
                                              ignoreScreens: config.ignoreScreens,
-                                              dateSaved: Date().timeIntervalSince1970.milliseconds)
+                                             dateSaved: Date().timeIntervalSince1970.milliseconds)
         store[key] = newConfig
     }
     

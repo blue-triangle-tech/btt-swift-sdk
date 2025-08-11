@@ -421,6 +421,18 @@ extension BlueTriangle {
         logger.info("BlueTriangle :: HTTP network capture was stopped due to SDK disable.")
     }
     
+    // Starts HTTP network capture and updates capture requests
+    private static func startHttpGroupedChildCapture(){
+        self.updateGroupedViewCaptureRequest()
+        logger.info("BlueTriangle :: Grouped child view capture has started.")
+    }
+    
+    // Stops HTTP network capture and clears captured requests
+    private static func stopHttpGroupedChildCapture(){
+        capturedGroupedViewRequestCollector = nil
+        logger.info("BlueTriangle :: Grouped child view capture was stopped due to SDK disable.")
+    }
+    
     // Starts launch time collection and reporting if not already configured
     private static func startLaunchTime(){
         if launchTimeReporter == nil{
@@ -604,6 +616,7 @@ extension BlueTriangle {
         
         self.startSession()
         self.startHttpNetworkCapture()
+        self.startHttpGroupedChildCapture()
         self.startNsAndSignalCrashTracking()
         self.startMemoryWarning()
         self.startANR()
@@ -628,6 +641,7 @@ extension BlueTriangle {
         
         self.endSession()
         self.stopHttpNetworkCapture()
+        self.stopHttpGroupedChildCapture()
         self.stopNsAndSignalCrashTracking()
         self.stopMemoryWarning()
         self.stopANR()
@@ -1217,11 +1231,14 @@ extension BlueTriangle {
     
     internal static func updateScreenTracking(_ enabled : Bool) {
         configuration.enableScreenTracking = enabled
+        screenTracker?.setLifecycleTracker(enabled)
+#if os(iOS)
         if enabled {
             UIViewController.setUp()
         } else {
             UIViewController.removeSetUp()
         }
+#endif
     }
     
     internal static func updateCaptureRequests() {

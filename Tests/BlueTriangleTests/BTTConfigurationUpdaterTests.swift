@@ -47,7 +47,7 @@ final class BTTConfigurationUpdaterTests: XCTestCase {
                                      enableRemoteConfigAck: false,
                                      enableAllTracking: true,
                                      enableScreenTracking: true,
-                                     enableGrouping: false,
+                                     enableGrouping: true,
                                      groupingIdleTime: 2,
                                      ignoreScreens: [])
         mockFetcher.configToReturn = config
@@ -71,7 +71,7 @@ final class BTTConfigurationUpdaterTests: XCTestCase {
                                      enableRemoteConfigAck: false,
                                      enableAllTracking: true,
                                      enableScreenTracking: true,
-                                     enableGrouping: false,
+                                     enableGrouping: true,
                                      groupingIdleTime: 2,
                                      ignoreScreens: [])
         mockRepo.save(config)
@@ -92,7 +92,7 @@ final class BTTConfigurationUpdaterTests: XCTestCase {
                                         enableRemoteConfigAck: false,
                                         enableAllTracking: true,
                                         enableScreenTracking: true,
-                                        enableGrouping: false,
+                                        enableGrouping: true,
                                         groupingIdleTime: 2,
                                         ignoreScreens: [])
         mockFetcher.configToReturn = apiConfig
@@ -104,7 +104,7 @@ final class BTTConfigurationUpdaterTests: XCTestCase {
                                                enableRemoteConfigAck: false,
                                                enableAllTracking: true,
                                                enableScreenTracking: true,
-                                               enableGrouping: false,
+                                               enableGrouping: true,
                                                groupingIdleTime: 2,
                                                ignoreScreens: [],
                                                dateSaved: currentTime - Millisecond.hour * 2)

@@ -8,7 +8,8 @@
 import Foundation
 
 final class BTTimerGroup {
-    private var timers: [BTTimer] = []
+    private var timers: Set<BTTimer> = []
+    private var groupActions: [String] = []
     private var idleTimer: Timer?
     private var groupTimer:BTTimer
     private let logger: Logging
@@ -37,7 +38,7 @@ final class BTTimerGroup {
     func add(_ timer: BTTimer) {
         lock.sync {
             guard !isGroupClosed else { return }
-            timers.append(timer)
+            timers.insert(timer)
             self.updatePageName()
             observe(timer)
             resetIdleTimer()
@@ -47,6 +48,14 @@ final class BTTimerGroup {
     func setGroupName(_ groupName: String) {
         self.groupName = groupName
         self.updatePageName()
+    }
+    
+    func refreshGroupName() {
+        self.updatePageName()
+    }
+    
+    func setGroupActions(_ action: String) {
+        self.groupActions.append(action)
     }
     
     func submit() {
@@ -83,6 +92,7 @@ final class BTTimerGroup {
             cellular: networkReport?.cellular ?? 0,
             ethernet: networkReport?.ethernet ?? 0,
             other: networkReport?.other ?? 0,
+            grouped:true,
             netState: networkReport?.netState ?? "",
             netStateSource: networkReport?.netSource ?? "",
             childViews : pages.map { self.extractViewName(from: $0) })
@@ -112,6 +122,7 @@ final class BTTimerGroup {
                 cellular: prop.cellular,
                 ethernet: prop.ethernet,
                 other: prop.other,
+                grouped:true,
                 netState: prop.netState,
                 netStateSource: prop.netStateSource)
             timer.end()
@@ -173,6 +184,8 @@ final class BTTimerGroup {
             let pageName : String =  self.groupName ?? self.extractLastPageName(from: pages)
             self.groupTimer.page.pageName = pageName
         }
+        self.groupTimer.trafficSegmentName = Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT
+        self.groupTimer.page.pageName = self.groupTimer.page.pageName + Constants.GROUP_SUFFIX
         BlueTriangle.updateCaptureRequest(pageName: self.groupTimer.page.pageName, startTime: groupTimer.startTime.milliseconds)
     }
     
@@ -207,6 +220,7 @@ extension BTTimerGroup {
     }
     
     private func submitWcdRequests() {
+        self.logger.info("Added Group Actions : \(self.groupActions)")
         BlueTriangle.startGroupTimerRequest(page: Page(pageName: self.groupTimer.page.pageName), startTime: self.groupTimer.startTime)
         for timer in timers {
             self.submitSingleRequest(groupTimer:self.groupTimer , timer: timer, group: self.groupTimer.page.pageName)
