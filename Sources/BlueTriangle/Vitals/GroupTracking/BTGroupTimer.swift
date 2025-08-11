@@ -184,6 +184,7 @@ final class BTTimerGroup {
             let pageName : String =  self.groupName ?? self.extractLastPageName(from: pages)
             self.groupTimer.page.pageName = pageName
         }
+        self.groupTimer.trafficSegmentName = Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT
         self.groupTimer.page.pageName = self.groupTimer.page.pageName + Constants.GROUP_SUFFIX
         BlueTriangle.updateCaptureRequest(pageName: self.groupTimer.page.pageName, startTime: groupTimer.startTime.milliseconds)
     }
