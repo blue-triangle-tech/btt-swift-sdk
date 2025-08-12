@@ -20,7 +20,8 @@ final class BTActionTrackerManager {
     }
     
     func uploadActions(_ page : String, pageStartTime : Millisecond) {
-        if let activeTracking = activeTrackings.last(where: { !$0.isActiveTracking }) {
+        let inactiveTrackings = activeTrackings.filter { !$0.isActiveTracking }
+        for activeTracking in inactiveTrackings {
             activeTracking.uploadActions(page, pageStartTime: pageStartTime)
             self.removeTracker(activeTracking)
         }
