@@ -115,8 +115,8 @@ extension UIApplication {
                 if let tappedView = touch.window?.hitTest(location, with: event), let actionableView = self.getActionableAncestor(from: tappedView) {
                     if let name = getReadableName(from: actionableView), touch.tapCount > 0 {
                         let isDoubleTap = touch.tapCount == 2
-                        let actionString = "User \(isDoubleTap ? "Double" : "") Tapped: \(name)"
-                        print("User Papped Action found : \(actionString)")
+                        let actionString = "User \(isDoubleTap ? "Double" : "") Tapped: \(name) at position \(location)"
+                        print("User Tapped Action found : \(actionString) at \(location)")
                         BlueTriangle.groupTimer.setGroupAction(actionString)
                     }
                 }
