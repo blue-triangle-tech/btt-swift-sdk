@@ -303,6 +303,7 @@ class TimerMapActivity {
     
     private func submitTimer() {
         if let viewTime = viewTime, let loadTime = loadTime, let disapearTime = disapearTime {
+            BlueTriangle.actionRecorder.uploadActions(timer.page.pageName, pageStartTime: timer.startTime.milliseconds)
             self.updateTrackingTimer(loadTime: loadTime, viewTime: viewTime, disapearTime: disapearTime)
             BlueTriangle.endTimer(timer)
             let pageInfoMessage = "View tracker timer submited for screen :\(self.pageName)"
