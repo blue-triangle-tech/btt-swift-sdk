@@ -30,7 +30,6 @@ protocol BTScreenLifecycleTracker{
 }
 
 public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
-    
     private var btTimeActivityrMap = [String: TimerMapActivity]()
     private var enableLifecycleTracker = false
     private var viewType = ViewType.UIKit
@@ -169,6 +168,7 @@ class TimerMapActivity {
         self.logger = logger
         self.isAutoTrack = isAutoTrack
         
+        BlueTriangle.actionRecorder.startTracking()
         if BlueTriangle.configuration.enableGrouping && isAutoTrack {
             BlueTriangle.groupTimer.startGroupIfNeeded()
             self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName), timerType: .custom, isGroupedTimer: true)

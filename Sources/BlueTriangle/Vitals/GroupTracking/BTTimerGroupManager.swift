@@ -61,12 +61,6 @@ final class BTTimerGroupManager {
         self.lastActionTime = time.timeIntervalSince1970.milliseconds
     }
     
-    func setGroupAction(_ action: String) {
-        if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted }) {
-            openGroup.setGroupActions(action)
-        }
-    }
-    
     private func startNewGroup(_ groupName : String? = nil) {
         self.submitGroupForcefully()
         let newGroup = BTTimerGroup(logger: logger, groupName: groupName, onGroupCompleted: { [weak self] group in

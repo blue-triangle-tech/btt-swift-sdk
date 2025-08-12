@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22685"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -68,7 +68,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Present Default" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8Gr-kc-1qY">
-                                <rect key="frame" x="127" y="79" width="139" height="24"/>
+                                <rect key="frame" x="127" y="138" width="139" height="24"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="20"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -131,7 +131,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="42a-j8-oEr">
-                                <rect key="frame" x="316" y="59" width="67" height="34.333333333333343"/>
+                                <rect key="frame" x="316" y="117.99999999999999" width="67" height="34.333333333333329"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="67" id="JG4-71-B91"/>
                                 </constraints>
@@ -165,7 +165,7 @@
                                 </subviews>
                             </stackView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Present Full Screen" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="unt-zY-7qu">
-                                <rect key="frame" x="109.66666666666667" y="64" width="173.66666666666663" height="24"/>
+                                <rect key="frame" x="109.66666666666667" y="123" width="173.66666666666663" height="24"/>
                                 <fontDescription key="fontDescription" type="system" weight="medium" pointSize="20"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -203,7 +203,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="MsM-dH-s9G">
-                                <rect key="frame" x="50" y="60" width="293" height="41"/>
+                                <rect key="frame" x="50" y="119" width="293" height="41"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="40" id="reI-cp-ZFg"/>
                                 </constraints>
@@ -216,13 +216,13 @@
                                 </connections>
                             </segmentedControl>
                             <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="tAT-vt-i1g" userLabel="Second View">
-                                <rect key="frame" x="0.0" y="124" width="393" height="694"/>
+                                <rect key="frame" x="0.0" y="183" width="393" height="601"/>
                                 <connections>
                                     <segue destination="MXo-aR-Chd" kind="embed" id="sbx-V2-xE9"/>
                                 </connections>
                             </containerView>
                             <containerView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="9Ah-Zf-pP0" userLabel="First View">
-                                <rect key="frame" x="0.0" y="124" width="393" height="694"/>
+                                <rect key="frame" x="0.0" y="183" width="393" height="601"/>
                                 <connections>
                                     <segue destination="3cQ-jc-nb1" kind="embed" id="I16-uJ-pFA"/>
                                 </connections>
@@ -259,11 +259,11 @@
             <objects>
                 <viewController id="3cQ-jc-nb1" customClass="FirstViewController" customModule="Example_UIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="VKp-Z7-OO6">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="694"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="601"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="aCC-Sg-sKT">
-                                <rect key="frame" x="20" y="317" width="353" height="60"/>
+                                <rect key="frame" x="20" y="270.66666666666669" width="353" height="60"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b96-Ln-Fom">
                                         <rect key="frame" x="0.0" y="0.0" width="353" height="0.0"/>
@@ -317,11 +317,11 @@
             <objects>
                 <viewController id="MXo-aR-Chd" customClass="SecondViewController" customModule="Example_UIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="bxX-jP-ZxY">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="694"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="601"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="Xnw-qu-0Hx">
-                                <rect key="frame" x="20" y="317" width="353" height="60"/>
+                                <rect key="frame" x="20" y="270.66666666666669" width="353" height="60"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="PIN-8I-0yp">
                                         <rect key="frame" x="0.0" y="0.0" width="353" height="0.0"/>
@@ -385,7 +385,7 @@
                                 <viewLayoutGuide key="frameLayoutGuide" id="jUr-gh-WkJ"/>
                             </scrollView>
                             <pageControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" numberOfPages="3" translatesAutoresizingMaskIntoConstraints="NO" id="x2a-bt-IFn">
-                                <rect key="frame" x="138.66666666666666" y="750" width="116" height="26"/>
+                                <rect key="frame" x="160" y="716" width="73" height="26"/>
                                 <color key="pageIndicatorTintColor" white="0.66666666666666663" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <color key="currentPageIndicatorTintColor" white="0.33333333333333331" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             </pageControl>
@@ -415,10 +415,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="khw-rv-ryT">
-                                <rect key="frame" x="0.0" y="119" width="393" height="699"/>
+                                <rect key="frame" x="0.0" y="178" width="393" height="606"/>
                             </stackView>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="xdZ-vN-Y57">
-                                <rect key="frame" x="50" y="59" width="293" height="32"/>
+                                <rect key="frame" x="50" y="118" width="293" height="32"/>
                                 <segments>
                                     <segment title="Subview1"/>
                                     <segment title="Subview2"/>
@@ -628,11 +628,11 @@
             <objects>
                 <viewController storyboardIdentifier="Tab2" id="Eec-VT-dxJ" customClass="Tab2ViewController" customModule="Example_UIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="58U-32-3q9">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="769"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="735"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="ozl-Xu-j2Z">
-                                <rect key="frame" x="20" y="354.66666666666669" width="353" height="60"/>
+                                <rect key="frame" x="20" y="337.66666666666669" width="353" height="60"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="cbC-d9-bbb">
                                         <rect key="frame" x="0.0" y="0.0" width="353" height="0.0"/>
@@ -687,11 +687,11 @@
             <objects>
                 <viewController storyboardIdentifier="Tab1" id="Gj6-8d-UBz" customClass="Tab1ViewController" customModule="Example_UIKit" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="hf7-XA-CBr">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="769"/>
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="735"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="20" translatesAutoresizingMaskIntoConstraints="NO" id="WuE-C3-9f7">
-                                <rect key="frame" x="20" y="354.66666666666669" width="353" height="60"/>
+                                <rect key="frame" x="20" y="337.66666666666669" width="353" height="60"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hF5-SI-s2k">
                                         <rect key="frame" x="0.0" y="0.0" width="353" height="0.0"/>
@@ -769,7 +769,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="fAk-bP-5eG">
-                                <rect key="frame" x="107" y="69" width="179" height="31"/>
+                                <rect key="frame" x="107" y="128" width="179" height="31"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="30" id="mgK-fB-iNs"/>
                                 </constraints>
@@ -782,7 +782,7 @@
                                 </connections>
                             </segmentedControl>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="RGd-6U-K85">
-                                <rect key="frame" x="0.0" y="109" width="393" height="709"/>
+                                <rect key="frame" x="0.0" y="168" width="393" height="616"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="none" indentationWidth="10" reuseIdentifier="ActivityCell" id="4ax-j0-y17" customClass="ActivityCell" customModule="Example_UIKit" customModuleProvider="target">
@@ -874,7 +874,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="View Tracking Configuration" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="edk-fr-yi2">
-                                <rect key="frame" x="20" y="109" width="353" height="19.333333333333343"/>
+                                <rect key="frame" x="20" y="168" width="353" height="19.333333333333343"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="16"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>

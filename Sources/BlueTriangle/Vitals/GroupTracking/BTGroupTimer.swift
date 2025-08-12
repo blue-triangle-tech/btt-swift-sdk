@@ -9,7 +9,6 @@ import Foundation
 
 final class BTTimerGroup {
     private var timers: Set<BTTimer> = []
-    private var groupActions: [String] = []
     private var idleTimer: Timer?
     private var groupTimer:BTTimer
     private let logger: Logging
@@ -52,10 +51,6 @@ final class BTTimerGroup {
     
     func refreshGroupName() {
         self.updatePageName()
-    }
-    
-    func setGroupActions(_ action: String) {
-        self.groupActions.append(action)
     }
     
     func submit() {
@@ -220,7 +215,8 @@ extension BTTimerGroup {
     }
     
     private func submitWcdRequests() {
-        self.logger.info("Added Group Actions : \(self.groupActions)")
+        self.logger.info("Added Group Actions : ")
+        BlueTriangle.actionRecorder.uploadActions(self.groupTimer.page.pageName, pageStartTime: self.groupTimer.startTime.milliseconds)
         BlueTriangle.startGroupTimerRequest(page: Page(pageName: self.groupTimer.page.pageName), startTime: self.groupTimer.startTime)
         for timer in timers {
             self.submitSingleRequest(groupTimer:self.groupTimer , timer: timer, group: self.groupTimer.page.pageName)

@@ -20,7 +20,9 @@ typealias SessionProvider = () -> Session?
 final public class BlueTriangle: NSObject {
     
     internal static var groupTimer : BTTimerGroupManager = BTTimerGroupManager(logger: logger)
+    internal static var actionRecorder : BTActionTrackerManager = BTActionTrackerManager()
     internal static var configuration = BlueTriangleConfiguration()
+    
     
     private static var _screenTracker: BTTScreenLifecycleTracker?
     internal static var screenTracker: BTTScreenLifecycleTracker?{
