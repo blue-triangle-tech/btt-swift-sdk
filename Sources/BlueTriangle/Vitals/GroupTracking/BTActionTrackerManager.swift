@@ -28,7 +28,8 @@ final class BTActionTrackerManager {
     }
     
     private func stopTracking() {
-        if let activeTracking = activeTrackings.last(where: { $0.isActiveTracking }) {
+        let inactiveTrackings = activeTrackings.filter { $0.isActiveTracking }
+        for activeTracking in inactiveTrackings {
             activeTracking.stopTracking()
         }
     }
