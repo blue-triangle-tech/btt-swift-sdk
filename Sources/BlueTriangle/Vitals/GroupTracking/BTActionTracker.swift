@@ -34,9 +34,11 @@ final class BTActionTracker {
     }
     
     func uploadActions(_ page : String, pageStartTime : Millisecond) {
-        print("Page Recorded Actions for page :\(page)")
-        for action in actions {
-            print("\(action.action)")
+        if !actions.isEmpty {
+            print("Page Recorded Actions for page :\(page)")
+            for action in actions {
+                print("\(action.action)")
+            }
         }
     }
     
