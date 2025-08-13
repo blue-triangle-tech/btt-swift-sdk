@@ -29,12 +29,14 @@ extension UIApplication {
     
     func getReadableName(from view: UIView) -> String {
         let className = String(describing: type(of: view))
-
+        let accessibilityIdentifier = view.accessibilityIdentifier
+        let idSuffix = accessibilityIdentifier.map { "&id=\($0)" } ?? ""
+        
         // UISegmentedControl
         if let segmented = view as? UISegmentedControl {
             let selectedIndex = segmented.selectedSegmentIndex
             if selectedIndex != UISegmentedControl.noSegment {
-                return "\(className)?position=\(selectedIndex)"
+                return "\(className)?position=\(selectedIndex)\(idSuffix)"
             }
         }
 
@@ -42,49 +44,49 @@ extension UIApplication {
         if let cell = view.superview(of: UITableViewCell.self),
            let tableView = cell.superview(of: UITableView.self),
            let indexPath = tableView.indexPath(for: cell) {
-            return "TableCell?position=[\(indexPath.section), \(indexPath.row)]"
+            return "TableCell?position=[\(indexPath.section), \(indexPath.row)]\(idSuffix)"
         }
 
         // Collection Cell
         if let cell = view.superview(of: UICollectionViewCell.self),
            let collectionView = cell.superview(of: UICollectionView.self),
            let indexPath = collectionView.indexPath(for: cell) {
-            return "CollectionCell?position=[\(indexPath.section), \(indexPath.item)]"
+            return "CollectionCell?position=[\(indexPath.section), \(indexPath.item)]\(idSuffix)"
         }
 
         // Tab Bar Item
         if let tabBarButton = view.superview(ofClassNamed: "UITabBarButton"),
            let tabBar = tabBarButton.superview,
            let index = tabBar.subviews.firstIndex(of: tabBarButton) {
-            return "TabBarItem?position=\(index)"
+            return "TabBarItem?position=\(index)\(idSuffix)"
         }
 
-        // Navigation Bar Item & UIBarButtonItem view
+        // Navigation Bar Item
         if className.contains("UIButtonBarButton"),
            let navBar = view.superview,
            let index = navBar.subviews.firstIndex(of: view) {
-            return "NavBarButton?position=\(index)"
+            return "NavBarButton?position=\(index)\(idSuffix)"
         }
 
         // UIButton
         if let button = view as? UIButton,
            let parent = button.superview,
            let index = parent.subviews.firstIndex(of: button) {
-            return "UIButton?position=\(index)"
+            return "UIButton?position=\(index)\(idSuffix)"
         }
 
         // UITextField
         if view is UITextField {
-            return "UITextField"
+            return "UITextField\(idSuffix)"
         }
 
         // SwiftUI Hosting / Gesture views
         if className.contains("Hosting") || className.contains("Gesture") || className.contains("SwiftUI") {
             if let parent = view.superview,
                let index = parent.subviews.firstIndex(of: view) {
-                return "SwiftUIView (\(className))?position=\(index)"
+                return "SwiftUIView (\(className))?position=\(index)\(idSuffix)"
             } else {
-                return "SwiftUIView (\(className))"
+                return "SwiftUIView (\(className))\(idSuffix)"
             }
         }
 
@@ -92,14 +94,14 @@ extension UIApplication {
         if view is UIControl {
             if let parent = view.superview,
                let index = parent.subviews.firstIndex(of: view) {
-                return "\(className)?position=\(index)"
+                return "\(className)?position=\(index)\(idSuffix)"
             } else {
-                return className
+                return "\(className)\(idSuffix)"
             }
         }
 
         // Absolute fallback
-        return "UnknownActionable (\(className))"
+        return "UnknownActionable (\(className))\(idSuffix)"
     }
     
     private func getActionableAncestor(from view: UIView?) -> UIView? {
@@ -136,9 +138,10 @@ extension UIApplication {
                         let formattedX = String(format: "%.2f", location.x)
                         let formattedY = String(format: "%.2f", location.y)
                         let isDoubleTap = touch.tapCount == 2
-                        let actionString = "\(isDoubleTap ? "Double" : "") Tapped: \(name)&x=\(formattedX)&y=\(formattedY)"
-                        print("User Tapped Action found: \(actionString)- \(String(describing: self))")
-                        BlueTriangle.actionRecorder.recordAction(actionString)
+                        let actionType = "User \(isDoubleTap ? "Double" : "") Tapped:"
+                        let actionString = "\(name)&x=\(formattedX)&y=\(formattedY)"
+                        let action = UserAction(action: actionString, actionType: actionType)
+                        BlueTriangle.groupTimer.recordAction(action)
                     }
                 }
                 BlueTriangle.groupTimer.setLastAction(Date())

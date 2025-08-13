@@ -78,6 +78,7 @@ class RootViewController: UIViewController {
             BlueTriangle.endTimer(timer)
         }
         let control = UIButton(configuration: .filled(), primaryAction: action)
+        control.accessibilityIdentifier = "customTimerButton"
         control.tintColor = .systemCyan
         control.translatesAutoresizingMaskIntoConstraints = false
         return control

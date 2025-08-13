@@ -1,19 +1,18 @@
 //
-//  CapturedGroupRequestCollector.swift
+//  ActionRequestCollection.swift
 //  blue-triangle
 //
-//  Created by Ashok Singh on 25/06/25.
+//  Created by Ashok Singh on 12/08/25.
 //
-
 
 import Foundation
 
-actor CapturedGroupRequestCollector: CapturedGroupRequestCollecting {
+actor CapturedActionRequestCollector: CapturedActionRequestCollecting {
     private let logger: Logging
     private let requestBuilder: CapturedRequestBuilder
     private let uploader: Uploading
     private let uploadTaskPriority: TaskPriority
-    private var requestCollection: GroupRequestCollection?
+    private var requestCollection: ActionRequestCollection?
 
     init(
         logger: Logging,
@@ -28,17 +27,16 @@ actor CapturedGroupRequestCollector: CapturedGroupRequestCollecting {
     }
 
     func start(page: Page, startTime: TimeInterval) {
-        print("Starting Group request collection: \(page.pageName)")
-        requestCollection = GroupRequestCollection(page: page, startTime: startTime.milliseconds)
+        print("Starting Action request collection: \(page.pageName)")
+        requestCollection = ActionRequestCollection(page: page, startTime: startTime.milliseconds)
     }
 
-    func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse){
-        requestCollection?.insert(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
-        print("Collected requests collection: \(requestCollection?.page.pageName ?? "") : count : \(requestCollection?.requests.count ?? 0)")
+    func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, action: UserAction){
+        requestCollection?.insert(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, action: action)
     }
     
     func uploadCollectedRequests() {
-        print("Upload Group request collection: \(requestCollection?.page.pageName ?? "") : count : \(requestCollection?.requests.count ?? 0)")
+        print("Upload Action request collection: \(requestCollection?.page.pageName ?? "")")
         Task {
             guard let collection = requestCollection, collection.requests.count > 0 else { return }
             upload(startTime: collection.startTime, page: collection.page, requests: collection.requests)
@@ -58,7 +56,7 @@ actor CapturedGroupRequestCollector: CapturedGroupRequestCollecting {
 }
 
 // MARK: - Supporting Types
-extension CapturedGroupRequestCollector {
+extension CapturedActionRequestCollector {
     struct Configuration {
         let timerManagingProvider: (NetworkCaptureConfiguration) -> CaptureTimerManaging
 
@@ -67,8 +65,8 @@ extension CapturedGroupRequestCollector {
             networkCaptureConfiguration: NetworkCaptureConfiguration,
             requestBuilder: CapturedRequestBuilder,
             uploader: Uploading
-        ) -> CapturedGroupRequestCollector {
-            return CapturedGroupRequestCollector(logger: logger,
+        ) -> CapturedActionRequestCollector {
+            return CapturedActionRequestCollector(logger: logger,
                                                  requestBuilder: requestBuilder,
                                                  uploader: uploader)
         }

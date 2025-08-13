@@ -51,6 +51,12 @@ final class BTTimerGroupManager {
         }
     }
     
+    func recordAction(_ action: UserAction) {
+        if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted }) {
+            openGroup.recordActions(action)
+        }
+    }
+    
     func refreshGroupName() {
         if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted }) {
             openGroup.refreshGroupName()
@@ -79,7 +85,6 @@ final class BTTimerGroupManager {
     
     private func handleGroupCompletion(_ group: BTTimerGroup) {
         group.submit()
-        group.flush()
         activeGroups.removeAll { $0 === group }
     }
 }

@@ -9,46 +9,35 @@ import Foundation
 
 final class BTActionTracker {
     
-    private var isActive: Bool = true
-    private var actions: [Action] = []
-    private let lock = NSLock()
+    private var actions: [UserAction] = []
     
-    var isActiveTracking: Bool {
-        lock.sync { isActive }
+    func recordAction(_ action: UserAction) {
+        actions.append(action)
     }
     
-    func recordAction(_ action: String) {
-        actions.append(Action(startTime: timeInMillisecond, endTime: timeInMillisecond, action: action))
-    }
-    
-    func getActions() -> [Action] {
-        return actions
-    }
-    
-    func clearActions() {
-        actions.removeAll()
-    }
-    
-    func stopTracking() {
-        isActive = false
-    }
-    
-    func uploadActions(_ page : String, pageStartTime : Millisecond) {
+    func uploadActions(_ page : String, pageStartTime : TimeInterval) async {
         if !actions.isEmpty {
+            await BlueTriangle.startActionTimerRequest(page: Page(pageName: page), startTime: pageStartTime)
             print("Page Recorded Actions for page :\(page)")
             for action in actions {
-                print("\(action.action)")
+                print("\(action.actionType) - \(action.action)")
+                await BlueTriangle.captureActionRequest(startTime: action.startTime, endTime: action.endTime + Constants.minPgTm, groupStartTime: pageStartTime.milliseconds, action: action)
             }
+            await BlueTriangle.uploadActionViewCollectedRequests()
         }
-    }
-    
-    private var timeInMillisecond : Millisecond{
-        Date().timeIntervalSince1970.milliseconds
     }
 }
 
-struct Action{
+struct UserAction{
     let startTime: Millisecond
     let endTime: Millisecond
     let action: String
+    let actionType: String
+    
+    init(action: String, actionType: String) {
+        self.action = action
+        self.actionType = actionType
+        self.startTime = Date().timeIntervalSince1970.milliseconds
+        self.endTime = Date().timeIntervalSince1970.milliseconds
+    }
 }

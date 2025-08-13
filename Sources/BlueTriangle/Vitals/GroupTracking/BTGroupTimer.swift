@@ -18,6 +18,7 @@ final class BTTimerGroup {
     private var groupName: String?
     private let lock = NSLock()
     private let onGroupCompleted: (BTTimerGroup) -> Void
+    private let actionTracker = BTActionTracker()
     
     var isClosed: Bool {
         lock.sync { isGroupClosed }
@@ -53,6 +54,10 @@ final class BTTimerGroup {
         self.updatePageName()
     }
     
+    func recordActions(_ action: UserAction) {
+        self.actionTracker.recordAction(action)
+    }
+    
     func submit() {
         guard timers.count > 0 else {
             self.groupTimer.end()
@@ -66,13 +71,19 @@ final class BTTimerGroup {
         var pgtm: Millisecond = 0
         var pages = [String]()
         var viewType: ViewType?
+        var pgtmIntervals = [(Millisecond, Millisecond)]()
         
         for timer in timers {
             let calculatedLoadTime = max((timer.nativeAppProperties.loadTime), Constants.minPgTm)
             pgtm = pgtm + calculatedLoadTime
             pages.append(timer.page.pageName)
             viewType = timer.nativeAppProperties.viewType
+            pgtmIntervals.append((timer.nativeAppProperties.loadStartTime, timer.nativeAppProperties.loadEndTime))
         }
+        
+        let totalPgTm = self.totalPgTmUnion(pgtmIntervals)
+        
+        print("Total PgTm: \(totalPgTm), Sum of PGTM : \(pgtm)")
         
         //Setup group native app property
         self.groupTimer.nativeAppProperties = NativeAppProperties(
@@ -97,7 +108,8 @@ final class BTTimerGroup {
         }
         
         BlueTriangle.endTimer(self.groupTimer)
-        self.submitWcdRequests()
+        self.submitChildsWcdRequests()
+        self.submitActionsWcdRequests()
         logger.info("Submitting group result: \(timerCount) timers with name: \(self.groupTimer.page.pageName)")
     }
     
@@ -122,10 +134,6 @@ final class BTTimerGroup {
                 netStateSource: prop.netStateSource)
             timer.end()
         }
-    }
-
-    func flush() {
-        timers.removeAll()
     }
     
     private func trySubmitGroup() {
@@ -184,11 +192,11 @@ final class BTTimerGroup {
         BlueTriangle.updateCaptureRequest(pageName: self.groupTimer.page.pageName, startTime: groupTimer.startTime.milliseconds)
     }
     
-    private func submitSingleRequest( groupTimer : BTTimer, timer: BTTimer, group : String) {
+    private func submitSingleRequest( groupTimer : BTTimer, timer: BTTimer, group : String) async {
         let pageName =  self.extractViewName(from: timer.page.pageName)
         let loadStartTime = timer.nativeAppProperties.loadStartTime > 0 ? timer.nativeAppProperties.loadStartTime : timer.startTime.milliseconds
         let loadEndTime = timer.nativeAppProperties.loadEndTime > 0 ? timer.nativeAppProperties.loadEndTime : loadStartTime + Constants.minPgTm
-        BlueTriangle.captureGroupRequest(startTime: loadStartTime,
+        await BlueTriangle.captureGroupRequest(startTime: loadStartTime,
                                     endTime: loadEndTime,
                                     groupStartTime: groupTimer.startTime.milliseconds,
                                     response: CustomPageResponse(file: pageName, url: pageName, domain: group))
@@ -214,18 +222,47 @@ extension BTTimerGroup {
         return title
     }
     
-    private func submitWcdRequests() {
+    private func submitActionsWcdRequests() {
         self.logger.info("Added Group Actions : ")
-        BlueTriangle.actionRecorder.uploadActions(self.groupTimer.page.pageName, pageStartTime: self.groupTimer.startTime.milliseconds)
-        BlueTriangle.startGroupTimerRequest(page: Page(pageName: self.groupTimer.page.pageName), startTime: self.groupTimer.startTime)
-        for timer in timers {
-            self.submitSingleRequest(groupTimer:self.groupTimer , timer: timer, group: self.groupTimer.page.pageName)
+        Task {
+            await actionTracker.uploadActions(self.groupTimer.page.pageName, pageStartTime: self.groupTimer.startTime)
         }
-        BlueTriangle.uploadGroupedViewCollectedRequests()
+    }
+        
+    private func submitChildsWcdRequests() {
+        Task {
+            await BlueTriangle.startGroupTimerRequest(page: Page(pageName: self.groupTimer.page.pageName), startTime: self.groupTimer.startTime)
+            self.logger.info("Added Group timer : \(self.timers.count)")
+            for timer in timers {
+                await self.submitSingleRequest(groupTimer:self.groupTimer , timer: timer, group: self.groupTimer.page.pageName)
+            }
+            await BlueTriangle.uploadGroupedViewCollectedRequests()
+        }
     }
     
     private var timeInterval : TimeInterval{
         Date().timeIntervalSince1970
+    }
+    
+    func totalPgTmUnion(_ intervals: [(Millisecond, Millisecond)]) -> Millisecond {
+        guard !intervals.isEmpty else { return 0 }
+
+        let sorted = intervals.sorted { $0.0 < $1.0 }
+        var total : Millisecond = 0
+        var (currentStart, currentEnd) = sorted[0]
+
+        for (start, end) in sorted.dropFirst() {
+            if start > currentEnd {
+                total += currentEnd - currentStart
+                currentStart = start
+                currentEnd = end
+            } else {
+                currentEnd = max(currentEnd, end)
+            }
+        }
+
+        total += currentEnd - currentStart
+        return total
     }
 }
 
