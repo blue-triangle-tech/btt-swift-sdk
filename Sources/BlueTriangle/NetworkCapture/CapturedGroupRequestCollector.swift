@@ -28,17 +28,14 @@ actor CapturedGroupRequestCollector: CapturedGroupRequestCollecting {
     }
 
     func start(page: Page, startTime: TimeInterval) {
-        print("Starting Group request collection: \(page.pageName)")
         requestCollection = GroupRequestCollection(page: page, startTime: startTime.milliseconds)
     }
 
     func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse){
         requestCollection?.insert(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
-        print("Collected requests collection: \(requestCollection?.page.pageName ?? "") : count : \(requestCollection?.requests.count ?? 0)")
     }
     
     func uploadCollectedRequests() {
-        print("Upload Group request collection: \(requestCollection?.page.pageName ?? "") : count : \(requestCollection?.requests.count ?? 0)")
         Task {
             guard let collection = requestCollection, collection.requests.count > 0 else { return }
             upload(startTime: collection.startTime, page: collection.page, requests: collection.requests)

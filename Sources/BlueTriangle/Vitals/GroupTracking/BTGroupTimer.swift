@@ -223,7 +223,6 @@ extension BTTimerGroup {
     }
     
     private func submitActionsWcdRequests() {
-        self.logger.info("Added Group Actions : ")
         Task {
             await actionTracker.uploadActions(self.groupTimer.page.pageName, pageStartTime: self.groupTimer.startTime)
         }
@@ -232,7 +231,6 @@ extension BTTimerGroup {
     private func submitChildsWcdRequests() {
         Task {
             await BlueTriangle.startGroupTimerRequest(page: Page(pageName: self.groupTimer.page.pageName), startTime: self.groupTimer.startTime)
-            self.logger.info("Added Group timer : \(self.timers.count)")
             for timer in timers {
                 await self.submitSingleRequest(groupTimer:self.groupTimer , timer: timer, group: self.groupTimer.page.pageName)
             }

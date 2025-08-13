@@ -27,7 +27,6 @@ actor CapturedActionRequestCollector: CapturedActionRequestCollecting {
     }
 
     func start(page: Page, startTime: TimeInterval) {
-        print("Starting Action request collection: \(page.pageName)")
         requestCollection = ActionRequestCollection(page: page, startTime: startTime.milliseconds)
     }
 
@@ -36,7 +35,6 @@ actor CapturedActionRequestCollector: CapturedActionRequestCollecting {
     }
     
     func uploadCollectedRequests() {
-        print("Upload Action request collection: \(requestCollection?.page.pageName ?? "")")
         Task {
             guard let collection = requestCollection, collection.requests.count > 0 else { return }
             upload(startTime: collection.startTime, page: collection.page, requests: collection.requests)

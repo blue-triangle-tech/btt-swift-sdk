@@ -138,7 +138,7 @@ extension UIApplication {
                         let formattedX = String(format: "%.2f", location.x)
                         let formattedY = String(format: "%.2f", location.y)
                         let isDoubleTap = touch.tapCount == 2
-                        let actionType = "User \(isDoubleTap ? "Double" : "") Tapped:"
+                        let actionType = "\(isDoubleTap ? "Double" : "")Tap"
                         let actionString = "\(name)&x=\(formattedX)&y=\(formattedY)"
                         let action = UserAction(action: actionString, actionType: actionType)
                         BlueTriangle.groupTimer.recordAction(action)
