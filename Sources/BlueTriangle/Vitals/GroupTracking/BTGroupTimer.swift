@@ -136,7 +136,8 @@ final class BTTimerGroup {
         
         BlueTriangle.endTimer(self.groupTimer)
         self.submitChildsWcdRequests()
-        self.submitActionsWcdRequests()
+        //TODO : Need to remove when we need action tracking code
+       // self.submitActionsWcdRequests()
         logger.info("Submitting group result: \(timerCount) timers with name: \(self.groupTimer.page.pageName)")
     }
     
