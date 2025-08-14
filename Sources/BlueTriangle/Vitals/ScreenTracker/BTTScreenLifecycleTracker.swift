@@ -168,7 +168,7 @@ class TimerMapActivity {
         self.logger = logger
         self.isAutoTrack = isAutoTrack
         
-        if BlueTriangle.configuration.enableGrouping && isAutoTrack {
+        if BlueTriangle.configuration.enableGrouping {
             BlueTriangle.groupTimer.startGroupIfNeeded()
             self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName), timerType: .custom, isGroupedTimer: true)
         } else {
@@ -184,7 +184,6 @@ class TimerMapActivity {
     }
     
     func manageTimeFor(type : TimerMapType){
-        
         if type == .load{
             self.setLoadTime(timeInMillisecond)
         }
@@ -346,7 +345,7 @@ class TimerMapActivity {
     }
     
     private var isGroupedANDAutoTracked : Bool {
-        BlueTriangle.configuration.enableGrouping && self.isAutoTrack
+        BlueTriangle.configuration.enableGrouping
     }
     
     private var timeInMillisecond : Millisecond{
