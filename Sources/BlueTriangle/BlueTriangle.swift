@@ -22,6 +22,7 @@ final public class BlueTriangle: NSObject {
     internal static var groupTimer : BTTimerGroupManager = BTTimerGroupManager(logger: logger)
     internal static var configuration = BlueTriangleConfiguration()
     
+    
     private static var _screenTracker: BTTScreenLifecycleTracker?
     internal static var screenTracker: BTTScreenLifecycleTracker?{
         get {
@@ -223,6 +224,19 @@ final public class BlueTriangle: NSObject {
         }
     }
     
+    internal static func makeCapturedActionRequestCollector() -> CapturedActionRequestCollecting? {
+        if let _ = session(), shouldGroupedCaptureRequests{
+            let actionsCollector = configuration.capturedActionsRequestCollectorConfiguration.makeRequestCollector(
+                logger: logger,
+                networkCaptureConfiguration: .standard,
+                requestBuilder: CapturedRequestBuilder.makeBuilder {self.session()},
+                uploader: uploader)
+            return actionsCollector
+        } else {
+            return nil
+        }
+    }
+    
     private static var logger: Logging = {
         configuration.makeLogger()
     }()
@@ -269,6 +283,10 @@ final public class BlueTriangle: NSObject {
     
     private static var capturedGroupedViewRequestCollector: CapturedGroupRequestCollecting? = {
         return makeCapturedGroupRequestCollector()
+    }()
+    
+    private static var capturedActionsViewRequestCollector: CapturedActionRequestCollector? = {
+        return makeCapturedActionRequestCollector() as! CapturedActionRequestCollector
     }()
     
     //Cache components
@@ -999,23 +1017,29 @@ public extension BlueTriangle {
         }
     }
     
-    //Grouped
-    internal static func startGroupTimerRequest(page : Page, startTime : TimeInterval) {
-        Task {
-            await capturedGroupedViewRequestCollector?.start(page: page, startTime: startTime)
-        }
+    internal static func startGroupTimerRequest(page : Page, startTime : TimeInterval) async {
+        await capturedGroupedViewRequestCollector?.start(page: page, startTime: startTime)
     }
     
-    internal static func captureGroupRequest(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) {
-        Task {
-            await capturedGroupedViewRequestCollector?.collect(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
-        }
+    internal static func captureGroupRequest(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) async {
+        await capturedGroupedViewRequestCollector?.collect(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
     }
     
-    internal static func uploadGroupedViewCollectedRequests() {
-        Task {
-            await capturedGroupedViewRequestCollector?.uploadCollectedRequests()
-        }
+    internal static func uploadGroupedViewCollectedRequests() async {
+        await capturedGroupedViewRequestCollector?.uploadCollectedRequests()
+    }
+    
+    //Actions
+    internal static func startActionTimerRequest(page : Page, startTime : TimeInterval) async{
+        await capturedActionsViewRequestCollector?.start(page: page, startTime: startTime)
+    }
+    
+    internal static func captureActionRequest(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, action: UserAction) async {
+            await capturedActionsViewRequestCollector?.collect(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, action: action)
+    }
+    
+    internal static func uploadActionViewCollectedRequests() async{
+        await capturedActionsViewRequestCollector?.uploadCollectedRequests()
     }
 }
 

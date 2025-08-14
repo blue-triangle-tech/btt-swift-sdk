@@ -45,6 +45,8 @@ struct NativeAppProperties: Equatable {
     var confidenceMsg: String?
     var grouped: Bool?
     var err: String?
+    var groupingCause: String?
+    var groupingCauseInterval: Millisecond?
     var sdkVersion: String = Device.sdkVersion
     var appVersion: String = Device.appVersion
     var type : String = NativeAppType.Regular.description
@@ -131,6 +133,14 @@ extension NativeAppProperties: Codable{
             try con.encode(grouped, forKey: .grouped)
         }
         
+        if let cause = groupingCause {
+            try con.encode(cause, forKey: .groupingCause)
+        }
+        
+        if let interval  = groupingCauseInterval {
+            try con.encode(interval, forKey: .groupingCauseInterval)
+        }
+        
         try con.encode(deviceModel, forKey: .deviceModel)
         try con.encode(appVersion, forKey: .appVersion)
         try con.encode(sdkVersion, forKey: .sdkVersion)
@@ -158,6 +168,8 @@ extension NativeAppProperties: Codable{
         self.childViews = try container.decodeIfPresent([String].self, forKey: .childViews) ?? []
         self.confidenceRate = try container.decodeIfPresent(Int32.self, forKey: .confidenceRate) ?? 0
         self.confidenceMsg = try container.decodeIfPresent(String.self, forKey: .confidenceMsg) ?? ""
+        self.groupingCause = try container.decodeIfPresent(String.self, forKey: .groupingCause) ?? ""
+        self.groupingCauseInterval = try container.decodeIfPresent(Millisecond.self, forKey: .groupingCauseInterval) ?? 0
     }
     
     enum CodingKeys: String, CodingKey {
@@ -184,6 +196,8 @@ extension NativeAppProperties: Codable{
         case sdkVersion
         case confidenceRate
         case confidenceMsg
+        case groupingCause
+        case groupingCauseInterval
     }
 }
 

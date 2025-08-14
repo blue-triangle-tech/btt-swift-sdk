@@ -1,19 +1,18 @@
 //
-//  CapturedGroupRequestCollector.swift
+//  ActionRequestCollection.swift
 //  blue-triangle
 //
-//  Created by Ashok Singh on 25/06/25.
+//  Created by Ashok Singh on 12/08/25.
 //
-
 
 import Foundation
 
-actor CapturedGroupRequestCollector: CapturedGroupRequestCollecting {
+actor CapturedActionRequestCollector: CapturedActionRequestCollecting {
     private let logger: Logging
     private let requestBuilder: CapturedRequestBuilder
     private let uploader: Uploading
     private let uploadTaskPriority: TaskPriority
-    private var requestCollection: GroupRequestCollection?
+    private var requestCollection: ActionRequestCollection?
 
     init(
         logger: Logging,
@@ -28,11 +27,11 @@ actor CapturedGroupRequestCollector: CapturedGroupRequestCollecting {
     }
 
     func start(page: Page, startTime: TimeInterval) {
-        requestCollection = GroupRequestCollection(page: page, startTime: startTime.milliseconds)
+        requestCollection = ActionRequestCollection(page: page, startTime: startTime.milliseconds)
     }
 
-    func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse){
-        requestCollection?.insert(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
+    func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, action: UserAction){
+        requestCollection?.insert(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, action: action)
     }
     
     func uploadCollectedRequests() {
@@ -55,7 +54,7 @@ actor CapturedGroupRequestCollector: CapturedGroupRequestCollecting {
 }
 
 // MARK: - Supporting Types
-extension CapturedGroupRequestCollector {
+extension CapturedActionRequestCollector {
     struct Configuration {
         let timerManagingProvider: (NetworkCaptureConfiguration) -> CaptureTimerManaging
 
@@ -64,8 +63,8 @@ extension CapturedGroupRequestCollector {
             networkCaptureConfiguration: NetworkCaptureConfiguration,
             requestBuilder: CapturedRequestBuilder,
             uploader: Uploading
-        ) -> CapturedGroupRequestCollector {
-            return CapturedGroupRequestCollector(logger: logger,
+        ) -> CapturedActionRequestCollector {
+            return CapturedActionRequestCollector(logger: logger,
                                                  requestBuilder: requestBuilder,
                                                  uploader: uploader)
         }
