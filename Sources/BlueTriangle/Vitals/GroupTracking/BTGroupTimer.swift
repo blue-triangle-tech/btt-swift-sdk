@@ -7,6 +7,23 @@
 
 import Foundation
 
+enum GroupingCause {
+    case manual
+    case timeoout
+    case tap
+    
+    var description: String {
+        switch self {
+        case .manual:
+            return "manual"
+        case .timeoout:
+            return "timeout"
+        case .tap:
+            return "tap"
+        }
+    }
+}
+
 final class BTTimerGroup {
     private var timers: Set<BTTimer> = []
     private var idleTimer: Timer?
@@ -19,6 +36,8 @@ final class BTTimerGroup {
     private let lock = NSLock()
     private let onGroupCompleted: (BTTimerGroup) -> Void
     private let actionTracker = BTActionTracker()
+    private var groupingCause: GroupingCause?
+    private var causeInterval : Millisecond = 0
     
     var isClosed: Bool {
         lock.sync { isGroupClosed }
@@ -28,10 +47,12 @@ final class BTTimerGroup {
         lock.sync { hasSubmitted }
     }
     
-    init(logger: Logging, groupName: String? = nil, onGroupCompleted: @escaping (BTTimerGroup) -> Void) {
+    init(logger: Logging, groupName: String? = nil, cause: GroupingCause? = nil, causeInterval: Millisecond = 0, onGroupCompleted: @escaping (BTTimerGroup) -> Void) {
         self.logger = logger
         self.hasForcedGroup = (groupName != nil) ? true : false
         self.onGroupCompleted = onGroupCompleted
+        self.groupingCause = cause
+        self.causeInterval = causeInterval
         self.groupTimer = BlueTriangle.startTimer(page: Page(pageName: groupName ?? "BTTGroupPage"), isGroupedTimer: true)
     }
 
@@ -43,6 +64,10 @@ final class BTTimerGroup {
             observe(timer)
             resetIdleTimer()
         }
+    }
+    
+    func setGroupCause(_ cause: GroupingCause) {
+        self.groupingCause = cause
     }
     
     func setGroupName(_ groupName: String) {
@@ -99,6 +124,8 @@ final class BTTimerGroup {
             ethernet: networkReport?.ethernet ?? 0,
             other: networkReport?.other ?? 0,
             grouped:true,
+            groupingCause: groupingCause?.description ,
+            groupingCauseInterval: causeInterval,
             netState: networkReport?.netState ?? "",
             netStateSource: networkReport?.netSource ?? "",
             childViews : pages.map { self.extractViewName(from: $0) })

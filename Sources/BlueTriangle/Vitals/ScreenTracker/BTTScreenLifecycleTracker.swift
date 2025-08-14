@@ -334,6 +334,8 @@ class TimerMapActivity {
             cellular: networkReport?.cellular ?? 0,
             ethernet: networkReport?.ethernet ?? 0,
             other: networkReport?.other ?? 0,
+            confidenceRate: self.confidenceRate,
+            confidenceMsg: self.confidenceMsg,
             netState: networkReport?.netState ?? "",
             netStateSource: networkReport?.netSource ?? ""
         )
