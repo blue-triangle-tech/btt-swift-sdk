@@ -106,9 +106,9 @@ final class BTTimerGroup {
             pgtmIntervals.append((timer.nativeAppProperties.loadStartTime, timer.nativeAppProperties.loadEndTime))
         }
         
-        let totalPgTm = self.totalPgTmUnion(pgtmIntervals)
+        let unianOfpgTm = max(self.totalPgTmUnion(pgtmIntervals), Constants.minPgTm)
         
-        print("Total PgTm: \(totalPgTm), Sum of PGTM : \(pgtm)")
+        logger.info("Unian pgTm of intervals \(pgtmIntervals): \(unianOfpgTm), Sum of pgTm : \(pgtm)")
         
         //Setup group native app property
         self.groupTimer.nativeAppProperties = NativeAppProperties(
@@ -131,7 +131,7 @@ final class BTTimerGroup {
             childViews : pages.map { self.extractViewName(from: $0) })
         
         self.groupTimer.pageTimeBuilder = {
-            return pgtm
+            return unianOfpgTm
         }
         
         BlueTriangle.endTimer(self.groupTimer)
