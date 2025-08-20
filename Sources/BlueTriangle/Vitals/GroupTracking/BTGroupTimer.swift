@@ -128,7 +128,7 @@ final class BTTimerGroup {
             groupingCauseInterval: causeInterval,
             netState: networkReport?.netState ?? "",
             netStateSource: networkReport?.netSource ?? "",
-            childViews : pages.map { self.extractViewName(from: $0) })
+            childViews : pages)
         
         self.groupTimer.pageTimeBuilder = {
             return unianOfpgTm
@@ -136,8 +136,7 @@ final class BTTimerGroup {
         
         BlueTriangle.endTimer(self.groupTimer)
         self.submitChildsWcdRequests()
-        //TODO : Need to remove when we need action tracking code
-       // self.submitActionsWcdRequests()
+        self.submitActionsWcdRequests()
         logger.info("Submitting group result: \(timerCount) timers with name: \(self.groupTimer.page.pageName)")
     }
     
@@ -208,9 +207,9 @@ final class BTTimerGroup {
     
     private func updatePageName() {
         if !hasForcedGroup {
-            var pages = [String]()
+            var pages = [(String, String)]()
             for timer in timers {
-                pages.append(timer.page.pageName)
+                pages.append((timer.page.pageName, timer.page.pageTitle))
             }
             let pageName : String =  self.groupName ?? self.extractLastPageName(from: pages)
             self.groupTimer.page.pageName = pageName
@@ -221,33 +220,22 @@ final class BTTimerGroup {
     }
     
     private func submitSingleRequest( groupTimer : BTTimer, timer: BTTimer, group : String) async {
-        let pageName =  self.extractViewName(from: timer.page.pageName)
+        let pageName =  timer.page.pageName
         let loadStartTime = timer.nativeAppProperties.loadStartTime > 0 ? timer.nativeAppProperties.loadStartTime : timer.startTime.milliseconds
         let loadEndTime = timer.nativeAppProperties.loadEndTime > 0 ? timer.nativeAppProperties.loadEndTime : loadStartTime + Constants.minPgTm
         await BlueTriangle.captureGroupRequest(startTime: loadStartTime,
                                     endTime: loadEndTime,
                                     groupStartTime: groupTimer.startTime.milliseconds,
-                                    response: CustomPageResponse(file: pageName, url: pageName, domain: group))
+                                               response: CustomPageResponse(file: pageName, url: pageName, domain: group, native: timer.nativeAppProperties))
     }
 }
 
 extension BTTimerGroup {
-    private func extractLastPageName(from titles: [String]) -> String {
-        for title in titles.reversed() {
-            if let part = title.components(separatedBy: "-").last,
-               title.contains("-") {
-                return part.trimmingCharacters(in: .whitespacesAndNewlines)
-            }
+    private func extractLastPageName(from titles: [(String, String)]) -> String {
+        if let lastWithTitle = titles.last(where: { !$0.1.isEmpty }) {
+            return lastWithTitle.1
         }
-        return titles.last ?? ""
-    }
-    
-    private func extractViewName(from title: String) -> String {
-        if let part = title.components(separatedBy: "-").first,
-           title.contains("-") {
-            return part.trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-        return title
+        return titles.last?.0 ?? ""
     }
     
     private func submitActionsWcdRequests() {
@@ -296,4 +284,5 @@ struct CustomPageResponse{
     let file: String?
     let url: String?
     let domain: String?
+    let native: NativeAppProperties?
 }

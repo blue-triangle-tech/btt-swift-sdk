@@ -70,11 +70,11 @@ extension NativeAppProperties: Codable{
         }
         
         if loadStartTime > 0{
-            try con.encode(loadTime, forKey: .loadStartTime)
+            try con.encode(loadStartTime, forKey: .loadStartTime)
         }
         
         if loadEndTime > 0{
-            try con.encode(loadTime, forKey: .loadEndTime)
+            try con.encode(loadEndTime, forKey: .loadEndTime)
         }
         
         if self.type != NativeAppType.NST.description{

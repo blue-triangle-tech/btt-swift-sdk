@@ -18,6 +18,9 @@ final public class Page: NSObject {
 
     /// Name of page.
     public var pageName: String
+    
+    /// Title of page.
+    public var pageTitle: String
 
     /// Page or content grouping designation.
     public var pageType: String
@@ -59,6 +62,7 @@ final public class Page: NSObject {
     @available(*, deprecated, message: "Use `init(pageName: ,brandValue: ,pageType: ,referringURL: ,url: )` instead.")
     public init(
         pageName: String,
+        pageTitle: String = "",
         brandValue: Decimal = 0.0,
         pageType: String = "Main Group",
         referringURL: String = "",
@@ -69,6 +73,7 @@ final public class Page: NSObject {
     ) {
         self.brandValue = brandValue
         self.pageName = pageName
+        self.pageTitle = pageTitle
         self.pageType = pageType
         self.referringURL = referringURL
         self.url = url
@@ -86,6 +91,7 @@ final public class Page: NSObject {
     ///   - url: URL.
     public init(
         pageName: String,
+        pageTitle: String = "",
         brandValue: Decimal = 0.0,
         pageType: String = "Main Group",
         referringURL: String = "",
@@ -93,6 +99,7 @@ final public class Page: NSObject {
     ) {
         self.brandValue = brandValue
         self.pageName = pageName
+        self.pageTitle = pageTitle
         self.pageType = pageType
         self.referringURL = referringURL
         self.url = url

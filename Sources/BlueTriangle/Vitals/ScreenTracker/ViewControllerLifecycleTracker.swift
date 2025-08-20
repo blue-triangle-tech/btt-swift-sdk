@@ -267,52 +267,35 @@ extension UIViewController{
     
     @objc dynamic func viewDidLoad_Tracker() {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.loadStarted(String(describing: self), getPageName(), isAutoTrack: true)
+            BlueTriangle.screenTracker?.loadStarted(String(describing: self), "\(type(of: self))",  pageTitle(), isAutoTrack: true)
         }
         viewDidLoad_Tracker()
     }
     
     @objc dynamic func viewWillAppear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.loadFinish(String(describing: self), getPageName(), isAutoTrack: true)
+            BlueTriangle.screenTracker?.loadFinish(String(describing: self),"\(type(of: self))", pageTitle(), isAutoTrack: true)
         }
         viewWillAppear_Tracker(animated)
     }
                                 
     @objc dynamic func viewDidAppear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.viewStart(String(describing: self), getPageName(), isAutoTrack: true)
+            BlueTriangle.screenTracker?.viewStart(String(describing: self), "\(type(of: self))", pageTitle(), isAutoTrack: true)
         }
         viewDidAppear_Tracker(animated)
     }
     
     @objc dynamic func viewDidDisappear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.viewingEnd(String(describing: self), getPageName(), isAutoTrack: true)
+            BlueTriangle.screenTracker?.viewingEnd(String(describing: self), "\(type(of: self))", pageTitle(), isAutoTrack: true)
         }
         viewDidDisappear_Tracker(animated)
     }
 
-    func getPageName() -> String {
-        
-        let viewName = "\(type(of: self))"
-        var pageName: String = viewName
+    func pageTitle() -> String {
         let currentTitle = self.navigationItem.title ?? ""
-        
-        if currentTitle.count > 0 {
-            pageName = currentTitle
-        } 
-        
-        let isGroupTimer = BlueTriangle.configuration.enableGrouping
-        if !isGroupTimer {
-            pageName = viewName
-        } else {
-            if pageName != viewName {
-                pageName = viewName + " - " + pageName
-            }
-        }
-
-        return pageName
+        return currentTitle
     }
 }
 
