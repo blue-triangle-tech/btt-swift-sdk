@@ -202,7 +202,6 @@ class TimerMapActivity {
                 self.submitTimerOfType(.load)
             }
             self.setViewTime(timeInMillisecond)
-            BlueTriangle.groupTimer.refreshGroupName()
         }
         else if type == .disapear{
             self.evaluateConfidence()
@@ -253,7 +252,7 @@ class TimerMapActivity {
         case  let (load?, willView?, _):
             let timeGap = (willView - load)
             if timeGap >= maxPGTMTime {
-                self.setLoadTime(willView)
+                self.loadTime = willView
                 confidenceRate = 50
                 confidenceMsg = "viewDidLoad tracking correct information are missing."
             } else {
@@ -317,7 +316,7 @@ class TimerMapActivity {
     private func updateTrackingTimer(loadTime: Millisecond, viewTime: Millisecond, disapearTime: Millisecond) {
          //When "pgtm" is zero then fallback mechanism triggered that calculate performence time as screen time automatically. So to avoiding "pgtm" zero value setting default value 15 milliseconds.
          // Default "pgtm" should be minimum 0.01 sec (15 milliseconds). Because timer is not reflecting on dot chat bellow to that interval.
-        let calculatedLoadTime = max(viewTime - loadTime, Constants.minPgTm)
+        let calculatedLoadTime = min(max(viewTime - loadTime, Constants.minPgTm), maxPGTMTime)
         let networkReport = timer.networkReport
 
         timer.pageTimeBuilder = {
