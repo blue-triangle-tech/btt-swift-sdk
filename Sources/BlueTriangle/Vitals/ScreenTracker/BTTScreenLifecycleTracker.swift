@@ -193,13 +193,13 @@ class TimerMapActivity {
         }
         else if type == .finish {
             if loadTime == nil {
-                self.submitTimerOfType(.load)
+                self.setLoadTime(timeInMillisecond)
             }
             self.setWillViewTime(timeInMillisecond)
         }
         else if type == .view {
             if loadTime == nil {
-                self.submitTimerOfType(.load)
+                self.setLoadTime(timeInMillisecond)
             }
             self.setViewTime(timeInMillisecond)
         }
