@@ -27,8 +27,8 @@ actor CapturedGroupRequestCollector: CapturedGroupRequestCollecting {
         self.uploadTaskPriority = uploadTaskPriority
     }
 
-    func start(page: Page, startTime: TimeInterval) {
-        requestCollection = GroupRequestCollection(page: page, startTime: startTime.milliseconds)
+    func start(page: Page, startTime: Millisecond) {
+        requestCollection = GroupRequestCollection(page: page, startTime: startTime)
     }
 
     func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse){
@@ -41,14 +41,26 @@ actor CapturedGroupRequestCollector: CapturedGroupRequestCollecting {
             upload(startTime: collection.startTime, page: collection.page, requests: collection.requests)
         }
     }
-
-    private func upload(startTime: Millisecond, page: Page, requests: [CapturedRequest]) {
+    
+   /* private func upload(startTime: Millisecond, page: Page, requests: [CapturedRequest]) {
         Task.detached(priority: uploadTaskPriority) {
             do {
                 let request = try self.requestBuilder.build(startTime, page, requests)
                 self.uploader.send(request: request)
             } catch {
                 self.logger.error("Error building request: \(error.localizedDescription)")
+            }
+        }
+    }*/
+
+    private func upload(startTime: Millisecond, page: Page, requests: [CapturedRequest]) {
+        Task(priority: uploadTaskPriority) { [requestBuilder, uploader, logger] in
+       // Task.detached(priority: uploadTaskPriority) {
+            do {
+                let request = try requestBuilder.build(startTime, page, requests)
+                uploader.send(request: request)
+            } catch {
+                logger.error("Error building request: \(error.localizedDescription)")
             }
         }
     }

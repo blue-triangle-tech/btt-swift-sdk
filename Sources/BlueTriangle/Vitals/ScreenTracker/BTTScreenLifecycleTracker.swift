@@ -151,8 +151,6 @@ class TimerMapActivity {
     
     private let timer : BTTimer
     private let isAutoTrack : Bool
-    private var pageName : String
-    private var pageTitle : String
     private let viewType : ViewType
     private var loadTime : Millisecond?
     private var willViewTime : Millisecond?
@@ -164,8 +162,6 @@ class TimerMapActivity {
     private let maxPGTMTime : Millisecond = 20_000
     
     init(pageName: String, viewType : ViewType, logger : Logging?, pageTitle : String = "", isAutoTrack: Bool = false) {
-        self.pageName = pageName
-        self.pageTitle = pageTitle
         self.viewType = viewType
         self.logger = logger
         self.isAutoTrack = isAutoTrack
@@ -180,10 +176,8 @@ class TimerMapActivity {
     
     func setPageName(_ pageName : String, title: String){
         if timer.isGroupTimer {
-            self.timer.page.pageName = pageName
-            self.timer.page.pageTitle = title
-            self.pageName = pageName
-            self.pageTitle = title
+            self.timer.setPageName(pageName)
+            self.timer.setPageTitle(title)
         }
     }
     
@@ -271,7 +265,7 @@ class TimerMapActivity {
     }
 
     func getPageName()-> String {
-        return pageName
+        return self.timer.getPageName()
     }
     
     private func submitTimerOfType(_ type : TimerMapType) {
@@ -289,6 +283,7 @@ class TimerMapActivity {
                     if timer.isGroupTimer {
                         timer.end()
                     } else {
+                        //Submit timer when switch from non group to group
                         submitTimer()
                     }
                 } else if type == .disapear {
@@ -306,7 +301,7 @@ class TimerMapActivity {
         if let viewTime = viewTime, let loadTime = loadTime, let disapearTime = disapearTime {
             self.updateTrackingTimer(loadTime: loadTime, viewTime: viewTime, disapearTime: disapearTime)
             BlueTriangle.endTimer(timer)
-            let pageInfoMessage = "View tracker timer submited for screen :\(self.pageName)"
+            let pageInfoMessage = "View tracker timer submited for screen :\(self.timer.getPageName())"
             self.logger?.info(pageInfoMessage)
         } else {
             self.timer.end()

@@ -135,6 +135,7 @@ class SessionManager : SessionManagerProtocol{
                 currentSession = session
                 syncStoredConfigToSessionAndApply()
                 sessionStore.saveSession(session!)
+                logger.info("BlueTriangle:SessionManager: Current session \(session?.sessionID ?? 0)")
                 return session!
             }
             
@@ -152,7 +153,6 @@ class SessionManager : SessionManagerProtocol{
             return updatedSession
         }
     }
-
     
     private func updateSession(){
         let seesion = self.invalidateSession()
