@@ -34,7 +34,7 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
     private var enableLifecycleTracker = false
     private var viewType = ViewType.UIKit
     private(set) var logger : Logging?
-    private var startTimerPages = [String : String]()
+    private var startTimerPages = [String : (name: String, title: String)]()
     
     internal init() {
         registerAppForegroundAndBackgroundNotification()
@@ -105,8 +105,9 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
             for key in  btTimeActivityrMap.keys{
                 if let timerActivity = btTimeActivityrMap[key] {
                     let page = timerActivity.getPageName()
-                    startTimerPages[key] = page
-                    viewingEnd(key, page)
+                    let title = timerActivity.getTitleName()
+                    startTimerPages[key] = (page, title)
+                    viewingEnd(key, page, title)
                 }
             }
             
@@ -118,7 +119,7 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
         if self.enableLifecycleTracker{
             for key in  startTimerPages.keys{
                 if let page = startTimerPages[key] {
-                    viewStart(key, page)
+                    viewStart(key, page.name, page.title)
                 }
             }
             startTimerPages.removeAll()
@@ -268,6 +269,10 @@ class TimerMapActivity {
         return self.timer.getPageName()
     }
     
+    func getTitleName()-> String {
+        return self.timer.getPageTitle()
+    }
+    
     private func submitTimerOfType(_ type : TimerMapType) {
         if isGroupedANDAutoTracked {
             if type == .load {
@@ -275,7 +280,7 @@ class TimerMapActivity {
             }
             if type == .view {
                 if let viewTime = viewTime, let loadTime = loadTime {
-                    self.updateTrackingTimer(loadTime: loadTime, viewTime: viewTime, disapearTime: timeInMilliseconds)
+                    self.updateTrackingTimer(loadTime: loadTime, viewTime: viewTime, disapearTime: timeInMillisecond)
                 }
             } else {
                 if let viewTime = viewTime, let loadTime = loadTime, let disapearTime = disapearTime {
@@ -336,10 +341,6 @@ class TimerMapActivity {
             netState: networkReport?.netState ?? "",
             netStateSource: networkReport?.netSource ?? ""
         )
-    }
-    
-    private var timeInMilliseconds : Millisecond {
-        Date().timeIntervalSince1970.milliseconds
     }
     
     private var isGroupedANDAutoTracked : Bool {
