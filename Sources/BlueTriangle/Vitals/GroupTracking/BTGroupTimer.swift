@@ -283,7 +283,6 @@ extension BTTimerGroup {
         total += currentEnd - currentStart
         return total
     }
-
 }
 
 extension BTTimerGroup {

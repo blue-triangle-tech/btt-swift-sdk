@@ -42,25 +42,13 @@ actor CapturedGroupRequestCollector: CapturedGroupRequestCollecting {
         }
     }
     
-   /* private func upload(startTime: Millisecond, page: Page, requests: [CapturedRequest]) {
+    private func upload(startTime: Millisecond, page: Page, requests: [CapturedRequest]) {
         Task.detached(priority: uploadTaskPriority) {
             do {
                 let request = try self.requestBuilder.build(startTime, page, requests)
                 self.uploader.send(request: request)
             } catch {
                 self.logger.error("Error building request: \(error.localizedDescription)")
-            }
-        }
-    }*/
-
-    private func upload(startTime: Millisecond, page: Page, requests: [CapturedRequest]) {
-        Task(priority: uploadTaskPriority) { [requestBuilder, uploader, logger] in
-       // Task.detached(priority: uploadTaskPriority) {
-            do {
-                let request = try requestBuilder.build(startTime, page, requests)
-                uploader.send(request: request)
-            } catch {
-                logger.error("Error building request: \(error.localizedDescription)")
             }
         }
     }
