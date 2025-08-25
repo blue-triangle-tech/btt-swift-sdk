@@ -136,7 +136,6 @@ final class BTTimerGroup {
         
         BlueTriangle.endTimer(self.groupTimer)
         self.submitChildsWcdRequests()
-       // self.submitActionsWcdRequests()
         logger.info("Submitting group result: \(timerCount) timers with name: \(self.groupTimer.getPageName())")
     }
     
@@ -213,7 +212,6 @@ final class BTTimerGroup {
             self.groupTimer.setPageName(pageName)
         }
         self.groupTimer.trafficSegmentName = Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT
-        self.groupTimer.setPageName(self.pageNameWithSuffix())
         BlueTriangle.updateCaptureRequest(pageName: self.groupTimer.getPageName(), startTime: groupTimer.startTime.milliseconds)
     }
 }
@@ -286,13 +284,6 @@ extension BTTimerGroup {
 }
 
 extension BTTimerGroup {
-    private func pageNameWithSuffix() -> String {
-        let name = self.groupTimer.getPageName()
-        if name.hasSuffix(Constants.GROUP_SUFFIX) {
-            return name
-        }
-        return name + Constants.GROUP_SUFFIX
-    }
   
     private func extractLastPageName(from titles: [(String, String)]) -> String {
         if let lastWithTitle = titles.last(where: { !$0.1.isEmpty }) {
