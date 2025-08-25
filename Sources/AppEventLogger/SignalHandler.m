@@ -528,11 +528,15 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
 }
 
 + (void) setCurrentPageName:(NSString*) page_name{
-    __current_page_name = page_name;
+    @synchronized(self) {
+        __current_page_name = [page_name copy];
+    }
 }
 
 + (void) updateSessionID:(NSString*) session_id{
-    __btt_session_id = session_id;
+    @synchronized(self) {
+        __btt_session_id = [session_id copy];
+    }
 }
 
 + (void) debug_log:(NSString *)msg{

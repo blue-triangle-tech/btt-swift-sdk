@@ -1017,7 +1017,7 @@ public extension BlueTriangle {
         }
     }
     
-    internal static func startGroupTimerRequest(page : Page, startTime : TimeInterval) async {
+    internal static func startGroupTimerRequest(page : Page, startTime : Millisecond) async {
         await capturedGroupedViewRequestCollector?.start(page: page, startTime: startTime)
     }
     
@@ -1030,7 +1030,7 @@ public extension BlueTriangle {
     }
     
     //Actions
-    internal static func startActionTimerRequest(page : Page, startTime : TimeInterval) async{
+    internal static func startActionTimerRequest(page : Page, startTime : Millisecond) async{
         await capturedActionsViewRequestCollector?.start(page: page, startTime: startTime)
     }
     

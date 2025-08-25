@@ -234,6 +234,9 @@ extension CapturedRequest {
     ) {
         self.host = ""
         self.domain = ""
+        if let native = response.native {
+            self.nativeAppProperty = native
+        }
         self.entryType = "Screen"
         self.url = response.url ?? ""
         self.initiatorType = .other

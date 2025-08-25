@@ -38,6 +38,7 @@ final class BTTimerGroup {
     private let actionTracker = BTActionTracker()
     private var groupingCause: GroupingCause?
     private var causeInterval : Millisecond = 0
+    private var groupingIdleTime = BlueTriangle.configuration.groupingIdleTime
     
     var isClosed: Bool {
         lock.sync { isGroupClosed }
@@ -101,13 +102,12 @@ final class BTTimerGroup {
         for timer in timers {
             let calculatedLoadTime = max((timer.nativeAppProperties.loadTime), Constants.minPgTm)
             pgtm = pgtm + calculatedLoadTime
-            pages.append(timer.page.pageName)
+            pages.append(timer.getPageName())
             viewType = timer.nativeAppProperties.viewType
             pgtmIntervals.append((timer.nativeAppProperties.loadStartTime, timer.nativeAppProperties.loadEndTime))
         }
         
         let unianOfpgTm = max(self.totalPgTmUnion(pgtmIntervals), Constants.minPgTm)
-        
         logger.info("Unian pgTm of intervals \(pgtmIntervals): \(unianOfpgTm), Sum of pgTm : \(pgtm)")
         
         //Setup group native app property
@@ -128,7 +128,7 @@ final class BTTimerGroup {
             groupingCauseInterval: causeInterval,
             netState: networkReport?.netState ?? "",
             netStateSource: networkReport?.netSource ?? "",
-            childViews : pages.map { self.extractViewName(from: $0) })
+            childViews : pages)
         
         self.groupTimer.pageTimeBuilder = {
             return unianOfpgTm
@@ -136,9 +136,7 @@ final class BTTimerGroup {
         
         BlueTriangle.endTimer(self.groupTimer)
         self.submitChildsWcdRequests()
-        //TODO : Need to remove when we need action tracking code
-       // self.submitActionsWcdRequests()
-        logger.info("Submitting group result: \(timerCount) timers with name: \(self.groupTimer.page.pageName)")
+        logger.info("Submitting group result: \(timerCount) timers with name: \(self.groupTimer.getPageName())")
     }
     
     func forcefullyEndAllTimers() {
@@ -146,7 +144,7 @@ final class BTTimerGroup {
         for timer in timers where !timer.hasEnded {
             let prop = timer.nativeAppProperties
             timer.nativeAppProperties = NativeAppProperties(
-                fullTime: timeInterval.milliseconds - prop.loadStartTime,
+                fullTime: prop.loadTime > 0 ? timeInterval.milliseconds - prop.loadStartTime : 0,
                 loadTime: prop.loadTime,
                 loadStartTime: prop.loadStartTime,
                 loadEndTime: prop.loadEndTime,
@@ -177,7 +175,7 @@ final class BTTimerGroup {
     
     private func resetIdleTimer() {
         idleTimer?.invalidate()
-        idleTimer = Timer.scheduledTimer(withTimeInterval: BlueTriangle.configuration.groupingIdleTime, repeats: false) { [weak self] _ in
+        idleTimer = Timer.scheduledTimer(withTimeInterval: groupingIdleTime, repeats: false) { [weak self] _ in
             self?.closeGroup()
         }
     }
@@ -208,68 +206,61 @@ final class BTTimerGroup {
     
     private func updatePageName() {
         if !hasForcedGroup {
-            var pages = [String]()
-            for timer in timers {
-                pages.append(timer.page.pageName)
-            }
+            var pages = [(String, String)]()
+            for timer in timers { pages.append((timer.getPageName(), timer.getPageTitle())) }
             let pageName : String =  self.groupName ?? self.extractLastPageName(from: pages)
-            self.groupTimer.page.pageName = pageName
+            self.groupTimer.setPageName(pageName)
         }
         self.groupTimer.trafficSegmentName = Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT
-        self.groupTimer.page.pageName = self.groupTimer.page.pageName + Constants.GROUP_SUFFIX
-        BlueTriangle.updateCaptureRequest(pageName: self.groupTimer.page.pageName, startTime: groupTimer.startTime.milliseconds)
-    }
-    
-    private func submitSingleRequest( groupTimer : BTTimer, timer: BTTimer, group : String) async {
-        let pageName =  self.extractViewName(from: timer.page.pageName)
-        let loadStartTime = timer.nativeAppProperties.loadStartTime > 0 ? timer.nativeAppProperties.loadStartTime : timer.startTime.milliseconds
-        let loadEndTime = timer.nativeAppProperties.loadEndTime > 0 ? timer.nativeAppProperties.loadEndTime : loadStartTime + Constants.minPgTm
-        await BlueTriangle.captureGroupRequest(startTime: loadStartTime,
-                                    endTime: loadEndTime,
-                                    groupStartTime: groupTimer.startTime.milliseconds,
-                                    response: CustomPageResponse(file: pageName, url: pageName, domain: group))
+        BlueTriangle.updateCaptureRequest(pageName: self.groupTimer.getPageName(), startTime: groupTimer.startTime.milliseconds)
     }
 }
 
 extension BTTimerGroup {
-    private func extractLastPageName(from titles: [String]) -> String {
-        for title in titles.reversed() {
-            if let part = title.components(separatedBy: "-").last,
-               title.contains("-") {
-                return part.trimmingCharacters(in: .whitespacesAndNewlines)
-            }
-        }
-        return titles.last ?? ""
-    }
-    
-    private func extractViewName(from title: String) -> String {
-        if let part = title.components(separatedBy: "-").first,
-           title.contains("-") {
-            return part.trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-        return title
-    }
-    
+
     private func submitActionsWcdRequests() {
         Task {
-            await actionTracker.uploadActions(self.groupTimer.page.pageName, pageStartTime: self.groupTimer.startTime)
+            await actionTracker.uploadActions(self.groupTimer.getPageName(), pageStartTime: self.groupTimer.startTime)
         }
     }
         
     private func submitChildsWcdRequests() {
         Task {
-            await BlueTriangle.startGroupTimerRequest(page: Page(pageName: self.groupTimer.page.pageName), startTime: self.groupTimer.startTime)
+            await BlueTriangle.startGroupTimerRequest(page: Page(pageName: self.groupTimer.getPageName()), startTime: self.groupTimer.startTime.milliseconds)
             for timer in timers {
-                await self.submitSingleRequest(groupTimer:self.groupTimer , timer: timer, group: self.groupTimer.page.pageName)
+                await self.submitSingleRequest(groupTimer:self.groupTimer , timer: timer, group: self.groupTimer.getPageName())
             }
             await BlueTriangle.uploadGroupedViewCollectedRequests()
         }
     }
     
-    private var timeInterval : TimeInterval{
-        Date().timeIntervalSince1970
+    private func submitSingleRequest( groupTimer : BTTimer, timer: BTTimer, group : String) async {
+        let pageName =  timer.getPageName()
+        let loadStartTime = timer.nativeAppProperties.loadStartTime > 0 ? timer.nativeAppProperties.loadStartTime : timer.startTime.milliseconds
+        let loadEndTime = timer.nativeAppProperties.loadEndTime > 0 ? timer.nativeAppProperties.loadEndTime : loadStartTime + Constants.minPgTm
+        let actualLoadEndTime = (loadEndTime - loadStartTime) < Constants.minPgTm ? loadStartTime + Constants.minPgTm : loadEndTime
+        let prop = timer.nativeAppProperties
+        let nativeApp = NativeAppProperties(
+            fullTime: prop.fullTime,
+            loadTime: prop.loadTime,
+            loadStartTime: prop.loadStartTime,
+            loadEndTime: prop.loadEndTime,
+            maxMainThreadUsage: prop.maxMainThreadUsage,
+            viewType: prop.viewType,
+            offline: prop.offline,
+            wifi: prop.wifi,
+            cellular: prop.cellular,
+            ethernet: prop.ethernet,
+            other: prop.other,
+            grouped:true,
+            netState: prop.netState,
+            netStateSource: prop.netStateSource)
+        await BlueTriangle.captureGroupRequest(startTime: loadStartTime,
+                                               endTime: actualLoadEndTime,
+                                               groupStartTime: groupTimer.startTime.milliseconds,
+                                               response: CustomPageResponse(file: pageName, url: pageName, domain: group, native: nativeApp))
     }
-    
+
     func totalPgTmUnion(_ intervals: [(Millisecond, Millisecond)]) -> Millisecond {
         guard !intervals.isEmpty else { return 0 }
 
@@ -292,8 +283,23 @@ extension BTTimerGroup {
     }
 }
 
+extension BTTimerGroup {
+  
+    private func extractLastPageName(from titles: [(String, String)]) -> String {
+        if let lastWithTitle = titles.last(where: { !$0.1.isEmpty }) {
+            return lastWithTitle.1
+        }
+        return titles.last?.0 ?? ""
+    }
+    
+    private var timeInterval : TimeInterval{
+        Date().timeIntervalSince1970
+    }
+}
+
 struct CustomPageResponse{
     let file: String?
     let url: String?
     let domain: String?
+    let native: NativeAppProperties?
 }

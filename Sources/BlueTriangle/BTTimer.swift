@@ -82,6 +82,11 @@ final public class BTTimer: NSObject {
     }
     
     let enableAllTracking = BlueTriangle.enableAllTracking
+    
+    @objc public func setPageName(_ name: String) { lock.sync { page.pageName = name }}
+    @objc public func setPageTitle(_ title: String) { lock.sync { page.pageTitle = title }}
+    @objc public func getPageName() -> String { lock.sync { page.pageName } }
+    @objc public func getPageTitle() -> String { lock.sync { page.pageTitle } }
 
     var pageTimeInterval: PageTimeInterval {
         PageTimeInterval(

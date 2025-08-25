@@ -27,8 +27,8 @@ actor CapturedGroupRequestCollector: CapturedGroupRequestCollecting {
         self.uploadTaskPriority = uploadTaskPriority
     }
 
-    func start(page: Page, startTime: TimeInterval) {
-        requestCollection = GroupRequestCollection(page: page, startTime: startTime.milliseconds)
+    func start(page: Page, startTime: Millisecond) {
+        requestCollection = GroupRequestCollection(page: page, startTime: startTime)
     }
 
     func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse){
@@ -41,7 +41,7 @@ actor CapturedGroupRequestCollector: CapturedGroupRequestCollecting {
             upload(startTime: collection.startTime, page: collection.page, requests: collection.requests)
         }
     }
-
+    
     private func upload(startTime: Millisecond, page: Page, requests: [CapturedRequest]) {
         Task.detached(priority: uploadTaskPriority) {
             do {

@@ -69,14 +69,6 @@ extension NativeAppProperties: Codable{
             try con.encode(loadTime, forKey: .loadTime)
         }
         
-        if loadStartTime > 0{
-            try con.encode(loadTime, forKey: .loadStartTime)
-        }
-        
-        if loadEndTime > 0{
-            try con.encode(loadTime, forKey: .loadEndTime)
-        }
-        
         if self.type != NativeAppType.NST.description{
             try con.encode(maxMainThreadUsage, forKey: .maxMainThreadUsage)
         }

@@ -26,8 +26,8 @@ actor CapturedActionRequestCollector: CapturedActionRequestCollecting {
         self.uploadTaskPriority = uploadTaskPriority
     }
 
-    func start(page: Page, startTime: TimeInterval) {
-        requestCollection = ActionRequestCollection(page: page, startTime: startTime.milliseconds)
+    func start(page: Page, startTime: Millisecond) {
+        requestCollection = ActionRequestCollection(page: page, startTime: startTime)
     }
 
     func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, action: UserAction){

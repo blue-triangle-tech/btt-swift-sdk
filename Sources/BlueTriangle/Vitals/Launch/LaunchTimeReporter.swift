@@ -63,7 +63,6 @@ class LaunchTimeReporter : ObservableObject {
                 }
                 
                 print("Session uploadReports: \(session.sessionID)")
-                let pageName = pageName + (BlueTriangle.configuration.enableGrouping ?  Constants.EVENT_SUFFIX : "")
                 let groupName = Constants.LAUNCH_TIME_PAGE_GROUP
                 let trafficSegmentName = Constants.LAUNCH_TIME_TRAFFIC_SEGMENT
                 let timeMS = time.timeIntervalSince1970.milliseconds
