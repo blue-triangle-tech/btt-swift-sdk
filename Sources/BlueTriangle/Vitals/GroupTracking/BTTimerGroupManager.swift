@@ -13,86 +13,105 @@ final class BTTimerGroupManager {
     private var lastTimerTime: Millisecond?
     private var lastActionTime = Date().timeIntervalSince1970.milliseconds
     private let lock = NSLock()
-    
-    init(logger: Logging) {
-        self.logger = logger
-    }
+
+    init(logger: Logging) { self.logger = logger }
 
     func add(timer: BTTimer) {
-        lock.sync {
-            if let openGroup = activeGroups.last(where: { !$0.isClosed }) {
-                openGroup.add(timer)
+        let target: BTTimerGroup? = lock.sync {
+            if let open = activeGroups.last(where: { !$0.isClosed }) {
+                lastTimerTime = timer.startTime.milliseconds
+                return open
             } else {
-                startNewGroup(cause:.timeoout)
+                lastTimerTime = timer.startTime.milliseconds
+                return nil
             }
-            lastTimerTime = timer.startTime.milliseconds
+        }
+
+        if let tg = target {
+            tg.add(timer)
+        } else {
+            let interval = computeCauseInterval(from: lock.sync { lastTimerTime })
+            let newGroup = startNewGroup(cause: .timeout, causeInterval: interval)
+            newGroup.add(timer)
         }
     }
-    
+
     func startGroupIfNeeded() {
-        lock.sync {
-            guard activeGroups.last(where: { !$0.isClosed }) == nil else {
-                if let lastTimerTime = lastTimerTime, lastTimerTime < self.lastActionTime {
-                    self.startNewGroup(cause: .tap)
-                }
-                return
+        let decision: (shouldStart: Bool, cause: GroupingCause?, lastTimerSnap: Millisecond?) = lock.sync {
+            if activeGroups.last(where: { !$0.isClosed }) == nil {
+                return (true, .timeout, lastTimerTime)
+            } else if let lt = lastTimerTime, lt < lastActionTime {
+                return (true, .tap, lastTimerTime)
             }
-            self.startNewGroup(cause:.timeoout)
+            return (false, nil, lastTimerTime)
         }
+        
+        guard decision.shouldStart, let cause = decision.cause else { return }
+        let interval = computeCauseInterval(from: decision.lastTimerSnap)
+        _ = startNewGroup(cause: cause, causeInterval: interval)
     }
 
     func setNewGroup(_ newGroup: String) {
-        self.startNewGroup(newGroup, cause: .manual)
-    }
-    
-    func setGroupName(_ groupName: String) {
-        if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted }) {
-            openGroup.setGroupName(groupName)
-        }
-    }
-    
-    func recordAction(_ action: UserAction) {
-        if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted }) {
-            openGroup.recordActions(action)
-        }
-    }
-    
-    func refreshGroupName() {
-        if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted }) {
-            lock.sync {
-                openGroup.refreshGroupName()
-            }
-        }
-    }
-    
-    func setLastAction(_ time: Date) {
-        self.lastActionTime = time.timeIntervalSince1970.milliseconds
-    }
-    
-    private var causeInterval: Millisecond {
-        guard let lastTimerTime = lastTimerTime else { return 0 }
-        return Date().timeIntervalSince1970.milliseconds - lastTimerTime
-    }
-    
-    private func startNewGroup(_ groupName : String? = nil, cause: GroupingCause? = nil) {
-        let causeInterval: Millisecond = self.causeInterval
-        self.submitGroupForcefully()
-        let newGroup = BTTimerGroup(logger: logger, groupName: groupName, cause: cause, causeInterval: causeInterval, onGroupCompleted: { [weak self] group in
-            self?.handleGroupCompletion(group)
-        })
-        lastTimerTime = nil
-        activeGroups.append(newGroup)
+        let interval = computeCauseInterval(from: lock.sync { lastTimerTime })
+        _ = startNewGroup(groupName: newGroup, cause: .manual, causeInterval: interval)
     }
 
-    private func submitGroupForcefully() {
-        if let openGroup = activeGroups.last(where: { !$0.hasGroupSubmitted }){
-            print("Forecfully submitted")
-            openGroup.forcefullyEndAllTimers()
-        }
+    func setGroupName(_ groupName: String) {
+        let open = lock.sync { activeGroups.last(where: { !$0.hasGroupSubmitted }) }
+        open?.setGroupName(groupName)
     }
-    
+
+    func recordAction(_ action: UserAction) {
+        let open = lock.sync { activeGroups.last(where: { !$0.hasGroupSubmitted }) }
+        open?.recordActions(action)
+    }
+
+    func refreshGroupName() {
+        let open = lock.sync { activeGroups.last(where: { !$0.hasGroupSubmitted }) }
+        open?.refreshGroupName()
+    }
+
+    func setLastAction(_ time: Date) {
+        lock.sync { self.lastActionTime = time.timeIntervalSince1970.milliseconds }
+    }
+
+    // MARK: – Internals
+
+    private func computeCauseInterval(from last: Millisecond?) -> Millisecond {
+        guard let last = last else { return 0 }
+        let now = Date().timeIntervalSince1970.milliseconds
+        return max(0, now - last)
+    }
+
+    /// Starts a new group. No nested locks: we snapshot the open group under lock,
+    /// act on it outside, then append the new group under lock.
+    @discardableResult
+    private func startNewGroup(groupName: String? = nil, cause: GroupingCause? = nil, causeInterval: Millisecond) -> BTTimerGroup {
+        let openSnap: BTTimerGroup? = lock.sync { activeGroups.last(where: { !$0.hasGroupSubmitted }) }
+        if let open = openSnap {
+            logger.info("Forcefully submitted open group")
+            open.forcefullyEndAllTimers()
+        }
+
+        let newGroup = BTTimerGroup(
+            logger: logger,
+            groupName: groupName,
+            cause: cause,
+            causeInterval: causeInterval,
+            onGroupCompleted: { [weak self] group in
+                self?.handleGroupCompletion(group)
+            }
+        )
+
+        lock.sync {
+            lastTimerTime = nil
+            activeGroups.append(newGroup)
+        }
+        return newGroup
+    }
+
     private func handleGroupCompletion(_ group: BTTimerGroup) {
         group.submit()
-        activeGroups.removeAll { $0 === group }
+        lock.sync { activeGroups.removeAll { $0 === group } }
     }
 }

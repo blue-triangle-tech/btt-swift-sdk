@@ -30,7 +30,6 @@ class SlideViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        BlueTriangle.setGroupName("CN-Slide Screen")
     }
    
     static func getSlides()-> [SlideViewController]{

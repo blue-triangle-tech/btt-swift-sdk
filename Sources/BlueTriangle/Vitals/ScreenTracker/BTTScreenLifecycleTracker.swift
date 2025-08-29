@@ -65,7 +65,7 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
     }
     
     func viewingEnd(_ id: String, _ name: String, _ title : String = "") {
-        self.manageTimer(name, id: id, type: .disapear, title: title)
+        self.manageTimer(name, id: id, type: .disappear, title: title)
     }
     
     func manageTimer(_ pageName : String, id : String, type : TimerMapType, title : String = ""){
@@ -73,7 +73,7 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
             let timerActivity = getTimerActivity(pageName, id: id, pageTitle: title)
             btTimeActivityrMap[id] = timerActivity
             timerActivity.manageTimeFor(type: type)
-            if type == .disapear{
+            if type == .disappear{
                 btTimeActivityrMap.removeValue(forKey: id)
             }
             else if (type == .load || type == .view){
@@ -145,7 +145,7 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
 }
 
 enum TimerMapType {
-  case load, finish, view, disapear
+  case load, finish, view, disappear
 }
 
 class TimerMapActivity {
@@ -180,25 +180,19 @@ class TimerMapActivity {
         }
     }
     
-    func manageTimeFor(type : TimerMapType){
-        if type == .load{
-            self.setLoadTime(timeInMillisecond)
-        }
-        else if type == .finish {
-            if loadTime == nil {
-                self.setLoadTime(timeInMillisecond)
-            }
-            self.setWillViewTime(timeInMillisecond)
-        }
-        else if type == .view {
-            if loadTime == nil {
-                self.setLoadTime(timeInMillisecond)
-            }
-            self.setViewTime(timeInMillisecond)
-        }
-        else if type == .disapear{
-            self.evaluateConfidence()
-            self.setDisappearTime(timeInMillisecond)
+    func manageTimeFor(type: TimerMapType) {
+        switch type {
+        case .load:
+            setLoadTime(timeInMillisecond)
+        case .finish:
+            if loadTime == nil { setLoadTime(timeInMillisecond) }
+            setWillViewTime(timeInMillisecond)
+        case .view:
+            if loadTime == nil { setLoadTime(timeInMillisecond) }
+            setViewTime(timeInMillisecond)
+        case .disappear:
+            evaluateConfidence()
+            setDisappearTime(timeInMillisecond)
         }
     }
     
@@ -221,7 +215,7 @@ class TimerMapActivity {
     
     private func setDisappearTime(_ time : Millisecond){
         self.disapearTime = time
-        self.submitTimerOfType(.disapear)
+        self.submitTimerOfType(.disappear)
         BlueTriangle.groupTimer.refreshGroupName()
     }
     
@@ -289,12 +283,12 @@ class TimerMapActivity {
                         //Submit timer when switch from non group to group
                         submitTimer()
                     }
-                } else if type == .disapear {
+                } else if type == .disappear {
                     timer.end()
                 }
             }
         } else {
-            if type == .disapear {
+            if type == .disappear {
                 submitTimer()
             }
         }
