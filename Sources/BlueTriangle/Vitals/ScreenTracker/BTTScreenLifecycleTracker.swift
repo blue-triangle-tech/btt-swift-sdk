@@ -23,10 +23,10 @@ import AppEventLogger
 #endif
 
 protocol BTScreenLifecycleTracker{
-    func loadStarted(_ id : String, _ name : String, _ title : String, isAutoTrack : Bool)
-    func loadFinish(_ id : String, _ name : String,_ title : String, isAutoTrack : Bool)
-    func viewStart(_ id : String, _ name : String, _ title : String, isAutoTrack : Bool)
-    func viewingEnd(_ id : String, _ name : String, _ title : String, isAutoTrack : Bool)
+    func loadStarted(_ id : String, _ name : String, _ title : String)
+    func loadFinish(_ id : String, _ name : String,_ title : String)
+    func viewStart(_ id : String, _ name : String, _ title : String)
+    func viewingEnd(_ id : String, _ name : String, _ title : String)
 }
 
 public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
@@ -52,25 +52,25 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
         self.viewType = type
     }
     
-    func loadStarted(_ id: String, _ name: String, _ title : String = "", isAutoTrack: Bool = false) {
-        self.manageTimer(name, id: id, type: .load, title: title, isAutoTrack: isAutoTrack)
+    func loadStarted(_ id: String, _ name: String, _ title : String = "") {
+        self.manageTimer(name, id: id, type: .load, title: title)
     }
     
-    func loadFinish(_ id: String, _ name: String, _ title : String = "", isAutoTrack : Bool = false) {
-        self.manageTimer(name, id: id, type: .finish, title: title, isAutoTrack: isAutoTrack)
+    func loadFinish(_ id: String, _ name: String, _ title : String = "") {
+        self.manageTimer(name, id: id, type: .finish, title: title)
     }
     
-    func viewStart(_ id: String, _ name: String, _ title : String = "", isAutoTrack : Bool = false) {
-        self.manageTimer(name, id: id, type: .view, title: title, isAutoTrack: isAutoTrack)
+    func viewStart(_ id: String, _ name: String, _ title : String = "") {
+        self.manageTimer(name, id: id, type: .view, title: title)
     }
     
-    func viewingEnd(_ id: String, _ name: String, _ title : String = "", isAutoTrack : Bool = false) {
-        self.manageTimer(name, id: id, type: .disapear, title: title, isAutoTrack: isAutoTrack)
+    func viewingEnd(_ id: String, _ name: String, _ title : String = "") {
+        self.manageTimer(name, id: id, type: .disapear, title: title)
     }
     
-    func manageTimer(_ pageName : String, id : String, type : TimerMapType, title : String = "",  isAutoTrack : Bool = false){
+    func manageTimer(_ pageName : String, id : String, type : TimerMapType, title : String = ""){
         if self.enableLifecycleTracker{
-            let timerActivity = getTimerActivity(pageName, id: id, pageTitle: title, isAutoTrack: isAutoTrack)
+            let timerActivity = getTimerActivity(pageName, id: id, pageTitle: title)
             btTimeActivityrMap[id] = timerActivity
             timerActivity.manageTimeFor(type: type)
             if type == .disapear{
@@ -82,13 +82,13 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
         }
     }
     
-    private func getTimerActivity(_ pageName : String, id : String, pageTitle : String = "",isAutoTrack : Bool = false) -> TimerMapActivity{
+    private func getTimerActivity(_ pageName : String, id : String, pageTitle : String = "") -> TimerMapActivity{
         
         if let btTimerActivity = btTimeActivityrMap[id] {
             btTimerActivity.setPageName(pageName,title: pageTitle)
             return btTimerActivity
         }else{
-            let timerActivity = TimerMapActivity(pageName: pageName, viewType: self.viewType, logger: logger, pageTitle: pageTitle, isAutoTrack: isAutoTrack)
+            let timerActivity = TimerMapActivity(pageName: pageName, viewType: self.viewType, logger: logger, pageTitle: pageTitle)
             return timerActivity
         }
     }
@@ -151,7 +151,6 @@ enum TimerMapType {
 class TimerMapActivity {
     
     private let timer : BTTimer
-    private let isAutoTrack : Bool
     private let viewType : ViewType
     private var loadTime : Millisecond?
     private var willViewTime : Millisecond?
@@ -162,10 +161,9 @@ class TimerMapActivity {
     private(set) var logger : Logging?
     private let maxPGTMTime : Millisecond = 20_000
     
-    init(pageName: String, viewType : ViewType, logger : Logging?, pageTitle : String = "", isAutoTrack: Bool = false) {
+    init(pageName: String, viewType : ViewType, logger : Logging?, pageTitle : String = "") {
         self.viewType = viewType
         self.logger = logger
-        self.isAutoTrack = isAutoTrack
         
         if BlueTriangle.configuration.enableGrouping {
             BlueTriangle.groupTimer.startGroupIfNeeded()

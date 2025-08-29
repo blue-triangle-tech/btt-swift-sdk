@@ -204,7 +204,6 @@ extension UIViewController{
     /// - Returns: `true` if the view controller is eligible for tracking; otherwise, `false`.
     func shouldTrackScreen() -> Bool{
         
-        
         let bundle = Bundle(for: type(of: self))
            
         // Ignore classes whose names or superclasses start with an underscore
@@ -267,28 +266,28 @@ extension UIViewController{
     
     @objc dynamic func viewDidLoad_Tracker() {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.loadStarted(String(describing: self), "\(type(of: self))",  pageTitle(), isAutoTrack: true)
+            BlueTriangle.screenTracker?.loadStarted(String(describing: self), "\(type(of: self))",  pageTitle())
         }
         viewDidLoad_Tracker()
     }
     
     @objc dynamic func viewWillAppear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.loadFinish(String(describing: self),"\(type(of: self))", pageTitle(), isAutoTrack: true)
+            BlueTriangle.screenTracker?.loadFinish(String(describing: self),"\(type(of: self))", pageTitle())
         }
         viewWillAppear_Tracker(animated)
     }
                                 
     @objc dynamic func viewDidAppear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.viewStart(String(describing: self), "\(type(of: self))", pageTitle(), isAutoTrack: true)
+            BlueTriangle.screenTracker?.viewStart(String(describing: self), "\(type(of: self))", pageTitle())
         }
         viewDidAppear_Tracker(animated)
     }
     
     @objc dynamic func viewDidDisappear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.viewingEnd(String(describing: self), "\(type(of: self))", pageTitle(), isAutoTrack: true)
+            BlueTriangle.screenTracker?.viewingEnd(String(describing: self), "\(type(of: self))", pageTitle())
         }
         viewDidDisappear_Tracker(animated)
     }
