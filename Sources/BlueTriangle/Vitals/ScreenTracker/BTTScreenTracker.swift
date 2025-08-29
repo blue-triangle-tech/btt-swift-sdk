@@ -55,7 +55,7 @@ public class BTTScreenTracker{
     
     public func viewingEnd() {
         if self.hasViewing{
-            self.tracker?.manageTimer(pageName, id: id, type: .disapear)
+            self.tracker?.manageTimer(pageName, id: id, type: .disappear)
             self.hasViewing = false
         }
     }
