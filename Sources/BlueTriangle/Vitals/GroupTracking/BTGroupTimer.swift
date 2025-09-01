@@ -106,6 +106,7 @@ final class BTTimerGroup {
         var pages = [String]()
         var viewType: ViewType?
         var intervals = [(Millisecond, Millisecond)]()
+        let hasSampleRate =  BlueTriangle.sessionData()?.shouldGroupedViewCapture ?? false
 
         for timer in snap.timers {
             let maxLoadTime = max(timer.nativeAppProperties.loadTime, Constants.minPgTm)
@@ -135,7 +136,7 @@ final class BTTimerGroup {
             groupingCauseInterval: snap.causeInterval,
             netState: snap.networkReport?.netState ?? "",
             netStateSource: snap.networkReport?.netSource ?? "",
-            childViews: pages
+            childViews: hasSampleRate ? pages : []
         )
 
         snap.groupTimer.nativeAppProperties = native

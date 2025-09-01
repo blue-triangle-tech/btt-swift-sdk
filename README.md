@@ -700,6 +700,24 @@ Once the value is set, it will be sent with each page view until it is cleared b
 To view one of the values on the portal, navigate to the path 'Menu > Native App Monitoring > Native App Performance Detail' or go to the Session Lookup Page. Then, search by session ID and see the Performance Measurement Details for the specific page.
 [**for more detail**](https://help.bluetriangle.com/hc/en-us/articles/12299711775635-Where-can-I-see-Custom-Variables)
 
+### Grouping 
+
+Blue Triangle connects user experience to business outcomes by instrumenting an SDK in mobile apps to capture key metrics and events. Unlike most SDKs that only collect raw components—Classes (ViewControllers), Activities, and Fragments—Blue Triangle automatically groups them into meaningful user steps, enabling clear business impact analysis while still providing detailed data for developer-level optimizations.
+
+
+
+Then developer can update current group by using the below function:
+
+```swift
+   BlueTriangle.setGroupName(<Group name>)
+```
+
+ And, Developer can create new group by using the below function:
+
+```swift
+   BlueTriangle.setNewGroup(<Group name>)
+```
+
 
 ## How to Test your iOS SDK Integration
 
