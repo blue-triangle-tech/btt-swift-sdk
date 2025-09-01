@@ -702,11 +702,17 @@ To view one of the values on the portal, navigate to the path 'Menu > Native App
 
 ### Grouping 
 
-Blue Triangle connects user experience to business outcomes by instrumenting an SDK in mobile apps to capture key metrics and events. Unlike most SDKs that only collect raw components—Classes (ViewControllers), Activities, and Fragments—Blue Triangle automatically groups them into meaningful user steps, enabling clear business impact analysis while still providing detailed data for developer-level optimizations.
+Blue Triangle connects user experience to business outcomes by instrumenting an SDK in mobile apps to capture key metrics and events. Unlike most SDKs that only collect raw components—Classes (Activities and Fragments), Composables, Blue Triangle automatically groups them into meaningful user steps, enabling clear business impact analysis while still providing detailed data for developer-level optimizations.
 
+Blue Triangle groups ViewControllers and Fragments of a single screen. If two or more ViewControllers or Fragments lifecycle start within two seconds without any user action in between, then those are part of a group.
 
+When this feature is enabled, the SDK automatically groups all single-screen Activities, Fragments or Composables under a group name derived from either:  
+1. The screen title, or
+2. The class name of the last appearing view.
 
-Then developer can update current group by using the below function:
+Developers can also manually update or create group names using the following APIs:
+
+Developer can update current group by using the below function:
 
 ```swift
    BlueTriangle.setGroupName(<Group name>)
@@ -718,6 +724,7 @@ Then developer can update current group by using the below function:
    BlueTriangle.setNewGroup(<Group name>)
 ```
 
+[**for more info **](https://help.bluetriangle.com/hc/en-us/articles/44149857145491-Understanding-the-User-Experience-through-Automated-Step-Grouping-in-Mobile-Applications)
 
 ## How to Test your iOS SDK Integration
 

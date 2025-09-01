@@ -1,3 +1,14 @@
+# Blue Triangle 3.15.0, Aug 1 2025
+### New Features
+- Automated Grouping of all single-screen Views/Controllers.
+- Automated group name through screen title or class name.
+- Manual API to start a new group with setNewGroup(<Group name>).
+- Manual API to provide group name with setGroupName(<Group name>) method.
+- Added the ability to remotely enable or disable grouping through the remote configuration system, allowing dynamic control over this feature in real-time for tracking both SwiftUI and UIKit views. It is enabled by default.
+- Calculation of page time for Group by doing a sum of all group controllers/views with discarding overlapped timings.
+- Sending groupingCause field in NativeApp (timeout, tap, manual)
+- Entry type sent as “screen” for controllers/views in WCD.
+
 # Blue Triangle 3.14.2, Latest
 ### New Features
  - Added the ability to remotely enable or disable screen tracking through the remote configuration system, allowing dynamic control over this feature in real-time for tracking both SwiftUI and UIKit views.
