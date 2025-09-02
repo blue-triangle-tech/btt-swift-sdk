@@ -78,6 +78,7 @@ class RootViewController: UIViewController {
             BlueTriangle.endTimer(timer)
         }
         let control = UIButton(configuration: .filled(), primaryAction: action)
+        control.accessibilityIdentifier = "customTimerButton"
         control.tintColor = .systemCyan
         control.translatesAutoresizingMaskIntoConstraints = false
         return control
@@ -169,6 +170,7 @@ class RootViewController: UIViewController {
     }
     
     private func showScreenTrackingHomeVC() {
+        BlueTriangle.setNewGroup("Initial-SetNewGroup")
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         if let vc = storyboard.instantiateViewController(withIdentifier: "HomeVC") as? HomeViewController {
             navigationController?.pushViewController(vc, animated: true)

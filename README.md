@@ -700,6 +700,31 @@ Once the value is set, it will be sent with each page view until it is cleared b
 To view one of the values on the portal, navigate to the path 'Menu > Native App Monitoring > Native App Performance Detail' or go to the Session Lookup Page. Then, search by session ID and see the Performance Measurement Details for the specific page.
 [**for more detail**](https://help.bluetriangle.com/hc/en-us/articles/12299711775635-Where-can-I-see-Custom-Variables)
 
+### Grouping 
+
+Blue Triangle connects user experience to business outcomes by instrumenting an SDK in mobile apps to capture key metrics and events. Unlike most SDKs that only collect raw components—Classes (Activities and Fragments), Composables, Blue Triangle automatically groups them into meaningful user steps, enabling clear business impact analysis while still providing detailed data for developer-level optimizations.
+
+Blue Triangle groups ViewControllers and Fragments of a single screen. If two or more ViewControllers or Fragments lifecycle start within two seconds without any user action in between, then those are part of a group.
+
+When this feature is enabled, the SDK automatically groups all single-screen Activities, Fragments or Composables under a group name derived from either:  
+1. The screen title, or
+2. The class name of the last appearing view.
+
+Developers can also manually update or create group names using the following APIs:
+
+Developer can update current group by using the below function:
+
+```swift
+   BlueTriangle.setGroupName(<Group name>)
+```
+
+ And, Developer can create new group by using the below function:
+
+```swift
+   BlueTriangle.setNewGroup(<Group name>)
+```
+
+Visit the [**Official Help Doc**](https://help.bluetriangle.com/hc/en-us/articles/44149857145491-Understanding-the-User-Experience-through-Automated-Step-Grouping-in-Mobile-Applications) for more info.
 
 ## How to Test your iOS SDK Integration
 

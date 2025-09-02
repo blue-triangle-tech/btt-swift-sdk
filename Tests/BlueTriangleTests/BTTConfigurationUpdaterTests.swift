@@ -42,10 +42,13 @@ final class BTTConfigurationUpdaterTests: XCTestCase {
 
     func testUpdatePerformsFetchIfNewSession() {
 
-        let config = BTTRemoteConfig(networkSampleRateSDK: 75, 
-                                     enableRemoteConfigAck: false, 
+        let config = BTTRemoteConfig(networkSampleRateSDK: 75,
+                                     groupedViewSampleRate: 5,
+                                     enableRemoteConfigAck: false,
                                      enableAllTracking: true,
                                      enableScreenTracking: true,
+                                     enableGrouping: true,
+                                     groupingIdleTime: 2,
                                      ignoreScreens: [])
         mockFetcher.configToReturn = config
         
@@ -63,10 +66,13 @@ final class BTTConfigurationUpdaterTests: XCTestCase {
     
     func testUpdateSkipsFetchIfNotNewSessionAndWithinUpdatePeriod() {
         
-        let config = BTTRemoteConfig(networkSampleRateSDK: 75, 
-                                     enableRemoteConfigAck: false, 
+        let config = BTTRemoteConfig(networkSampleRateSDK: 75,
+                                     groupedViewSampleRate: 5,
+                                     enableRemoteConfigAck: false,
                                      enableAllTracking: true,
                                      enableScreenTracking: true,
+                                     enableGrouping: true,
+                                     groupingIdleTime: 2,
                                      ignoreScreens: [])
         mockRepo.save(config)
         
@@ -81,16 +87,27 @@ final class BTTConfigurationUpdaterTests: XCTestCase {
     
     func testUpdatePerformsFetchIfNotNewSessionAndUpdatePeriodElapsed() {
         
-        let apiConfig = BTTRemoteConfig(networkSampleRateSDK: 75, 
-                                        enableRemoteConfigAck: false, 
+        let apiConfig = BTTRemoteConfig(networkSampleRateSDK: 75,
+                                        groupedViewSampleRate: 5,
+                                        enableRemoteConfigAck: false,
                                         enableAllTracking: true,
                                         enableScreenTracking: true,
+                                        enableGrouping: true,
+                                        groupingIdleTime: 2,
                                         ignoreScreens: [])
         mockFetcher.configToReturn = apiConfig
         
         
         let currentTime = Date().timeIntervalSince1970.milliseconds
-        let storeConfig = BTTSavedRemoteConfig(networkSampleRateSDK: 70, enableRemoteConfigAck: false, enableAllTracking: true, enableScreenTracking: true, ignoreScreens: [], dateSaved: currentTime - Millisecond.hour * 2)
+        let storeConfig = BTTSavedRemoteConfig(networkSampleRateSDK: 70,
+                                               groupedViewSampleRate: 5,
+                                               enableRemoteConfigAck: false,
+                                               enableAllTracking: true,
+                                               enableScreenTracking: true,
+                                               enableGrouping: true,
+                                               groupingIdleTime: 2,
+                                               ignoreScreens: [],
+                                               dateSaved: currentTime - Millisecond.hour * 2)
         mockRepo.store[key] = storeConfig
         
         let expectation = XCTestExpectation(description: "Completion handler called")

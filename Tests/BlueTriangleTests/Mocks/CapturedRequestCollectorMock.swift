@@ -9,7 +9,6 @@
 import Foundation
 
 actor CapturedRequestCollectorMock: CapturedRequestCollecting {
-    
     var onStart: (Page, TimeInterval) -> Void
     var onCollectTimer: (InternalTimer, URLResponse?) -> Void
     var onCollectMetrics: (URLSessionTaskMetrics) -> Void
@@ -27,9 +26,7 @@ actor CapturedRequestCollectorMock: CapturedRequestCollecting {
     func start(page: Page, startTime: TimeInterval){
         onStart(page, startTime)
     }
-    
-    func collect(timer: InternalTimer, response: CustomResponse){}
-    
+
     func collect(metrics: URLSessionTaskMetrics, error : Error?){
         onCollectMetrics(metrics)
     }
@@ -37,6 +34,12 @@ actor CapturedRequestCollectorMock: CapturedRequestCollecting {
     func collect(timer: InternalTimer, response: URLResponse?){
         onCollectTimer(timer, response)
     }
+    
+    func start(page: Page, startTime: TimeInterval, isGroupTimer: Bool) {}
+    
+    func update(pageName: String, startTime: Millisecond) {}
+    
+    func collect(timer: InternalTimer, response: CustomResponse){}
     
     func collect(timer: InternalTimer, request : URLRequest, error: Error?){}
 }

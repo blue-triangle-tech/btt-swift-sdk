@@ -31,7 +31,7 @@ struct CapturedRequest: Encodable, Equatable {
         case other
     }
 
-    let entryType = "resource"
+    var entryType = "resource"
     /// Page domain without host.
     var domain: String
     /// Subdomain of the fully qualified domain name.
@@ -135,11 +135,27 @@ extension CapturedRequest.InitiatorType {
 
 extension CapturedRequest {
     
+    init(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, action: UserAction) {
+        self.init(
+            startTime: startTime - groupStartTime,
+            endTime:  endTime - groupStartTime,
+            duration: endTime - startTime,
+            action: action)
+    }
+    
+    init(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) {
+        self.init(
+            startTime: startTime - groupStartTime,
+            endTime:  endTime - groupStartTime,
+            duration: endTime - startTime,
+            response: response)
+    }
+    
     init(timer: InternalTimer, relativeTo startTime: Millisecond, response: URLResponse?) {
         self.init(
             startTime: timer.startTime.milliseconds - startTime,
             endTime: timer.endTime.milliseconds - startTime,
-            duration: timer.endTime.milliseconds - timer.startTime.milliseconds,
+            duration: timer.endTime.milliseconds - timer.startTime.milliseconds < 15 ? 15 : timer.endTime.milliseconds - timer.startTime.milliseconds,
             decodedBodySize: response?.expectedContentLength ?? 0,
             encodedBodySize: 0,
             response: response)
@@ -187,6 +203,49 @@ extension CapturedRequest {
                 request: lastMetric?.request,
                 error: error)
         }
+    }
+    
+    
+    init(
+        startTime: Millisecond,
+        endTime: Millisecond,
+        duration: Millisecond,
+        action: UserAction
+    ) {
+        self.host = ""
+        self.domain = ""
+        self.entryType = "Action"
+        self.url = action.action
+        self.initiatorType = .other
+        self.file =  action.actionType
+        self.startTime = startTime
+        self.endTime = endTime
+        self.duration = duration
+        self.decodedBodySize = 0
+        self.encodedBodySize = 0
+    }
+    
+    
+    init(
+        startTime: Millisecond,
+        endTime: Millisecond,
+        duration: Millisecond,
+        response: CustomPageResponse
+    ) {
+        self.host = ""
+        self.domain = ""
+        if let native = response.native {
+            self.nativeAppProperty = native
+        }
+        self.entryType = "Screen"
+        self.url = response.url ?? ""
+        self.initiatorType = .other
+        self.file =  response.file
+        self.startTime = startTime
+        self.endTime = endTime
+        self.duration = duration
+        self.decodedBodySize = 0
+        self.encodedBodySize = 0
     }
     
     init(

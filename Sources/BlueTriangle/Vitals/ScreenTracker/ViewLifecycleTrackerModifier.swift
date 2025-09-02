@@ -55,8 +55,6 @@ internal struct ViewLifecycleTrackerModifier: ViewModifier {
                 }
         }
     }
-    
-
 }
 
 public extension View {

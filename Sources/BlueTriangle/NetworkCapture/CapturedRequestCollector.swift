@@ -42,10 +42,10 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
         timerManager.cancel()
     }
 
-    func start(page: Page, startTime: TimeInterval) {
+    func start(page: Page, startTime: TimeInterval, isGroupTimer: Bool = false) {
         timerManager.cancel()
         let previousCollection = requestCollection
-        requestCollection = RequestCollection(page: page, startTime: startTime.milliseconds)
+        requestCollection = RequestCollection(page: page, startTime: startTime.milliseconds, isGroupTimer: isGroupTimer)
         timerManager.start()
 
         if let collection = previousCollection, collection.isNotEmpty {
@@ -53,6 +53,10 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
         }
     }
 
+    func update(pageName : String, startTime: Millisecond){
+        requestCollection?.updateNetworkCapture(pageName: pageName, startTime: startTime)
+    }
+    
     func collect(timer: InternalTimer, response: CustomResponse){
         requestCollection?.insert(timer: timer, response: response)
     }
@@ -72,7 +76,7 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
     // Use `nonisolated` to enable capture by timerManager handler.
     nonisolated private func batchRequests() {
         Task {
-            await self.batchCapturedRequests()
+        await self.batchCapturedRequests()
         }
     }
 

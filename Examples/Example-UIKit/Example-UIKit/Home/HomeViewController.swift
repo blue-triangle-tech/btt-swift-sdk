@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import BlueTriangle
 
 class HomeViewController: UIViewController {
     
@@ -14,6 +15,10 @@ class HomeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = "Home"
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
     }
                                                                 
 }
@@ -46,6 +51,7 @@ extension HomeViewController: UITableViewDelegate, UITableViewDataSource{
                 self.present(vc, animated: true)
             }
         }else if item == "Test Tab"{
+            BlueTriangle.setNewGroup("Tab setNewGroup")
             if let vc = model.getHomeTabView(item){
                 self.navigationController?.pushViewController(vc, animated: true)
             }
