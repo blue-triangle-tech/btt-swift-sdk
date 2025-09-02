@@ -724,7 +724,7 @@ Developer can update current group by using the below function:
    BlueTriangle.setNewGroup(<Group name>)
 ```
 
-[**for more info **](https://help.bluetriangle.com/hc/en-us/articles/44149857145491-Understanding-the-User-Experience-through-Automated-Step-Grouping-in-Mobile-Applications)
+Visit the [**Official Help Doc**](https://help.bluetriangle.com/hc/en-us/articles/44149857145491-Understanding-the-User-Experience-through-Automated-Step-Grouping-in-Mobile-Applications) for more info.
 
 ## How to Test your iOS SDK Integration
 
