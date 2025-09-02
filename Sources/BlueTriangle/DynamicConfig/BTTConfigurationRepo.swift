@@ -40,9 +40,12 @@ class BTTConfigurationRepo : ConfigurationRepo{
     func save(_ config: BTTRemoteConfig) throws {
         
         let newConfig = BTTSavedRemoteConfig(networkSampleRateSDK: config.networkSampleRateSDK,
-                                             enableRemoteConfigAck : config.enableRemoteConfigAck, 
+                                             groupedViewSampleRate: config.groupedViewSampleRate,
+                                             enableRemoteConfigAck : config.enableRemoteConfigAck,
                                              enableAllTracking: config.enableAllTracking,
                                              enableScreenTracking: config.enableScreenTracking,
+                                             enableGrouping: config.enableGrouping,
+                                             groupingIdleTime: config.groupingIdleTime,
                                              ignoreScreens: config.ignoreScreens,
                                              dateSaved: Date().timeIntervalSince1970.milliseconds)
         
@@ -58,9 +61,12 @@ class BTTConfigurationRepo : ConfigurationRepo{
     func hasChange( _ config : BTTRemoteConfig) -> Bool{
         
         let newConfig = BTTSavedRemoteConfig(networkSampleRateSDK: config.networkSampleRateSDK,
-                                             enableRemoteConfigAck : config.enableRemoteConfigAck, 
+                                             groupedViewSampleRate: config.groupedViewSampleRate,
+                                             enableRemoteConfigAck : config.enableRemoteConfigAck,
                                              enableAllTracking: config.enableAllTracking,
                                              enableScreenTracking: config.enableScreenTracking,
+                                             enableGrouping: config.enableGrouping,
+                                             groupingIdleTime: config.groupingIdleTime,
                                              ignoreScreens: config.ignoreScreens,
                                              dateSaved: Date().timeIntervalSince1970.milliseconds)
         

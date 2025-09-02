@@ -49,13 +49,13 @@
     CustomVariables *customVariables = [[CustomVariables alloc] initWithCv1:@"" cv2:@"" cv3:@"" cv4:@"" cv5:@"" cv11:@"" cv12:@"" cv13:@"" cv14:@"" cv15:@""];
 
     NSNumber *brandValue = [NSNumber numberWithDouble:20.89];
-    Page *page = [[Page alloc] initWithPageName:@"MY_SITE_ID" brandValue:brandValue.decimalValue pageType:@"PAGE_TYPE" referringURL:@"REFERRING_URL" url:@"URL" customVariables:customVariables customCategories:customCategories customNumbers:customNumbers];
+    Page *page = [[Page alloc] initWithPageName:@"MY_SITE_ID" pageTitle:@"" brandValue:brandValue.decimalValue pageType:@"PAGE_TYPE" referringURL:@"REFERRING_URL" url:@"URL" customVariables:customVariables customCategories:customCategories customNumbers:customNumbers];
 
     NSNumber *cartValue = [NSNumber numberWithDouble:10.99];
     
     PurchaseConfirmation *purchaseConfirmation = [[PurchaseConfirmation alloc] initWithCartValue:cartValue.decimalValue cartCount:2 cartCountCheckout:2 orderNumber:@"MY_ORDER_NUMBER"];
     
-    BTTimer *timer = [BlueTriangle makeTimerWithPage:page timerType:TimerTypeMain];
+    BTTimer *timer = [BlueTriangle makeTimerWithPage:page timerType:TimerTypeMain isGroupedTimer : false];
 
     [timer start];
 
@@ -65,12 +65,12 @@
 
     [BlueTriangle endTimer:timer purchaseConfirmation:purchaseConfirmation];
 
-    BTTimer *timer2 = [BlueTriangle startTimerWithPage:page timerType:TimerTypeCustom];
+    BTTimer *timer2 = [BlueTriangle startTimerWithPage:page timerType:TimerTypeCustom isGroupedTimer : false];
 
     [BlueTriangle endTimer:timer2 purchaseConfirmation:nil];
 
     // Network Capture
-    BTTimer *timer3 = [BlueTriangle makeTimerWithPage:page timerType:TimerTypeMain];
+    BTTimer *timer3 = [BlueTriangle makeTimerWithPage:page timerType:TimerTypeMain isGroupedTimer : false];
 
     NSURLSession *session = [NSURLSession sharedSession];
 

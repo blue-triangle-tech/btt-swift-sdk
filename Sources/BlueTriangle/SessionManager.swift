@@ -135,6 +135,7 @@ class SessionManager : SessionManagerProtocol{
                 currentSession = session
                 syncStoredConfigToSessionAndApply()
                 sessionStore.saveSession(session!)
+                logger.info("BlueTriangle:SessionManager: Current session \(session?.sessionID ?? 0)")
                 return session!
             }
             
@@ -152,7 +153,6 @@ class SessionManager : SessionManagerProtocol{
             return updatedSession
         }
     }
-
     
     private func updateSession(){
         let seesion = self.invalidateSession()
@@ -186,23 +186,30 @@ extension SessionManager {
     private func updateConfigurationOnChange(){
         self.syncStoredConfigToSessionAndApply()
         BlueTriangle.updateCaptureRequests()
+        BlueTriangle.updateGroupedViewCaptureRequest()
         configSyncer.updateAndApplySDKState()
     }
 
-    private func syncStoredConfigToSessionAndApply(){
-                
+    private func syncStoredConfigToSessionAndApply() {
         if let session = currentSession {
-            if session.isNewSession{
+            if session.isNewSession {
                 configSyncer.syncConfigurationFromStorage()
                 session.networkSampleRate = BlueTriangle.configuration.networkSampleRate
                 session.enableScreenTracking = BlueTriangle.configuration.enableScreenTracking
-                session.shouldNetworkCapture =  .random(probability: BlueTriangle.configuration.networkSampleRate)
+                session.groupedViewSampleRate = BlueTriangle.configuration.groupedViewSampleRate
+                session.enableGrouping = BlueTriangle.configuration.enableGrouping
+                session.groupingIdleTime = BlueTriangle.configuration.groupingIdleTime
+                session.shouldNetworkCapture = .random(probability: BlueTriangle.configuration.networkSampleRate)
+                session.shouldGroupedViewCapture = .random(probability: BlueTriangle.configuration.groupedViewSampleRate)
                 session.ignoreViewControllers = BlueTriangle.configuration.ignoreViewControllers
                 sessionStore.saveSession(session)
-            }else{
+            } else {
+                BlueTriangle.updateGroupedViewSampleRate(session.groupedViewSampleRate)
+                BlueTriangle.updateGrouping(session.enableGrouping, idleTime: session.groupingIdleTime)
                 BlueTriangle.updateScreenTracking(session.enableScreenTracking)
                 BlueTriangle.updateNetworkSampleRate(session.networkSampleRate)
                 BlueTriangle.updateIgnoreVcs(session.ignoreViewControllers)
+                sessionStore.saveSession(session)
             }
         }
     }

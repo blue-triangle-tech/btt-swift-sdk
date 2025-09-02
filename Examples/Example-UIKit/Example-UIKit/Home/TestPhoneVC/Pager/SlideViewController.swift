@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import BlueTriangle
 
 class SlideViewController: UIViewController {
 
@@ -20,11 +21,15 @@ class SlideViewController: UIViewController {
     }
     
     private func updateUI(){
-        
+        Thread.sleep(forTimeInterval: 0.2)
         lblParent.text = "Parent : PagerViewController"
         lblTitle.text = "\(type(of: self))"
         lblId.text = "Id :" + "\n"  + String(describing: self)
         lblDesc.text = "This screen is an UIViewController sub class. Sliding on UIViewController Scroll View."
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
     }
    
     static func getSlides()-> [SlideViewController]{

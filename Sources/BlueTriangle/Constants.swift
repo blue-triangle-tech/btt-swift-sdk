@@ -59,5 +59,4 @@ enum Constants {
     //Dynamic Config
     static let FULL_SAMPLE_RATE_ARGUMENT  = "-FullSampleRate"
     static let NEW_SESSION_ON_LAUNCH_ARGUMENT  = "-NewSessionOnLaunch"
-
 }

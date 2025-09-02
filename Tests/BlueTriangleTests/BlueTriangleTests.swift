@@ -26,7 +26,7 @@ final class BlueTriangleTests: XCTestCase {
     static let performanceMonitor = PerformanceMonitorMock()
   
     static var onMakeTimer: (Page, BTTimer.TimerType) -> Void = { _, _ in }
-    static let timerFactory: (Page, BTTimer.TimerType) -> BTTimer = { page, timerType in
+    static let timerFactory: (Page, BTTimer.TimerType, Bool) -> BTTimer = { page, timerType, isGrouping in
         onMakeTimer(page, timerType)
         return BTTimer(
             page: page,
@@ -460,12 +460,12 @@ extension BlueTriangleTests {
         }
 
         // Timer
-        let timerFactory: (Page, BTTimer.TimerType) -> BTTimer = { page, timerType in
+        let timerFactory: (Page, BTTimer.TimerType, Bool) -> BTTimer = { page, timerType, isGrouping in
             BTTimer(page: page,
                     type: timerType,
                     logger: Self.logger,
                     intervalProvider: Self.timeIntervalProvider,
-                    onStart: BlueTriangle.timerDidStart(_:page:startTime:),
+                    onStart: BlueTriangle.timerDidStart(_:page:startTime:isGroupTimer:),
                     performanceMonitor: PerformanceMonitorMock())
         }
 
@@ -640,7 +640,7 @@ extension BlueTriangleTests {
                                                                resourceUsage: ResourceUsage.self)
 
         // Timer
-        let timerFactory: (Page, BTTimer.TimerType) -> BTTimer = { page, timerType  in
+        let timerFactory: (Page, BTTimer.TimerType, Bool) -> BTTimer = { page, timerType, isGrouping  in
             BTTimer(page: page,
                     type: timerType,
                     logger: Self.logger,
@@ -704,7 +704,7 @@ extension BlueTriangleTests {
                                                          resourceUsage: ResourceUsage.self)
 
         // Timer
-        let timerFactory: (Page, BTTimer.TimerType) -> BTTimer = { page, timerType  in
+        let timerFactory: (Page, BTTimer.TimerType, Bool) -> BTTimer = { page, timerType, isGrouping  in
             BTTimer(page: page,
                     type: timerType,
                     logger: Self.logger,
@@ -768,7 +768,7 @@ extension BlueTriangleTests {
                                                                        resourceUsage: ResourceUsage.self)
 
         // Timer
-        let timerFactory: (Page, BTTimer.TimerType) -> BTTimer = { page, timerType  in
+        let timerFactory: (Page, BTTimer.TimerType, Bool) -> BTTimer = { page, timerType, isGrouping   in
             BTTimer(page: page,
                     type: timerType,
                     logger: Self.logger,
