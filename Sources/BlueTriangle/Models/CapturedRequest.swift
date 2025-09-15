@@ -389,12 +389,12 @@ extension CapturedRequest {
         case decodedBodySize = "dz"
         case encodedBodySize = "ez"
         case nativeAppProperty = "NATIVEAPP"
-        case minCPU = "CPU_MIN"
-        case maxCPU = "CPU_MAX"
-        case avgCPU = "CPU_AVG"
-        case minMemory = "MEMORY_MIN"
-        case maxMemory = "MEMORY_MAX"
-        case avgMemory = "MEMORY_AVG"
+        case minCPU = "minCPU"
+        case maxCPU = "maxCPU"
+        case avgCPU = "avgCPU"
+        case minMemory = "minMemory"
+        case maxMemory = "maxMemory"
+        case avgMemory = "avgMemory"
     }
     
     func encode(to encoder: Encoder) throws {
