@@ -58,6 +58,13 @@ struct CapturedRequest: Encodable, Equatable {
     var httpMethod: String?
     // Native App Properties
     var nativeAppProperty: NativeAppProperties = .nstEmpty
+    
+    var minCPU: Float?
+    var maxCPU: Float?
+    var avgCPU: Float?
+    var minMemory: UInt64?
+    var maxMemory: UInt64?
+    var avgMemory: UInt64?
 }
 
 extension CapturedRequest.InitiatorType {
@@ -246,6 +253,12 @@ extension CapturedRequest {
         self.duration = duration
         self.decodedBodySize = 0
         self.encodedBodySize = 0
+        self.minCPU = response.minCPU
+        self.maxCPU = response.maxCPU
+        self.avgCPU = response.avgCPU
+        self.minMemory = response.minMemory
+        self.maxMemory = response.maxMemory
+        self.avgMemory = response.avgMemory
     }
     
     init(
@@ -376,6 +389,12 @@ extension CapturedRequest {
         case decodedBodySize = "dz"
         case encodedBodySize = "ez"
         case nativeAppProperty = "NATIVEAPP"
+        case minCPU = "CPU_MIN"
+        case maxCPU = "CPU_MAX"
+        case avgCPU = "CPU_AVG"
+        case minMemory = "MEMORY_MIN"
+        case maxMemory = "MEMORY_MAX"
+        case avgMemory = "MEMORY_AVG"
     }
     
     func encode(to encoder: Encoder) throws {
@@ -393,6 +412,25 @@ extension CapturedRequest {
         try con.encode(decodedBodySize, forKey: .decodedBodySize)
         try con.encode(encodedBodySize, forKey: .encodedBodySize)
         try con.encode(nativeAppProperty, forKey: .nativeAppProperty)
+        
+        if let minCPU = minCPU, minCPU > 0 {
+            try con.encode(minCPU, forKey: .minCPU)
+        }
+        if let maxCPU = maxCPU, maxCPU > 0 {
+            try con.encode(maxCPU, forKey: .maxCPU)
+        }
+        if let avgCPU = avgCPU, avgCPU > 0 {
+            try con.encode(avgCPU, forKey: .avgCPU)
+        }
+        if let minMemory = minMemory, minMemory > 0 {
+            try con.encode(minMemory, forKey: .minMemory)
+        }
+        if let maxMemory = maxMemory, maxMemory > 0 {
+            try con.encode(maxMemory, forKey: .maxMemory)
+        }
+        if let avgMemory = avgMemory, avgMemory > 0 {
+            try con.encode(avgMemory, forKey: .avgMemory)
+        }
     }
 }
 
@@ -413,6 +451,12 @@ extension CapturedRequest : Decodable {
         self.decodedBodySize = try container.decodeIfPresent(Int64.self, forKey: .decodedBodySize) ?? 0
         self.encodedBodySize = try container.decodeIfPresent(Int64.self, forKey: .encodedBodySize) ?? 0
         self.nativeAppProperty = try container.decodeIfPresent(NativeAppProperties.self, forKey: .nativeAppProperty) ?? .nstEmpty
+        self.minCPU = try container.decodeIfPresent(Float.self, forKey: .minCPU) ?? 0
+        self.maxCPU = try container.decodeIfPresent(Float.self, forKey: .maxCPU) ?? 0
+        self.avgCPU = try container.decodeIfPresent(Float.self, forKey: .avgCPU) ?? 0
+        self.minMemory = try container.decodeIfPresent(UInt64.self, forKey: .minMemory) ?? 0
+        self.maxMemory = try container.decodeIfPresent(UInt64.self, forKey: .maxMemory) ?? 0
+        self.avgMemory = try container.decodeIfPresent(UInt64.self, forKey: .avgMemory) ?? 0
     }
 }
 

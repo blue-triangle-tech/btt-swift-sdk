@@ -278,6 +278,12 @@ final class BTTimerGroup {
         let loadStartTime = prop.loadStartTime > 0 ? prop.loadStartTime : timer.startTime.milliseconds
         let loadEndTime = prop.loadEndTime > 0 ? prop.loadEndTime : (loadStartTime + Constants.minPgTm)
         let actualLoadEndTime = (loadEndTime - loadStartTime) < Constants.minPgTm ? (loadStartTime + Constants.minPgTm) : loadEndTime
+        let minCPU = timer.performanceReport?.minCPU ?? 0
+        let maxCPU = timer.performanceReport?.maxCPU ?? 0
+        let avgCPU = timer.performanceReport?.avgCPU ?? 0
+        let minMemory = timer.performanceReport?.minMemory ?? 0
+        let maxMemory = timer.performanceReport?.maxMemory ?? 0
+        let avgMemory = timer.performanceReport?.avgMemory ?? 0
 
         let native = NativeAppProperties(
             fullTime: prop.fullTime,
@@ -300,7 +306,16 @@ final class BTTimerGroup {
             startTime: loadStartTime,
             endTime: actualLoadEndTime,
             groupStartTime: groupTimer.startTime.milliseconds,
-            response: CustomPageResponse(file: timer.getPageName(), url: timer.getPageName(), domain: group, native: native)
+            response: CustomPageResponse(file: timer.getPageName(),
+                                         url: timer.getPageName(),
+                                         domain: group,
+                                         native: native,
+                                         minCPU: minCPU,
+                                         maxCPU: maxCPU,
+                                         avgCPU: avgCPU,
+                                         minMemory: minMemory,
+                                         maxMemory: maxMemory,
+                                         avgMemory: avgMemory)
         )
     }
 
@@ -365,4 +380,10 @@ struct CustomPageResponse{
     let url: String?
     let domain: String?
     let native: NativeAppProperties?
+    let minCPU: Float?
+    let maxCPU: Float?
+    let avgCPU: Float?
+    let minMemory: UInt64?
+    let maxMemory: UInt64?
+    let avgMemory: UInt64?
 }
