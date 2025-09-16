@@ -12,7 +12,7 @@ public class BTTScreenTracker{
     private var hasViewing = false
     private var id = "\(Identifier.random())"
     private var pageName : String
-    public  var type  = ViewType.Manual.rawValue
+    public  var type  = ScreenType.Manual.rawValue
     private var tracker : BTTScreenLifecycleTracker?
     
    // Add local object of
@@ -23,14 +23,14 @@ public class BTTScreenTracker{
     
     private func updateScreenType(){
         
-        if type == ViewType.UIKit.rawValue{
-            self.tracker?.setUpViewType(.UIKit)
+        if type == ScreenType.UIKit.rawValue{
+            self.tracker?.setUpScreenType(.UIKit)
         }
-        else if type == ViewType.SwiftUI.rawValue{
-            self.tracker?.setUpViewType(.SwiftUI)
+        else if type == ScreenType.SwiftUI.rawValue{
+            self.tracker?.setUpScreenType(.SwiftUI)
         }
         else{
-            self.tracker?.setUpViewType(.Manual)
+            self.tracker?.setUpScreenType(.Manual)
         }
     }
     

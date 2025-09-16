@@ -61,7 +61,7 @@ public extension View {
     
     private func shouldTrackScreen(_ name : String) -> Bool{
 
-        setUpViewType()
+        setUpScreenType()
         
         // Ignore any view explicitly listed in a developer exclusion list or remote config ignore list
         if let sessionData = BlueTriangle.sessionData(), sessionData.ignoreViewControllers.contains(name) {
@@ -71,9 +71,9 @@ public extension View {
         return true
     }
     
-   private func setUpViewType(){
+   private func setUpScreenType(){
         //SetUp View Type
-       BlueTriangle.screenTracker?.setUpViewType(.SwiftUI)
+       BlueTriangle.screenTracker?.setUpScreenType(.SwiftUI)
     }
     
     ///Uses for manual screen tracking to log individual views in SwiftUI.

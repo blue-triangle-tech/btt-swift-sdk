@@ -19,7 +19,7 @@ final class CrashReportManagerTests: XCTestCase {
         loadStartTime: 0,
         loadEndTime: 0,
         maxMainThreadUsage: 0,
-        viewType: nil,
+        screenType: nil,
         offline: 0,
         wifi:  0,
         cellular:  0,
