@@ -108,7 +108,7 @@ final public class BTTimer: NSObject {
                     loadStartTime: 0,
                     loadEndTime: 0,
                     maxMainThreadUsage: performanceReport?.maxMainThreadTask.milliseconds ?? 0,
-                    viewType: nil,
+                    screenType: nil,
                     offline: networkReport?.offline ?? 0,
                     wifi: networkReport?.wifi ?? 0,
                     cellular: networkReport?.cellular ?? 0,

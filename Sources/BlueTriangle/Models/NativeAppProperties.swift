@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum ViewType : String, Encodable, Decodable {
+enum ScreenType : String, Encodable, Decodable {
     case UIKit
     case SwiftUI
     case Manual
@@ -35,7 +35,7 @@ struct NativeAppProperties: Equatable {
     let loadEndTime: Millisecond
     let maxMainThreadUsage: Millisecond
     let numberOfCPUCores: Int32 = Int32(ProcessInfo.processInfo.activeProcessorCount)
-    let viewType: ViewType?
+    let screenType: ScreenType?
     let offline: Millisecond
     let wifi: Millisecond
     let cellular: Millisecond
@@ -77,8 +77,8 @@ extension NativeAppProperties: Codable{
             try con.encode(numberOfCPUCores, forKey: .numberOfCPUCores)
         }
                 
-        if viewType != nil{
-            try con.encode(viewType, forKey: .viewType)
+        if screenType != nil{
+            try con.encode(screenType, forKey: .screenType)
         }
         
         if offline > 0{
@@ -145,7 +145,7 @@ extension NativeAppProperties: Codable{
         self.loadStartTime = try container.decodeIfPresent(Millisecond.self, forKey: .loadStartTime)  ?? 0
         self.loadEndTime = try container.decodeIfPresent(Millisecond.self, forKey: .loadEndTime)  ?? 0
         self.maxMainThreadUsage = try container.decodeIfPresent(Millisecond.self, forKey: .maxMainThreadUsage)  ?? 0
-        self.viewType = try container.decodeIfPresent(ViewType.self, forKey: .viewType)
+        self.screenType = try container.decodeIfPresent(ScreenType.self, forKey: .screenType)
         self.wifi = try container.decodeIfPresent(Millisecond.self, forKey: .wifi)  ?? 0
         self.offline = try container.decodeIfPresent(Millisecond.self, forKey: .offline)  ?? 0
         self.cellular = try container.decodeIfPresent(Millisecond.self, forKey: .cellular)  ?? 0
@@ -171,7 +171,7 @@ extension NativeAppProperties: Codable{
         case loadEndTime
         case maxMainThreadUsage
         case numberOfCPUCores
-        case viewType
+        case screenType
         case offline
         case wifi
         case cellular
@@ -202,7 +202,7 @@ extension NativeAppProperties {
             loadStartTime: 0,
             loadEndTime: 0,
             maxMainThreadUsage: 0,
-            viewType: nil,
+            screenType: nil,
             offline: 0,
             wifi: 0,
             cellular: 0,
@@ -218,7 +218,7 @@ extension NativeAppProperties {
         loadStartTime: 0,
         loadEndTime: 0,
         maxMainThreadUsage: 0,
-        viewType: nil,
+        screenType: nil,
         offline: 0,
         wifi: 0,
         cellular: 0,
@@ -232,7 +232,7 @@ extension NativeAppProperties {
             loadStartTime: 0,
             loadEndTime: 0,
             maxMainThreadUsage: 0,
-            viewType: nil,
+            screenType: nil,
             offline: 0,
             wifi: 0,
             cellular: 0,
@@ -249,7 +249,7 @@ extension NativeAppProperties {
             loadStartTime: self.loadStartTime,
             loadEndTime: self.loadEndTime,
             maxMainThreadUsage: self.maxMainThreadUsage,
-            viewType: self.viewType,
+            screenType: self.screenType,
             offline: self.offline,
             wifi: self.wifi,
             cellular: self.cellular,

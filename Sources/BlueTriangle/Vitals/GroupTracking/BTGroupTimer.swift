@@ -104,7 +104,7 @@ final class BTTimerGroup {
 
         var pgtm: Millisecond = 0
         var pages = [String]()
-        var viewType: ViewType?
+        var screenType: ScreenType?
         var intervals = [(Millisecond, Millisecond)]()
         let hasSampleRate =  BlueTriangle.sessionData()?.shouldGroupedViewCapture ?? false
 
@@ -112,7 +112,7 @@ final class BTTimerGroup {
             let maxLoadTime = max(timer.nativeAppProperties.loadTime, Constants.minPgTm)
             pgtm += maxLoadTime
             pages.append(timer.getPageName())
-            if viewType == nil { viewType = timer.nativeAppProperties.viewType }
+            if screenType == nil { screenType = timer.nativeAppProperties.screenType }
             intervals.append((timer.nativeAppProperties.loadStartTime, timer.nativeAppProperties.loadEndTime))
         }
 
@@ -125,7 +125,7 @@ final class BTTimerGroup {
             loadStartTime: 0,
             loadEndTime: 0,
             maxMainThreadUsage: snap.maxMainThreadTask,
-            viewType: viewType,
+            screenType: screenType,
             offline: snap.networkReport?.offline ?? 0,
             wifi: snap.networkReport?.wifi ?? 0,
             cellular: snap.networkReport?.cellular ?? 0,
@@ -160,7 +160,7 @@ final class BTTimerGroup {
                 loadStartTime: prop.loadStartTime,
                 loadEndTime: prop.loadEndTime,
                 maxMainThreadUsage: prop.maxMainThreadUsage,
-                viewType: prop.viewType,
+                screenType: prop.screenType,
                 offline: prop.offline,
                 wifi: prop.wifi,
                 cellular: prop.cellular,
@@ -291,7 +291,7 @@ final class BTTimerGroup {
             loadStartTime: prop.loadStartTime,
             loadEndTime: prop.loadEndTime,
             maxMainThreadUsage: prop.maxMainThreadUsage,
-            viewType: prop.viewType,
+            screenType: prop.screenType,
             offline: prop.offline,
             wifi: prop.wifi,
             cellular: prop.cellular,

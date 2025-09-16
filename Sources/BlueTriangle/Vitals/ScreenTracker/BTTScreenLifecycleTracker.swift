@@ -32,7 +32,7 @@ protocol BTScreenLifecycleTracker{
 public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
     private var btTimeActivityrMap = [String: TimerMapActivity]()
     private var enableLifecycleTracker = false
-    private var viewType = ViewType.UIKit
+    private var screenType = ScreenType.UIKit
     private(set) var logger : Logging?
     private var startTimerPages = [String : (name: String, title: String)]()
     
@@ -48,8 +48,8 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
         self.enableLifecycleTracker = enable
     }
     
-    func setUpViewType(_ type : ViewType){
-        self.viewType = type
+    func setUpScreenType(_ type : ScreenType){
+        self.screenType = type
     }
     
     func loadStarted(_ id: String, _ name: String, _ title : String = "") {
@@ -88,7 +88,7 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
             btTimerActivity.setPageName(pageName,title: pageTitle)
             return btTimerActivity
         }else{
-            let timerActivity = TimerMapActivity(pageName: pageName, viewType: self.viewType, logger: logger, pageTitle: pageTitle)
+            let timerActivity = TimerMapActivity(pageName: pageName, screenType: self.screenType, logger: logger, pageTitle: pageTitle)
             return timerActivity
         }
     }
@@ -151,7 +151,7 @@ enum TimerMapType {
 class TimerMapActivity {
     
     private let timer : BTTimer
-    private let viewType : ViewType
+    private let screenType : ScreenType
     private var loadTime : Millisecond?
     private var willViewTime : Millisecond?
     private var viewTime : Millisecond?
@@ -161,8 +161,8 @@ class TimerMapActivity {
     private(set) var logger : Logging?
     private let maxPGTMTime : Millisecond = 20_000
     
-    init(pageName: String, viewType : ViewType, logger : Logging?, pageTitle : String = "") {
-        self.viewType = viewType
+    init(pageName: String, screenType : ScreenType, logger : Logging?, pageTitle : String = "") {
+        self.screenType = screenType
         self.logger = logger
         
         if BlueTriangle.configuration.enableGrouping {
@@ -322,7 +322,7 @@ class TimerMapActivity {
             loadStartTime: loadTime,
             loadEndTime: viewTime,
             maxMainThreadUsage: timer.performanceReport?.maxMainThreadTask.milliseconds ?? 0,
-            viewType: self.viewType,
+            screenType: self.screenType,
             offline: networkReport?.offline ?? 0,
             wifi: networkReport?.wifi ?? 0,
             cellular: networkReport?.cellular ?? 0,
