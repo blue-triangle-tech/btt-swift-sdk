@@ -1,4 +1,9 @@
-# Blue Triangle 3.15.0, Latest
+
+# Blue Triangle 3.15.1, Latest
+### New Features
+- Added CPU, Memory performance detail to group child view
+
+# Blue Triangle 3.15.0, Sept 2 2025
 ### New Features
 - Automated Grouping of all single-screen Views/Controllers.
 - Automated group name through screen title or class name.
