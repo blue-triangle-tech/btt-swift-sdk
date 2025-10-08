@@ -52,7 +52,7 @@ class NetworkStateMonitor : NetworkStateMonitorProtocol{
     private var monitor : NetworkPathMonitorProtocol
     private let logger : Logging
     private let telephony : NetworkTelephonyProtocol
-    private var lastPath: NWPath?
+    private var lastNetworkState: NetworkState?
     
     init(_ logger : Logging, _ monitor : NetworkPathMonitorProtocol = NWPathMonitor(),_ telephony : NetworkTelephonyProtocol = NetworkTelephonyHandler()) {
         
@@ -61,16 +61,14 @@ class NetworkStateMonitor : NetworkStateMonitorProtocol{
         self.telephony = telephony
         self.monitor.pathUpdateHandler = { [weak self] path  in
             if let self = self{
-                self.lastPath = path
                 let networkState = self.extractState(path: path)
                 if networkState !=  self.state.value{
-                    self.updateNetworkState(networkState, path: path)
+                    self.updateNetworkState(networkState)
                     self.logger.debug("Network state changed to \(networkState.description.lowercased())")
                 }
             }
         }
         
-        self.observeNetworkType()
         self.monitor.start(queue: DispatchQueue.global(qos: .default))
         
         self.logger.debug("Network state monitoring started.")
@@ -81,14 +79,14 @@ class NetworkStateMonitor : NetworkStateMonitorProtocol{
         self.telephony.removeObserver()
     }
     
-    private func updateNetworkState(_ state : NetworkState, path: NWPath){
-        if path.usesInterfaceType(.cellular){
+    private func updateNetworkState(_ state : NetworkState){
+        switch state {
+        case .Cellular(_):
             let technology = telephony.getNetworkTechnology()
             self.networkSource.send(technology)
-        }else{
+         default:
             self.networkSource.send(nil)
         }
-        
         self.state.send(state)
     }
     
@@ -113,11 +111,18 @@ class NetworkStateMonitor : NetworkStateMonitorProtocol{
     }
     
     private func observeNetworkType(){
-        self.telephony.observeNetworkType { source in
-            if let path = self.lastPath{
-                let networkState = self.extractState(path: path)
-                if networkState !=  self.state.value{
-                    self.updateNetworkState(networkState, path: path)
+        self.telephony.observeNetworkType { [weak self] source in
+            if let self = self{
+                if let networkState = self.lastNetworkState {
+                    switch networkState {
+                    case .Cellular(_):
+                        let networkState = NetworkState.Cellular(telephony.getNetworkType())
+                        if networkState !=  self.state.value{
+                            self.updateNetworkState(networkState)
+                        }
+                    default:
+                        break
+                    }
                 }
             }
         }
