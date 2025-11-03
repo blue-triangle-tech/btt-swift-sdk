@@ -1,5 +1,13 @@
 
-# Blue Triangle 3.15.1, Latest
+# Blue Triangle 3.15.3, Latest
+### Bug Fixes and Improvements
+- Occasional concurrency crash fix while updating remote configuration.
+
+# Blue Triangle 3.15.2, Oct 9 2025
+### Bug Fixes and Improvements
+- Occasional crash fix while switching network from Wi-Fi to cellular and vice versa.
+
+# Blue Triangle 3.15.1, Sept 16 2025
 ### New Features
 - Added CPU, Memory performance detail to group child view
 
