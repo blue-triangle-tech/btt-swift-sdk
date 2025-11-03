@@ -29,7 +29,7 @@ final class BTTimerGroup {
     private var hasSubmitted = false
     private var hasForcedGroup = false
     private var groupName: String?
-    private let lock = NSRecursiveLock()
+    private let lock = NSLock()
     private let onGroupCompleted: (BTTimerGroup) -> Void
     private let actionTracker = BTActionTracker()
     private var groupingCause: GroupingCause?
