@@ -140,37 +140,43 @@ final public class BlueTriangle: NSObject {
     }()
     
     private static let lock = NSLock()
+    private static let timerLock = NSLock()
     private static let trackingLock = NSRecursiveLock()
     private static var activeTimers = [BTTimer]()
 #if os(iOS)
     private static let matricKitWatchDog = MetricKitWatchDog()
 #endif
     internal static func addActiveTimer(_ timer : BTTimer){
-        activeTimers.append(timer)
+        timerLock.sync {
+            activeTimers.append(timer)
 #if os(iOS)
-        matricKitWatchDog.saveCurrentTimerData(timer)
+            matricKitWatchDog.saveCurrentTimerData(timer)
 #endif
-    }
-
-    internal static func removeActiveTimer(_ timer : BTTimer){
-        
-        var index = 0
-        var isTimerAvailable = false
-        
-        for timerObj in activeTimers{
-            if timerObj == timer { isTimerAvailable = true
-                break }
-            index = index + 1
         }
-        
-        if isTimerAvailable {
-            activeTimers.remove(at: index)
+    }
+    
+    internal static func removeActiveTimer(_ timer : BTTimer){
+        timerLock.sync {
+            var index = 0
+            var isTimerAvailable = false
+            
+            for timerObj in activeTimers{
+                if timerObj == timer { isTimerAvailable = true
+                    break }
+                index = index + 1
+            }
+            
+            if isTimerAvailable {
+                activeTimers.remove(at: index)
+            }
         }
     }
     
     internal static func recentTimer() -> BTTimer?{
-        let timer = activeTimers.last
-        return timer
+        timerLock.sync {
+            let timer = activeTimers.last
+            return timer
+        }
     }
     
     internal static func updateSession(_ session : SessionData){
@@ -1092,7 +1098,7 @@ extension BlueTriangle {
     ///
     /// - Parameter exception: The exception to upload.
     public static func storeException(exception: NSException) {
-        let pageName = BlueTriangle.recentTimer()?.page.pageName
+        let pageName = BlueTriangle.recentTimer()?.getPageName()
         let crashReport = CrashReport(sessionID: sessionID, exception: exception, pageName: pageName)
         CrashReportPersistence.save(crashReport)
     }
