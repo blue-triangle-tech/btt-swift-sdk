@@ -81,7 +81,7 @@ final class CrashReportManager: CrashReportManaging {
         
         let nativeApp = NativeAppProperties.nstEmpty
         let report = ErrorReport(nativeApp: nativeApp, eTp: BT_ErrorType.NativeAppCrash.rawValue, error: error, line: line, time: intervalProvider().milliseconds)
-        let pageName = BlueTriangle.recentTimer()?.page.pageName
+        let pageName = BlueTriangle.recentTimer()?.getPageName()
         do {
             try upload(session:session , report: report, pageName: pageName)
         } catch {

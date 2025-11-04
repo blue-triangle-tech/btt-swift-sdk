@@ -237,16 +237,20 @@ final class BTTimerGroup {
     private func timerDidEnd() {
         trySubmitGroup()
     }
-
-    // MARK: Page name (snapshot pattern)
+    
     private func updatePageNameFromSnapshot() {
-        let snapshot: (hasForced: Bool, groupName: String?, titles: [(String, String)], start: Millisecond) = lock.sync {
-            let pairs = timers.map { ($0.getPageName(), $0.getPageTitle()) }
-            return (hasForcedGroup, groupName, Array(pairs), groupTimer.startTime.milliseconds)
+        let capturedTimers = lock.sync { Array(timers)}
+        let snapshot: (hasForced: Bool, groupName: String?, titles: [BTTimer], start: Millisecond) = lock.sync {
+            (hasForced: self.hasForcedGroup,
+             groupName: self.groupName,
+             titles: capturedTimers,
+             start: self.groupTimer.startTime.milliseconds)
         }
-
+        
+        let pairs: [(String, String)] = snapshot.titles.map { ($0.getPageName(), $0.getPageTitle()) }
+        
         if !snapshot.hasForced {
-            let newName = snapshot.groupName ?? extractLastPageName(from: snapshot.titles)
+            let newName = snapshot.groupName ?? extractLastPageName(from: pairs)
             groupTimer.setPageName(newName)
         }
         groupTimer.trafficSegmentName = Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT
