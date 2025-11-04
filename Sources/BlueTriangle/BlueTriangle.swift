@@ -1300,7 +1300,7 @@ extension BlueTriangle {
         if let sessionData = sessionData(){
             shouldCaptureRequests = sessionData.shouldNetworkCapture
             if shouldCaptureRequests {
-                if getGroupRequestCapture() == nil {
+                if getNetworkRequestCapture() == nil {
                     setNetworkRequestCapture(makeCapturedRequestCollector())
                 }
             } else {
