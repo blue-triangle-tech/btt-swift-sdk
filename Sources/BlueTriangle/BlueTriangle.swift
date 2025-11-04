@@ -1317,7 +1317,7 @@ extension BlueTriangle {
         if let sessionData = sessionData(){
             shouldGroupedCaptureRequests = sessionData.shouldGroupedViewCapture
             if shouldGroupedCaptureRequests {
-                if getNetworkRequestCapture() == nil {
+                if getGroupRequestCapture() == nil {
                     setGroupRequestCapture(makeCapturedGroupRequestCollector())
                 }
             } else {
