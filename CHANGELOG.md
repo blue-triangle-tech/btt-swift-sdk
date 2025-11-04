@@ -1,7 +1,8 @@
 
 # Blue Triangle 3.15.3, Latest
 ### Bug Fixes and Improvements
-- Occasional concurrency crash fix while updating remote configuration.
+- Fixed an occasional concurrency crash when updating child sample rate.
+- Fixed a rare concurrency crash occurs during ANR reporting.
 
 # Blue Triangle 3.15.2, Oct 9 2025
 ### Bug Fixes and Improvements
