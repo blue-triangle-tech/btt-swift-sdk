@@ -47,7 +47,7 @@ class MemoryWarningWatchDog {
         logger.debug("Memory Warning WatchDog :Memory Warning detected...  ")
         
         let message = formatedMemoryWarningMessage()
-        let pageName = BlueTriangle.recentTimer()?.page.pageName
+        let pageName = BlueTriangle.recentTimer()?.getPageName()
         let report = CrashReport(sessionID: BlueTriangle.sessionID,
                                  memoryWarningMessage: message, pageName: pageName)
         uploadReports(session: session, report: report)

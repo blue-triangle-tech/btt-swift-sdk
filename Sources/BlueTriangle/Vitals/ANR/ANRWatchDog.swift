@@ -111,7 +111,7 @@ class ANRWatchDog{
 Potential ANR Detected
 An task blocking main thread since \(self.errorTriggerInterval) seconds
 """
-        let pageName = BlueTriangle.recentTimer()?.page.pageName
+        let pageName = BlueTriangle.recentTimer()?.getPageName()
         let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName)
         uploadReports(session: session, report: report)
         logger.debug(message)

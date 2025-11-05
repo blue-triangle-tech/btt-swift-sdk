@@ -140,37 +140,45 @@ final public class BlueTriangle: NSObject {
     }()
     
     private static let lock = NSLock()
+    private static let timerLock = NSLock()
+    private static let groupCaptureLock = NSLock()
+    private static let networkCaptureLock = NSLock()
     private static let trackingLock = NSRecursiveLock()
     private static var activeTimers = [BTTimer]()
 #if os(iOS)
     private static let matricKitWatchDog = MetricKitWatchDog()
 #endif
     internal static func addActiveTimer(_ timer : BTTimer){
-        activeTimers.append(timer)
+        timerLock.sync {
+            activeTimers.append(timer)
 #if os(iOS)
-        matricKitWatchDog.saveCurrentTimerData(timer)
+            matricKitWatchDog.saveCurrentTimerData(timer)
 #endif
-    }
-
-    internal static func removeActiveTimer(_ timer : BTTimer){
-        
-        var index = 0
-        var isTimerAvailable = false
-        
-        for timerObj in activeTimers{
-            if timerObj == timer { isTimerAvailable = true
-                break }
-            index = index + 1
         }
-        
-        if isTimerAvailable {
-            activeTimers.remove(at: index)
+    }
+    
+    internal static func removeActiveTimer(_ timer : BTTimer){
+        timerLock.sync {
+            var index = 0
+            var isTimerAvailable = false
+            
+            for timerObj in activeTimers{
+                if timerObj == timer { isTimerAvailable = true
+                    break }
+                index = index + 1
+            }
+            
+            if isTimerAvailable {
+                activeTimers.remove(at: index)
+            }
         }
     }
     
     internal static func recentTimer() -> BTTimer?{
-        let timer = activeTimers.last
-        return timer
+        timerLock.sync {
+            let timer = activeTimers.last
+            return timer
+        }
     }
     
     internal static func updateSession(_ session : SessionData){
@@ -277,17 +285,41 @@ final public class BlueTriangle: NSObject {
     ///
     public private(set) static var initialized = false
     
-    private static var capturedRequestCollector: CapturedRequestCollecting? = {
+    private static var _capturedRequestCollector: CapturedRequestCollecting? = {
         return makeCapturedRequestCollector()
     }()
     
-    private static var capturedGroupedViewRequestCollector: CapturedGroupRequestCollecting? = {
+    private static var _capturedGroupedViewRequestCollector: CapturedGroupRequestCollecting? = {
         return makeCapturedGroupRequestCollector()
     }()
     
     private static var capturedActionsViewRequestCollector: CapturedActionRequestCollector? = {
         return makeCapturedActionRequestCollector() as! CapturedActionRequestCollector
     }()
+    
+    private static func getNetworkRequestCapture() -> CapturedRequestCollecting? {
+        networkCaptureLock.sync {
+            return _capturedRequestCollector
+        }
+    }
+    
+    private static func setNetworkRequestCapture(_ requestCapture :CapturedRequestCollecting?) {
+        networkCaptureLock.sync {
+            _capturedRequestCollector = requestCapture
+        }
+    }
+    
+    private static func setGroupRequestCapture(_ groupCapture :CapturedGroupRequestCollecting?) {
+        groupCaptureLock.sync {
+            _capturedGroupedViewRequestCollector = groupCapture
+        }
+    }
+    
+    internal static func getGroupRequestCapture() -> CapturedGroupRequestCollecting? {
+        groupCaptureLock.sync {
+            return _capturedGroupedViewRequestCollector
+        }
+    }
     
     //Cache components
     internal static var payloadCache : PayloadCacheProtocol = {
@@ -434,8 +466,7 @@ extension BlueTriangle {
     
     // Stops HTTP network capture and clears captured requests
     private static func stopHttpNetworkCapture(){
-        capturedRequestCollector = nil
-        
+        self.setNetworkRequestCapture(nil)
         logger.info("BlueTriangle :: HTTP network capture was stopped due to SDK disable.")
     }
     
@@ -447,7 +478,7 @@ extension BlueTriangle {
     
     // Stops HTTP network capture and clears captured requests
     private static func stopHttpGroupedChildCapture(){
-        capturedGroupedViewRequestCollector = nil
+        self.setGroupRequestCapture(nil)
         logger.info("BlueTriangle :: Grouped child view capture was stopped due to SDK disable.")
     }
     
@@ -703,7 +734,7 @@ extension BlueTriangle {
             if let internalTimerFactory = internalTimerFactory {
                 self.internalTimerFactory = internalTimerFactory
             }
-            self.capturedRequestCollector = requestCollector
+            self.setNetworkRequestCapture(requestCollector)
         }
     }
 }
@@ -954,7 +985,7 @@ public extension BlueTriangle {
         }
 
         Task {
-            await capturedRequestCollector?.start(page: page, startTime: startTime, isGroupTimer: isGroupTimer)
+            await getNetworkRequestCapture()?.start(page: page, startTime: startTime, isGroupTimer: isGroupTimer)
         }
     }
     /// Returns a timer for network capture.
@@ -977,19 +1008,19 @@ public extension BlueTriangle {
     
     internal static func updateCaptureRequest(pageName : String, startTime: Millisecond){
         Task {
-            await capturedRequestCollector?.update(pageName: pageName, startTime: startTime)
+            await getNetworkRequestCapture()?.update(pageName: pageName, startTime: startTime)
         }
     }
     
     static func captureRequest(timer: InternalTimer, response: URLResponse?) {
         Task {
-            await capturedRequestCollector?.collect(timer: timer, response: response)
+            await getNetworkRequestCapture()?.collect(timer: timer, response: response)
         }
     }
 
     internal static func captureRequest(timer: InternalTimer, response: CustomResponse) {
         Task {
-            await capturedRequestCollector?.collect(timer: timer, response: response)
+            await getNetworkRequestCapture()?.collect(timer: timer, response: response)
         }
     }
 
@@ -999,13 +1030,13 @@ public extension BlueTriangle {
     ///   - tuple: The asynchronously-delivered tuple containing the request contents as a Data instance and a URLResponse.
     static func captureRequest(timer: InternalTimer, tuple: (Data, URLResponse)) {
         Task {
-            await capturedRequestCollector?.collect(timer: timer, response: tuple.1)
+            await getNetworkRequestCapture()?.collect(timer: timer, response: tuple.1)
         }
     }
     
     static func captureRequest(timer: InternalTimer, request : URLRequest, error: Error?) {
         Task {
-            await capturedRequestCollector?.collect(timer: timer, request: request, error: error)
+            await getNetworkRequestCapture()?.collect(timer: timer, request: request, error: error)
         }
     }
 
@@ -1013,20 +1044,20 @@ public extension BlueTriangle {
     /// - Parameter metrics: An object encapsulating the metrics for a session task.
     static func captureRequest(metrics: URLSessionTaskMetrics, error : Error?) {
         Task {
-            await capturedRequestCollector?.collect(metrics: metrics, error: error)
+            await getNetworkRequestCapture()?.collect(metrics: metrics, error: error)
         }
     }
     
     internal static func startGroupTimerRequest(page : Page, startTime : Millisecond) async {
-        await capturedGroupedViewRequestCollector?.start(page: page, startTime: startTime)
+        await getGroupRequestCapture()?.start(page: page, startTime: startTime)
     }
     
     internal static func captureGroupRequest(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) async {
-        await capturedGroupedViewRequestCollector?.collect(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
+        await getGroupRequestCapture()?.collect(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
     }
     
     internal static func uploadGroupedViewCollectedRequests() async {
-        await capturedGroupedViewRequestCollector?.uploadCollectedRequests()
+        await getGroupRequestCapture()?.uploadCollectedRequests()
     }
     
     //Actions
@@ -1092,7 +1123,7 @@ extension BlueTriangle {
     ///
     /// - Parameter exception: The exception to upload.
     public static func storeException(exception: NSException) {
-        let pageName = BlueTriangle.recentTimer()?.page.pageName
+        let pageName = BlueTriangle.recentTimer()?.getPageName()
         let crashReport = CrashReport(sessionID: sessionID, exception: exception, pageName: pageName)
         CrashReportPersistence.save(crashReport)
     }
@@ -1269,11 +1300,11 @@ extension BlueTriangle {
         if let sessionData = sessionData(){
             shouldCaptureRequests = sessionData.shouldNetworkCapture
             if shouldCaptureRequests {
-                if capturedRequestCollector == nil {
-                    capturedRequestCollector = makeCapturedRequestCollector()
+                if getNetworkRequestCapture() == nil {
+                    setNetworkRequestCapture(makeCapturedRequestCollector())
                 }
             } else {
-                capturedRequestCollector = makeCapturedRequestCollector()
+                setNetworkRequestCapture(makeCapturedRequestCollector())
             }
             
 #if os(iOS)
@@ -1286,11 +1317,11 @@ extension BlueTriangle {
         if let sessionData = sessionData(){
             shouldGroupedCaptureRequests = sessionData.shouldGroupedViewCapture
             if shouldGroupedCaptureRequests {
-                if capturedGroupedViewRequestCollector == nil {
-                    capturedGroupedViewRequestCollector = makeCapturedGroupRequestCollector()
+                if getGroupRequestCapture() == nil {
+                    setGroupRequestCapture(makeCapturedGroupRequestCollector())
                 }
             } else {
-                capturedGroupedViewRequestCollector = makeCapturedGroupRequestCollector()
+                setGroupRequestCapture(makeCapturedGroupRequestCollector())
             }
         }
     }

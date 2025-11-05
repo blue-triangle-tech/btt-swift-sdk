@@ -73,7 +73,7 @@ class MetricKitWatchDog {
     }
     
     func saveCurrentTimerData(_ timer: BTTimer) {
-        let timerDetail = SavedTimer(pageName: timer.page.pageName, startTime: Date().timeIntervalSince1970, sessionId: BlueTriangle.sessionID)
+        let timerDetail = SavedTimer(pageName: timer.getPageName(), startTime: Date().timeIntervalSince1970, sessionId: BlueTriangle.sessionID)
         if let encoded = try? JSONEncoder().encode(timerDetail) {
             UserDefaultsUtility.setData(value: encoded, key: .currentTimerDetail)
             UserDefaults.standard.synchronize()
