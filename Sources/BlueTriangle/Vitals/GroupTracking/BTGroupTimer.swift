@@ -20,6 +20,7 @@ enum GroupingCause {
         }
     }
 }
+
 final class BTTimerGroup {
     private var timers: Set<BTTimer> = []
     private var idleTimer: Timer?
@@ -239,22 +240,24 @@ final class BTTimerGroup {
     }
     
     private func updatePageNameFromSnapshot() {
-        let capturedTimers = lock.sync { Array(timers)}
-        let snapshot: (hasForced: Bool, groupName: String?, titles: [BTTimer], start: Millisecond) = lock.sync {
-            (hasForced: self.hasForcedGroup,
-             groupName: self.groupName,
-             titles: capturedTimers,
-             start: self.groupTimer.startTime.milliseconds)
+        lock.sync {
+            let pairs: [(String, String)] = Array(timers).map { timer in
+                (timer.getPageName(), timer.getPageTitle())
+            }
+            
+            let newName: String
+            if !hasForcedGroup {
+                newName = groupName ?? extractLastPageName(from: pairs)
+                groupTimer.setPageName(newName)
+            } else {
+                newName = groupTimer.getPageName()
+            }
+            groupTimer.setTrafficSegment(Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT)
+            BlueTriangle.updateCaptureRequest(
+                pageName: newName,
+                startTime: groupTimer.startTime.milliseconds
+            )
         }
-        
-        let pairs: [(String, String)] = snapshot.titles.map { ($0.getPageName(), $0.getPageTitle()) }
-        
-        if !snapshot.hasForced {
-            let newName = snapshot.groupName ?? extractLastPageName(from: pairs)
-            groupTimer.setPageName(newName)
-        }
-        groupTimer.trafficSegmentName = Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT
-        BlueTriangle.updateCaptureRequest(pageName: groupTimer.getPageName(), startTime: groupTimer.startTime.milliseconds)
     }
 
     private func submitActionsWcdRequests() {

@@ -33,33 +33,39 @@ class BTTimerNetStateAccumulator  : BTTimerNetStateAccumulatorProtocol {
     private var cancellable : AnyCancellable?
     private var sourceCancellable : AnyCancellable?
     private var monitor : NetworkStateMonitorProtocol
+    private let lock = NSLock()
+
     
     init(_ monitor: NetworkStateMonitorProtocol) {
         self.monitor = monitor
     }
     
     func start(){
-        self.cancellable = monitor.state
-            .receive(on: RunLoop.main)
-            .sink { _ in
-            }receiveValue: { [weak self] value in
-                self?.updateStopWatch(value)
-            }
-        
-        self.sourceCancellable = monitor.networkSource
-            .receive(on: RunLoop.main)
-            .sink { _ in
-            }receiveValue: { [weak self] value in
-                if let source = value{
-                    self?.networkSource.insert(source)
+        lock.sync {
+            self.cancellable = monitor.state
+                .receive(on: RunLoop.main)
+                .sink { _ in
+                }receiveValue: { [weak self] value in
+                    self?.updateStopWatch(value)
                 }
-            }
+            
+            self.sourceCancellable = monitor.networkSource
+                .receive(on: RunLoop.main)
+                .sink { _ in
+                }receiveValue: { [weak self] value in
+                    if let source = value{
+                        self?.networkSource.insert(source)
+                    }
+                }
+        }
     }
     
     func stop(){
-        self.updateStopWatch(monitor.state.value)
-        self.cancellable = nil
-        self.sourceCancellable = nil
+        lock.sync {
+            self.updateStopWatch(monitor.state.value)
+            self.cancellable = nil
+            self.sourceCancellable = nil
+        }
     }
     
     func makeReport() -> NetworkReport{
@@ -74,7 +80,7 @@ class BTTimerNetStateAccumulator  : BTTimerNetStateAccumulatorProtocol {
                              cellular: netStateData.celluler,
                              ethernet: ethernet.duration,
                              other: other.duration,
-                             netState: netStateData.netState, 
+                             netState: netStateData.netState,
                              netSource: netSource)
     }
     
@@ -185,8 +191,10 @@ class BTTimerNetStateAccumulator  : BTTimerNetStateAccumulatorProtocol {
     }
     
     deinit{
-        self.cancellable = nil
-        self.sourceCancellable = nil
+        lock.sync {
+            self.cancellable = nil
+            self.sourceCancellable = nil
+        }
     }
 }
 
