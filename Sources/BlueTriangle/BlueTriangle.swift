@@ -152,7 +152,7 @@ final public class BlueTriangle: NSObject {
         timerLock.sync {
             activeTimers.append(timer)
 #if os(iOS)
-            matricKitWatchDog.saveCurrentTimerData(timer)
+         //   matricKitWatchDog.saveCurrentTimerData(timer)
 #endif
         }
     }
