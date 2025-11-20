@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct Photo: Codable, Identifiable, Equatable, Hashable {
+struct Photo: Codable, Identifiable, Equatable, Hashable, Sendable {
     let id: Int
     var albumId: Int
     var title: String

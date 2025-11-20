@@ -15,7 +15,7 @@ struct LayoutBuilder {
     let fractionalItemWidth: CGFloat
     let fractionalItemHeight: CGFloat
 
-    func buildLayout() -> UICollectionViewLayout {
+    @MainActor func buildLayout() -> UICollectionViewLayout {
         let provider: UICollectionViewCompositionalLayoutSectionProvider = { _, _ in
             // Item
             let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(fractionalItemWidth),
@@ -112,26 +112,28 @@ final class PhotoCollectionViewController: UIViewController {
     // MARK: - Networking
 
     private func fetchData() {
-        loadingTask = Task {
+        let client = jsonPlaceholder
+        loadingTask = Task { @MainActor in
             do {
-                let albums = try await jsonPlaceholder.fetchAlbums()
+                let albums = try await client.fetchAlbums()
                 guard let album = albums.first else {
                     return
                 }
-                let photos = try await jsonPlaceholder.fetchPhotos(albumId: album.id)
+                let photos = try await client.fetchPhotos(albumId: album.id)
 
                 let snapshot = SingleSection.makeInitialSnapshot(for: photos)
-
-                // End timer after initial view content has finished loading
+                
                 await imageLoader.setCompletion { [weak self] in
-                    if let timer = self?.timer {
-                        BlueTriangle.endTimer(timer)
-                        self?.timer = nil
+                    Task { @MainActor in
+                        if let timer = self?.timer {
+                            BlueTriangle.endTimer(timer)
+                            self?.timer = nil
+                        }
                     }
                 }
                 
                 await dataSource.apply(snapshot)
-
+                
                 loadingTask?.cancel()
                 loadingTask = nil
             } catch {

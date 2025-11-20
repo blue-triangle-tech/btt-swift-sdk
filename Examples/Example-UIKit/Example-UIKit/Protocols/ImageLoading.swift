@@ -9,7 +9,7 @@
 import Foundation
 import UIKit
 
-typealias VoidCallback = () -> Void
+typealias VoidCallback = @Sendable () async -> Void
 
 protocol ImageLoading: Actor {
     func setCompletion(_ completion: VoidCallback?)
