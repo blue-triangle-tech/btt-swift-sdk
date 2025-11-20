@@ -35,21 +35,28 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
     private var screenType = ScreenType.UIKit
     private(set) var logger : Logging?
     private var startTimerPages = [String : (name: String, title: String)]()
+    private let lock = NSLock()
     
     internal init() {
         registerAppForegroundAndBackgroundNotification()
     }
-    
+
     func setUpLogger(_ logger : Logging){
-        self.logger = logger
+        lock.sync {
+            self.logger = logger
+        }
     }
     
     func setLifecycleTracker(_ enable : Bool){
-        self.enableLifecycleTracker = enable
+        lock.sync {
+            self.enableLifecycleTracker = enable
+        }
     }
     
     func setUpScreenType(_ type : ScreenType){
-        self.screenType = type
+        lock.sync {
+            self.screenType = type
+        }
     }
     
     func loadStarted(_ id: String, _ name: String, _ title : String = "") {
@@ -69,7 +76,8 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
     }
     
     func manageTimer(_ pageName : String, id : String, type : TimerMapType, title : String = ""){
-        if self.enableLifecycleTracker{
+        lock.sync {
+            guard self.enableLifecycleTracker else { return }
             let timerActivity = getTimerActivity(pageName, id: id, pageTitle: title)
             btTimeActivityrMap[id] = timerActivity
             timerActivity.manageTimeFor(type: type)
@@ -83,7 +91,6 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
     }
     
     private func getTimerActivity(_ pageName : String, id : String, pageTitle : String = "") -> TimerMapActivity{
-        
         if let btTimerActivity = btTimeActivityrMap[id] {
             btTimerActivity.setPageName(pageName,title: pageTitle)
             return btTimerActivity
@@ -100,32 +107,41 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
 #endif
     }
     
-    private func stopActiveTimersWhenAppWentToBackground(){
-        if self.enableLifecycleTracker{
-            for key in  btTimeActivityrMap.keys{
-                if let timerActivity = btTimeActivityrMap[key] {
-                    let page = timerActivity.getPageName()
-                    let title = timerActivity.getTitleName()
-                    startTimerPages[key] = (page, title)
-                    viewingEnd(key, page, title)
-                }
+    private func stopActiveTimersWhenAppWentToBackground() {
+        var items: [(key: String, page: String, title: String)] = []
+        lock.sync {
+            guard self.enableLifecycleTracker else { return }
+
+            for (key, activity) in btTimeActivityrMap {
+                let page = activity.getPageName()
+                let title = activity.getTitleName()
+                startTimerPages[key] = (page, title)
+                items.append((key: key, page: page, title: title))
             }
-            
-            self.logger?.info("Stop active timer when app went to background")
+            btTimeActivityrMap.removeAll()
         }
+
+        for item in items {
+            viewingEnd(item.key, item.page, item.title)
+        }
+
+        logger?.info("Stop active timer when app went to background")
     }
 
-    private func startInactiveTimersWhenAppCameToForeground(){
-        if self.enableLifecycleTracker{
-            for key in  startTimerPages.keys{
-                if let page = startTimerPages[key] {
-                    viewStart(key, page.name, page.title)
-                }
-            }
+    private func startInactiveTimersWhenAppCameToForeground() {
+        var items: [(key: String, page: (name: String, title: String))] = []
+
+        lock.sync {
+            guard self.enableLifecycleTracker else { return }
+            items = startTimerPages.map { ($0.key, $0.value) }
             startTimerPages.removeAll()
-            
-            self.logger?.info("Start active timer when app come to foreground")
         }
+
+        for (key, page) in items {
+            viewStart(key, page.name, page.title)
+        }
+
+        logger?.info("Start active timer when app come to foreground")
     }
     
     @objc private func appMovedToBackground() {
@@ -315,7 +331,7 @@ class TimerMapActivity {
             return calculatedLoadTime
         }
         
-        timer.trafficSegmentName = Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT
+        timer.setTrafficSegment(Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT)
         timer.nativeAppProperties = NativeAppProperties(
             fullTime: disapearTime - loadTime,
             loadTime: calculatedLoadTime,
