@@ -9,8 +9,8 @@
 import Foundation
 
 class BTTRemoteConfig: Codable, Equatable {
-    var networkSampleRateSDK: Int?
-    var groupedViewSampleRate: Int?
+    var networkSampleRateSDK: Double?
+    var groupedViewSampleRate: Double?
     var enableRemoteConfigAck: Bool?
     var ignoreScreens : [String]?
     var enableAllTracking: Bool?
@@ -18,8 +18,8 @@ class BTTRemoteConfig: Codable, Equatable {
     var enableGrouping: Bool?
     var groupingIdleTime: Double?
     
-    init(networkSampleRateSDK: Int?,
-         groupedViewSampleRate: Int?,
+    init(networkSampleRateSDK: Double?,
+         groupedViewSampleRate: Double?,
          enableRemoteConfigAck : Bool?,
          enableAllTracking : Bool?,
          enableScreenTracking: Bool?,
@@ -48,8 +48,8 @@ class BTTRemoteConfig: Codable, Equatable {
     }
     
     internal static var defaultConfig: BTTSavedRemoteConfig {
-        BTTSavedRemoteConfig(networkSampleRateSDK: Int(BlueTriangle.configuration.networkSampleRate * 100),
-                             groupedViewSampleRate: Int(BlueTriangle.configuration.groupedViewSampleRate * 100),
+        BTTSavedRemoteConfig(networkSampleRateSDK: BlueTriangle.configuration.networkSampleRate * 100,
+                             groupedViewSampleRate: BlueTriangle.configuration.groupedViewSampleRate * 100,
                              enableRemoteConfigAck : false,
                              enableAllTracking: true,
                              enableScreenTracking: BlueTriangle.configuration.enableScreenTracking,

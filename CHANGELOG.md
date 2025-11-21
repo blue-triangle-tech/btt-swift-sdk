@@ -1,3 +1,7 @@
+# Blue Triangle 3.15.5, Nov 21 2025
+### Bug Fixes and Improvements
+- Updated the remote configuration URL.
+- Updated the data types for the remote configuration sample rate fields.
 
 # Blue Triangle 3.15.4, Nov 19 2025
 ### Bug Fixes and Improvements
