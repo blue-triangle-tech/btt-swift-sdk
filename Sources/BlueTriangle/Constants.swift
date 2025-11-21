@@ -9,7 +9,7 @@ import Foundation
 
 enum Constants {
     
-    enum EventType {
+    enum EntryType {
         static let resource = "resource"
         static let screen = "screen"
     }
