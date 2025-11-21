@@ -50,7 +50,7 @@ class BTTStoredConfigSyncer {
                     if rate == 0 {
                         BlueTriangle.updateNetworkSampleRate(0.0)
                     } else {
-                        BlueTriangle.updateNetworkSampleRate(Double(rate) / 100.0)
+                        BlueTriangle.updateNetworkSampleRate(rate / 100.0)
                     }
                 }
                 
@@ -60,7 +60,7 @@ class BTTStoredConfigSyncer {
                     if rate == 0 {
                         BlueTriangle.updateGroupedViewSampleRate(0.0)
                     } else {
-                        BlueTriangle.updateGroupedViewSampleRate(Double(rate) / 100.0)
+                        BlueTriangle.updateGroupedViewSampleRate(rate / 100.0)
                     }
                 }
                 
