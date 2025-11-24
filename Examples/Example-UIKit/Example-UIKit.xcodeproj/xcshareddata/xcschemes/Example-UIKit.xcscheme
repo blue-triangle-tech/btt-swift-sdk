@@ -73,7 +73,7 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "-FullSampleRate"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-NewSessionOnLaunch"

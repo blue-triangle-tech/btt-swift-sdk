@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = 'BlueTriangleSDK-Swift'
-    s.version          = '3.15.4'
+    s.version          = '3.15.5'
     s.summary          = 'BlueTriangleSDK exposes methods to send analytics and crash data to the Blue Triangle portal'
     s.description      = <<-DESC
     BlueTriangleSDK exposes methods to send analytics and crash data to the Blue Triangle portal via HTTP Post
