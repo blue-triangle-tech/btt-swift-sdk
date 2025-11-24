@@ -20,15 +20,15 @@ enum NetworkType: CustomStringConvertible {
     var description: String {
         switch self {
         case ._5G:
-            return "Cellular 5G"
+            return "cellular 5g"
         case ._4G:
-            return "Cellular 4G"
+            return "cellular 4g"
         case ._3G:
-            return "Cellular 3G"
+            return "cellular 3g"
         case ._2G:
-            return "Cellular 2G"
+            return "cellular 2g"
         case ._Unknown:
-            return "Cellular"
+            return "cellular"
         }
     }
 }
