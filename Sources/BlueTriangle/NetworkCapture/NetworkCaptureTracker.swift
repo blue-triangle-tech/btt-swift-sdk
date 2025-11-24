@@ -28,10 +28,12 @@ import Foundation
 ///The class uses a timer to calculate the duration between the 'init' constructors and the 'submit' overloads, or between 'init' and 'failed' methods.
 ///
 
+@preconcurrency
 public class NetworkCaptureTracker {
     private let url: String
     private let method: String?
     private let requestBodylength: Int64
+    private let lock = NSLock()
     
     ///This timer is used to calculate the duration
     private var timer : InternalTimer
@@ -72,8 +74,10 @@ public class NetworkCaptureTracker {
     ///
     ///Method to submit a capture request with urlRequest paramerer.
     public func submit(_ response : URLResponse){
-        self.timer.end()
-        BlueTriangle.captureRequest(timer: timer, response: response)
+        lock.sync {
+            self.timer.end()
+            BlueTriangle.captureRequest(timer: timer, response: response)
+        }
     }
     
     ///Submit NetworkCapture with the given HTTP status code, response body length, and content type.
@@ -86,15 +90,17 @@ public class NetworkCaptureTracker {
     ///Method to submit a capture request with the parameters httpStatusCode, responseBodyLength, and contentType.
     ///
     public func submit(_ httpStatusCode: Int64, responseBodyLength : Int64, contentType : String){
-        self.timer.end()
-        BlueTriangle.captureRequest(timer: timer,
-                                    response: CustomResponse(url: self.url,
-                                                             method: self.method,
-                                                          contentType: contentType,
-                                                          httpStatusCode: httpStatusCode,
-                                                             requestBodylength: self.requestBodylength,
-                                                             responseBodyLength: responseBodyLength,
-                                                             error: nil))
+        lock.sync {
+            self.timer.end()
+            BlueTriangle.captureRequest(timer: timer,
+                                        response: CustomResponse(url: self.url,
+                                                                 method: self.method,
+                                                                 contentType: contentType,
+                                                                 httpStatusCode: httpStatusCode,
+                                                                 requestBodylength: self.requestBodylength,
+                                                                 responseBodyLength: responseBodyLength,
+                                                                 error: nil))
+        }
     }
     
     ///Submit a failed NetworkCapture with the reported Error.
@@ -104,15 +110,17 @@ public class NetworkCaptureTracker {
     ///
     ///Method to submit a failed capture request with the error parameter.
     public func failled(_ error : Error){
-        self.timer.end()
-        BlueTriangle.captureRequest(timer: timer,
-                                    response: CustomResponse(url: self.url,
-                                                             method: self.method,
-                                                          contentType: "",
-                                                          httpStatusCode: 600,
-                                                             requestBodylength: self.requestBodylength,
-                                                             responseBodyLength: 0,
-                                                             error: error))
+        lock.sync {
+            self.timer.end()
+            BlueTriangle.captureRequest(timer: timer,
+                                        response: CustomResponse(url: self.url,
+                                                                 method: self.method,
+                                                                 contentType: "",
+                                                                 httpStatusCode: 600,
+                                                                 requestBodylength: self.requestBodylength,
+                                                                 responseBodyLength: 0,
+                                                                 error: error))
+        }
     }
 }
 

@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 /// An object that measures the duration of a user interaction.
-final public class BTTimer: NSObject {
+final public class BTTimer: NSObject, @unchecked Sendable {
     /// Describes the timer type.
     @objc
     public enum TimerType: Int {

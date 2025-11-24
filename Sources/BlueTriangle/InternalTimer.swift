@@ -8,7 +8,7 @@
 import Foundation
 
 /// An time that measures the duration of app events like network requuests.
-public struct InternalTimer {
+public struct InternalTimer : @unchecked Sendable {
 
     /// Describes the state of a timer.
     public enum State {
@@ -42,6 +42,7 @@ public struct InternalTimer {
     public private(set) var endTime: TimeInterval = 0.0
     
     private let enableAllTracking = BlueTriangle.enableAllTracking
+    private let lock = NSLock()
 
     init(logger: Logging,
          intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 }
@@ -68,19 +69,21 @@ public struct InternalTimer {
     }
 
     private mutating func handle(_ action: Action) {
-        switch (state, action) {
-        case (.initial, .start):
-            startTime = timeIntervalProvider()
-            state = .started
-        case (.started, .end):
-            endTime = timeIntervalProvider()
-            state = .ended
-        case (.initial, .end):
-            logger.error("Cannot end timer before it is started.")
-        case (.started, .start):
-            logger.error("Start time already set.")
-        case (.ended, .start), (.ended, .end):
-            logger.error("Timer already ended.")
+        lock.sync {
+            switch (state, action) {
+            case (.initial, .start):
+                startTime = timeIntervalProvider()
+                state = .started
+            case (.started, .end):
+                endTime = timeIntervalProvider()
+                state = .ended
+            case (.initial, .end):
+                logger.error("Cannot end timer before it is started.")
+            case (.started, .start):
+                logger.error("Start time already set.")
+            case (.ended, .start), (.ended, .end):
+                logger.error("Timer already ended.")
+            }
         }
     }
 }
