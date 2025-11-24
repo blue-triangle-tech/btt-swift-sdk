@@ -1,4 +1,4 @@
-# Blue Triangle 3.15.4, Nov 24 2025
+# Blue Triangle 3.16.0, Nov 24 2025
 ### Bug Fixes and Improvements
 - Added swift 6 strict concurancy compatiblity by adding preconcurancy and unchacke sendable.
 
