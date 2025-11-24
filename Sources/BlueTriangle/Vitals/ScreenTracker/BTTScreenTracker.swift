@@ -7,56 +7,62 @@
 
 import Foundation
 
-public class BTTScreenTracker{
+@preconcurrency
+public final class BTTScreenTracker {
     
+    private let lock = NSLock()
     private var hasViewing = false
     private var id = "\(Identifier.random())"
-    private var pageName : String
-    public  var type  = ScreenType.Manual.rawValue
-    private var tracker : BTTScreenLifecycleTracker?
+    private var pageName: String
+    private var tracker: BTTScreenLifecycleTracker?
+    private var type = ScreenType.Manual.rawValue
     
-   // Add local object of
-    public init(_ screenName : String){
+    public init(_ screenName: String) {
         self.pageName = screenName
         self.tracker = BlueTriangle.screenTracker
     }
+
+    // MARK: - Private
     
-    private func updateScreenType(){
-        
-        if type == ScreenType.UIKit.rawValue{
-            self.tracker?.setUpScreenType(.UIKit)
-        }
-        else if type == ScreenType.SwiftUI.rawValue{
-            self.tracker?.setUpScreenType(.SwiftUI)
-        }
-        else{
-            self.tracker?.setUpScreenType(.Manual)
+    private func updateScreenType() {
+        if type == ScreenType.UIKit.rawValue {
+            tracker?.setUpScreenType(.UIKit)
+        } else if type == ScreenType.SwiftUI.rawValue {
+            tracker?.setUpScreenType(.SwiftUI)
+        } else {
+            tracker?.setUpScreenType(.Manual)
         }
     }
     
     public func loadStarted() {
-        self.hasViewing = true
-        self.updateScreenType()
-        self.tracker?.manageTimer(pageName, id: id, type: .load)
+        lock.sync {
+            hasViewing = true
+            updateScreenType()
+            tracker?.manageTimer(pageName, id: id, type: .load)
+        }
     }
     
     public func loadEnded() {
-        if self.hasViewing{
-            self.updateScreenType()
-            self.tracker?.manageTimer(pageName, id: id, type: .finish)
+        lock.sync {
+            guard hasViewing else { return }
+            updateScreenType()
+            tracker?.manageTimer(pageName, id: id, type: .finish)
         }
     }
 
     public func viewStart() {
-        self.hasViewing = true
-        self.updateScreenType()
-        self.tracker?.manageTimer(pageName, id: id, type: .view)
+        lock.sync {
+            hasViewing = true
+            updateScreenType()
+            tracker?.manageTimer(pageName, id: id, type: .view)
+        }
     }
     
     public func viewingEnd() {
-        if self.hasViewing{
-            self.tracker?.manageTimer(pageName, id: id, type: .disappear)
-            self.hasViewing = false
+        lock.sync {
+            guard hasViewing else { return }
+            tracker?.manageTimer(pageName, id: id, type: .disappear)
+            hasViewing = false
         }
     }
 }

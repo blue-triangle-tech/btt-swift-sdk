@@ -8,7 +8,7 @@
 import Foundation
 
 /// Configuration for network request capture.
-struct NetworkCaptureConfiguration {
+struct NetworkCaptureConfiguration: @unchecked Sendable {
     /// Maximum number of times to send batched requests for a given `Page`.
     public var spanCount: Int
     /// Duration of time to wait before sending the first batch of captured requests for the current
