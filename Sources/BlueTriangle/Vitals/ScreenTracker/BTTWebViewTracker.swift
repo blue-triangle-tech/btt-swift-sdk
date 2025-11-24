@@ -8,6 +8,7 @@
 #if os(iOS)
 import WebKit
 
+@preconcurrency
 public class BTTWebViewTracker {
      
     static private let lock = NSLock()
