@@ -1,3 +1,7 @@
+# Blue Triangle 3.15.6, Nov 24 2025
+### Bug Fixes and Improvements
+- Added swift 6 strict concurancy compatiblity by adding preconcurancy and unchacke sendable.
+
 # Blue Triangle 3.15.5, Nov 21 2025
 ### Bug Fixes and Improvements
 - Lowercased entry type value to lowercased "screen"

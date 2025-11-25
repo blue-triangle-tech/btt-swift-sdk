@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct JSONPlaceholder: PlaceholderServiceProtocol {
+struct JSONPlaceholder: PlaceholderServiceProtocol, Sendable {
     let session: URLSession
 
     init(session: URLSession) {

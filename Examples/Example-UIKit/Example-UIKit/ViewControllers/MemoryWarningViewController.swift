@@ -67,7 +67,7 @@ class MemoryWarningViewController: UIViewController {
     }
     
     deinit {
-        removeObserver()
+        //removeObserver()
     }
 }
 

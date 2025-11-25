@@ -11,7 +11,7 @@ import UIKit
 
 class Utils {
 
-    static func displayAlert(title: String, message: String, vc: UIViewController) {
+    @MainActor static func displayAlert(title: String, message: String, vc: UIViewController) {
 
         let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
         let defaultAction = UIAlertAction(title: "OK", style: .default, handler: nil)

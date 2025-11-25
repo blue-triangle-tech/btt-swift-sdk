@@ -17,11 +17,11 @@ import UIKit
 typealias SessionProvider = () -> Session?
 
 /// The entry point for interacting with the Blue Triangle SDK.
+@preconcurrency
 final public class BlueTriangle: NSObject {
     
     internal static var groupTimer : BTTimerGroupManager = BTTimerGroupManager(logger: logger)
     internal static var configuration = BlueTriangleConfiguration()
-    
     
     private static var _screenTracker: BTTScreenLifecycleTracker?
     internal static var screenTracker: BTTScreenLifecycleTracker?{
@@ -114,10 +114,11 @@ final public class BlueTriangle: NSObject {
     
     internal static var clarityConnector = ClaritySessionConnector(logger: logger)
    
-    internal static var enableAllTracking: Bool = {
-        let value = configRepo.isEnableAllTracking()
-        return  value
-    }()
+    private static var _enableAllTracking: Bool = configRepo.isEnableAllTracking()
+    internal static var enableAllTracking: Bool {
+         get { enableAllTrackingLock.sync { return _enableAllTracking } }
+         set { enableAllTrackingLock.sync { _enableAllTracking = newValue } }
+     }
     
     private static let configRepo: BTTConfigurationRepo = {
         let config = BTTConfigurationRepo(BTTRemoteConfig.defaultConfig)
@@ -144,6 +145,8 @@ final public class BlueTriangle: NSObject {
     private static let groupCaptureLock = NSLock()
     private static let networkCaptureLock = NSLock()
     private static let trackingLock = NSRecursiveLock()
+    private static let enableAllTrackingLock = NSLock()
+    private static let appInitializeLock = NSLock()
     private static var activeTimers = [BTTimer]()
 #if os(iOS)
     private static let matricKitWatchDog = MetricKitWatchDog()
@@ -283,7 +286,12 @@ final public class BlueTriangle: NSObject {
     ///            function correctly, including the ability to fetch updates for the
     ///            enable/disable state via the Remote Configuration Updater.
     ///
-    public private(set) static var initialized = false
+    private static var _initialized = false
+    
+    public static var initialized: Bool {
+        get { appInitializeLock.sync { _initialized } }
+        set { appInitializeLock.sync { _initialized = newValue } }
+    }
     
     private static var _capturedRequestCollector: CapturedRequestCollecting? = {
         return makeCapturedRequestCollector()
