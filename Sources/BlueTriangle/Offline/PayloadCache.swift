@@ -7,14 +7,14 @@
 
 import Foundation
 
-protocol PayloadCacheProtocol: AnyObject {
+protocol PayloadCacheProtocol: AnyObject, Sendable {
     func pickNext() throws -> Payload?
     func save(_ payload : Payload) throws
     func delete(_ payload : Payload) throws
     func deleteAll() throws
 }
 
-class PayloadCache : PayloadCacheProtocol{
+class PayloadCache : PayloadCacheProtocol, @unchecked Sendable {
    
     //MB * 1024 * 1024
     private(set) var memoryLimit: UInt

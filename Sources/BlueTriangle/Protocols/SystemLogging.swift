@@ -8,7 +8,7 @@
 import Foundation
 import os.log
 
-protocol SystemLogging {
+protocol SystemLogging : Sendable {
     func log(
         level: OSLogType,
         message: @escaping () -> String,

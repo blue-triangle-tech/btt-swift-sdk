@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class CrashReportManager: CrashReportManaging {
+final class CrashReportManager: CrashReportManaging, @unchecked Sendable {
 
     private let crashReportPersistence: CrashReportPersisting.Type
 
@@ -55,17 +55,17 @@ final class CrashReportManager: CrashReportManaging {
         guard let crashReport = crashReportPersistence.read() else {
             return
         }
-
+        
         // Update session to use values from when the app crashed
         var sessionCopy = session
         sessionCopy.sessionID = crashReport.sessionID
-
-        do {
-            try upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName)
-
-            crashReportPersistence.clear()
-        } catch {
-            logger.error(error.localizedDescription)
+        Task {
+            do {
+                try await upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName)
+                crashReportPersistence.clear()
+            } catch {
+                logger.error(error.localizedDescription)
+            }
         }
     }
 
@@ -75,27 +75,28 @@ final class CrashReportManager: CrashReportManaging {
         function: StaticString,
         line: UInt
     ) {
-        guard let session = session() else {
-            return
-        }
-        
-        let nativeApp = NativeAppProperties.nstEmpty
-        let report = ErrorReport(nativeApp: nativeApp, eTp: BT_ErrorType.NativeAppCrash.rawValue, error: error, line: line, time: intervalProvider().milliseconds)
-        let pageName = BlueTriangle.recentTimer()?.getPageName()
-        do {
-            try upload(session:session , report: report, pageName: pageName)
-        } catch {
-            logger.error(error.localizedDescription)
+        Task {
+            guard let session = session() else {
+                return
+            }
+            let nativeApp = await NativeAppProperties.nstEmpty
+            let report = ErrorReport(nativeApp: nativeApp, eTp: BT_ErrorType.NativeAppCrash.rawValue, error: error, line: line, time: intervalProvider().milliseconds)
+            let pageName = BlueTriangle.recentTimer()?.getPageName()
+            do {
+                try await upload(session:session , report: report, pageName: pageName)
+            } catch {
+                logger.error(error.localizedDescription)
+            }
         }
     }
 }
 
 // MARK: - Private
 private extension CrashReportManager {
-    func makeTimerRequest(session: Session, report: ErrorReport, pageName : String?) throws -> Request {
+    func makeTimerRequest(session: Session, report: ErrorReport, pageName : String?) async throws -> Request {
         let page = Page(pageName: pageName ?? Constants.crashID, pageType: "")
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
-        let nativeProperty =  report.nativeApp.copy(.Regular)
+        let nativeProperty =  await report.nativeApp.copy(.Regular)
         let customMetrics = session.customVarriables(logger: logger)
         let model = TimerRequest(session: session,
                                  page: page,
@@ -128,7 +129,7 @@ private extension CrashReportManager {
             "CmpS": session.campaignSource,
             "os": Constants.os,
             "browser": Constants.browser,
-            "browserVersion": Device.bvzn,
+            "browserVersion": Device.current.bvzn,
             "device": Constants.device
         ]
 
@@ -138,8 +139,8 @@ private extension CrashReportManager {
                            model: [report])
     }
 
-    func upload(session: Session, report: ErrorReport, pageName : String?) throws {
-        let timerRequest = try makeTimerRequest(session: session,
+    func upload(session: Session, report: ErrorReport, pageName : String?) async throws {
+        let timerRequest = try await makeTimerRequest(session: session,
                                                 report: report, pageName: pageName)
         uploader.send(request: timerRequest)
 

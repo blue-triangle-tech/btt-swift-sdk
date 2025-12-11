@@ -15,7 +15,7 @@ import UIKit
 import SwiftUI
 #endif
 
-protocol SessionManagerProtocol  {
+protocol SessionManagerProtocol : Sendable {
     func start(with expiry : Millisecond)
     func getSessionData() -> SessionData?
     func stop()
@@ -36,13 +36,12 @@ import Combine
 /// - Note: This class is used when `enableAllTracking` is true, ensuring the SDK operates in
 ///         full functionality mode.
 
-class SessionManager : SessionManagerProtocol{
+final class SessionManager : SessionManagerProtocol, @unchecked Sendable {
     
     private var expirationDurationInMS: Millisecond = 30 * 60 * 1000
     private let lock = NSLock()
     private let sessionStore = SessionStore()
     private var cancellables = Set<AnyCancellable>()
-    private var currentConfigSubscription: AnyCancellable?
     private let queue = DispatchQueue(label: "com.bluetriangle.remote", qos: .userInitiated, autoreleaseFrequency: .workItem)
     private var currentSession : SessionData?
 
@@ -63,16 +62,29 @@ class SessionManager : SessionManagerProtocol{
         self.updater = updater
         self.configSyncer = configSyncer
     }
+    
+    private func setCurrentSession(_ session : SessionData?){
+        lock.sync {
+            self.currentSession = session
+        }
+    }
+    
+    private func getCurrentSession() -> SessionData? {
+        lock.sync {
+            return self.currentSession
+        }
+    }
 
     public func start(with expiry : Millisecond){
         self.expirationDurationInMS = expiry
+        self.onLaunch()
         self.resisterObserver()
     }
     
     public func stop(){
         self.removeConfigObserver()
         self.sessionStore.removeSessionData()
-        self.currentSession = nil
+        self.setCurrentSession(nil)
     }
     
     private func resisterObserver() {
@@ -91,10 +103,10 @@ class SessionManager : SessionManagerProtocol{
     
     
     private func appOffScreen(){
-        if let session = currentSession {
+        if let session = getCurrentSession() {
             session.expiration = expiryDuration()
             session.isNewSession = false
-            currentSession = session
+            self.setCurrentSession(session)
             sessionStore.saveSession(session)
         }
     }
@@ -109,30 +121,26 @@ class SessionManager : SessionManagerProtocol{
         var hasExpired = sessionStore.isExpired()
         
         if CommandLine.arguments.contains(Constants.NEW_SESSION_ON_LAUNCH_ARGUMENT) {
-            
-            if let currentSession = self.currentSession, !hasExpired{
+            if let currentSession = self.getCurrentSession(), !hasExpired{
                 return currentSession
             }
-            
             hasExpired = true
         }
         
         if hasExpired {
             let session = SessionData(expiration: expiryDuration())
             session.isNewSession = true
-            currentSession = session
+            self.setCurrentSession(session)
             syncStoredConfigToSessionAndApply()
             sessionStore.saveSession(session)
             logger.info("BlueTriangle:SessionManager: New session \(session.sessionID) has been created")
             
             return session
-        }
-        else{
-            
-            guard let session = currentSession else {
+        } else {
+            guard let session = getCurrentSession() else {
                 let session = sessionStore.retrieveSessionData()
                 session!.isNewSession = false
-                currentSession = session
+                self.setCurrentSession(session)
                 syncStoredConfigToSessionAndApply()
                 sessionStore.saveSession(session!)
                 logger.info("BlueTriangle:SessionManager: Current session \(session?.sessionID ?? 0)")
@@ -144,14 +152,12 @@ class SessionManager : SessionManagerProtocol{
     }
     
     public func getSessionData() -> SessionData? {
-        lock.sync {
-            if let session = currentSession{
-                return session
-            }
-            
-            let updatedSession = self.invalidateSession()
-            return updatedSession
+        if let session = getCurrentSession(){
+            return session
         }
+        
+        let updatedSession = self.invalidateSession()
+        return updatedSession
     }
     
     private func updateSession(){
@@ -183,11 +189,13 @@ extension SessionManager {
         }
     }
 
-    private func updateConfigurationOnChange(){
-        self.syncStoredConfigToSessionAndApply()
-        BlueTriangle.updateCaptureRequests()
-        BlueTriangle.updateGroupedViewCaptureRequest()
-        configSyncer.updateAndApplySDKState()
+    private func updateConfigurationOnChange() {
+        Task {
+            self.syncStoredConfigToSessionAndApply()
+            await BlueTriangle.updateCaptureRequests()
+            await BlueTriangle.updateGroupedViewCaptureRequest()
+            await configSyncer.updateAndApplySDKState()
+        }
     }
 
     private func syncStoredConfigToSessionAndApply() {

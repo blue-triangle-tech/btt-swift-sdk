@@ -7,7 +7,7 @@
 
 import Foundation
 
-final class CaptureTimerManager: CaptureTimerManaging {
+final class CaptureTimerManager: CaptureTimerManaging ,@unchecked Sendable {
     enum State: Equatable {
         case inactive
         case active(task: Task<Void, Error>, span: Int)

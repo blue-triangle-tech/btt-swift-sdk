@@ -7,6 +7,6 @@
 
 import Foundation
 
-protocol Uploading {
+protocol Uploading : Sendable {
     func send(request: Request)
 }

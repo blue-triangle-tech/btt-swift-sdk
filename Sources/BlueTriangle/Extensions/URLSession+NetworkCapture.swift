@@ -19,7 +19,7 @@ public extension URLSession {
     @objc(btDataTaskWithURL:completionHandler:)
     func btDataTask(
         with url: URL,
-        completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void
+        completionHandler: @Sendable @escaping (Data?, URLResponse?, Error?) -> Void
     ) -> URLSessionDataTask {
         return btDataTaskResponseForRequest(URLRequest(url: url), completionHandler)
     }
@@ -33,12 +33,12 @@ public extension URLSession {
     @objc(btDataTaskWithRequest:completionHandler:)
     func btDataTask(
         with request: URLRequest,
-        completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void
+        completionHandler: @Sendable @escaping (Data?, URLResponse?, Error?) -> Void
     ) -> URLSessionDataTask {
         return btDataTaskResponseForRequest(request, completionHandler)
     }
     
-    fileprivate func btDataTaskResponseForRequest(_ request: URLRequest, _ completionHandler: @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask {
+    fileprivate func btDataTaskResponseForRequest(_ request: URLRequest, _ completionHandler: @Sendable @escaping (Data?, URLResponse?, Error?) -> Void) -> URLSessionDataTask {
         let timer = BlueTriangle.startRequestTimer()
         return dataTask(with: request) { data, response, error in
             if var timer = timer {

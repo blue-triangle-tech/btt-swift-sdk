@@ -21,7 +21,17 @@ enum GroupingCause {
     }
 }
 
-final class BTTimerGroup {
+extension BTTimerGroup: Hashable {
+    public static func == (lhs: BTTimerGroup, rhs: BTTimerGroup) -> Bool {
+        lhs === rhs
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
+}
+
+final class BTTimerGroup : @unchecked Sendable{
     private var timers: Set<BTTimer> = []
     private var idleTimer: Timer?
     private var groupTimer: BTTimer
@@ -90,25 +100,24 @@ final class BTTimerGroup {
     func refreshGroupName() { updatePageNameFromSnapshot() }
 
     func recordActions(_ action: UserAction) {
-        // actionTracker assumed thread-safe or queue-backed
         actionTracker.recordAction(action)
     }
 
-    func submit() {
+    func submit() async {
         // Snapshot all data needed for submission
-        let snap = lock.sync { SubmissionSnapshot.make(from: self) }
-
+        let snap = await SubmissionSnapshot.make(from: self)
+        
         guard !snap.timers.isEmpty else {
             snap.groupTimer.end()
             return
         }
-
+        
         var pgtm: Millisecond = 0
         var pages = [String]()
         var screenType: ScreenType?
         var intervals = [(Millisecond, Millisecond)]()
         let hasSampleRate =  BlueTriangle.sessionData()?.shouldGroupedViewCapture ?? false
-
+        
         for timer in snap.timers {
             let maxLoadTime = max(timer.nativeAppProperties.loadTime, Constants.minPgTm)
             pgtm += maxLoadTime
@@ -116,11 +125,12 @@ final class BTTimerGroup {
             if screenType == nil { screenType = timer.nativeAppProperties.screenType }
             intervals.append((timer.nativeAppProperties.loadStartTime, timer.nativeAppProperties.loadEndTime))
         }
-
+        
         let unionPgTm = max(totalPgTmUnion(intervals), Constants.minPgTm)
         logger.info("Union pgTm of intervals \(intervals): \(unionPgTm), Sum of pgTm : \(pgtm)")
-
-        let native = NativeAppProperties(
+        
+        
+        let native = await NativeAppProperties.make(
             fullTime: snap.fullTime,
             loadTime: pgtm,
             loadStartTime: 0,
@@ -133,29 +143,25 @@ final class BTTimerGroup {
             ethernet: snap.networkReport?.ethernet ?? 0,
             other: snap.networkReport?.other ?? 0,
             grouped: true,
-            groupingCause: snap.groupingCause?.description,
-            groupingCauseInterval: snap.causeInterval,
-            netState: snap.networkReport?.netState ?? "",
-            netStateSource: snap.networkReport?.netSource ?? "",
             childViews: hasSampleRate ? pages : []
         )
-
+        
         snap.groupTimer.nativeAppProperties = native
         snap.groupTimer.pageTimeBuilder = { unionPgTm }
-
+        
         BlueTriangle.endTimer(snap.groupTimer)
-        self.submitChildsWcdRequests()
+        await self.submitChildsWcdRequests()
         logger.info("Submitting group result: \(snap.timers.count) timers with name: \(snap.pageName)")
     }
 
-    func forcefullyEndAllTimers() {
+    func forcefullyEndAllTimers() async {
         let timersSnap = lock.sync { Array(self.timers) }
         closeGroup() // will snapshot & submit if ready
-
+        
         for timer in timersSnap where !timer.hasEnded {
             let prop = timer.nativeAppProperties
             let full: Millisecond = (prop.loadTime > 0) ? (timeInterval.milliseconds - prop.loadStartTime) : 0
-            timer.nativeAppProperties = NativeAppProperties(
+            timer.nativeAppProperties =  await NativeAppProperties.make(
                 fullTime: full,
                 loadTime: prop.loadTime,
                 loadStartTime: prop.loadStartTime,
@@ -167,9 +173,9 @@ final class BTTimerGroup {
                 cellular: prop.cellular,
                 ethernet: prop.ethernet,
                 other: prop.other,
-                grouped: true,
-                netState: prop.netState,
-                netStateSource: prop.netStateSource
+                confidenceRate: prop.confidenceRate,
+                confidenceMsg: prop.confidenceMsg,
+                grouped: true
             )
             timer.end()
         }
@@ -260,24 +266,16 @@ final class BTTimerGroup {
         }
     }
 
-    private func submitActionsWcdRequests() {
-        let name = groupTimer.getPageName()
-        let start = groupTimer.startTime
-        Task { await actionTracker.uploadActions(name, pageStartTime: start) }
-    }
-
-    private func submitChildsWcdRequests() {
+    private func submitChildsWcdRequests() async {
         let pageName = groupTimer.getPageName()
         let groupStart = groupTimer.startTime.milliseconds
         let timersSnap = lock.sync { Array(self.timers) }
-
-        Task {
-            await BlueTriangle.startGroupTimerRequest(page: Page(pageName: pageName), startTime: groupStart)
-            for t in timersSnap {
-                await self.submitSingleRequest(groupTimer: self.groupTimer, timer: t, group: pageName)
-            }
-            await BlueTriangle.uploadGroupedViewCollectedRequests()
+        
+        await BlueTriangle.startGroupTimerRequest(page: Page(pageName: pageName), startTime: groupStart)
+        for t in timersSnap {
+            await self.submitSingleRequest(groupTimer: self.groupTimer, timer: t, group: pageName)
         }
+        await BlueTriangle.uploadGroupedViewCollectedRequests()
     }
 
     private func submitSingleRequest(groupTimer: BTTimer, timer: BTTimer, group: String) async {
@@ -291,8 +289,9 @@ final class BTTimerGroup {
         let minMemory = timer.performanceReport?.minMemory ?? 0
         let maxMemory = timer.performanceReport?.maxMemory ?? 0
         let avgMemory = timer.performanceReport?.avgMemory ?? 0
+        
 
-        let native = NativeAppProperties(
+        let native = await NativeAppProperties.make(
             fullTime: prop.fullTime,
             loadTime: prop.loadTime,
             loadStartTime: prop.loadStartTime,
@@ -304,11 +303,11 @@ final class BTTimerGroup {
             cellular: prop.cellular,
             ethernet: prop.ethernet,
             other: prop.other,
-            grouped: true,
-            netState: prop.netState,
-            netStateSource: prop.netStateSource
+            confidenceRate: prop.confidenceRate,
+            confidenceMsg: prop.confidenceMsg,
+            grouped: true
         )
-
+        
         await BlueTriangle.captureGroupRequest(
             startTime: loadStartTime,
             endTime: actualLoadEndTime,
@@ -365,13 +364,14 @@ final class BTTimerGroup {
         let pageName: String
         let fullTime: Millisecond
 
-        static func make(from g: BTTimerGroup) -> SubmissionSnapshot {
+        static func make(from g: BTTimerGroup) async -> SubmissionSnapshot {
             let timersArr = Array(g.timers)
             let gt = g.groupTimer
+            let nReport = await gt.getNetworkReport()
             return .init(
                 timers: timersArr,
                 groupTimer: gt,
-                networkReport: gt.networkReport,
+                networkReport: nReport,
                 maxMainThreadTask: gt.performanceReport?.maxMainThreadTask.milliseconds ?? 0,
                 groupingCause: g.groupingCause,
                 causeInterval: g.causeInterval,

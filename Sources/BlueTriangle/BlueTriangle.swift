@@ -16,203 +16,439 @@ import UIKit
 
 typealias SessionProvider = () -> Session?
 
-/// The entry point for interacting with the Blue Triangle SDK.
-@preconcurrency
-final public class BlueTriangle: NSObject {
+final class Store: @unchecked Sendable {
+    private let sessionLock = NSLock()
+    private let configLock = NSLock()
+    private let initLock = NSLock()
+    private let allTrackingLock = NSLock()
+    private let timerLock = NSLock()
+    private let sessionManagerlock = NSLock()
+    private let shouldGroupedCapturelock = NSLock()
+    private let shouldNetworkCapturelock = NSLock()
     
-    internal static var groupTimer : BTTimerGroupManager = BTTimerGroupManager(logger: logger)
-    internal static var configuration = BlueTriangleConfiguration()
-    
-    private static var _screenTracker: BTTScreenLifecycleTracker?
-    internal static var screenTracker: BTTScreenLifecycleTracker?{
-        get {
-            trackingLock.sync { _screenTracker }
-        }
-        set{
-            trackingLock.sync { _screenTracker = newValue }
-        }
-    }
-    private static var _networkStateMonitor: NetworkStateMonitorProtocol?
-    internal static var networkStateMonitor: NetworkStateMonitorProtocol?{
-        get {
-            trackingLock.sync { _networkStateMonitor }
-        }
-        set{
-            trackingLock.sync { _networkStateMonitor = newValue }
-        }
-    }
-    
-    private static var _appEventObserver: AppEventObserver?
-    internal static var appEventObserver: AppEventObserver?{
-        get {
-            trackingLock.sync { _appEventObserver }
-        }
-        set{
-            trackingLock.sync { _appEventObserver = newValue }
-        }
-    }
-    
-    private static var _nsExeptionReporter: CrashReportManaging?
-    private static var nsExeptionReporter: CrashReportManaging?{
-        get {
-            trackingLock.sync { _nsExeptionReporter }
-        }
-        set{
-            trackingLock.sync { _nsExeptionReporter = newValue }
-        }
-    }
-    
-    private static var _signalCrashReporter: BTSignalCrashReporter?
-    internal static var signalCrashReporter: BTSignalCrashReporter?{
-        get {
-            trackingLock.sync { _signalCrashReporter }
-        }
-        set{
-            trackingLock.sync { _signalCrashReporter = newValue }
-        }
-    }
-    
-    private static var _launchTimeReporter : LaunchTimeReporter?
-    internal static var launchTimeReporter : LaunchTimeReporter?{
-        get {
-            trackingLock.sync { _launchTimeReporter }
-        }
-        set{
-            trackingLock.sync { _launchTimeReporter = newValue }
-        }
-    }
-    
-    private static var _memoryWarningWatchDog : MemoryWarningWatchDog?
-    internal static var memoryWarningWatchDog : MemoryWarningWatchDog?{
-        get {
-            trackingLock.sync { _memoryWarningWatchDog }
-        }
-        set{
-            trackingLock.sync { _memoryWarningWatchDog = newValue }
-        }
-    }
-    
-    private static var _anrWatchDog : ANRWatchDog?
-    internal static var anrWatchDog : ANRWatchDog?{
-        get {
-            trackingLock.sync { _anrWatchDog }
-        }
-        set{
-            trackingLock.sync { _anrWatchDog = newValue }
-        }
-    }
-    
-    private static var _sessionManager : SessionManagerProtocol?
-    private static var sessionManager : SessionManagerProtocol?{
-        get {
-            trackingLock.sync { _sessionManager }
-        }
-        set{
-            trackingLock.sync { _sessionManager = newValue }
-        }
-    }
-    
-    internal static var clarityConnector = ClaritySessionConnector(logger: logger)
-   
-    private static var _enableAllTracking: Bool = configRepo.isEnableAllTracking()
-    internal static var enableAllTracking: Bool {
-         get { enableAllTrackingLock.sync { return _enableAllTracking } }
-         set { enableAllTrackingLock.sync { _enableAllTracking = newValue } }
-     }
-    
-    private static let configRepo: BTTConfigurationRepo = {
-        let config = BTTConfigurationRepo(BTTRemoteConfig.defaultConfig)
-        return  config
-    }()
-
-    internal static let disableModeSessionManager : SessionManagerProtocol = {
-        let configFetcher  =  BTTConfigurationFetcher()
-        let configSyncer = BTTStoredConfigSyncer(configRepo: configRepo, logger: logger)
-        let updater  =  BTTConfigurationUpdater(configFetcher: configFetcher, configRepo: configRepo, logger: logger, configAck: nil)
-        return DisableModeSessionManager(logger, configRepo, updater, configSyncer)
+    private var initialized = false
+    private var enableAllTracking: Bool = true
+    private var shouldGroupedCaptureRequests: Bool = false
+    private var shouldNetworkCaptureRequests: Bool = false
+    private var activeTimers = [BTTimer]()
+    private var configuration = BlueTriangleConfiguration()
+    private var sessionManager : SessionManagerProtocol?
+    private lazy var session: Session? = {
+        configuration.makeSession()
     }()
     
-    internal static let enabledModeSessionManager : SessionManagerProtocol = {
-        let configFetcher  =  BTTConfigurationFetcher()
-        let configSyncer = BTTStoredConfigSyncer(configRepo: configRepo, logger: logger)
-        let configAck  =  RemoteConfigAckReporter(logger: logger, uploader: uploader)
-        let updater  =  BTTConfigurationUpdater(configFetcher: configFetcher, configRepo: configRepo, logger: logger, configAck: configAck)
-        return SessionManager(logger, configRepo, updater, configSyncer)
+    internal lazy var groupTimer : BTTimerGroupManager = {
+        BTTimerGroupManager(logger: logger)
     }()
     
-    private static let lock = NSLock()
-    private static let timerLock = NSLock()
-    private static let groupCaptureLock = NSLock()
-    private static let networkCaptureLock = NSLock()
-    private static let trackingLock = NSRecursiveLock()
-    private static let enableAllTrackingLock = NSLock()
-    private static let appInitializeLock = NSLock()
-    private static var activeTimers = [BTTimer]()
-#if os(iOS)
-    private static let matricKitWatchDog = MetricKitWatchDog()
-#endif
-    internal static func addActiveTimer(_ timer : BTTimer){
+    internal lazy var logger: Logging = {
+        configuration.makeLogger()
+    }()
+    
+    internal lazy var configRepo: BTTConfigurationRepo = {
+        BTTConfigurationRepo(BTTRemoteConfig.defaultConfig)
+    }()
+    
+    internal lazy var uploader: Uploading = {
+        configuration.uploaderConfiguration.makeUploader(
+            logger: logger,
+            failureHandler: RequestFailureHandler(
+                file: .requests,
+                logger: logger))
+    }()
+    
+    internal func isInitialized() -> Bool {
+        initLock.sync {
+            return initialized
+        }
+    }
+    
+    internal func setInitialized(_ initialized: Bool) {
+        initLock.sync {
+            self.initialized = initialized
+        }
+    }
+    
+    internal func addActiveTimer(_ timer : BTTimer){
+        timerLock.sync { activeTimers.append(timer)}
+    }
+    
+    internal func removeActiveTimer(_ timer: BTTimer) {
         timerLock.sync {
-            activeTimers.append(timer)
-#if os(iOS)
-         //   matricKitWatchDog.saveCurrentTimerData(timer)
-#endif
-        }
-    }
-    
-    internal static func removeActiveTimer(_ timer : BTTimer){
-        timerLock.sync {
-            var index = 0
-            var isTimerAvailable = false
-            
-            for timerObj in activeTimers{
-                if timerObj == timer { isTimerAvailable = true
-                    break }
-                index = index + 1
-            }
-            
-            if isTimerAvailable {
+            if let index = activeTimers.firstIndex(of: timer) {
                 activeTimers.remove(at: index)
             }
         }
     }
-    
-    internal static func recentTimer() -> BTTimer?{
+
+    internal func recentTimer() -> BTTimer?{
         timerLock.sync {
             let timer = activeTimers.last
             return timer
         }
     }
     
-    internal static func updateSession(_ session : SessionData){
-    
-        _session?.sessionID = session.sessionID
-#if os(iOS)
-        BTTWebViewTracker.updateSessionId(session.sessionID)
-#endif
-        SignalHandler.updateSessionID("\(session.sessionID)")
+    internal func getAllTrackingEnabled() -> Bool {
+        allTrackingLock.sync {
+            return enableAllTracking
+        }
     }
     
-    private static var _session: Session? = {
-        configuration.makeSession()
+    internal func setAllTrackingEnabled(_ enabled: Bool) {
+        allTrackingLock.sync {
+            self.enableAllTracking = enabled
+        }
+    }
+    
+    internal func getShouldGroupedCaptureRequests() -> Bool {
+        shouldGroupedCapturelock.sync {
+            return shouldGroupedCaptureRequests
+        }
+    }
+    
+    internal func setShouldGroupedCaptureRequests(_ enabled: Bool) {
+        shouldGroupedCapturelock.sync {
+            self.shouldGroupedCaptureRequests = enabled
+        }
+    }
+    
+    internal func getShouldNetworkCaptureRequests() -> Bool {
+        shouldNetworkCapturelock.sync {
+            return shouldNetworkCaptureRequests
+        }
+    }
+    
+    internal func setShouldNetworkCaptureRequests(_ enabled: Bool) {
+        shouldNetworkCapturelock.sync {
+            self.shouldNetworkCaptureRequests = enabled
+        }
+    }
+    
+    internal func getConfiguration() -> BlueTriangleConfiguration {
+        configLock.sync {
+            return configuration
+        }
+    }
+    
+    internal func setConfiguration(_ configuration: BlueTriangleConfiguration) {
+        configLock.sync {
+            self.configuration = configuration
+        }
+    }
+    
+    internal func getSession() -> Session? {
+        sessionLock.sync {
+            return session
+        }
+    }
+    
+    internal func setSession(_ session: Session?) {
+        sessionLock.sync {
+            self.session = session
+        }
+    }
+    
+    internal func makeSession() {
+        sessionLock.sync {
+            self.session = configuration.makeSession()
+        }
+    }
+    
+    internal func shutdownSession() {
+        sessionLock.sync {
+            self.session = nil
+        }
+    }
+    
+    internal func updateSessionId(_ sessionId : Identifier) {
+        sessionLock.sync {
+            self.session?.sessionID = sessionId
+        }
+    }
+    
+    internal func setSessionManager(_ sessionManager: SessionManagerProtocol?) {
+        sessionManagerlock.sync {
+            self.sessionManager = sessionManager
+        }
+    }
+    
+    internal func getSessionManager() -> SessionManagerProtocol?{
+        sessionManagerlock.sync {
+            self.sessionManager
+        }
+    }
+    
+    internal lazy var timerFactory: (Page, BTTimer.TimerType, Bool) -> BTTimer = {
+        configuration.timerConfiguration.makeTimerFactory(
+            logger: logger,
+            performanceMonitorFactory: configuration.makePerformanceMonitorFactory())
     }()
     
-    internal static func session() -> Session? {
-        return _session
+    internal lazy var internalTimerFactory: () -> InternalTimer = {
+        configuration.internalTimerConfiguration.makeTimerFactory(logger: logger)
+    }()
+    
+    internal lazy var payloadCache : PayloadCacheProtocol = {
+        PayloadCache.init( configuration.cacheMemoryLimit,
+                           expiry: configuration.cacheExpiryDuration)
+    }()
+    
+    //Screen Tracking
+    private var screenTracker: BTTScreenLifecycleTracker?
+    private let screenTrackerLock = NSLock()
+    internal func getLifecycleTracker() -> BTTScreenLifecycleTracker? {
+        screenTrackerLock.sync {
+            return screenTracker
+        }
     }
     
-    internal static func sessionData() -> SessionData? {
-        return sessionManager?.getSessionData()
+    internal func makeLifecycleTracker() {
+        screenTrackerLock.sync {
+            screenTracker = BTTScreenLifecycleTracker(logger, enableLifecycleTracker: configuration.enableScreenTracking)
+        }
     }
     
-    private static func makeCapturedRequestCollector() -> CapturedRequestCollecting? {
-        if let _ = session(), shouldCaptureRequests {
-            let collector = configuration.capturedRequestCollectorConfiguration.makeRequestCollector(
+    internal func shutdownLifecycleTracker() {
+        screenTrackerLock.sync {
+            screenTracker = nil
+        }
+    }
+    
+    private var clarityConnector: ClaritySessionConnector?
+    private let clarityConnectorLock = NSLock()
+
+    internal func getClarityConnector()-> ClaritySessionConnector? {
+        clarityConnectorLock.sync {
+            clarityConnector
+        }
+    }
+    
+    internal func shutdownClarityConnector() {
+        clarityConnectorLock.sync {
+            clarityConnector = nil
+        }
+    }
+    
+    internal func makeClarityConnector() {
+        clarityConnectorLock.sync {
+            clarityConnector = ClaritySessionConnector(logger: logger)
+        }
+    }
+    
+    internal func loadConfigAllTracking() {
+        self.setAllTrackingEnabled(configRepo.isEnableAllTracking())
+    }
+    
+    //Net State
+    private var networkStateMonitor: NetworkStateMonitorProtocol?
+    private let networkStateMonitorLock = NSLock()
+    internal func getNetworkStateMonitor() -> NetworkStateMonitorProtocol? {
+        networkStateMonitorLock.sync {
+            networkStateMonitor
+        }
+    }
+    
+    internal func makeNetworkStateMonitor() {
+        networkStateMonitorLock.sync {
+            networkStateMonitor = NetworkStateMonitor.init(logger)
+        }
+    }
+    
+    internal func shutdownNetworkStateMonitor() {
+        networkStateMonitorLock.sync {
+            networkStateMonitor = nil
+        }
+    }
+    //Launch Time
+    private var launchTimeReporter : LaunchTimeReporter?
+    private let launchTimeReporterLock = NSLock()
+    internal func getLaunchTimeReporter() -> LaunchTimeReporter? {
+        launchTimeReporterLock.sync {
+            launchTimeReporter
+        }
+    }
+    
+    internal func makeLaunchTimeMonitor() {
+        launchTimeReporterLock.sync {
+            let launchMonitor = LaunchTimeMonitor(logger: logger)
+            launchTimeReporter = LaunchTimeReporter(using: {self.getSession()},
+                                                    uploader: getConfiguration().uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
+                                                        file: .requests,
+                                                        logger: logger)),
+                                                    logger: logger,
+                                                    monitor: launchMonitor)
+        }
+        
+    }
+    
+    internal func shutdownLaunchTimeMonitor() {
+        launchTimeReporterLock.sync {
+            launchTimeReporter = nil
+        }
+    }
+    
+    private var nsExeptionReporter: CrashReportManaging?
+    private var signalCrashReporter: BTSignalCrashReporter?
+    private let nsExeptionReporterLock = NSLock()
+    private let signalCrashReporterLock = NSLock()
+
+    internal func getNsExeptionReporter() -> CrashReportManaging? {
+        nsExeptionReporterLock.sync {
+            nsExeptionReporter
+        }
+    }
+    
+    internal func makeNsExeptionReporter() {
+        nsExeptionReporterLock.sync {
+            nsExeptionReporter = CrashReportManager(crashReportPersistence: CrashReportPersistence.self,
+                                                    logger: logger,
+                                                    uploader: uploader,
+                                                    session: {self.getSession()})
+        }
+        
+    }
+    
+    internal func shutdownNsExeptionReporter() {
+        nsExeptionReporterLock.sync {
+            nsExeptionReporter = nil
+        }
+    }
+    
+    internal func getSignalCrashReporter() -> BTSignalCrashReporter? {
+        signalCrashReporterLock.sync {
+            signalCrashReporter
+        }
+    }
+    
+    internal func makeSignalCrashReporter() {
+        signalCrashReporterLock.sync {
+            signalCrashReporter = BTSignalCrashReporter(directory: SignalHandler.reportsFolderPath(), logger: logger,
+                                                        uploader: uploader,
+                                                        session: {self.getSession()})
+        }
+    }
+    
+    internal func shutdownSignalCrashReporter() {
+        signalCrashReporterLock.sync {
+            signalCrashReporter = nil
+        }
+    }
+    
+    //memory
+    private var memoryWarningWatchDog : MemoryWarningWatchDog?
+    private let memoryWarningLock = NSLock()
+    internal func getMemoryWarningWatchDog() -> MemoryWarningWatchDog? {
+        memoryWarningLock.sync {
+            memoryWarningWatchDog
+        }
+    }
+    
+    internal func makeMemoryWarningWatchDog() {
+        memoryWarningLock.sync {
+            memoryWarningWatchDog = MemoryWarningWatchDog(
+                session: {self.getSession()},
+                uploader: getConfiguration().uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
+                    file: .requests,
+                    logger: logger)),
+                logger: logger)
+        }
+        
+    }
+    
+    internal func shutdownMemoryWarningWatchDog() {
+        memoryWarningLock.sync {
+            memoryWarningWatchDog = nil
+        }
+    }
+    
+    private var anrWatchDog : ANRWatchDog?
+    private let anrWatchDogLock = NSLock()
+
+    internal func getANRWatchDog() -> ANRWatchDog? {
+        anrWatchDogLock.sync {
+            anrWatchDog
+        }
+    }
+    
+    internal func makeANRWatchDog() {
+        anrWatchDogLock.sync {
+            anrWatchDog = ANRWatchDog(
+                mainThreadObserver: MainThreadObserver.live,
+                session: {self.getSession()},
+                uploader: getConfiguration().uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
+                    file: .requests,
+                    logger: logger)),
+                logger: logger)
+        }
+    }
+    
+    internal func shutdownANRWatchDog() {
+        anrWatchDogLock.sync {
+            anrWatchDog = nil
+        }
+    }
+    
+    private var capturedRequestCollector: CapturedRequestCollecting?
+    private let capturedRequestLock = NSLock()
+    
+    func getCapturedGroupedViewRequestCollector() -> CapturedGroupRequestCollecting? {
+        capturedRequestLock.sync {
+            if let collector = capturedGroupedViewRequestCollector {
+                return collector
+            }
+            let newCollector = makeCapturedGroupRequestCollector()
+            capturedGroupedViewRequestCollector = newCollector
+            return newCollector
+        }
+    }
+    
+    func setCapturedGroupedViewRequestCollector(_ newCollector : CapturedGroupRequestCollecting?) {
+        capturedRequestLock.sync {
+            capturedGroupedViewRequestCollector = newCollector
+        }
+    }
+    
+    internal func makeCapturedGroupRequestCollector() -> CapturedGroupRequestCollecting? {
+        if let _ = getSession() ,getShouldGroupedCaptureRequests() {
+            let groupCollector = getConfiguration().capturedGroupRequestCollectorConfiguration.makeRequestCollector(
                 logger: logger,
                 networkCaptureConfiguration: .standard,
-                requestBuilder: CapturedRequestBuilder.makeBuilder {self.session()},
+                requestBuilder: CapturedRequestBuilder.makeBuilder {self.getSession()},
                 uploader: uploader)
+            return groupCollector
+        } else {
+            return nil
+        }
+    }
+    
+    private var capturedGroupedViewRequestCollector: CapturedGroupRequestCollecting?
+    private let capturedGroupedLock = NSLock()
 
+    func getCapturedRequestCollector() -> CapturedRequestCollecting? {
+        capturedGroupedLock.sync {
+            if let collector = capturedRequestCollector {
+                return collector
+            }
+            let newCollector = makeCapturedRequestCollector()
+            capturedRequestCollector = newCollector
+            return newCollector
+        }
+    }
+    
+    func setCapturedRequestCollector(_ newCollector : CapturedRequestCollecting?) {
+        capturedGroupedLock.sync {
+            capturedRequestCollector = newCollector
+        }
+    }
+    
+    internal func makeCapturedRequestCollector() -> CapturedRequestCollecting? {
+        if let _ = getSession(), getShouldNetworkCaptureRequests() {
+            let collector = getConfiguration().capturedRequestCollectorConfiguration.makeRequestCollector(
+                logger: logger,
+                networkCaptureConfiguration: .standard,
+                requestBuilder: CapturedRequestBuilder.makeBuilder {self.getSession()},
+                uploader: uploader)
+            
             Task {
                 await collector.configure()
             }
@@ -222,61 +458,96 @@ final public class BlueTriangle: NSObject {
         }
     }
     
-    internal static func makeCapturedGroupRequestCollector() -> CapturedGroupRequestCollecting? {
-        if let _ = session(), shouldGroupedCaptureRequests{
-            let groupCollector = configuration.capturedGroupRequestCollectorConfiguration.makeRequestCollector(
-                logger: logger,
-                networkCaptureConfiguration: .standard,
-                requestBuilder: CapturedRequestBuilder.makeBuilder {self.session()},
-                uploader: uploader)
-            return groupCollector
-        } else {
-            return nil
-        }
+    internal lazy var disableModeSessionManager : SessionManagerProtocol = {
+        let configFetcher  =  BTTConfigurationFetcher()
+        let configSyncer = BTTStoredConfigSyncer(configRepo: configRepo, logger: logger)
+        let updater  =  BTTConfigurationUpdater(configFetcher: configFetcher, configRepo: configRepo, logger: logger, configAck: nil)
+        return DisableModeSessionManager(logger, configRepo, updater, configSyncer)
+    }()
+    
+    internal lazy var enabledModeSessionManager : SessionManagerProtocol = {
+        let configFetcher  =  BTTConfigurationFetcher()
+        let configSyncer = BTTStoredConfigSyncer(configRepo: configRepo, logger: logger)
+        let configAck  =  RemoteConfigAckReporter(logger: logger, uploader: uploader)
+        let updater  =  BTTConfigurationUpdater(configFetcher: configFetcher, configRepo: configRepo, logger: logger, configAck: configAck)
+        return SessionManager(logger, configRepo, updater, configSyncer)
+    }()
+}
+
+
+/// The entry point for interacting with the Blue Triangle SDK.
+final public class BlueTriangle: NSObject {
+    private static let lock = NSLock()
+    private static let store = Store()
+    
+    internal static var configuration : BlueTriangleConfiguration {
+        get { store.getConfiguration()}
+        set { store.setConfiguration(newValue)}
     }
     
-    internal static func makeCapturedActionRequestCollector() -> CapturedActionRequestCollecting? {
-        if let _ = session(), shouldGroupedCaptureRequests{
-            let actionsCollector = configuration.capturedActionsRequestCollectorConfiguration.makeRequestCollector(
-                logger: logger,
-                networkCaptureConfiguration: .standard,
-                requestBuilder: CapturedRequestBuilder.makeBuilder {self.session()},
-                uploader: uploader)
-            return actionsCollector
-        } else {
-            return nil
-        }
+    internal static func getScreenTracker() async -> BTTScreenLifecycleTracker?{
+        store.getLifecycleTracker()
     }
     
-    private static var logger: Logging = {
-        configuration.makeLogger()
-    }()
+    internal static func networkStateMonitor() async -> NetworkStateMonitorProtocol?{
+         store.getNetworkStateMonitor()
+    }
 
-    private static var uploader: Uploading = {
-        configuration.uploaderConfiguration.makeUploader(
-            logger: logger,
-            failureHandler: RequestFailureHandler(
-                file: .requests,
-                logger: logger))
-    }()
-
-    private static var timerFactory: (Page, BTTimer.TimerType, Bool) -> BTTimer = {
-        configuration.timerConfiguration.makeTimerFactory(
-            logger: logger,
-            performanceMonitorFactory: configuration.makePerformanceMonitorFactory())
-    }()
-
-    private static var internalTimerFactory: () -> InternalTimer = {
-        configuration.internalTimerConfiguration.makeTimerFactory(logger: logger)
-    }()
-
-    private static var shouldCaptureRequests: Bool = {
-        sessionData()?.shouldNetworkCapture ?? false
-    }()
+    private static var sessionManager : SessionManagerProtocol?{
+        get { store.getSessionManager() }
+        set { store.setSessionManager(newValue) }
+    }
     
-    private static var shouldGroupedCaptureRequests: Bool = {
-        sessionData()?.shouldGroupedViewCapture ?? false
-    }()
+    internal static var enableAllTracking: Bool {
+        get { return store.getAllTrackingEnabled()  }
+        set { store.setAllTrackingEnabled(newValue) }
+    }
+    
+    internal static var shouldCaptureRequests: Bool {
+        get { return store.getShouldGroupedCaptureRequests()  }
+        set { store.setShouldNetworkCaptureRequests(newValue) }
+    }
+
+    internal static func addActiveTimer(_ timer : BTTimer){
+        store.addActiveTimer(timer)
+    }
+    
+    internal static func removeActiveTimer(_ timer: BTTimer) {
+        store.removeActiveTimer(timer)
+    }
+    
+    internal static func recentTimer() -> BTTimer?{
+        let timer = store.recentTimer()
+        return timer
+    }
+    
+    private static var _session: Session? {
+        get { store.getSession()}
+        set { store.setSession(newValue) }
+    }
+    
+    internal static func session() -> Session? {
+        return _session
+    }
+    
+    internal static func sessionData() -> SessionData? {
+        return store.getSessionManager()?.getSessionData()
+    }
+    
+    private static var logger: Logging {
+        get { store.logger }
+        set { store.logger = newValue }
+    }
+
+    internal static var timerFactory: (Page, BTTimer.TimerType, Bool) -> BTTimer {
+        get { store.timerFactory }
+        set { store.timerFactory = newValue }
+    }
+
+    internal static var internalTimerFactory: () -> InternalTimer {
+        get { store.internalTimerFactory }
+        set { store.internalTimerFactory = newValue }
+    }
     
     /// A Boolean value indicating  whether the SDK has been successfully configured and initialized.
     ///
@@ -286,59 +557,40 @@ final public class BlueTriangle: NSObject {
     ///            function correctly, including the ability to fetch updates for the
     ///            enable/disable state via the Remote Configuration Updater.
     ///
-    private static var _initialized = false
+    public static func isInitialized() async -> Bool {
+        return initialized
+    }
     
     public static var initialized: Bool {
-        get { appInitializeLock.sync { _initialized } }
-        set { appInitializeLock.sync { _initialized = newValue } }
+        get { store.isInitialized() }
+        set { store.setInitialized(newValue) }
     }
-    
-    private static var _capturedRequestCollector: CapturedRequestCollecting? = {
-        return makeCapturedRequestCollector()
-    }()
-    
-    private static var _capturedGroupedViewRequestCollector: CapturedGroupRequestCollecting? = {
-        return makeCapturedGroupRequestCollector()
-    }()
-    
-    private static var capturedActionsViewRequestCollector: CapturedActionRequestCollector? = {
-        return makeCapturedActionRequestCollector() as! CapturedActionRequestCollector
-    }()
     
     private static func getNetworkRequestCapture() -> CapturedRequestCollecting? {
-        networkCaptureLock.sync {
-            return _capturedRequestCollector
-        }
+        return store.getCapturedRequestCollector()
     }
     
-    private static func setNetworkRequestCapture(_ requestCapture :CapturedRequestCollecting?) {
-        networkCaptureLock.sync {
-            _capturedRequestCollector = requestCapture
-        }
+    private static func setNetworkRequestCapture(_ requestCapture :CapturedRequestCollecting?)  {
+        store.setCapturedRequestCollector(requestCapture)
     }
     
     private static func setGroupRequestCapture(_ groupCapture :CapturedGroupRequestCollecting?) {
-        groupCaptureLock.sync {
-            _capturedGroupedViewRequestCollector = groupCapture
-        }
+        store.setCapturedGroupedViewRequestCollector(groupCapture)
     }
     
     internal static func getGroupRequestCapture() -> CapturedGroupRequestCollecting? {
-        groupCaptureLock.sync {
-            return _capturedGroupedViewRequestCollector
-        }
+        return  store.getCapturedGroupedViewRequestCollector()
     }
     
     //Cache components
-    internal static var payloadCache : PayloadCacheProtocol = {
-        PayloadCache.init(configuration.cacheMemoryLimit,
-                          expiry: configuration.cacheExpiryDuration)
-    }()
-    
+    internal static var payloadCache : PayloadCacheProtocol {
+        get { store.payloadCache }
+        set { store.payloadCache = newValue }
+    }
     
     /// Blue Triangle Technologies-assigned site ID.
     @objc public static var siteID: String {
-        trackingLock.sync { session()?.siteID ?? configuration.siteID }
+        lock.sync { session()?.siteID ?? configuration.siteID }
     }
 
     /// Global User ID.
@@ -441,9 +693,7 @@ final public class BlueTriangle: NSObject {
         }
         set {
             lock.sync {
-                
                 self._session?.metrics = (newValue.isEmpty ? nil : newValue)
-                
             }
         }
     }
@@ -452,155 +702,153 @@ final public class BlueTriangle: NSObject {
 extension BlueTriangle {
     
     // Starts a session if it's not already started
-    private static func startSession(){
-        if _session == nil{
-            _session = configuration.makeSession()
+    private static func stopClarity() {
+        store.shutdownClarityConnector()
+        logger.info("BlueTriangle :: Clarity was ended due to SDK disable.")
+    }
+    
+    private static func startClarity() {
+        if store.getClarityConnector() == nil{
+            store.makeClarityConnector()
         }
-        
+        logger.info("BlueTriangle :: Clarity was ended due to SDK disable.")
+    }
+    
+    private static func startSession() {
+        if  store.getSession() == nil{
+            store.makeSession()
+        }
         logger.info("BlueTriangle :: Session has started.")
     }
     
     // Ends the current session and logs the action
-    private static func endSession(){
-        _session = nil
+    private static func endSession() {
+        store.shutdownSession()
         logger.info("BlueTriangle :: Session was ended due to SDK disable.")
     }
     
     // Starts HTTP network capture and updates capture requests
-    private static func startHttpNetworkCapture(){
+    private static func startHttpNetworkCapture() {
         self.updateCaptureRequests()
         logger.info("BlueTriangle :: HTTP network capture has started.")
     }
     
     // Stops HTTP network capture and clears captured requests
-    private static func stopHttpNetworkCapture(){
-        self.setNetworkRequestCapture(nil)
+    private static func stopHttpNetworkCapture() {
+         self.setNetworkRequestCapture(nil)
         logger.info("BlueTriangle :: HTTP network capture was stopped due to SDK disable.")
     }
     
     // Starts HTTP network capture and updates capture requests
-    private static func startHttpGroupedChildCapture(){
-        self.updateGroupedViewCaptureRequest()
+    private static func startHttpGroupedChildCapture() {
+         self.updateGroupedViewCaptureRequest()
         logger.info("BlueTriangle :: Grouped child view capture has started.")
     }
     
     // Stops HTTP network capture and clears captured requests
-    private static func stopHttpGroupedChildCapture(){
-        self.setGroupRequestCapture(nil)
+    private static func stopHttpGroupedChildCapture() {
+         self.setGroupRequestCapture(nil)
         logger.info("BlueTriangle :: Grouped child view capture was stopped due to SDK disable.")
     }
     
     // Starts launch time collection and reporting if not already configured
-    private static func startLaunchTime(){
-        if launchTimeReporter == nil{
+    private static func startLaunchTime() {
+        if  store.getLaunchTimeReporter() == nil{
             configureLaunchTime(with: configuration.enableLaunchTime)
         }
-        
         logger.info("BlueTriangle :: Launch time collection and reporting has started.")
     }
     
     // Stops launch time collection and reporting
-    private static func stopLaunchTime(){
-        launchTimeReporter?.stop()
-        launchTimeReporter = nil
-        
+    private static func stopLaunchTime() {
+         store.getLaunchTimeReporter()?.stop()
+         store.shutdownLaunchTimeMonitor()
         logger.info("BlueTriangle :: Launch time collection and reporting were stopped due to SDK disable.")
     }
     
     // Starts crash tracking for both exceptions and signals
-    private static func startNsAndSignalCrashTracking(){
+    private static func startNsAndSignalCrashTracking() {
         if let crashConfig = configuration.crashTracking.configuration {
-            DispatchQueue.global(qos: .utility).async {
-                if nsExeptionReporter == nil{
-                    configureCrashTracking(with: crashConfig)
-                }
-                
-                if signalCrashReporter == nil{
-                    configureSignalCrash(with: crashConfig, debugLog: configuration.enableDebugLogging)
-                }
+            if  store.getNsExeptionReporter() == nil{
+                configureCrashTracking(with: crashConfig)
+            }
+            
+            if store.getSignalCrashReporter() == nil{
+                configureSignalCrash(with: crashConfig, debugLog: configuration.enableDebugLogging)
             }
         }
-        
         logger.info("BlueTriangle :: Crash tracking has started.")
     }
     
     // Stops crash tracking for both exceptions and signals
-    private static func stopNsAndSignalCrashTracking(){
-        nsExeptionReporter?.stop()
-        nsExeptionReporter = nil
-        signalCrashReporter?.stop()
-        signalCrashReporter = nil
-        
+    private static func stopNsAndSignalCrashTracking() {
+        store.getNsExeptionReporter()?.stop()
+        store.shutdownNsExeptionReporter()
+        store.getSignalCrashReporter()?.stop()
+        store.shutdownSignalCrashReporter()
         logger.info("BlueTriangle :: Crash tracking was stopped due to SDK disable.")
     }
     
     // Starts memory warning tracking if not already configured
-    private static func startMemoryWarning(){
-        if memoryWarningWatchDog == nil{
+    private static func startMemoryWarning() {
+        if store.getMemoryWarningWatchDog() == nil {
             configureMemoryWarning(with: configuration.enableMemoryWarning)
         }
-        
         logger.info("BlueTriangle :: Memory warning tracking has started.")
     }
     
     // Stops memory warning tracking
-    private static func stopMemoryWarning(){
-        memoryWarningWatchDog?.stop()
-        memoryWarningWatchDog = nil
-        
+    private static func stopMemoryWarning() {
+        store.getMemoryWarningWatchDog()?.stop()
+        store.shutdownMemoryWarningWatchDog()
         logger.info("BlueTriangle :: Memory warning tracking was stopped due to SDK disable.")
     }
     
     // Starts ANR tracking if not already configured
-    private static func startANR(){
-        if anrWatchDog == nil{
-            configureANRTracking(with: configuration.ANRMonitoring, enableStackTrace: configuration.ANRStackTrace,
-                                 interval: configuration.ANRWarningTimeInterval)
+    private static func startANR() {
+        if store.getANRWatchDog() == nil{
+             configureANRTracking(with: configuration.ANRMonitoring, enableStackTrace: configuration.ANRStackTrace,
+                                       interval: configuration.ANRWarningTimeInterval)
         }
-        
         logger.info("BlueTriangle :: ANR tracking has started.")
     }
     
     // Stops ANR tracking
-    private static func stopANR(){
-        anrWatchDog?.stop()
-        anrWatchDog = nil
-        
+    private static func stopANR() {
+         store.getANRWatchDog()?.stop()
+         store.shutdownANRWatchDog()
         logger.info("BlueTriangle :: ANR tracking was stopped due to SDK disable.")
     }
     
     // Starts screen tracking if not already configured
-    private static func startScreenTracking(){
-        if screenTracker == nil{
-            
-            configureScreenTracking(with: configuration.enableScreenTracking)
+    @MainActor
+    private static func startScreenTracking()  {
+        if  store.getLifecycleTracker() == nil{
+             configureScreenTracking(with: configuration.enableScreenTracking)
         }
-        
         logger.info("BlueTriangle :: Screen tracking has started.")
     }
     
     // Stops screen tracking
-    private static func stopScreenTracking(){
-        screenTracker?.stop()
-        screenTracker = nil
-        
+    @MainActor
+    private static func stopScreenTracking() {
+        store.getLifecycleTracker()?.stop()
+        store.shutdownLifecycleTracker()
         logger.info("BlueTriangle :: Screen tracking was stopped due to SDK disable.")
     }
     
     // Starts network state tracking if not already configured
-    private static func startNetworkStatus(){
-        if networkStateMonitor == nil{
-            configureMonitoringNetworkState(with: configuration.enableTrackingNetworkState)
+    private static func startNetworkStatus() {
+        if store.getNetworkStateMonitor() == nil{
+             configureMonitoringNetworkState(with: configuration.enableTrackingNetworkState)
         }
-        
         logger.info("BlueTriangle :: Network state tracking has started.")
     }
     
     // Stops network state tracking
-    private static func stopNetworkStatus(){
-        networkStateMonitor?.stop()
-        networkStateMonitor = nil
-        
+    private static func stopNetworkStatus() {
+         store.getNetworkStateMonitor()?.stop()
+         store.shutdownNetworkStateMonitor()
         logger.info("BlueTriangle :: Network state tracking was stopped due to SDK disable.")
     }
     
@@ -620,14 +868,12 @@ extension BlueTriangle {
 
     /// `configure` is a one-time configuration function to set session-level properties.
     /// - Parameter configure: A closure that enables mutation of the Blue Triangle SDK configuration.
-    @objc
+    @MainActor @objc
     public static func configure(_ configure: (BlueTriangleConfiguration) -> Void) {
         lock.sync {
             configure(configuration)
         }
-        
         self.applyAllTrackerState()
-        
         lock.sync {
             initialized.toggle()
         }
@@ -643,19 +889,17 @@ extension BlueTriangle {
     ///   - If `enableAllTracking` is false, all trackers are stopped to disable SDK functionality,
     ///     except for the Remote Configuration Updater, which remains active.
     ///
-    ///
+    @MainActor
     internal static func applyAllTrackerState() {
-        lock.sync {
-            
-            self.configureSessionManager(forModeWithExpiry: configuration.sessionExpiryDuration)
-            
-            if self.enableAllTracking {
-                self.startAllTrackers()
-            }
-            else{
-                self.stopAllTrackers()
-            }
+        Device.current.loadDeviceInfo()
+        self.store.loadConfigAllTracking()
+        self.configureSessionManager(forModeWithExpiry: configuration.sessionExpiryDuration)
+        if self.enableAllTracking {
+            self.startAllTrackers()
+        } else {
+            self.stopAllTrackers()
         }
+        print("Task finsh")
     }
     
     /// Starts all trackers to enable the full functionality of the SDK.
@@ -667,17 +911,19 @@ extension BlueTriangle {
     /// - Note: This method is called when `enableAllTracking` is true, indicating that
     ///         the SDK should be fully operational.
     ///
+    @MainActor
     private static func startAllTrackers() {
-    
+        
         logger.info("BlueTriangle :: SDK is in enabled mode.")
         
         self.startSession()
+        self.startClarity()
+        self.startScreenTracking()
         self.startHttpNetworkCapture()
         self.startHttpGroupedChildCapture()
         self.startNsAndSignalCrashTracking()
         self.startMemoryWarning()
         self.startANR()
-        self.startScreenTracking()
         self.startNetworkStatus()
         self.startLaunchTime()
     }
@@ -692,17 +938,17 @@ extension BlueTriangle {
     ///         ceases all tracking activity. However, the **Remote Configuration Updater**
     ///         remains active to monitor and update the enable/disable state.
     ///
+    @MainActor
     private static func stopAllTrackers() {
-        
         logger.info("BlueTriangle :: SDK is in disabled mode.")
-        
         self.endSession()
+        self.stopClarity()
+        self.stopScreenTracking()
         self.stopHttpNetworkCapture()
         self.stopHttpGroupedChildCapture()
         self.stopNsAndSignalCrashTracking()
         self.stopMemoryWarning()
         self.stopANR()
-        self.stopScreenTracking()
         self.stopNetworkStatus()
         self.stopLaunchTime()
         self.clearAllCache()
@@ -714,38 +960,40 @@ extension BlueTriangle {
         session: Session? = nil,
         logger: Logging? = nil,
         uploader: Uploading? = nil,
-        timerFactory: ((Page, BTTimer.TimerType, Bool) -> BTTimer)? = nil,
+        timerFactory: (@Sendable (Page, BTTimer.TimerType, Bool) -> BTTimer)? = nil,
         shouldCaptureRequests: Bool? = nil,
-        internalTimerFactory: (() -> InternalTimer)? = nil,
+        internalTimerFactory: (@Sendable () -> InternalTimer)? = nil,
         requestCollector: CapturedRequestCollecting? = nil
     ) {
-        
         lock.sync {
-            
             self.configuration = configuration
             initialized = true
-            if let session = session {
+            
+            // These are plain synchronous assignments – no concurrency check issue.
+            if let session {
                 self._session = session
             }
-            if let logger = logger {
+            if let logger {
                 self.logger = logger
             }
-            if let uploader = uploader {
-                self.uploader = uploader
+            if let uploader {
+                self.store.uploader = uploader
             }
-            if let timerFactory = timerFactory {
+            if let timerFactory {
                 self.timerFactory = timerFactory
             }
-            if let shouldCaptureRequests = shouldCaptureRequests {
-                self.shouldCaptureRequests = shouldCaptureRequests
-            }
-            if let internalTimerFactory = internalTimerFactory {
+            if let internalTimerFactory {
                 self.internalTimerFactory = internalTimerFactory
             }
-            self.setNetworkRequestCapture(requestCollector)
         }
+        
+        if let shouldCaptureRequests {
+            self.store.setShouldNetworkCaptureRequests(shouldCaptureRequests)
+        }
+        self.setNetworkRequestCapture(requestCollector)
     }
 }
+
 
 // MARK: - Timer
 public extension BlueTriangle {
@@ -760,11 +1008,8 @@ public extension BlueTriangle {
     ///   - timerType: The type of timer.
     /// - Returns: The new timer.
     @objc
-    static func makeTimer(page: Page, timerType: BTTimer.TimerType = .main, isGroupedTimer: Bool = false) -> BTTimer {
-        lock.lock()
-       // precondition(initialized, "BlueTriangle must be initialized before sending timers.")
-        let timer = timerFactory(page, timerType, isGroupedTimer)
-        lock.unlock()
+    static func makeTimer(page: Page, timerType: BTTimer.TimerType = .main) -> BTTimer {
+        let timer = makeTimer(page: page, timerType: timerType, isGroupedTimer: false)
         return timer
     }
 
@@ -777,9 +1022,8 @@ public extension BlueTriangle {
     ///   - timerType: The type of timer.
     /// - Returns: The running timer.
     @objc
-    static func startTimer(page: Page, timerType: BTTimer.TimerType = .main, isGroupedTimer: Bool = false) -> BTTimer {
-        let timer = makeTimer(page: page, timerType: timerType, isGroupedTimer: isGroupedTimer)
-        timer.start()
+    static func startTimer(page: Page, timerType: BTTimer.TimerType = .main) -> BTTimer {
+        let timer = startTimer(page: page, timerType: timerType, isGroupedTimer: false)
         return timer
     }
 
@@ -790,8 +1034,7 @@ public extension BlueTriangle {
     @objc
     static func endTimer(_ timer: BTTimer, purchaseConfirmation: PurchaseConfirmation? = nil) {
         timer.end()
-        
-        self.clarityConnector.refreshClaritySessionUrlCustomVariable()
+        store.getClarityConnector()?.refreshClaritySessionUrlCustomVariable()
         
         if let session = session(), timer.enableAllTracking {
             purchaseConfirmation?.orderTime = timer.endTime
@@ -805,8 +1048,22 @@ public extension BlueTriangle {
                 logger.error(error.localizedDescription)
                 return
             }
-            uploader.send(request: request)
+            store.uploader.send(request: request)
         }
+    }
+    
+    //Internal Methods
+    internal static func makeTimer(page: Page, timerType: BTTimer.TimerType = .main, isGroupedTimer: Bool = false) -> BTTimer {
+        lock.lock()
+        let timer = timerFactory(page, timerType, isGroupedTimer)
+        lock.unlock()
+        return timer
+    }
+    
+    internal static func startTimer(page: Page, timerType: BTTimer.TimerType = .main, isGroupedTimer: Bool = false) -> BTTimer {
+        let timer = makeTimer(page: page, timerType: timerType, isGroupedTimer: isGroupedTimer)
+        timer.start()
+        return timer
     }
 }
 
@@ -987,6 +1244,7 @@ public extension BlueTriangle{
 
 // MARK: - Network Capture
 public extension BlueTriangle {
+    @Sendable
     internal static func timerDidStart(_ type: BTTimer.TimerType, page: Page, startTime: TimeInterval, isGroupTimer: Bool = false) {
         guard case .main = type else {
             return
@@ -1004,14 +1262,6 @@ public extension BlueTriangle {
         var timer = internalTimerFactory()
         timer.start()
         return timer
-    }
-    
-    static func setGroupName(_ groupName: String) {
-        BlueTriangle.groupTimer.setGroupName(groupName)
-    }
-    
-    static func setNewGroup(_ newGroup: String) {
-        BlueTriangle.groupTimer.setNewGroup(newGroup)
     }
     
     internal static func updateCaptureRequest(pageName : String, startTime: Millisecond){
@@ -1067,19 +1317,6 @@ public extension BlueTriangle {
     internal static func uploadGroupedViewCollectedRequests() async {
         await getGroupRequestCapture()?.uploadCollectedRequests()
     }
-    
-    //Actions
-    internal static func startActionTimerRequest(page : Page, startTime : Millisecond) async{
-        await capturedActionsViewRequestCollector?.start(page: page, startTime: startTime)
-    }
-    
-    internal static func captureActionRequest(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, action: UserAction) async {
-            await capturedActionsViewRequestCollector?.collect(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, action: action)
-    }
-    
-    internal static func uploadActionViewCollectedRequests() async{
-        await capturedActionsViewRequestCollector?.uploadCollectedRequests()
-    }
 }
 
 // MARK: - Error Tracking
@@ -1093,18 +1330,14 @@ public extension BlueTriangle {
         function: StaticString = #function,
         line: UInt = #line
     ) {
-        nsExeptionReporter?.uploadError(error, file: file, function: function, line: line)
+        store.getNsExeptionReporter()?.uploadError(error, file: file, function: function, line: line)
     }
 }
 
 // MARK: - Crash Reporting
 extension BlueTriangle {
     static func configureCrashTracking(with crashConfiguration: CrashReportConfiguration) {
-        nsExeptionReporter = CrashReportManager(crashReportPersistence: CrashReportPersistence.self,
-                                                logger: logger,
-                                                uploader: uploader,
-                                                session: {session()})
-        
+         store.makeNsExeptionReporter()
         CrashReportPersistence.configureCrashHandling(configuration: crashConfiguration)
     }
     
@@ -1119,10 +1352,8 @@ extension BlueTriangle {
     
     static func configureSignalCrash(with crashConfiguration: CrashReportConfiguration, debugLog : Bool) {
         SignalHandler.enableCrashTracking(withApp_version: Version.number, debug_log: debugLog, bttSessionID: "\(sessionID)")
-        signalCrashReporter = BTSignalCrashReporter(directory: SignalHandler.reportsFolderPath(), logger: logger,
-                                                    uploader: uploader,
-                                                    session: {session()})
-        signalCrashReporter?.configureSignalCrashHandling(configuration: crashConfiguration)
+        store.makeNsExeptionReporter()
+        store.getSignalCrashReporter()?.configureSignalCrashHandling(configuration: crashConfiguration)
     }
 
     /// Saves an exception to upload to the Blue Triangle portal on next launch.
@@ -1131,101 +1362,93 @@ extension BlueTriangle {
     ///
     /// - Parameter exception: The exception to upload.
     public static func storeException(exception: NSException) {
-        let pageName = BlueTriangle.recentTimer()?.getPageName()
-        let crashReport = CrashReport(sessionID: sessionID, exception: exception, pageName: pageName)
-        CrashReportPersistence.save(crashReport)
+        Task {
+            let pageName = BlueTriangle.recentTimer()?.getPageName()
+            let crashReport = CrashReport(sessionID: sessionID, exception: exception, pageName: pageName, nativeApp: .empty)
+            CrashReportPersistence.save(crashReport)
+        }
     }
 }
 
 //MARK: - ANR Tracking
 extension BlueTriangle{
-    static func configureANRTracking(with enabled: Bool, enableStackTrace : Bool, interval: TimeInterval){
+    static func configureANRTracking(with enabled: Bool, enableStackTrace : Bool, interval: TimeInterval) {
         if enabled{
-            self.anrWatchDog = ANRWatchDog(
-                mainThreadObserver: MainThreadObserver.live,
-                session: {session()},
-                uploader: configuration.uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
-                    file: .requests,
-                    logger: logger)),
-                logger: BlueTriangle.logger)
-            
-            self.anrWatchDog?.errorTriggerInterval = interval
-            self.anrWatchDog?.enableStackTrace = enableStackTrace
+             store.makeANRWatchDog()
+             store.getANRWatchDog()?.errorTriggerInterval = interval
+             store.getANRWatchDog()?.enableStackTrace = enableStackTrace
             if enabled {
                 MainThreadObserver.live.setUpLogger(logger)
                 MainThreadObserver.live.start()
-                self.anrWatchDog?.start()
+                 store.getANRWatchDog()?.start()
             }
         }
     }
 }
 
 // MARK: - Screen Tracking
-extension BlueTriangle{
-    static func configureScreenTracking(with enabled: Bool){
-        screenTracker = BTTScreenLifecycleTracker()
-        screenTracker?.setLifecycleTracker(enabled)
-        screenTracker?.setUpLogger(logger)
-        
+extension BlueTriangle {
+    @MainActor
+    static func startScreenTrackingSetup() {
 #if os(iOS)
-        BTTWebViewTracker.shouldCaptureRequests = shouldCaptureRequests
+         UIViewController.setUp()
+#endif
+    }
+    
+    @MainActor
+    static func shutdownScreenTrackingSetup() {
+#if os(iOS)
+         UIViewController.removeSetUp()
+#endif
+    }
+
+    @MainActor
+    static func configureScreenTracking(with enabled: Bool) {
+        store.makeLifecycleTracker()
+#if os(iOS)
+        BTTWebViewTracker.shouldCaptureRequests = store.getShouldNetworkCaptureRequests()
         BTTWebViewTracker.logger = logger
         if enabled {
-            UIViewController.setUp()
+             startScreenTrackingSetup()
         }
 #endif
     }
 }
 
 // MARK: - Network State
-extension BlueTriangle{
-    static func configureMonitoringNetworkState(with enabled: Bool){
+extension BlueTriangle {
+    static func configureMonitoringNetworkState(with enabled: Bool) {
         if enabled {
-            networkStateMonitor = NetworkStateMonitor.init(logger)
+             store.makeNetworkStateMonitor()
         }
     }
 }
 
 
 // MARK: - LaunchTime
-extension BlueTriangle{
-    
-    static func configureLaunchTime(with enabled: Bool){
+extension BlueTriangle {
+    static func configureLaunchTime(with enabled: Bool) {
         if enabled{
-            let launchMonitor = LaunchTimeMonitor(logger: logger)
-            launchTimeReporter = LaunchTimeReporter(using: {session()},
-                                                    uploader: configuration.uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
-                                                        file: .requests,
-                                                        logger: logger)),
-                                                    logger: BlueTriangle.logger,
-                                                    monitor: launchMonitor)
-            
+            store.makeLaunchTimeMonitor()
         }
-        
         AppNotificationLogger.removeObserver()
     }
 }
 
 //MARK: - Memory Warning
-extension BlueTriangle{
-    static func configureMemoryWarning(with enabled: Bool){
+extension BlueTriangle {
+    static func configureMemoryWarning(with enabled: Bool) {
         if enabled{
 #if os(iOS)
-            memoryWarningWatchDog = MemoryWarningWatchDog(
-                session: {session()},
-                uploader: configuration.uploaderConfiguration.makeUploader(logger: logger, failureHandler: RequestFailureHandler(
-                    file: .requests,
-                    logger: logger)),
-                logger: BlueTriangle.logger)
-            self.memoryWarningWatchDog?.start()
+            store.makeMemoryWarningWatchDog()
+            store.getMemoryWarningWatchDog()?.start()
 #endif
         }
     }
 }
 
 //MARK: - Session Expiry
-extension BlueTriangle{
-    
+extension BlueTriangle {
     /// The session manager is responsible for handling session-related functionality,
     /// such as timing and lifecycle management.
     ///
@@ -1240,21 +1463,22 @@ extension BlueTriangle{
     ///   - If the correct session manager is already set, no action is taken to avoid redundant reconfiguration.
     ///
     ///
-    static func configureSessionManager(forModeWithExpiry expiry: Millisecond){
+    static func configureSessionManager(forModeWithExpiry expiry: Millisecond) {
+        
         if self.enableAllTracking{
-            if let _ = sessionManager as? SessionManager {
+            if let _ = store.getSessionManager() as? SessionManager {
                 return
             }
-            sessionManager?.stop()
-            sessionManager = enabledModeSessionManager
-            sessionManager?.start(with: expiry)
+            store.getSessionManager()?.stop()
+            store.setSessionManager(store.enabledModeSessionManager)
+            store.getSessionManager()?.start(with: expiry)
         }else{
-            if let _ = sessionManager as? DisableModeSessionManager {
+            if let _ = store.getSessionManager() as? DisableModeSessionManager {
                 return
             }
-            sessionManager?.stop()
-            sessionManager = disableModeSessionManager
-            sessionManager?.start(with: expiry)
+            store.getSessionManager()?.stop()
+            store.setSessionManager(store.disableModeSessionManager)
+            store.getSessionManager()?.start(with: expiry)
         }
     }
 }
@@ -1272,7 +1496,15 @@ extension BlueTriangle {
 
 // MARK: - Remote config
 extension BlueTriangle {
-   
+    
+    internal static func updateSession(_ session : SessionData){
+        store.updateSessionId(session.sessionID)
+#if os(iOS)
+        BTTWebViewTracker.updateSessionId(session.sessionID)
+#endif
+        SignalHandler.updateSessionID("\(session.sessionID)")
+    }
+    
     internal static func updateNetworkSampleRate(_ rate : Double) {
         configuration.networkSampleRate = rate
     }
@@ -1293,28 +1525,30 @@ extension BlueTriangle {
     }
     
     internal static func updateScreenTracking(_ enabled : Bool) {
-        configuration.enableScreenTracking = enabled
-        screenTracker?.setLifecycleTracker(enabled)
+        Task {
+            configuration.enableScreenTracking = enabled
+            await store.getLifecycleTracker()?.setLifecycleTracker(enabled)
 #if os(iOS)
-        if enabled {
-            UIViewController.setUp()
-        } else {
-            UIViewController.removeSetUp()
-        }
+            if enabled {
+                await startScreenTrackingSetup()
+            } else {
+                await shutdownScreenTrackingSetup()
+            }
 #endif
+        }
     }
     
     internal static func updateCaptureRequests() {
         if let sessionData = sessionData(){
-            shouldCaptureRequests = sessionData.shouldNetworkCapture
+             store.setShouldNetworkCaptureRequests(sessionData.shouldNetworkCapture)
+            let shouldCaptureRequests = store.getShouldNetworkCaptureRequests()
             if shouldCaptureRequests {
                 if getNetworkRequestCapture() == nil {
-                    setNetworkRequestCapture(makeCapturedRequestCollector())
+                     setNetworkRequestCapture(store.makeCapturedRequestCollector())
                 }
             } else {
-                setNetworkRequestCapture(makeCapturedRequestCollector())
+                 setNetworkRequestCapture(store.makeCapturedRequestCollector())
             }
-            
 #if os(iOS)
             BTTWebViewTracker.shouldCaptureRequests = shouldCaptureRequests
 #endif
@@ -1323,14 +1557,103 @@ extension BlueTriangle {
     
     internal static func updateGroupedViewCaptureRequest() {
         if let sessionData = sessionData(){
-            shouldGroupedCaptureRequests = sessionData.shouldGroupedViewCapture
-            if shouldGroupedCaptureRequests {
-                if getGroupRequestCapture() == nil {
-                    setGroupRequestCapture(makeCapturedGroupRequestCollector())
+            store.setShouldGroupedCaptureRequests(sessionData.shouldGroupedViewCapture)
+            if  store.getShouldGroupedCaptureRequests() {
+                if  getGroupRequestCapture() == nil {
+                     setGroupRequestCapture(store.makeCapturedGroupRequestCollector())
                 }
             } else {
-                setGroupRequestCapture(makeCapturedGroupRequestCollector())
+                 setGroupRequestCapture(store.makeCapturedGroupRequestCollector())
             }
         }
+    }
+}
+
+extension BlueTriangle {
+    @objc
+    public static func setGroupName(_ groupName: String) {
+        Task {
+            await store.groupTimer.setGroupName(groupName)
+        }
+    }
+    
+    @objc
+    public static func setNewGroup(_ newGroup: String) {
+        Task {
+            await store.groupTimer.setNewGroup(newGroup)
+        }
+    }
+    
+    public static func setGroupName(_ groupName: String) async {
+        await store.groupTimer.setGroupName(groupName)
+    }
+    
+    public static func setNewGroup(_ newGroup: String) async {
+        await store.groupTimer.setNewGroup(newGroup)
+    }
+    
+    internal static func setLastGroupAction() {
+        Task {
+            await store.groupTimer.setLastAction(Date())
+        }
+    }
+    
+    internal static func addGroupTimer(_ timer: BTTimer) async {
+        await store.groupTimer.add(timer: timer)
+    }
+    
+    internal static func computeNameOfTheGroup() async {
+        await store.groupTimer.refreshGroupName()
+    }
+    
+    internal static func startGroupIfNeeded() async {
+        await store.groupTimer.startGroupIfNeeded()
+    }
+}
+
+
+public extension BlueTriangle {
+    
+    static func makeTimerActor(_ pageName: String, brandValue: Decimal = 0.0, referringURL : String = "", url: String = "", timerType: BTTimer.TimerType = .main)  async -> BTTimerActor {
+        let page = Page(pageName: pageName, brandValue: brandValue, referringURL: referringURL, url: url)
+        let timer = BTTimerActor(timer: timerFactory(page, timerType, false))
+        return timer
+    }
+
+    static func startTimerActor(_ pageName: String, brandValue: Decimal = 0.0, referringURL : String = "", url: String = "", timerType: BTTimer.TimerType = .main) async -> BTTimerActor {
+        let page = Page(pageName: pageName, brandValue: brandValue, referringURL: referringURL, url: url)
+        let timerActor = await makeTimerActor(page: page, timerType: timerType)
+        await timerActor.start()
+        return timerActor
+    }
+    
+    static func endTimerActor(_ timer: BTTimerActor) async {
+        await self.endTimerActor(timer, purchaseConfirmation: nil)
+    }
+    
+    static func endTimerActor(_ timer: BTTimerActor,
+                              pageValue: Decimal = 0.0,
+                              cartValue: Decimal,
+                              cartCount: Int = 0,
+                              cartCountCheckout: Int = 0,
+                              orderNumber: String,
+                              orderTime: TimeInterval = 0.0) async {
+        let purchaseConfirmation: PurchaseConfirmation = .init(
+            pageValue: pageValue,
+            cartValue: cartValue,
+            cartCount: cartCount,
+            cartCountCheckout: cartCountCheckout,
+            orderNumber: orderNumber,
+            orderTime: orderTime)
+        await self.endTimerActor(timer, purchaseConfirmation: purchaseConfirmation)
+    }
+    
+    internal static func makeTimerActor(page: Page, timerType: BTTimer.TimerType = .main)  async -> BTTimerActor {
+        let timer = BTTimerActor(timer: timerFactory(page, timerType, false))
+        return timer
+    }
+    
+    internal static func endTimerActor(_ timer: BTTimerActor, purchaseConfirmation: PurchaseConfirmation? = nil) async {
+        await self.endTimer(timer.actorTimer, purchaseConfirmation: purchaseConfirmation)
     }
 }

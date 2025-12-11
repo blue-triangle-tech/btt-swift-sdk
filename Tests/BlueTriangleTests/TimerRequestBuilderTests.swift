@@ -39,18 +39,18 @@ final class TimerRequestBuilderTests: XCTestCase {
         
         let expectedString1 = Mock.makeTimerRequestJSON(
             appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
-            os: Device.os,
-            osVersion: Device.osVersion,
+            os: Device.current.os,
+            osVersion: Device.current.osVersion,
             sdkVersion: Version.number,
-            deviceName: Device.model,
+            deviceName: Device.current.model,
             coreCount: Int32(ProcessInfo.processInfo.activeProcessorCount))
         
         let expectedString2 = Mock.makeTimerRequestJSONOlder(
             appVersion: Bundle.main.releaseVersionNumber ?? "0.0",
-            os: Device.os,
-            osVersion: Device.osVersion,
+            os: Device.current.os,
+            osVersion: Device.current.osVersion,
             sdkVersion: Version.number,
-            deviceName: Device.model,
+            deviceName: Device.current.model,
             coreCount: Int32(ProcessInfo.processInfo.activeProcessorCount))
 
         let errorExpectation = expectation(description: "Unexpected error logged")
@@ -71,7 +71,7 @@ final class TimerRequestBuilderTests: XCTestCase {
         XCTAssertEqual(timerRequest.session.campaignName, "MY_CAMPAIGN_NAME")
         XCTAssertEqual(timerRequest.session.campaignMedium, "MY_CAMPAIGN_MEDIUM")
         XCTAssertEqual(timerRequest.session.campaignSource, "MY_CAMPAIGN_SOURCE")
-        XCTAssertEqual(timerRequest.session.appVersion, "Native App-\(appVersion)-\(Device.os) \(Device.osVersion)")
+        XCTAssertEqual(timerRequest.session.appVersion, "Native App-\(appVersion)-\(Device.current.os) \(Device.current.osVersion)")
         XCTAssertEqual(timerRequest.session.wcd, 1)
         XCTAssertEqual(timerRequest.session.eventType, 9)
         XCTAssertEqual(timerRequest.session.navigationType, 9)
@@ -80,7 +80,7 @@ final class TimerRequestBuilderTests: XCTestCase {
         XCTAssertEqual(timerRequest.session.dataCenter, "MY_DATA_CENTER")
         XCTAssertEqual(timerRequest.session.trafficSegmentName, "MY_SEGMENT_NAME")
         XCTAssertEqual(timerRequest.session.isReturningVisitor,true)
-        XCTAssertEqual(timerRequest.session.osInfo, Device.os)
+        XCTAssertEqual(timerRequest.session.osInfo, Device.current.os)
         XCTAssertEqual(timerRequest.session.globalUserID,888888888888888888)
         
         

@@ -9,8 +9,8 @@ import XCTest
 @testable import BlueTriangle
 
 struct CrashReportPersistenceMock: CrashReportPersisting {
-    static var onRead: () -> CrashReport? = { XCTFail("CrashReportPersistenceMock.read"); return nil }
-    static var onClear: () -> Void = { XCTFail("CrashReportPersistenceMock.clear") }
+    nonisolated(unsafe) static var onRead: () -> CrashReport? = { XCTFail("CrashReportPersistenceMock.read"); return nil }
+    nonisolated(unsafe) static var onClear: () -> Void = { XCTFail("CrashReportPersistenceMock.clear") }
 
     static func read() -> CrashReport? {
         onRead()

@@ -9,7 +9,8 @@
   import SwiftUI
 
 internal struct ViewLifecycleTrackerModifier: ViewModifier {
-    let name: String
+    private let screenTrackingTask = ScreenTrackingTask()
+    internal let name: String
     @State var id : String?
     
     func body(content: Content) -> some View {
@@ -18,19 +19,25 @@ internal struct ViewLifecycleTrackerModifier: ViewModifier {
             content
                 .task({
                     if let id = self.id{
-                        BlueTriangle.screenTracker?.loadFinish(id, name)
-                        BlueTriangle.screenTracker?.viewStart(id, name)
+                        screenTrackingTask.enqueue {
+                            await BlueTriangle.getScreenTracker()?.loadFinish(id, name)
+                            await BlueTriangle.getScreenTracker()?.viewStart(id, name)
+                        }
                     }
                 })
                 .onAppear {
                     id = UUID().uuidString
                     if let id = self.id{
-                        BlueTriangle.screenTracker?.loadStarted(id, name)
+                        screenTrackingTask.enqueue {
+                            await BlueTriangle.getScreenTracker()?.loadStarted(id, name)
+                        }
                     }
                 }
                 .onDisappear{
                     if let id = self.id{
-                        BlueTriangle.screenTracker?.viewingEnd(id, name)
+                        screenTrackingTask.enqueue {
+                            await BlueTriangle.getScreenTracker()?.viewingEnd(id, name)
+                        }
                     }
                 }
         }
@@ -39,18 +46,22 @@ internal struct ViewLifecycleTrackerModifier: ViewModifier {
                 .onAppear {
                     id = UUID().uuidString
                     if let id = self.id{
-                        BlueTriangle.screenTracker?.viewStart(id, name)
+                        screenTrackingTask.enqueue {
+                            await BlueTriangle.getScreenTracker()?.loadStarted(id, name)
+                        }
                     }
-                    Task{
-                        if let id = self.id{
-                            BlueTriangle.screenTracker?.loadFinish(id, name)
-                            BlueTriangle.screenTracker?.viewStart(id, name)
+                    if let id = self.id{
+                        screenTrackingTask.enqueue {
+                            await BlueTriangle.getScreenTracker()?.loadFinish(id, name)
+                            await BlueTriangle.getScreenTracker()?.viewStart(id, name)
                         }
                     }
                 }
                 .onDisappear{
                     if let id = self.id{
-                        BlueTriangle.screenTracker?.viewingEnd(id, name)
+                        screenTrackingTask.enqueue  {
+                            await BlueTriangle.getScreenTracker()?.viewingEnd(id, name)
+                        }
                     }
                 }
         }
@@ -71,9 +82,10 @@ public extension View {
         return true
     }
     
-   private func setUpScreenType(){
-        //SetUp View Type
-       BlueTriangle.screenTracker?.setUpScreenType(.SwiftUI)
+    private func setUpScreenType() {
+        Task {
+            await BlueTriangle.getScreenTracker()?.setUpScreenType(.SwiftUI)
+        }
     }
     
     ///Uses for manual screen tracking to log individual views in SwiftUI.

@@ -8,7 +8,7 @@
 
 import Foundation
 
-class ANRWatchDog{
+class ANRWatchDog : @unchecked Sendable {
     static let DEFAULT_ERROR_INTERVAL_SEC: TimeInterval = 5
     static let MIN_ERROR_INTERVAL_SEC: TimeInterval = 3
     static let MAX_ERROR_INTERVAL_SEC: TimeInterval = 100
@@ -101,20 +101,23 @@ class ANRWatchDog{
     
     private func raiseANRError(){
         
-        guard let session = session() else {
-            return
-        }
-        
-        logger.debug("ANR Watch Dog : Warning potential ANR detected...  ")
-        
-        let message = """
+        Task {
+            guard let session = session() else {
+                return
+            }
+            
+            logger.debug("ANR Watch Dog : Warning potential ANR detected...  ")
+            
+            let message = """
 Potential ANR Detected
 An task blocking main thread since \(self.errorTriggerInterval) seconds
 """
-        let pageName = BlueTriangle.recentTimer()?.getPageName()
-        let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName)
-        uploadReports(session: session, report: report)
-        logger.debug(message)
+            let pageName = BlueTriangle.recentTimer()?.getPageName()
+            let nativeApp = await NativeAppProperties.nstEmpty
+            let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName, nativeApp: nativeApp)
+            uploadReports(session: session, report: report)
+            logger.debug(message)
+        }
     }
     
     private func uploadReports(session: Session, report: CrashReport) {
@@ -173,7 +176,7 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
             "CmpS": session.campaignSource,
             "os": Constants.os,
             "browser": Constants.browser,
-            "browserVersion": Device.bvzn,
+            "browserVersion": Device.current.bvzn,
             "device": Constants.device
         ]
 

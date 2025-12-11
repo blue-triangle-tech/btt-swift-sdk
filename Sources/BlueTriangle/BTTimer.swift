@@ -12,7 +12,7 @@ import Combine
 final public class BTTimer: NSObject, @unchecked Sendable {
     /// Describes the timer type.
     @objc
-    public enum TimerType: Int {
+    public enum TimerType: Int, Sendable {
         /// A timer used to measure primary user interactions and identify captured network requests.
         case main
         /// A timer used to measure additional interactions.
@@ -132,9 +132,13 @@ final public class BTTimer: NSObject, @unchecked Sendable {
         performanceMonitor?.makeReport()
     }
     
-    var networkReport: NetworkReport? {
-        return networkAccumulator?.makeReport()
+    private var networkReport: NetworkReport?
+    @discardableResult
+    internal func getNetworkReport() async -> NetworkReport? {
+        self.networkReport = await networkAccumulator?.makeReport()
+        return self.networkReport
     }
+    
     
     var onEnd: (() -> Void)?
 
@@ -231,10 +235,11 @@ final public class BTTimer: NSObject, @unchecked Sendable {
 
 extension BTTimer{
     func startNetState(){
-        lock.sync {
-            if let monitor = BlueTriangle.networkStateMonitor{
+        Task {
+            if let monitor = await BlueTriangle.networkStateMonitor() {
                 self.networkAccumulator = BTTimerNetStateAccumulator(monitor)
                 self.networkAccumulator?.start()
+                await self.getNetworkReport()
             }
         }
     }
@@ -248,7 +253,7 @@ extension BTTimer{
 
 // MARK: - Supporting Types
 extension BTTimer {
-    struct Configuration {
+    struct Configuration : @unchecked Sendable {
         let timeIntervalProvider: () -> TimeInterval
 
         func makeTimerFactory(
@@ -272,5 +277,71 @@ extension BTTimer {
         static let live = Self(
             timeIntervalProvider: { Date().timeIntervalSince1970 }
         )
+    }
+}
+
+
+public actor BTTimerActor {
+    private let timer: BTTimer
+
+    internal init(timer : BTTimer) {
+        self.timer = timer
+    }
+    
+    internal var actorTimer : BTTimer {
+        timer
+    }
+    
+    internal var endTime: Double {
+        timer.endTime
+    }
+    
+    internal var isGroupTimer: Bool {
+        timer.isGroupTimer
+    }
+
+
+    public func start() {
+        timer.start()
+    }
+
+    public func markInteractive() {
+        timer.markInteractive()
+    }
+
+    public func end() {
+        timer.end()
+    }
+
+    public func setPageName(_ name: String) {
+        timer.setPageName(name)
+    }
+
+    public func setPageTitle(_ title: String) {
+        timer.setPageTitle(title)
+    }
+
+    public func getPageName() -> String {
+        timer.getPageName()
+    }
+
+    public func getPageTitle() -> String {
+        timer.getPageTitle()
+    }
+
+    public func setTrafficSegment(_ trafficSegment: String) {
+        timer.setTrafficSegment(trafficSegment)
+    }
+
+    public func getTrafficSegment() -> String? {
+        timer.getTrafficSegment()
+    }
+
+    public var hasEnded: Bool {
+        timer.hasEnded
+    }
+
+    public var type: BTTimer.TimerType {
+        timer.type
     }
 }

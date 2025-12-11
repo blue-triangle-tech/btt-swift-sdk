@@ -27,17 +27,30 @@ import Foundation
 ///
 ///The class uses a timer to calculate the duration between the 'init' constructors and the 'submit' overloads, or between 'init' and 'failed' methods.
 ///
-
-@preconcurrency
-public class NetworkCaptureTracker {
+///
+public final class NetworkCaptureTracker : Sendable {
     private let url: String
     private let method: String?
     private let requestBodylength: Int64
     private let lock = NSLock()
     
-    ///This timer is used to calculate the duration
-    private var timer : InternalTimer
+    class Storage: @unchecked Sendable {
+        private let lock = NSLock()
+        private var _timer: InternalTimer
+
+        init(timer: InternalTimer) {
+            self._timer = timer
+        }
+
+        var timer: InternalTimer {
+            get { lock.sync { _timer } }
+            set { lock.sync { _timer = newValue } }
+        }
+    }
     
+    ///This timer is used to calculate the duration
+    private let storage: Storage
+
     ///Creates and initializes a NetworkCaptureTracker with the given url, method and requestBodylength
     ///
     ///- Parameters:
@@ -50,8 +63,8 @@ public class NetworkCaptureTracker {
         self.url = url
         self.method = method
         self.requestBodylength = requestBodylength
-        self.timer = InternalTimer(logger: BTLogger())
-        self.timer.start()
+        self.storage = Storage(timer: InternalTimer(logger: BTLogger()))
+        self.storage.timer.start()
     }
     
     ///Creates and initializes a NetworkCaptureTracker with the given URLRequest
@@ -64,8 +77,8 @@ public class NetworkCaptureTracker {
         self.url = request.url?.absoluteString ?? ""
         self.method = request.httpMethod
         self.requestBodylength = Int64(request.httpBody?.count ?? 0)
-        self.timer = InternalTimer(logger: BTLogger())
-        self.timer.start()
+        self.storage = Storage(timer: InternalTimer(logger: BTLogger()))
+        self.storage.timer.start()
     }
     ///Submit NetworkCapture with the given URLResponse
     ///
@@ -75,8 +88,8 @@ public class NetworkCaptureTracker {
     ///Method to submit a capture request with urlRequest paramerer.
     public func submit(_ response : URLResponse){
         lock.sync {
-            self.timer.end()
-            BlueTriangle.captureRequest(timer: timer, response: response)
+            self.storage.timer.end()
+            BlueTriangle.captureRequest(timer: self.storage.timer, response: response)
         }
     }
     
@@ -91,8 +104,8 @@ public class NetworkCaptureTracker {
     ///
     public func submit(_ httpStatusCode: Int64, responseBodyLength : Int64, contentType : String){
         lock.sync {
-            self.timer.end()
-            BlueTriangle.captureRequest(timer: timer,
+            self.storage.timer.end()
+            BlueTriangle.captureRequest(timer: self.storage.timer,
                                         response: CustomResponse(url: self.url,
                                                                  method: self.method,
                                                                  contentType: contentType,
@@ -111,8 +124,8 @@ public class NetworkCaptureTracker {
     ///Method to submit a failed capture request with the error parameter.
     public func failled(_ error : Error){
         lock.sync {
-            self.timer.end()
-            BlueTriangle.captureRequest(timer: timer,
+            self.storage.timer.end()
+            BlueTriangle.captureRequest(timer: self.storage.timer,
                                         response: CustomResponse(url: self.url,
                                                                  method: self.method,
                                                                  contentType: "",

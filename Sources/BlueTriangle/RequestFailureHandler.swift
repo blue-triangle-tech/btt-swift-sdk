@@ -9,14 +9,32 @@ import Combine
 import Foundation
 import Network
 
-final class RequestFailureHandler: RequestFailureHandling {
+final class RequestFailureHandler: RequestFailureHandling, @unchecked Sendable {
+    
+    class Storage: @unchecked Sendable {
+        private let lock = NSLock()
+        private var _isUploading : Bool = false
+        internal var isUploading : Bool {
+            get { lock.sync{ _isUploading } }
+            set { lock.sync{ _isUploading = newValue } }
+        }
+    }
+    
+    static var isUploading : Bool {
+        get{
+            storage.isUploading
+        }
+        set {
+            storage.isUploading = newValue
+        }
+    }
+    
+    private static let storage = Storage()
     private var persistence: RequestCache
     private let logger: Logging
     private let networkMonitor: NWPathMonitor
     private var cancellables = Set<AnyCancellable>()
-    static var isUploading : Bool = false
     var send: (() -> Void)?
-
 
     init(persistence: RequestCache, logger: Logging) {
         self.persistence = persistence

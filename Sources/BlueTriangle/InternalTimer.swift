@@ -107,7 +107,7 @@ extension InternalTimer: CustomStringConvertible {
 
 // MARK: - Supporting Types
 extension InternalTimer {
-    struct Configuration {
+    struct Configuration : @unchecked Sendable {
         let timeIntervalProvider: () -> TimeInterval
 
         func makeTimerFactory(logger: Logging) -> () -> InternalTimer {

@@ -11,7 +11,7 @@ import Combine
 protocol BTTimerNetStateAccumulatorProtocol{
     func start()
     func stop()
-    func makeReport() -> NetworkReport
+    func makeReport() async -> NetworkReport
 }
 
 class BTTimerNetStateAccumulator  : BTTimerNetStateAccumulatorProtocol {
@@ -68,12 +68,12 @@ class BTTimerNetStateAccumulator  : BTTimerNetStateAccumulatorProtocol {
         }
     }
     
-    func makeReport() -> NetworkReport{
+    func makeReport() async -> NetworkReport{
         
         self.stop()
         
         let netSource = networkSource.joined(separator: "|")
-        let netStateData = self.getNetState()
+        let netStateData = await self.getNetState()
         
         return NetworkReport(offline: offline.duration,
                              wifi: wifi.duration,
@@ -84,9 +84,9 @@ class BTTimerNetStateAccumulator  : BTTimerNetStateAccumulatorProtocol {
                              netSource: netSource)
     }
     
-    private func getNetState() -> (celluler: Millisecond, netState: String){
+    private func getNetState() async -> (celluler: Millisecond, netState: String){
         
-        var nstString = BlueTriangle.networkStateMonitor?.state.value?.description.lowercased() ?? ""
+        var nstString =  await BlueTriangle.networkStateMonitor()?.state.value?.description.lowercased() ?? ""
         let offline = offline.duration
         let wifi = wifi.duration
         let cellular5G = cellular5g.duration

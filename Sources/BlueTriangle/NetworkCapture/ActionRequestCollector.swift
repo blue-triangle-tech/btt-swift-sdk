@@ -26,8 +26,8 @@ struct ActionRequestCollector: Equatable {
         self.startTime = startTime
     }
     
-    mutating func insert(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, action: UserAction) {
-        requests.append(CapturedRequest(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, action: action))
+    mutating func insert(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, action: UserAction) async {
+        await requests.append(CapturedRequest(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, action: action))
     }
 
     mutating func batchRequests() -> [CapturedRequest]? {

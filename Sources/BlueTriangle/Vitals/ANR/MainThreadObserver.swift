@@ -27,7 +27,7 @@ protocol ThreadTaskObserver{
     var runningTask : ThreadTask? {get}
 }
 
-class MainThreadObserver : ThreadTaskObserver{
+class MainThreadObserver : ThreadTaskObserver, @unchecked Sendable{
     
     private var _runningTask : ThreadTask?
     private let registrationService : RunloopRegistrationService

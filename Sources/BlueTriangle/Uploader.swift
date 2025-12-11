@@ -8,9 +8,9 @@
 import Foundation
 import Combine
 
-typealias Networking = (Request) -> AnyPublisher<HTTPResponse<Data>, NetworkError>
+typealias Networking = @Sendable (Request) -> AnyPublisher<HTTPResponse<Data>, NetworkError>
 
-final class Uploader: Uploading {
+final class Uploader: Uploading, @unchecked Sendable {
     private let lock = NSLock()
 
     private let queue: DispatchQueue
@@ -133,7 +133,7 @@ extension Uploader {
         let shouldRetry: Publisher.RetryPredicate?
     }
 
-    struct Configuration {
+    struct Configuration : @unchecked Sendable{
         let queue: DispatchQueue
         let networking: Networking
         let retryConfiguration: RetryConfiguration<DispatchQueue>

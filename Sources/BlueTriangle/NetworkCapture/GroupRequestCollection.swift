@@ -27,8 +27,8 @@ struct GroupRequestCollection: Equatable {
         self.startTime = startTime
     }
     
-    mutating func insert(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) {
-        requests.append(CapturedRequest(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response))
+    mutating func insert(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) async {
+        await requests.append(CapturedRequest(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response))
     }
 
     mutating func batchRequests() -> [CapturedRequest]? {

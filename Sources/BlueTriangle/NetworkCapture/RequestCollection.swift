@@ -31,20 +31,20 @@ struct RequestCollection: Equatable {
         }
     }
     
-    mutating func insert(timer: InternalTimer, response: URLResponse?) {
-        requests.append(CapturedRequest(timer: timer, relativeTo: startTime, response: response))
+    mutating func insert(timer: InternalTimer, response: URLResponse?) async {
+        await requests.append(CapturedRequest(timer: timer, relativeTo: startTime, response: response))
     }
     
-    mutating func insert(timer: InternalTimer, request: URLRequest?, error: Error?) {
-        requests.append(CapturedRequest(timer: timer, relativeTo: startTime, request: request, error: error))
+    mutating func insert(timer: InternalTimer, request: URLRequest?, error: Error?) async {
+        await requests.append(CapturedRequest(timer: timer, relativeTo: startTime, request: request, error: error))
     }
     
-    mutating func insert(timer: InternalTimer, response: CustomResponse) {
-        requests.append(CapturedRequest(timer: timer, relativeTo: startTime, response: response))
+    mutating func insert(timer: InternalTimer, response: CustomResponse) async {
+        await requests.append(CapturedRequest(timer: timer, relativeTo: startTime, response: response))
     }
 
-    mutating func insert(metrics: URLSessionTaskMetrics, error: Error?) {
-        requests.append(CapturedRequest(metrics: metrics, relativeTo: startTime, error: error))
+    mutating func insert(metrics: URLSessionTaskMetrics, error: Error?) async {
+        await requests.append(CapturedRequest(metrics: metrics, relativeTo: startTime, error: error))
     }
 
     mutating func batchRequests() -> [CapturedRequest]? {

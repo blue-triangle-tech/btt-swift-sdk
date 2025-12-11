@@ -17,7 +17,9 @@ fileprivate func swizzleMethod(_ cls: AnyClass, original: Selector, swizzled: Se
         let originalMethod = class_getInstanceMethod(cls, original),
         let swizzledMethod = class_getInstanceMethod(cls, swizzled)
     else {
-        BlueTriangle.screenTracker?.logger?.error("Swizzling failed: \(cls) \(original) ↔︎ \(swizzled)")
+        Task {
+            await BlueTriangle.getScreenTracker()?.logger?.error("Swizzling failed: \(cls) \(original) ↔︎ \(swizzled)")
+        }
         return nil
     }
 
@@ -29,7 +31,7 @@ extension UIApplication {
     @objc func swizzled_sendEvent(_ event: UIEvent) {
         if let touches = event.allTouches {
             for touch in touches where touch.phase == .began {
-                BlueTriangle.groupTimer.setLastAction(Date())
+                BlueTriangle.setLastGroupAction()
             }
         }
         swizzled_sendEvent(event)
@@ -38,47 +40,56 @@ extension UIApplication {
 
 extension UIViewController{
     
-    private static var isSwizzled = false
-    private static var swizzledPairs: [(Method, Method)] = []
     private static var lock = NSLock()
+    private static let screenTrackingTask = ScreenTrackingTask()
+    private static var _isSwizzled : Bool = false
+    private static var _swizzledPairs: [(Method, Method)] = []
+    private static var isSwizzled : Bool {
+        get { lock.sync { _isSwizzled }}
+        set { lock.sync { _isSwizzled = newValue }}
+    }
+    private static var swizzledPairs: [(Method, Method)] {
+        get { lock.sync { _swizzledPairs } }
+        set { lock.sync { _swizzledPairs = newValue } }
+    }
     
+    @MainActor
     static func setUp() {
-        lock.sync {
-            guard !isSwizzled else { return }
-            
-            if let didLoadPair = swizzleMethod(UIViewController.self, original: #selector(viewDidLoad), swizzled: #selector(viewDidLoad_Tracker)) {
-                swizzledPairs.append(didLoadPair)
-            }
-            if let willAppearPair = swizzleMethod(UIViewController.self, original: #selector(viewWillAppear(_:)), swizzled: #selector(viewWillAppear_Tracker(_:))) {
-                swizzledPairs.append(willAppearPair)
-            }
-            if let didAppearPair = swizzleMethod(UIViewController.self, original: #selector(viewDidAppear(_:)), swizzled: #selector(viewDidAppear_Tracker(_:))) {
-                swizzledPairs.append(didAppearPair)
-            }
-            if let didDisappearPair = swizzleMethod(UIViewController.self, original: #selector(viewDidDisappear(_:)), swizzled: #selector(viewDidDisappear_Tracker(_:))) {
-                swizzledPairs.append(didDisappearPair)
-            }
-            
-            if let sendEventPair = swizzleMethod(UIApplication.self, original: #selector(UIApplication.sendEvent(_:)), swizzled: #selector(UIApplication.swizzled_sendEvent(_:))) {
-                swizzledPairs.append(sendEventPair)
-            }
-            
-            isSwizzled = true
-            BlueTriangle.screenTracker?.logger?.debug("View Screen Tracker: setup completed.")
+        guard !isSwizzled else { return }
+        if let didLoadPair = swizzleMethod(UIViewController.self, original: #selector(viewDidLoad), swizzled: #selector(viewDidLoad_Tracker)) {
+            swizzledPairs.append(didLoadPair)
+        }
+        if let willAppearPair = swizzleMethod(UIViewController.self, original: #selector(viewWillAppear(_:)), swizzled: #selector(viewWillAppear_Tracker(_:))) {
+            swizzledPairs.append(willAppearPair)
+        }
+        if let didAppearPair = swizzleMethod(UIViewController.self, original: #selector(viewDidAppear(_:)), swizzled: #selector(viewDidAppear_Tracker(_:))) {
+            swizzledPairs.append(didAppearPair)
+        }
+        if let didDisappearPair = swizzleMethod(UIViewController.self, original: #selector(viewDidDisappear(_:)), swizzled: #selector(viewDidDisappear_Tracker(_:))) {
+            swizzledPairs.append(didDisappearPair)
+        }
+        
+        if let sendEventPair = swizzleMethod(UIApplication.self, original: #selector(UIApplication.sendEvent(_:)), swizzled: #selector(UIApplication.swizzled_sendEvent(_:))) {
+            swizzledPairs.append(sendEventPair)
+        }
+        isSwizzled = true
+        Task {
+            await BlueTriangle.getScreenTracker()?.logger?.debug("View Screen Tracker: setup completed.")
         }
     }
     
+    @MainActor
     static func removeSetUp() {
-        lock.sync {
-            guard isSwizzled else { return }
-            
-            for (original, swizzled) in swizzledPairs {
-                method_exchangeImplementations(swizzled, original)
-            }
-            
-            swizzledPairs.removeAll()
-            isSwizzled = false
-            BlueTriangle.screenTracker?.logger?.debug("View Screen Tracker: setup removed.")
+        guard isSwizzled else { return }
+        
+        for (original, swizzled) in swizzledPairs {
+            method_exchangeImplementations(swizzled, original)
+        }
+        
+        swizzledPairs.removeAll()
+        isSwizzled = false
+        Task {
+            await BlueTriangle.getScreenTracker()?.logger?.debug("View Screen Tracker: setup removed.")
         }
     }
     
@@ -156,28 +167,44 @@ extension UIViewController{
     
     @objc dynamic func viewDidLoad_Tracker() {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.loadStarted(String(describing: self), "\(type(of: self))",  pageTitle())
+            UIViewController.screenTrackingTask.enqueue { [weak self] in
+                if let self = self {
+                    await BlueTriangle.getScreenTracker()?.loadStarted(String(describing: self), "\(type(of: self))",  self.pageTitle())
+                }
+            }
         }
         viewDidLoad_Tracker()
     }
     
     @objc dynamic func viewWillAppear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.loadFinish(String(describing: self),"\(type(of: self))", pageTitle())
+            UIViewController.screenTrackingTask.enqueue { [weak self] in
+                if let self = self {
+                    await BlueTriangle.getScreenTracker()?.loadFinish(String(describing: self),"\(type(of: self))", self.pageTitle())
+                }
+            }
         }
         viewWillAppear_Tracker(animated)
     }
                                 
     @objc dynamic func viewDidAppear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.viewStart(String(describing: self), "\(type(of: self))", pageTitle())
+            UIViewController.screenTrackingTask.enqueue { [weak self] in
+                if let self = self {
+                    await BlueTriangle.getScreenTracker()?.viewStart(String(describing: self), "\(type(of: self))", self.pageTitle())
+                }
+            }
         }
         viewDidAppear_Tracker(animated)
     }
     
     @objc dynamic func viewDidDisappear_Tracker(_ animated: Bool) {
         if shouldTrackScreen(){
-            BlueTriangle.screenTracker?.viewingEnd(String(describing: self), "\(type(of: self))", pageTitle())
+            UIViewController.screenTrackingTask.enqueue { [weak self] in
+                if let self = self {
+                    await BlueTriangle.getScreenTracker()?.viewingEnd(String(describing: self), "\(type(of: self))", self.pageTitle())
+                }
+            }
         }
         viewDidDisappear_Tracker(animated)
     }
@@ -202,3 +229,23 @@ extension UIView {
     }
 }
 #endif
+
+internal final class ScreenTrackingTask : Sendable {
+    private let continuation: AsyncStream<@Sendable () async -> Void>.Continuation
+    public init() {
+        var cont: AsyncStream<@Sendable () async -> Void>.Continuation!
+        let stream = AsyncStream<@Sendable () async -> Void> { continuation in
+            cont = continuation
+        }
+        self.continuation = cont
+        Task {
+            for await job in stream {
+                await job()
+            }
+        }
+    }
+    
+    func enqueue(_ job: @escaping @Sendable () async -> Void) {
+        continuation.yield(job)
+    }
+}

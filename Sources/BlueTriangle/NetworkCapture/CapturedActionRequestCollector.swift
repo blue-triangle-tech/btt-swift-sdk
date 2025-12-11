@@ -30,8 +30,10 @@ actor CapturedActionRequestCollector: CapturedActionRequestCollecting {
         requestCollection = ActionRequestCollection(page: page, startTime: startTime)
     }
 
-    func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, action: UserAction){
-        requestCollection?.insert(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, action: action)
+    func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, action: UserAction) async{
+        guard var collection = requestCollection else { return }
+        await collection.insert(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, action: action)
+        requestCollection = collection
     }
     
     func uploadCollectedRequests() {

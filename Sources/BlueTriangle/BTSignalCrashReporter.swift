@@ -23,7 +23,7 @@ struct SignalCrash: Codable {
 }
 
 
-class BTSignalCrashReporter {
+final class BTSignalCrashReporter : @unchecked Sendable {
     
     private let  directory : String
     
@@ -87,26 +87,29 @@ class BTSignalCrashReporter {
     
     private func uploadSignalCrash(_ crash: SignalCrash, _ session: Session) {
         DispatchQueue.global(qos: .utility).async { [weak self] in
-            do {
-                if let strongSelf = self, let session_id = crash.btt_session_id, session_id.count > 0, let sessionId = UInt64(session_id){
-                    var sessionCopy = session
-                    sessionCopy.sessionID = sessionId
-                    let pageName = (crash.btt_page_name ?? "").count > 0 ? crash.btt_page_name : Constants.crashID
-                    let message = """
+            Task {
+                do {
+                    if let strongSelf = self, let session_id = crash.btt_session_id, session_id.count > 0, let sessionId = UInt64(session_id){
+                        var sessionCopy = session
+                        sessionCopy.sessionID = sessionId
+                        let pageName = (crash.btt_page_name ?? "").count > 0 ? crash.btt_page_name : Constants.crashID
+                        let message = """
 App crashed \(crash.signal)
 signo : \(crash.signo)
 errno : \(crash.errno)
 signal code : \(crash.sig_code)
 exit value : \(crash.exit_value)
 """
-                    let crashReport = CrashReport(sessionID: sessionId, message: message, pageName: pageName, intervalProvider: TimeInterval(crash.crash_time))
-                    try strongSelf.upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName)
-                    try strongSelf.removeFile(crash)
-                }else{
-                    try self?.removeFile(crash)
+                        let nativeApp = await NativeAppProperties.nstEmpty
+                        let crashReport = CrashReport(sessionID: sessionId, message: message, pageName: pageName, intervalProvider: TimeInterval(crash.crash_time), nativeApp: nativeApp)
+                        try await strongSelf.upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName)
+                        try strongSelf.removeFile(crash)
+                    }else{
+                        try self?.removeFile(crash)
+                    }
+                }catch {
+                    self?.logger.error("BlueTriangle:SignalCrashReporter: \(error.localizedDescription)")
                 }
-            }catch {
-                self?.logger.error("BlueTriangle:SignalCrashReporter: \(error.localizedDescription)")
             }
         }
     }
@@ -114,10 +117,10 @@ exit value : \(crash.exit_value)
 
 // MARK: - Private
 private extension BTSignalCrashReporter {
-    private  func makeTimerRequest(session: Session, report: ErrorReport, pageName : String?) throws -> Request {
+    private  func makeTimerRequest(session: Session, report: ErrorReport, pageName : String?) async throws -> Request {
         let page = Page(pageName: pageName ?? Constants.crashID, pageType: "")
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
-        let nativeProperty =  report.nativeApp.copy(.Regular)
+        let nativeProperty =  await report.nativeApp.copy(.Regular)
         let customMetrics = session.customVarriables(logger: logger)
         let model = TimerRequest(session: session,
                                  page: page,
@@ -150,7 +153,7 @@ private extension BTSignalCrashReporter {
             "CmpS": session.campaignSource,
             "os": Constants.os,
             "browser": Constants.browser,
-            "browserVersion": Device.bvzn,
+            "browserVersion": Device.current.bvzn,
             "device": Constants.device
         ]
         
@@ -160,8 +163,8 @@ private extension BTSignalCrashReporter {
                            model: [report])
     }
     
-    private func upload(session: Session, report: ErrorReport, pageName : String?) throws {
-        let timerRequest = try self.makeTimerRequest(session: session,
+    private func upload(session: Session, report: ErrorReport, pageName : String?) async throws {
+        let timerRequest = try await self.makeTimerRequest(session: session,
                                                      report: report, pageName: pageName)
         self.uploader.send(request: timerRequest)
         

@@ -10,5 +10,5 @@ import Foundation
 protocol CapturedActionRequestCollecting: Actor {
     func start(page: Page, startTime: Millisecond)
     func uploadCollectedRequests()
-    func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, action: UserAction)
+    func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, action: UserAction) async
 }

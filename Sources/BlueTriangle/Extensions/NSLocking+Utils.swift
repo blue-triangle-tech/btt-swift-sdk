@@ -8,6 +8,7 @@
 import Foundation
 
 extension NSLocking {
+    @discardableResult
     func sync<T>(_ closure: () -> T) -> T {
         lock()
         defer { unlock() }

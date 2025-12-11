@@ -53,7 +53,7 @@ class SessionStore {
 }
 
 
-class SessionData: Codable {
+class SessionData: Codable , @unchecked Sendable{
     let sessionID: Identifier
     var expiration: Millisecond
     var isNewSession: Bool

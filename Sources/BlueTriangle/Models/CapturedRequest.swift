@@ -57,7 +57,7 @@ struct CapturedRequest: Encodable, Equatable {
     //Http method
     var httpMethod: String?
     // Native App Properties
-    var nativeAppProperty: NativeAppProperties = .nstEmpty
+    var nativeAppProperty: NativeAppProperties
     
     var minCPU: Float?
     var maxCPU: Float?
@@ -142,24 +142,24 @@ extension CapturedRequest.InitiatorType {
 
 extension CapturedRequest {
     
-    init(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, action: UserAction) {
-        self.init(
+    init(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, action: UserAction) async {
+        await self.init(
             startTime: startTime - groupStartTime,
             endTime:  endTime - groupStartTime,
             duration: endTime - startTime,
             action: action)
     }
     
-    init(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) {
-        self.init(
+    init(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) async {
+        await self.init(
             startTime: startTime - groupStartTime,
             endTime:  endTime - groupStartTime,
             duration: endTime - startTime,
             response: response)
     }
     
-    init(timer: InternalTimer, relativeTo startTime: Millisecond, response: URLResponse?) {
-        self.init(
+    init(timer: InternalTimer, relativeTo startTime: Millisecond, response: URLResponse?) async {
+        await self.init(
             startTime: timer.startTime.milliseconds - startTime,
             endTime: timer.endTime.milliseconds - startTime,
             duration: timer.endTime.milliseconds - timer.startTime.milliseconds < 15 ? 15 : timer.endTime.milliseconds - timer.startTime.milliseconds,
@@ -168,8 +168,8 @@ extension CapturedRequest {
             response: response)
     }
     
-    init(timer: InternalTimer, relativeTo startTime: Millisecond, request: URLRequest?, error : Error?) {
-        self.init(
+    init(timer: InternalTimer, relativeTo startTime: Millisecond, request: URLRequest?, error : Error?) async {
+        await self.init(
             startTime: timer.startTime.milliseconds - startTime,
             endTime: timer.endTime.milliseconds - startTime,
             duration: timer.endTime.milliseconds - timer.startTime.milliseconds,
@@ -179,8 +179,8 @@ extension CapturedRequest {
             error: error)
     }
     
-    init(timer: InternalTimer, relativeTo startTime: Millisecond, response: CustomResponse) {
-        self.init(
+    init(timer: InternalTimer, relativeTo startTime: Millisecond, response: CustomResponse) async {
+        await self.init(
             startTime: timer.startTime.milliseconds - startTime,
             endTime: timer.endTime.milliseconds - startTime,
             duration: timer.endTime.milliseconds - timer.startTime.milliseconds,
@@ -189,11 +189,11 @@ extension CapturedRequest {
             response: response)
     }
 
-    init(metrics: URLSessionTaskMetrics, relativeTo startTime: Millisecond, error: Error?) {
+    init(metrics: URLSessionTaskMetrics, relativeTo startTime: Millisecond, error: Error?) async {
         let lastMetric = metrics.transactionMetrics.last
         
         if let response = lastMetric?.response{
-            self.init(
+            await self.init(
                 startTime: metrics.taskInterval.start.timeIntervalSince1970.milliseconds - startTime,
                 endTime: metrics.taskInterval.end.timeIntervalSince1970.milliseconds - startTime,
                 duration: metrics.taskInterval.duration.milliseconds,
@@ -201,7 +201,7 @@ extension CapturedRequest {
                 encodedBodySize: lastMetric?.countOfResponseBodyBytesReceived ?? 0,
                 response: response)
         }else{
-            self.init(
+            await self.init(
                 startTime: metrics.taskInterval.start.timeIntervalSince1970.milliseconds - startTime,
                 endTime: metrics.taskInterval.end.timeIntervalSince1970.milliseconds - startTime,
                 duration: metrics.taskInterval.duration.milliseconds,
@@ -218,7 +218,7 @@ extension CapturedRequest {
         endTime: Millisecond,
         duration: Millisecond,
         action: UserAction
-    ) {
+    )  async {
         self.host = ""
         self.domain = ""
         self.entryType = "Action"
@@ -230,19 +230,22 @@ extension CapturedRequest {
         self.duration = duration
         self.decodedBodySize = 0
         self.encodedBodySize = 0
+        self.nativeAppProperty = await NativeAppProperties.nstEmpty
     }
     
     
-    init(
+    init  (
         startTime: Millisecond,
         endTime: Millisecond,
         duration: Millisecond,
         response: CustomPageResponse
-    ) {
+    ) async {
         self.host = ""
         self.domain = ""
         if let native = response.native {
             self.nativeAppProperty = native
+        } else {
+            self.nativeAppProperty = await NativeAppProperties.nstEmpty
         }
         self.entryType = Constants.EntryType.screen
         self.url = response.url ?? ""
@@ -261,14 +264,14 @@ extension CapturedRequest {
         self.avgMemory = response.avgMemory
     }
     
-    init(
+    init (
         startTime: Millisecond,
         endTime: Millisecond,
         duration: Millisecond,
         decodedBodySize: Int64,
         encodedBodySize: Int64,
         response: CustomResponse
-    ) {
+    ) async {
         self.host = ""
         self.domain = ""
         self.httpMethod = response.method
@@ -277,7 +280,9 @@ extension CapturedRequest {
         }
         
         if let error = response.error?.localizedDescription{
-            self.nativeAppProperty = NativeAppProperties.`init`(error)
+            self.nativeAppProperty = await NativeAppProperties.`init`(error)
+        } else {
+            self.nativeAppProperty = await NativeAppProperties.nstEmpty
         }
         self.initiatorType =  .init(rawValue: response.contentType) ?? .other
         self.url = response.url
@@ -297,7 +302,7 @@ extension CapturedRequest {
         encodedBodySize: Int64,
         request: URLRequest?,
         error: Error?
-    ) {
+    ) async {
         let hostComponents = request?.url?.host?.split(separator: ".") ?? []
         self.host = hostComponents.first != nil ? String(hostComponents.first!) : ""
         if hostComponents.count > 2 {
@@ -321,7 +326,9 @@ extension CapturedRequest {
         }
         
         if let error = error?.localizedDescription{
-            self.nativeAppProperty = NativeAppProperties.`init`(error)
+            self.nativeAppProperty = await NativeAppProperties.`init`(error)
+        } else {
+            self.nativeAppProperty = await NativeAppProperties.nstEmpty
         }
         self.url = request?.url?.absoluteString ?? ""
         self.file = request?.url?.lastPathComponent ?? ""
@@ -339,7 +346,7 @@ extension CapturedRequest {
         decodedBodySize: Int64,
         encodedBodySize: Int64,
         response: URLResponse?
-    ) {
+    ) async {
         let hostComponents = response?.url?.host?.split(separator: ".") ?? []
         self.host = hostComponents.first != nil ? String(hostComponents.first!) : ""
         if hostComponents.count > 2 {
@@ -347,7 +354,7 @@ extension CapturedRequest {
         } else {
             self.domain = response?.url?.host ?? ""
         }
-
+        self.nativeAppProperty = await NativeAppProperties.nstEmpty
         let httpResponse = response as? HTTPURLResponse
         if let statusCode = httpResponse?.statusCode {
             self.statusCode = String(statusCode)
@@ -450,7 +457,7 @@ extension CapturedRequest : Decodable {
         self.initiatorType = try container.decodeIfPresent(InitiatorType.self, forKey: .initiatorType) ?? .other
         self.decodedBodySize = try container.decodeIfPresent(Int64.self, forKey: .decodedBodySize) ?? 0
         self.encodedBodySize = try container.decodeIfPresent(Int64.self, forKey: .encodedBodySize) ?? 0
-        self.nativeAppProperty = try container.decodeIfPresent(NativeAppProperties.self, forKey: .nativeAppProperty) ?? .nstEmpty
+        self.nativeAppProperty = try container.decodeIfPresent(NativeAppProperties.self, forKey: .nativeAppProperty) ?? .empty
         self.minCPU = try container.decodeIfPresent(Float.self, forKey: .minCPU) ?? 0
         self.maxCPU = try container.decodeIfPresent(Float.self, forKey: .maxCPU) ?? 0
         self.avgCPU = try container.decodeIfPresent(Float.self, forKey: .avgCPU) ?? 0

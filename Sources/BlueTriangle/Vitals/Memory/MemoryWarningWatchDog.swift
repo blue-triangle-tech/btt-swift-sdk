@@ -11,7 +11,7 @@ import Foundation
 import UIKit
 #endif
 
-class MemoryWarningWatchDog {
+class MemoryWarningWatchDog : @unchecked Sendable{
 
     static let DEFAULT_PAGE_NAME = BT_ErrorType.MemoryWarning.rawValue
     
@@ -40,18 +40,21 @@ class MemoryWarningWatchDog {
     
     @objc func raiseMemoryWarning(){
        
-        guard let session = session() else {
-            return
+        Task {
+            guard let session = session() else {
+                return
+            }
+            
+            logger.debug("Memory Warning WatchDog :Memory Warning detected...  ")
+            
+            let message = formatedMemoryWarningMessage()
+            let pageName = BlueTriangle.recentTimer()?.getPageName()
+            let nativeApp = await NativeAppProperties.nstEmpty
+            let report = CrashReport(sessionID: BlueTriangle.sessionID,
+                                     memoryWarningMessage: message, pageName: pageName, nativeApp: nativeApp)
+            uploadReports(session: session, report: report)
+            logger.debug(message)
         }
-        
-        logger.debug("Memory Warning WatchDog :Memory Warning detected...  ")
-        
-        let message = formatedMemoryWarningMessage()
-        let pageName = BlueTriangle.recentTimer()?.getPageName()
-        let report = CrashReport(sessionID: BlueTriangle.sessionID,
-                                 memoryWarningMessage: message, pageName: pageName)
-        uploadReports(session: session, report: report)
-        logger.debug(message)
     }
     
     private func formatedMemoryWarningMessage() -> String{
@@ -142,7 +145,7 @@ extension MemoryWarningWatchDog {
             "CmpS": session.campaignSource,
             "os": Constants.os,
             "browser": Constants.browser,
-            "browserVersion": Device.bvzn,
+            "browserVersion": Device.current.bvzn,
             "device": Constants.device
         ]
         return try Request(method: .post,
