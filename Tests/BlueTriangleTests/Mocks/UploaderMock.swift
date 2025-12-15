@@ -8,7 +8,7 @@
 @testable import BlueTriangle
 import Foundation
 
-struct UploaderMock: Uploading {
+struct UploaderMock: Uploading, @unchecked Sendable {
     var onSend: (Request) -> Void = { _ in }
 
     init(onSend: @escaping (Request) -> Void = { _ in }) {

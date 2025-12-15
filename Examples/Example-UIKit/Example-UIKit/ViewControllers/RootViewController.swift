@@ -77,8 +77,8 @@ class RootViewController: UIViewController {
             let timer = BlueTriangle.startTimer(page: Page(pageName: "Custom Timer"))
             BlueTriangle.endTimer(timer)
             Task {
-                let timerAcror = await BlueTriangle.startTimerActor("Custom Timer Actor")
-                await BlueTriangle.endTimerActor(timerAcror)
+                let timerAcror = await BlueTriangle.startTimer("Custom Timer Actor")
+                await BlueTriangle.endTimer(timerAcror)
             }
         }
         let control = UIButton(configuration: .filled(), primaryAction: action)

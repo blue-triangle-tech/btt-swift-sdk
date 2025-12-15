@@ -44,12 +44,6 @@ public actor BTTScreenLifecycleTracker : BTScreenLifecycleTracker {
             await self.registerAppForegroundAndBackgroundNotification()
         }
     }
-
-  /*  func setUpLogger(_ logger : Logging){
-        lock.sync {
-            self.logger = logger
-        }
-    }*/
     
     func setLifecycleTracker(_ enable : Bool){
         lock.sync {
@@ -161,13 +155,6 @@ public actor BTTScreenLifecycleTracker : BTScreenLifecycleTracker {
             return timerActivity
         }
     }
-    
-   /* private func registerAppForegroundAndBackgroundNotification() {
-#if os(iOS)
-        NotificationCenter.default.addObserver(self, selector: #selector(appMovedToBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(appMovedToForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
-#endif
-    }*/
     
 #if os(iOS)
     private var bgObserver: NSObjectProtocol?

@@ -8,7 +8,7 @@
 @testable import BlueTriangle
 import Foundation
 
-class LoggerMock: Logging {
+class LoggerMock: Logging , @unchecked Sendable {
     var enableDebug: Bool
     var onDebug: (String) -> Void
     var onInfo: (String) -> Void

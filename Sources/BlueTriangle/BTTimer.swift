@@ -281,9 +281,28 @@ extension BTTimer {
 }
 
 
-public actor BTTimerActor {
+public actor BTTrackTimer {
     private let timer: BTTimer
 
+    public enum TimerType: Int, Sendable {
+        case main
+        case custom
+        
+        internal var btTimerType: BTTimer.TimerType {
+            switch self {
+            case .main: return .main
+            case .custom: return .custom
+            }
+        }
+        
+        internal init(_ btType: BTTimer.TimerType) {
+            switch btType {
+            case .main: self = .main
+            case .custom: self = .custom
+            }
+        }
+    }
+    
     internal init(timer : BTTimer) {
         self.timer = timer
     }
@@ -340,8 +359,8 @@ public actor BTTimerActor {
     public var hasEnded: Bool {
         timer.hasEnded
     }
-
-    public var type: BTTimer.TimerType {
-        timer.type
+    
+    public var type: TimerType {
+        TimerType(timer.type)
     }
 }

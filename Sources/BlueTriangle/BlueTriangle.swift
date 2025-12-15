@@ -1614,24 +1614,24 @@ extension BlueTriangle {
 
 public extension BlueTriangle {
     
-    static func makeTimerActor(_ pageName: String, brandValue: Decimal = 0.0, referringURL : String = "", url: String = "", timerType: BTTimer.TimerType = .main)  async -> BTTimerActor {
+    static func makeTimer(_ pageName: String, brandValue: Decimal = 0.0, referringURL : String = "", url: String = "", timerType: BTTrackTimer.TimerType = .main)  async -> BTTrackTimer {
         let page = Page(pageName: pageName, brandValue: brandValue, referringURL: referringURL, url: url)
-        let timer = BTTimerActor(timer: timerFactory(page, timerType, false))
+        let timer = BTTrackTimer(timer: timerFactory(page, timerType.btTimerType, false))
         return timer
     }
 
-    static func startTimerActor(_ pageName: String, brandValue: Decimal = 0.0, referringURL : String = "", url: String = "", timerType: BTTimer.TimerType = .main) async -> BTTimerActor {
+    static func startTimer(_ pageName: String, brandValue: Decimal = 0.0, referringURL : String = "", url: String = "", timerType: BTTrackTimer.TimerType = .main) async -> BTTrackTimer {
         let page = Page(pageName: pageName, brandValue: brandValue, referringURL: referringURL, url: url)
-        let timerActor = await makeTimerActor(page: page, timerType: timerType)
-        await timerActor.start()
-        return timerActor
+        let timer = await makeTimer(page: page, timerType: timerType)
+        await timer.start()
+        return timer
     }
     
-    static func endTimerActor(_ timer: BTTimerActor) async {
-        await self.endTimerActor(timer, purchaseConfirmation: nil)
+    static func endTimer(_ timer: BTTrackTimer) async {
+        await self.endTimer(timer, purchaseConfirmation: nil)
     }
     
-    static func endTimerActor(_ timer: BTTimerActor,
+    static func endTimer(_ timer: BTTrackTimer,
                               pageValue: Decimal = 0.0,
                               cartValue: Decimal,
                               cartCount: Int = 0,
@@ -1645,15 +1645,15 @@ public extension BlueTriangle {
             cartCountCheckout: cartCountCheckout,
             orderNumber: orderNumber,
             orderTime: orderTime)
-        await self.endTimerActor(timer, purchaseConfirmation: purchaseConfirmation)
+        await self.endTimer(timer, purchaseConfirmation: purchaseConfirmation)
     }
     
-    internal static func makeTimerActor(page: Page, timerType: BTTimer.TimerType = .main)  async -> BTTimerActor {
-        let timer = BTTimerActor(timer: timerFactory(page, timerType, false))
+    internal static func makeTimer(page: Page, timerType: BTTrackTimer.TimerType = .main)  async -> BTTrackTimer {
+        let timer = BTTrackTimer(timer: timerFactory(page, timerType.btTimerType, false))
         return timer
     }
     
-    internal static func endTimerActor(_ timer: BTTimerActor, purchaseConfirmation: PurchaseConfirmation? = nil) async {
+    internal static func endTimer(_ timer: BTTrackTimer, purchaseConfirmation: PurchaseConfirmation? = nil) async {
         await self.endTimer(timer.actorTimer, purchaseConfirmation: purchaseConfirmation)
     }
 }
