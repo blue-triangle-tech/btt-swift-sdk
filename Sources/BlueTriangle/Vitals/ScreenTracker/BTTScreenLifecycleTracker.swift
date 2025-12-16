@@ -23,10 +23,10 @@ import AppEventLogger
 #endif
 
 protocol BTScreenLifecycleTracker{
-    func loadStarted(_ id : String, _ name : String, _ title : String) async
-    func loadFinish(_ id : String, _ name : String,_ title : String) async
-    func viewStart(_ id : String, _ name : String, _ title : String) async
-    func viewingEnd(_ id : String, _ name : String, _ title : String) async
+    func loadStarted(_ id : String, _ name : String, _ title : String, _ time : TimeInterval) async
+    func loadFinish(_ id : String, _ name : String,_ title : String, _ time : TimeInterval) async
+    func viewStart(_ id : String, _ name : String, _ title : String, _ time : TimeInterval) async
+    func viewingEnd(_ id : String, _ name : String, _ title : String, _ time : TimeInterval) async
 }
 
 public actor BTTScreenLifecycleTracker : BTScreenLifecycleTracker {
@@ -57,27 +57,28 @@ public actor BTTScreenLifecycleTracker : BTScreenLifecycleTracker {
         }
     }
     
-    func loadStarted(_ id: String, _ name: String, _ title : String = "")  async{
-        await self.manageTimer(name, id: id, type: .load, title: title)
+    func loadStarted(_ id: String, _ name: String, _ title : String = "", _ time : TimeInterval = Date().timeIntervalSince1970)  async{
+        NSLog("Task--: \(name) Task loaded 3 -\(time)")
+        await self.manageTimer(name, id: id, type: .load, title: title, time)
     }
     
-    func loadFinish(_ id: String, _ name: String, _ title : String = "")  async{
-        await self.manageTimer(name, id: id, type: .finish, title: title)
+    func loadFinish(_ id: String, _ name: String, _ title : String = "", _ time : TimeInterval = Date().timeIntervalSince1970)  async{
+        await self.manageTimer(name, id: id, type: .finish, title: title, time)
     }
     
-    func viewStart(_ id: String, _ name: String, _ title : String = "")  async{
-        await self.manageTimer(name, id: id, type: .view, title: title)
+    func viewStart(_ id: String, _ name: String, _ title : String = "", _ time : TimeInterval = Date().timeIntervalSince1970)  async{
+        await self.manageTimer(name, id: id, type: .view, title: title, time)
     }
     
-    func viewingEnd(_ id: String, _ name: String, _ title : String = "")  async {
-        await self.manageTimer(name, id: id, type: .disappear, title: title)
+    func viewingEnd(_ id: String, _ name: String, _ title : String = "", _ time : TimeInterval = Date().timeIntervalSince1970)  async {
+        await self.manageTimer(name, id: id, type: .disappear, title: title, time)
     }
     
-    func manageTimer(_ pageName : String, id : String, type : TimerMapType, title : String = "") async {
+    func manageTimer(_ pageName : String, id : String, type : TimerMapType, title : String = "", _ time : TimeInterval = Date().timeIntervalSince1970) async {
         guard self.getEnableLifecycleTracker() else { return }
-        let timerActivity = await self.getTimerActivity(pageName, id: id, pageTitle: title)
+        let timerActivity = await self.getTimerActivity(pageName, id: id, pageTitle: title, time: time)
         self.setTimeActivity(timerActivity, for: id)
-        await timerActivity.manageTimeFor(type: type)
+        await timerActivity.manageTimeFor(type: type, time)
         if type == .disappear{
             self.removeTimeActivity(for: id)
         }
@@ -146,12 +147,12 @@ public actor BTTScreenLifecycleTracker : BTScreenLifecycleTracker {
         }
     }
     
-    private func getTimerActivity(_ pageName : String, id : String, pageTitle : String = "") async -> TimerMapActivity{
+    private func getTimerActivity(_ pageName : String, id : String, pageTitle : String = "", time : TimeInterval) async -> TimerMapActivity{
         if let btTimerActivity =  getTimeActivity(for: id) {
             await btTimerActivity.setPageName(pageName,title: pageTitle)
             return btTimerActivity
         }else {
-            let timerActivity = await TimerMapActivity(pageName: pageName, screenType: self.screenType, logger: logger, pageTitle: pageTitle)
+            let timerActivity = await TimerMapActivity(pageName: pageName, screenType: self.screenType, logger: logger, pageTitle: pageTitle, time: time)
             return timerActivity
         }
     }
@@ -282,12 +283,12 @@ actor TimerMapActivity {
     private(set) var logger : Logging?
     private let maxPGTMTime : Millisecond = 20_000
     
-    init(pageName: String, screenType : ScreenType, logger : Logging?, pageTitle : String = "") async {
+    init(pageName: String, screenType : ScreenType, logger : Logging?, pageTitle : String = "", time: TimeInterval) async {
         self.screenType = screenType
         self.logger = logger
         
         if BlueTriangle.configuration.enableGrouping {
-            await BlueTriangle.startGroupIfNeeded()
+            await BlueTriangle.startGroupIfNeeded(time)
             self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageTitle: pageTitle), timerType: .custom, isGroupedTimer: true)
         } else {
             self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName))
@@ -301,19 +302,20 @@ actor TimerMapActivity {
         }
     }
     
-    func manageTimeFor(type: TimerMapType) async {
+    func manageTimeFor(type: TimerMapType, _ time : TimeInterval) async {
+        let timeInMilliseconds  = time.milliseconds
         switch type {
         case .load:
-            await setLoadTime(timeInMillisecond)
+            await setLoadTime(timeInMilliseconds)
         case .finish:
-            if loadTime == nil {await setLoadTime(timeInMillisecond) }
-            await setWillViewTime(timeInMillisecond)
+            if loadTime == nil {await setLoadTime(timeInMilliseconds) }
+            await setWillViewTime(timeInMilliseconds)
         case .view:
-            if loadTime == nil {await setLoadTime(timeInMillisecond) }
-            await setViewTime(timeInMillisecond)
+            if loadTime == nil {await setLoadTime(timeInMilliseconds) }
+            await setViewTime(timeInMilliseconds)
         case .disappear:
             await evaluateConfidence()
-            await setDisappearTime(timeInMillisecond)
+            await setDisappearTime(timeInMilliseconds)
         }
     }
     
@@ -443,7 +445,7 @@ actor TimerMapActivity {
             return calculatedLoadTime
         }
         
-        timer.setTrafficSegment(Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT)
+        timer.trafficSegmentName = Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT
         
         timer.nativeAppProperties = await NativeAppProperties.make(
             fullTime: disapearTime - loadTime,

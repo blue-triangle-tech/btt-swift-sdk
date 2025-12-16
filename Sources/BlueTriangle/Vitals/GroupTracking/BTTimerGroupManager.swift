@@ -31,12 +31,12 @@ actor BTTimerGroupManager {
             tg.add(timer)
         } else {
             let interval = computeCauseInterval(from: lock.sync { lastTimerTime })
-            let newGroup = await startNewGroup(cause: .timeout, causeInterval: interval)
+            let newGroup = await startNewGroup(cause: .timeout, causeInterval: interval, time: timer.startTime)
             newGroup.add(timer)
         }
     }
 
-    func startGroupIfNeeded() async {
+    func startGroupIfNeeded(_ time : TimeInterval) async {
         let decision: (shouldStart: Bool, cause: GroupingCause?, lastTimerSnap: Millisecond?) = lock.sync {
             if Array(activeGroups).last(where: { !$0.isClosed }) == nil {
                 return (true, .timeout, lastTimerTime)
@@ -48,12 +48,12 @@ actor BTTimerGroupManager {
         
         guard decision.shouldStart, let cause = decision.cause else { return }
         let interval = computeCauseInterval(from: decision.lastTimerSnap)
-        _ = await startNewGroup(cause: cause, causeInterval: interval)
+        _ = await startNewGroup(cause: cause, causeInterval: interval, time: time)
     }
 
-    func setNewGroup(_ newGroup: String) async {
+    func setNewGroup(_ newGroup: String, _ time : TimeInterval) async {
         let interval = computeCauseInterval(from: lock.sync { lastTimerTime })
-        _ = await startNewGroup(groupName: newGroup, cause: .manual, causeInterval: interval)
+        _ = await startNewGroup(groupName: newGroup, cause: .manual, causeInterval: interval, time: time)
     }
 
     func setGroupName(_ groupName: String) {
@@ -86,7 +86,7 @@ actor BTTimerGroupManager {
     /// Starts a new group. No nested locks: we snapshot the open group under lock,
     /// act on it outside, then append the new group under lock.
     @discardableResult
-    private func startNewGroup(groupName: String? = nil, cause: GroupingCause? = nil, causeInterval: Millisecond) async -> BTTimerGroup {
+    private func startNewGroup(groupName: String? = nil, cause: GroupingCause? = nil, causeInterval: Millisecond, time : TimeInterval = Date().timeIntervalSince1970) async -> BTTimerGroup {
         let openSnap: BTTimerGroup? = lock.sync { Array(activeGroups).last(where: { !$0.hasGroupSubmitted }) }
         if let open = openSnap {
             logger.info("Forcefully submitted open group")
@@ -98,6 +98,7 @@ actor BTTimerGroupManager {
             groupName: groupName,
             cause: cause,
             causeInterval: causeInterval,
+            time: time,
             onGroupCompleted: { [weak self] group in
                 Task { [weak self] in
                     guard let self else { return }

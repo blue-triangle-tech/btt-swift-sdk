@@ -1579,8 +1579,9 @@ extension BlueTriangle {
     
     @objc
     public static func setNewGroup(_ newGroup: String) {
+        let time =  Date().timeIntervalSince1970
         Task {
-            await store.groupTimer.setNewGroup(newGroup)
+            await store.groupTimer.setNewGroup(newGroup, time)
         }
     }
     
@@ -1589,7 +1590,8 @@ extension BlueTriangle {
     }
     
     public static func setNewGroup(_ newGroup: String) async {
-        await store.groupTimer.setNewGroup(newGroup)
+        let time =  Date().timeIntervalSince1970
+        await store.groupTimer.setNewGroup(newGroup, time)
     }
     
     internal static func setLastGroupAction() {
@@ -1606,8 +1608,8 @@ extension BlueTriangle {
         await store.groupTimer.refreshGroupName()
     }
     
-    internal static func startGroupIfNeeded() async {
-        await store.groupTimer.startGroupIfNeeded()
+    internal static func startGroupIfNeeded(_ time : TimeInterval) async {
+        await store.groupTimer.startGroupIfNeeded(time)
     }
 }
 

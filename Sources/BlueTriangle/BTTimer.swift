@@ -18,7 +18,7 @@ final public class BTTimer: NSObject, @unchecked Sendable {
         /// A timer used to measure additional interactions.
         case custom
     }
-
+    
     /// Describes the state of a timer.
     @objc
     public enum State: Int {
@@ -31,13 +31,13 @@ final public class BTTimer: NSObject, @unchecked Sendable {
         /// Timer has been ended.
         case ended
     }
-
+    
     private enum Action {
         case start
         case markInteractive
         case end
     }
-
+    
     private let lock = NSLock()
     private let logger: Logging
     private let timeIntervalProvider: () -> TimeInterval
@@ -46,34 +46,87 @@ final public class BTTimer: NSObject, @unchecked Sendable {
     private var networkAccumulator : BTTimerNetStateAccumulatorProtocol?
     private var nativeAppProp : NativeAppProperties?
     
-    @objc public var isGroupTimer: Bool = false
+    @objc internal var isGroupTimer: Bool = false
     
     /// The type of the timer.
     @objc public let type: TimerType
-
+    
     /// An object describing the user interaction measured by the timer.
     @objc public var page: Page
     
-    /// Traffic segment.
-    @objc public var trafficSegmentName: String?
-
     /// The state of the timer.
     @objc public private(set) var state: State = .initial
-
+    
+    /// Traffic segment.
+    private var _trafficSegmentName: String?
+    @objc
+    public var trafficSegmentName: String? {
+        get {
+            lock.sync {
+                return _trafficSegmentName
+            }
+        }
+        set {
+            lock.sync {
+                _trafficSegmentName = newValue
+            }
+        }
+    }
+    
     /// The epoch time interval at which the timer was started.
     ///
     /// The default value is `0.0`.
-    @objc public private(set) var startTime: TimeInterval = 0.0
-
+    private var _startTime: TimeInterval = 0.0
+    private let timeLock = NSLock()
+    @objc
+    public internal(set) var startTime: TimeInterval {
+        get {
+            timeLock.sync {
+                return _startTime
+            }
+        }
+        set {
+            timeLock.sync {
+                _startTime = newValue
+            }
+        }
+    }
+    
     /// The epoch time interval at which the timer was marked interactive.
     ///
     /// The default value is `0.0`.
-    @objc public private(set) var interactiveTime: TimeInterval = 0.0
+    private var _interactiveTime: TimeInterval = 0.0
+    @objc public private(set) var interactiveTime: TimeInterval {
+        get {
+            timeLock.sync {
+                return _interactiveTime
+            }
+        }
+        set {
+            timeLock.sync {
+                _interactiveTime = newValue
+            }
+        }
+    }
     
     /// The epoch time interval at which the timer was ended.
     ///
     /// The default value is `0.0`.
-    @objc public private(set) var endTime: TimeInterval = 0.0
+    private var _endTime: TimeInterval = 0.0
+    @objc
+    public private(set) var endTime: TimeInterval {
+        get {
+            timeLock.sync {
+                return _endTime
+            }
+        }
+        set {
+            timeLock.sync {
+                _endTime = newValue
+            }
+        }
+    }
+    
     @objc public var hasEnded: Bool {
         switch state {
         case .ended: return true
@@ -81,15 +134,11 @@ final public class BTTimer: NSObject, @unchecked Sendable {
         }
     }
     
-    let enableAllTracking = BlueTriangle.enableAllTracking
-    
+    internal let enableAllTracking = BlueTriangle.enableAllTracking
     @objc public func setPageName(_ name: String) { lock.sync { page.pageName = name }}
     @objc public func setPageTitle(_ title: String) { lock.sync { page.pageTitle = title }}
     @objc public func getPageName() -> String { lock.sync { page.pageName } }
     @objc public func getPageTitle() -> String { lock.sync { page.pageTitle } }
-    
-    @objc public func setTrafficSegment(_ trafficSegment: String) { lock.sync { trafficSegmentName = trafficSegment }}
-    @objc public func getTrafficSegment() -> String? { lock.sync { trafficSegmentName } }
 
     var pageTimeInterval: PageTimeInterval {
         PageTimeInterval(
@@ -348,12 +397,13 @@ public actor BTTrackTimer {
         timer.getPageTitle()
     }
 
-    public func setTrafficSegment(_ trafficSegment: String) {
-        timer.setTrafficSegment(trafficSegment)
-    }
-
-    public func getTrafficSegment() -> String? {
-        timer.getTrafficSegment()
+    public var trafficSegmentName: String? {
+        get {
+            return timer.trafficSegmentName
+        }
+        set {
+            timer.trafficSegmentName = newValue
+        }
     }
 
     public var hasEnded: Bool {

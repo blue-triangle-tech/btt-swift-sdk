@@ -19,24 +19,27 @@ internal struct ViewLifecycleTrackerModifier: ViewModifier {
             content
                 .task({
                     if let id = self.id{
+                        let time  = Date().timeIntervalSince1970
                         screenTrackingTask.enqueue {
-                            await BlueTriangle.getScreenTracker()?.loadFinish(id, name)
-                            await BlueTriangle.getScreenTracker()?.viewStart(id, name)
+                            await BlueTriangle.getScreenTracker()?.loadFinish(id, name, "", time)
+                            await BlueTriangle.getScreenTracker()?.viewStart(id, name, "", time)
                         }
                     }
                 })
                 .onAppear {
                     id = UUID().uuidString
                     if let id = self.id{
+                        let time  = Date().timeIntervalSince1970
                         screenTrackingTask.enqueue {
-                            await BlueTriangle.getScreenTracker()?.loadStarted(id, name)
+                            await BlueTriangle.getScreenTracker()?.loadStarted(id, name, "", time)
                         }
                     }
                 }
                 .onDisappear{
                     if let id = self.id{
+                        let time  = Date().timeIntervalSince1970
                         screenTrackingTask.enqueue {
-                            await BlueTriangle.getScreenTracker()?.viewingEnd(id, name)
+                            await BlueTriangle.getScreenTracker()?.viewingEnd(id, name, "", time)
                         }
                     }
                 }
@@ -46,21 +49,24 @@ internal struct ViewLifecycleTrackerModifier: ViewModifier {
                 .onAppear {
                     id = UUID().uuidString
                     if let id = self.id{
+                        let time  = Date().timeIntervalSince1970
                         screenTrackingTask.enqueue {
-                            await BlueTriangle.getScreenTracker()?.loadStarted(id, name)
+                            await BlueTriangle.getScreenTracker()?.loadStarted(id, name, "", time)
                         }
                     }
                     if let id = self.id{
+                        let time  = Date().timeIntervalSince1970
                         screenTrackingTask.enqueue {
-                            await BlueTriangle.getScreenTracker()?.loadFinish(id, name)
-                            await BlueTriangle.getScreenTracker()?.viewStart(id, name)
+                            await BlueTriangle.getScreenTracker()?.loadFinish(id, name, "", time)
+                            await BlueTriangle.getScreenTracker()?.viewStart(id, name, "", time)
                         }
                     }
                 }
                 .onDisappear{
+                    let time  = Date().timeIntervalSince1970
                     if let id = self.id{
                         screenTrackingTask.enqueue  {
-                            await BlueTriangle.getScreenTracker()?.viewingEnd(id, name)
+                            await BlueTriangle.getScreenTracker()?.viewingEnd(id, name, "", time)
                         }
                     }
                 }

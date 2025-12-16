@@ -55,6 +55,7 @@ final class BTTimerGroup : @unchecked Sendable{
         groupName: String? = nil,
         cause: GroupingCause? = nil,
         causeInterval: Millisecond = 0,
+        time : TimeInterval,
         onGroupCompleted: @escaping (BTTimerGroup) -> Void
     ) {
         self.logger = logger
@@ -64,7 +65,7 @@ final class BTTimerGroup : @unchecked Sendable{
         self.causeInterval = causeInterval
         self.groupName = groupName
         self.groupTimer = BlueTriangle.startTimer(page: Page(pageName: groupName ?? "BTTGroupPage"), isGroupedTimer: true)
-
+        self.groupTimer.startTime = time
         updatePageNameFromSnapshot()
         scheduleIdleTimer()
     }
@@ -258,7 +259,7 @@ final class BTTimerGroup : @unchecked Sendable{
             } else {
                 newName = groupTimer.getPageName()
             }
-            groupTimer.setTrafficSegment(Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT)
+            groupTimer.trafficSegmentName = Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT
             BlueTriangle.updateCaptureRequest(
                 pageName: newName,
                 startTime: groupTimer.startTime.milliseconds

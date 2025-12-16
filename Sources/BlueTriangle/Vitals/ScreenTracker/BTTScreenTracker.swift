@@ -46,35 +46,39 @@ public final class BTTScreenTracker : Sendable {
     }
     
     public func loadStarted() {
+        let time  = Date().timeIntervalSince1970
         screenTrackingTask.enqueue { [weak self] in
             guard let self = self else { return }
             self.storage.hasViewing = true
             await self.updateScreenType()
-            await BlueTriangle.getScreenTracker()?.manageTimer(self.pageName, id: self.id, type: .load)
+            await BlueTriangle.getScreenTracker()?.manageTimer(self.pageName, id: self.id, type: .load, time)
         }
     }
     
     public func loadEnded() {
+        let time  = Date().timeIntervalSince1970
         screenTrackingTask.enqueue { [weak self] in
             guard let self = self, self.storage.hasViewing else { return }
             await self.updateScreenType()
-            await BlueTriangle.getScreenTracker()?.manageTimer(self.pageName, id: self.id, type: .finish)
+            await BlueTriangle.getScreenTracker()?.manageTimer(self.pageName, id: self.id, type: .finish, time)
         }
     }
 
     public func viewStart() {
+        let time  = Date().timeIntervalSince1970
         screenTrackingTask.enqueue { [weak self] in
             guard let self = self else { return }
             self.storage.hasViewing = true
             await self.updateScreenType()
-            await BlueTriangle.getScreenTracker()?.manageTimer(self.pageName, id: self.id, type: .view)
+            await BlueTriangle.getScreenTracker()?.manageTimer(self.pageName, id: self.id, type: .view, time)
         }
     }
     
     public func viewingEnd() {
+        let time  = Date().timeIntervalSince1970
         screenTrackingTask.enqueue {  [weak self] in
             guard let self = self, self.storage.hasViewing else { return }
-            await BlueTriangle.getScreenTracker()?.manageTimer(self.pageName, id: self.id, type: .disappear)
+            await BlueTriangle.getScreenTracker()?.manageTimer(self.pageName, id: self.id, type: .disappear, time)
             self.storage.hasViewing = false
         }
     }
