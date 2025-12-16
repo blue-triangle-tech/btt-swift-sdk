@@ -133,7 +133,7 @@ final class BTTimerGroup : @unchecked Sendable{
         
         let native = await NativeAppProperties.make(
             fullTime: snap.fullTime,
-            loadTime: pgtm,
+            loadTime: unionPgTm,
             loadStartTime: 0,
             loadEndTime: 0,
             maxMainThreadUsage: snap.maxMainThreadTask,
