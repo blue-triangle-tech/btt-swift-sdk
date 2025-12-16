@@ -58,7 +58,6 @@ public actor BTTScreenLifecycleTracker : BTScreenLifecycleTracker {
     }
     
     func loadStarted(_ id: String, _ name: String, _ title : String = "", _ time : TimeInterval = Date().timeIntervalSince1970)  async{
-        NSLog("Task--: \(name) Task loaded 3 -\(time)")
         await self.manageTimer(name, id: id, type: .load, title: title, time)
     }
     
@@ -286,8 +285,7 @@ actor TimerMapActivity {
     init(pageName: String, screenType : ScreenType, logger : Logging?, pageTitle : String = "", time: TimeInterval) async {
         self.screenType = screenType
         self.logger = logger
-        
-        if BlueTriangle.configuration.enableGrouping {
+        if BlueTriangle.enableGrouping {
             await BlueTriangle.startGroupIfNeeded(time)
             self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageTitle: pageTitle), timerType: .custom, isGroupedTimer: true)
         } else {
@@ -394,7 +392,7 @@ actor TimerMapActivity {
     }
     
     private func submitTimerOfType(_ type : TimerMapType) async {
-        if isGroupedANDAutoTracked {
+        if  BlueTriangle.enableGrouping {
             if type == .load {
                 print("Added timer : \(timer.getPageName())")
                 await BlueTriangle.addGroupTimer(timer)
@@ -462,10 +460,6 @@ actor TimerMapActivity {
             confidenceRate: self.confidenceRate,
             confidenceMsg: self.confidenceMsg
         )
-    }
-    
-    private var isGroupedANDAutoTracked : Bool {
-        BlueTriangle.configuration.enableGrouping
     }
     
     private var timeInMillisecond : Millisecond{

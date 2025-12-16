@@ -442,7 +442,7 @@ final class Store: @unchecked Sendable {
     }
     
     internal func makeCapturedRequestCollector() -> CapturedRequestCollecting? {
-        if let _ = getSession(), getShouldNetworkCaptureRequests() {
+        if let _ = getSession(), getShouldNetworkCaptureRequests(), getConfiguration().enableGrouping {
             let collector = getConfiguration().capturedRequestCollectorConfiguration.makeRequestCollector(
                 logger: logger,
                 networkCaptureConfiguration: .standard,
@@ -479,6 +479,10 @@ final class Store: @unchecked Sendable {
 final public class BlueTriangle: NSObject {
     private static let lock = NSLock()
     private static let store = Store()
+    
+    internal static var enableGrouping : Bool {
+        return configuration.enableGrouping && store.getShouldGroupedCaptureRequests()
+    }
     
     internal static var configuration : BlueTriangleConfiguration {
         get { store.getConfiguration()}
