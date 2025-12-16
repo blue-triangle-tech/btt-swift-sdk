@@ -285,7 +285,7 @@ actor TimerMapActivity {
     init(pageName: String, screenType : ScreenType, logger : Logging?, pageTitle : String = "", time: TimeInterval) async {
         self.screenType = screenType
         self.logger = logger
-        if BlueTriangle.enableGrouping {
+        if BlueTriangle.isGroupingEnabled {
             await BlueTriangle.startGroupIfNeeded(time)
             self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageTitle: pageTitle), timerType: .custom, isGroupedTimer: true)
         } else {
@@ -392,7 +392,7 @@ actor TimerMapActivity {
     }
     
     private func submitTimerOfType(_ type : TimerMapType) async {
-        if  BlueTriangle.enableGrouping {
+        if  BlueTriangle.isGroupingEnabled {
             if type == .load {
                 print("Added timer : \(timer.getPageName())")
                 await BlueTriangle.addGroupTimer(timer)

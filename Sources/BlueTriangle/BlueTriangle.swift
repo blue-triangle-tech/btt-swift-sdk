@@ -479,11 +479,7 @@ final class Store: @unchecked Sendable {
 final public class BlueTriangle: NSObject {
     private static let lock = NSLock()
     private static let store = Store()
-    
-    internal static var enableGrouping : Bool {
-        return configuration.enableGrouping && store.getShouldGroupedCaptureRequests()
-    }
-    
+
     internal static var configuration : BlueTriangleConfiguration {
         get { store.getConfiguration()}
         set { store.setConfiguration(newValue)}
@@ -500,6 +496,10 @@ final public class BlueTriangle: NSObject {
     private static var sessionManager : SessionManagerProtocol?{
         get { store.getSessionManager() }
         set { store.setSessionManager(newValue) }
+    }
+    
+    internal static var isGroupingEnabled : Bool {
+        return configuration.enableGrouping && store.getShouldGroupedCaptureRequests()
     }
     
     internal static var enableAllTracking: Bool {
@@ -1576,6 +1576,7 @@ extension BlueTriangle {
 extension BlueTriangle {
     @objc
     public static func setGroupName(_ groupName: String) {
+        guard isGroupingEnabled else { return }
         Task {
             await store.groupTimer.setGroupName(groupName)
         }
@@ -1583,6 +1584,7 @@ extension BlueTriangle {
     
     @objc
     public static func setNewGroup(_ newGroup: String) {
+        guard isGroupingEnabled else { return }
         let time =  Date().timeIntervalSince1970
         Task {
             await store.groupTimer.setNewGroup(newGroup, time)
@@ -1590,10 +1592,12 @@ extension BlueTriangle {
     }
     
     public static func setGroupName(_ groupName: String) async {
+        guard isGroupingEnabled else { return }
         await store.groupTimer.setGroupName(groupName)
     }
     
     public static func setNewGroup(_ newGroup: String) async {
+        guard isGroupingEnabled else { return }
         let time =  Date().timeIntervalSince1970
         await store.groupTimer.setNewGroup(newGroup, time)
     }
