@@ -12,84 +12,119 @@ import class UIKit.UIDevice
 import WatchKit
 #endif
 
-enum Device {
-    /// The operating system name.
-    static var os: String {
+public final class Device: @unchecked Sendable {
+    public static let current = Device()
+    private init() {}
+    
+    public private(set) var os: String = ""
+    public private(set) var osVersion: String = ""
+    public private(set) var name: String = ""
+    public private(set) var bvzn: String = ""
+    public private(set) var appVersion: String = ""
+    public private(set) var sdkVersion: String = ""
+    public private(set) var userAgentToken: String = ""
+    public private(set) var model: String = ""
+    
+    @MainActor
+    internal func loadDeviceInfo() {
+         initDeviceInfo()
+    }
+}
+
+extension Device {
+    
+    @MainActor
+    private func initDeviceInfo()  {
+        let basic = Self.makeBasicInfo()
+        let versions = Self.makeVersionInfo(
+            os: basic.os,
+            osVersion: basic.osVersion,
+            model: basic.model
+        )
+        
+        self.os = basic.os
+        self.osVersion = basic.osVersion
+        self.name = basic.name
+        self.model = basic.model
+        self.appVersion = versions.appVersion
+        self.sdkVersion = versions.sdkVersion
+        self.bvzn = versions.bvzn
+        self.userAgentToken = versions.userAgentToken
+    }
+    
+    /// Collects OS, version, name, and model
+    @MainActor
+    private static func makeBasicInfo() -> (
+        os: String,
+        osVersion: String,
+        name: String,
+        model: String
+    ) {
+        let os: String
+        let osVersion: String
+        let name: String
+        let model: String
+
         #if os(iOS) || os(tvOS)
-        return UIDevice.current.systemName
+        let device = UIDevice.current
+        os = device.systemName
+        osVersion = device.systemVersion
+        name = device.name
+        model = deviceModel()
+
         #elseif os(watchOS)
-        return WKInterfaceDevice.current().systemName
+        let d = WKInterfaceDevice.current()
+        os = d.systemName
+        osVersion = d.systemVersion
+        name = d.model
+        model = deviceModel()
+
         #elseif os(macOS)
-        return "macOS"
+        os = "macOS"
+        osVersion = ProcessInfo.processInfo.operatingSystemVersion.osVersionShort
+        name = platform()
+        model = platform()
+
         #else
-        return "UNKNOWN OS"
+        os = "UNKNOWN OS"
+        osVersion = ""
+        name = "UNKNOWN DEVICE"
+        model = ""
         #endif
+
+        return (os, osVersion, name, model)
     }
 
-    /// The operating system version.
-    static var osVersion: String {
-        #if os(iOS) || os(tvOS)
-        return UIDevice.current.systemVersion
-        #elseif os(watchOS)
-        return WKInterfaceDevice.current().systemVersion
-        #elseif os(macOS)
-        return ProcessInfo.processInfo.operatingSystemVersion.osVersionShort
-        #else
-        return ""
-        #endif
-    }
+    
+    /// Build version strings, browser version, user-agent, etc.
+    private static func makeVersionInfo(
+        os: String,
+        osVersion: String,
+        model: String
+    ) -> (
+        appVersion: String,
+        sdkVersion: String,
+        bvzn: String,
+        userAgentToken: String
+    ) {
+        let appVersion = Bundle.main.releaseVersionNumber ?? "0.0"
+        let sdkVersion = Version.number
+        let bvzn = "\(Constants.browser)-\(appVersion)-\(os) \(osVersion)"
+        let userAgent = "\(os)/\(osVersion) (\(model))"
 
-    /// The device model name.
-    static var name: String {
-        #if os(iOS) || os(tvOS)
-        return UIDevice.current.name
-        #elseif os(watchOS)
-        return WKInterfaceDevice.current().model
-        #elseif os(macOS)
-        return platform()
-        #endif
+        return (appVersion, sdkVersion, bvzn, userAgent)
     }
+}
 
-    /// The BlueTriangle browser version.
-    static var bvzn: String {
-        "\(Constants.browser)-\(Bundle.main.releaseVersionNumber ?? "0.0")-\(os) \(osVersion)"
-    }
-    
-    /// Native app version
-    static var appVersion: String {
-        "\(Bundle.main.releaseVersionNumber ?? "0.0")"
-    }
-    
-    /// Native app version
-    static var sdkVersion: String {
-        Version.number
-    }
-
-    /// The User-Agent token.
-    static var userAgentToken: String {
-        "\(os)/\(osVersion) (\(model))"
-    }
-    
-    /// Returns device model name.
-    static var model : String {
-       #if os(macOS)
-        return  platform()
-       #else
-        return  deviceModel()
-       #endif
-   }
-    
-    /// Returns device model.
+extension Device {
     private static func deviceModel() -> String {
         var size = 0
         sysctlbyname("hw.machine", nil, &size, nil, 0)
-        var machine = [CChar](repeating: 0,  count: Int(size))
+        var machine = [CChar](repeating: 0, count: Int(size))
         sysctlbyname("hw.machine", &machine, &size, nil, 0)
         return String(cString: machine)
     }
 
-
-    /// Returns device name.
     private static func platform() -> String {
         var size = 0
         sysctlbyname("hw.model", nil, &size, nil, 0)

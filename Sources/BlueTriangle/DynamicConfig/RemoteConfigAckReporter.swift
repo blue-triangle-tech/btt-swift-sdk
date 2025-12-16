@@ -7,7 +7,7 @@
 
 import Foundation
 
-class RemoteConfigAckReporter {
+class RemoteConfigAckReporter : @unchecked Sendable {
 
     private let queue = DispatchQueue(label: "com.bluetriangle.ack.reporter", qos: .userInitiated, autoreleaseFrequency: .workItem)
     
@@ -22,13 +22,13 @@ class RemoteConfigAckReporter {
     }
     
     func reportSuccessAck(){
-        queue.async {
+        Task {
             do {
                 if let session = BlueTriangle.session() {
                     let pageName = "BTTConfigUpdate"
                     let pageGroup = "BTTConfigUpdate"
                     let trafficSegment = "BTTConfigUpdate"
-                    try self.upload(session: session,
+                    try await self.upload(session: session,
                                     pageName: pageName,
                                     pageGroup: pageGroup,
                                     trafficSegment: trafficSegment)
@@ -40,15 +40,16 @@ class RemoteConfigAckReporter {
     }
     
     func reportFailAck(_ error : String){
-        queue.async {
+        Task {
             do {
                 if let session = BlueTriangle.session(){
                     let pageName = "BTTConfigUpdate"
                     let pageGroup = "BTTConfigUpdate"
                     let trafficSegment = "BTTConfigUpdate"
                     let message = "\(BT_ErrorType.BTTConfigUpdateError.rawValue) : \(error)"
-                    let crashReport = CrashReport(errorType : BT_ErrorType.BTTConfigUpdateError, sessionID: session.sessionID, message: message, pageName: pageName)
-                    try self.upload(session: session,
+                    let nativeApp = await NativeAppProperties.nstEmpty
+                    let crashReport = CrashReport(errorType : BT_ErrorType.BTTConfigUpdateError, sessionID: session.sessionID, message: message, pageName: pageName, nativeApp: nativeApp)
+                    try await self.upload(session: session,
                                     report: crashReport.report,
                                     pageName: pageName,
                                     pageGroup: pageGroup,
@@ -63,10 +64,10 @@ class RemoteConfigAckReporter {
 }
 
 private extension RemoteConfigAckReporter {
-    func makeTimerRequest(session: Session, report: ErrorReport, pageName : String, pageGroup : String, trafficSegment : String) throws -> Request {
+    func makeTimerRequest(session: Session, report: ErrorReport, pageName : String, pageGroup : String, trafficSegment : String) async throws -> Request {
         let page = Page(pageName: pageName, pageType: pageGroup)
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
-        let nativeProperty =  report.nativeApp.copy(.Regular)
+        let nativeProperty =  await report.nativeApp.copy(.Regular)
         let customMetrics = session.customVarriables(logger: logger)
         let model = TimerRequest(session: session,
                                  page: page,
@@ -100,7 +101,7 @@ private extension RemoteConfigAckReporter {
             "CmpS": session.campaignSource,
             "os": Constants.os,
             "browser": Constants.browser,
-            "browserVersion": Device.bvzn,
+            "browserVersion": Device.current.bvzn,
             "device": Constants.device
         ]
         
@@ -110,8 +111,8 @@ private extension RemoteConfigAckReporter {
                            model: [report])
     }
     
-    func upload(session: Session, report: ErrorReport, pageName : String, pageGroup : String, trafficSegment : String) throws {
-        let timerRequest = try makeTimerRequest(session: session,
+    func upload(session: Session, report: ErrorReport, pageName : String, pageGroup : String, trafficSegment : String) async throws {
+        let timerRequest = try await makeTimerRequest(session: session,
                                                 report: report, 
                                                 pageName: pageName,
                                                 pageGroup: pageGroup,
@@ -129,11 +130,11 @@ private extension RemoteConfigAckReporter {
 
 private extension RemoteConfigAckReporter {
     
-    func upload(session: Session, pageName : String, pageGroup : String, trafficSegment : String) throws {
+    func upload(session: Session, pageName : String, pageGroup : String, trafficSegment : String) async throws {
         
         let timeMS = Date().timeIntervalSince1970.milliseconds
         let durationMS = Constants.minPgTm
-        let timerRequest = try self.makeTimerRequest(session: session,
+        let timerRequest = try await self.makeTimerRequest(session: session,
                                                            time: timeMS,
                                                            duration: durationMS,
                                                      pageName: pageName,
@@ -142,16 +143,17 @@ private extension RemoteConfigAckReporter {
         self.uploader.send(request: timerRequest)
     }
     
-    private func makeTimerRequest(session: Session, time : Millisecond, duration : Millisecond , pageName: String, pageGroup : String, trafficSegment : String) throws -> Request {
+    private func makeTimerRequest(session: Session, time : Millisecond, duration : Millisecond , pageName: String, pageGroup : String, trafficSegment : String) async throws -> Request {
         let page = Page(pageName: pageName, pageType: pageGroup)
         let timer = PageTimeInterval(startTime: time, interactiveTime: 0, pageTime: duration)
         let customMetrics = session.customVarriables(logger: logger)
+        let nativeAppProperties: NativeAppProperties = await .nstEmpty
         let model = TimerRequest(session: session,
                                  page: page,
                                  timer: timer,
                                  customMetrics: customMetrics,
                                  trafficSegmentName: trafficSegment,
-                                 nativeAppProperties: .nstEmpty)
+                                 nativeAppProperties: nativeAppProperties)
         return try Request(method: .post,
                            url: Constants.timerEndpoint,
                            model: model)

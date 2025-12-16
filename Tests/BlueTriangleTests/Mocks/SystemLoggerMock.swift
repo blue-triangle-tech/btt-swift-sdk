@@ -8,9 +8,9 @@
 import Foundation
 import XCTest
 import os.log
-@testable import BlueTriangle
+@testable @preconcurrency import BlueTriangle
 
-final class SystemLoggerMock: SystemLogging {
+final class SystemLoggerMock: SystemLogging, @unchecked Sendable {
     var onLog: (OSLogType, String) -> Void
 
     init(onLog: @escaping (OSLogType, String) -> Void = { _, _ in }) {

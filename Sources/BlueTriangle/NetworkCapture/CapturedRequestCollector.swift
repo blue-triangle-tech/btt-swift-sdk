@@ -7,7 +7,7 @@
 
 import Foundation
 
-actor CapturedRequestCollector: CapturedRequestCollecting {
+actor CapturedRequestCollector: CapturedRequestCollecting{
     private let logger: Logging
     private var timerManager: CaptureTimerManaging
     private let requestBuilder: CapturedRequestBuilder
@@ -39,7 +39,7 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
     }
 
     deinit {
-        timerManager.cancel()
+       // timerManager.cancel()
     }
 
     func start(page: Page, startTime: TimeInterval, isGroupTimer: Bool = false) {
@@ -57,20 +57,30 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
         requestCollection?.updateNetworkCapture(pageName: pageName, startTime: startTime)
     }
     
-    func collect(timer: InternalTimer, response: CustomResponse){
-        requestCollection?.insert(timer: timer, response: response)
+    func collect(timer: InternalTimer, response: CustomResponse) async{
+        guard var collection = requestCollection else { return }
+        await collection.insert(timer: timer, response: response)
+        requestCollection = collection
     }
     
-    func collect(timer: InternalTimer, response: URLResponse?){
-        requestCollection?.insert(timer: timer, response: response)
+    func collect(timer: InternalTimer, response: URLResponse?) async{
+        guard var collection = requestCollection else { return }
+        await collection.insert(timer: timer, response: response)
+        requestCollection = collection
     }
     
-    func collect(timer: InternalTimer, request : URLRequest, error: Error?){
-        requestCollection?.insert(timer: timer, request: request, error: error)
+    func collect(timer: InternalTimer, request : URLRequest, error: Error?) async{
+        guard var collection = requestCollection else { return }
+        await collection.insert(timer: timer, request: request, error: error)
+        requestCollection = collection
+
     }
 
-    func collect(metrics: URLSessionTaskMetrics, error: Error?) {
-        requestCollection?.insert(metrics: metrics, error: error)
+    func collect(metrics: URLSessionTaskMetrics, error: Error?) async {
+        guard var collection = requestCollection else { return }
+        await collection.insert(metrics: metrics, error: error)
+        requestCollection = collection
+
     }
 
     // Use `nonisolated` to enable capture by timerManager handler.

@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol CrashReportManaging {
+protocol CrashReportManaging : Sendable {
     func uploadCrashReport(session: Session)
     func uploadError<E: Error>(_ error: E, file: StaticString, function: StaticString, line: UInt)
     func stop()

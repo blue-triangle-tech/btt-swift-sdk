@@ -8,7 +8,7 @@
 import Foundation
 import Combine
 
-class LaunchTimeReporter : ObservableObject {
+class LaunchTimeReporter : ObservableObject, @unchecked Sendable {
     
     private var cancellables = Set<AnyCancellable>()
     
@@ -56,9 +56,9 @@ class LaunchTimeReporter : ObservableObject {
     }
     
     private func uploadReports(_ pageName : String, _ time : Date, _ duration : TimeInterval) {
-        DispatchQueue.global(qos: .utility).async { [weak self] in
+        Task {
             do {
-                guard let strongSelf = self, let session = strongSelf.session() else {
+                guard let session = self.session() else {
                     return
                 }
                 
@@ -68,30 +68,31 @@ class LaunchTimeReporter : ObservableObject {
                 let timeMS = time.timeIntervalSince1970.milliseconds
                 let durationMS = duration.milliseconds
                 
-                let timerRequest = try strongSelf.makeTimerRequest(session: session,
+                let timerRequest = try await self.makeTimerRequest(session: session,
                                                                    time: timeMS,
                                                                    duration: durationMS,
                                                                    pageName: pageName,
                                                                    pageGroup: groupName,
                                                                    trafficSegment: trafficSegmentName)
-                strongSelf.uploader.send(request: timerRequest)
-                strongSelf.logger.info("Launch time reported at \(time)")
+                self.uploader.send(request: timerRequest)
+                self.logger.info("Launch time reported at \(time)")
             } catch {
-                self?.logger.error(error.localizedDescription)
+                self.logger.error(error.localizedDescription)
             }
         }
     }
     
-    private func makeTimerRequest(session: Session, time : Millisecond, duration : Millisecond , pageName: String, pageGroup : String, trafficSegment : String) throws -> Request {
+    private func makeTimerRequest(session: Session, time : Millisecond, duration : Millisecond , pageName: String, pageGroup : String, trafficSegment : String) async throws -> Request {
         let page = Page(pageName: pageName , pageType: pageGroup)
         let timer = PageTimeInterval(startTime: time, interactiveTime: 0, pageTime: duration)
         let customMetrics = session.customVarriables(logger: logger)
+        let nativeAppProperties: NativeAppProperties = await .nstEmpty
         let model = TimerRequest(session: session,
                                  page: page,
                                  timer: timer,
                                  customMetrics: customMetrics,
                                  trafficSegmentName: trafficSegment,
-                                 nativeAppProperties: .nstEmpty)
+                                 nativeAppProperties: nativeAppProperties)
         return try Request(method: .post,
                            url: Constants.timerEndpoint,
                            model: model)

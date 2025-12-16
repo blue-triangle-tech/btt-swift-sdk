@@ -7,7 +7,7 @@
 
 import Foundation
 
-protocol Logging {
+protocol Logging : Sendable {
     var enableDebug: Bool { get set }
 
     func logDebug(

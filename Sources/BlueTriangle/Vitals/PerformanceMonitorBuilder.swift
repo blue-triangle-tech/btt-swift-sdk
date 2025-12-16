@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct PerformanceMonitorBuilder {
-    let builder: (TimeInterval) -> () -> PerformanceMonitoring
+struct PerformanceMonitorBuilder : @unchecked Sendable {
+    let builder: @Sendable (TimeInterval) -> () -> PerformanceMonitoring
 
     static let live: Self = PerformanceMonitorBuilder { sampleInterval in
         let actualSampleInterval = sampleInterval < Constants.minimumSampleInterval

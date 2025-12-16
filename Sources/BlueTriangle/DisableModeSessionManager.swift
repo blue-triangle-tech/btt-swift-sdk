@@ -27,7 +27,7 @@ import Combine
 ///
 /// - Note: This session manager is used exclusively when `enableAllTracking` is false.
 ///
-class DisableModeSessionManager : SessionManagerProtocol {
+final class DisableModeSessionManager : SessionManagerProtocol, @unchecked Sendable {
     
     private var expirationDurationInMS: Millisecond = 30 * 60 * 1000
     private let lock = NSLock()
@@ -101,7 +101,9 @@ class DisableModeSessionManager : SessionManagerProtocol {
      }
      
      private func updateConfigurationOnChange(){
-         configSyncer.updateAndApplySDKState()
+         Task {
+             await configSyncer.updateAndApplySDKState()
+         }
      }
 }
 

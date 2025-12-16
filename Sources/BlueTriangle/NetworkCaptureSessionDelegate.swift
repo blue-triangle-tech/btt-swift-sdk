@@ -8,7 +8,7 @@
 import Foundation
 
 /// A session delegate that supports capturing network requests.
-open class NetworkCaptureSessionDelegate: NSObject, URLSessionTaskDelegate {
+open class NetworkCaptureSessionDelegate: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
 
     /// Tells the delegate that the session finished collecting metrics for the task.
     ///

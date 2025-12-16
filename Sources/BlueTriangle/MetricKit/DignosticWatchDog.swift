@@ -17,7 +17,7 @@ struct SavedTimer: Codable {
     let sessionId: Identifier
 }
 
-class MetricKitWatchDog {
+class MetricKitWatchDog : @unchecked Sendable{
     
     private(set) var subscription = MetricKitSubscriber()
     
@@ -51,16 +51,17 @@ class MetricKitWatchDog {
     }
     
     func start(){
-        
-        if #available(iOS 14.0, *) {
-            let pastDiagnosticPayloads = MXMetricManager.shared.pastDiagnosticPayloads
+        Task {
+            if #available(iOS 14.0, *) {
+                let pastDiagnosticPayloads = MXMetricManager.shared.pastDiagnosticPayloads
+                
+                NSLog("#\(#function) Previous reports \(pastDiagnosticPayloads)")
+                 subscription.setupDignoseDataInReporter(payloads: pastDiagnosticPayloads)
+            }
             
-            NSLog("#\(#function) Previous reports \(pastDiagnosticPayloads)")
-            subscription.setupDignoseDataInReporter(payloads: pastDiagnosticPayloads)
+            MXMetricManager.shared.add(subscription)
+            addAppStateObservers()
         }
-        
-        MXMetricManager.shared.add(subscription)
-        addAppStateObservers()
     }
     
     private func addAppStateObservers() {
@@ -200,11 +201,11 @@ extension MetricKitSubscriber {
         getForamttedStringOfCallStacks(report: report)
         
         print(formattedCrashReportString)
-        
         let crashReport  = CrashReport(sessionID: timerDetail.sessionId,
                                        message: formattedCrashReportString,
                                        pageName: timerDetail.pageName,
-                                       intervalProvider: timerDetail.startTime)
+                                       intervalProvider: timerDetail.startTime,
+                                       nativeApp: .empty)
         
        CrashReportPersistence.saveCrash(crashReport: crashReport)
     }

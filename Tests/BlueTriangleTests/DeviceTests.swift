@@ -9,10 +9,11 @@ import XCTest
 @testable import BlueTriangle
 
 final class DeviceTests: XCTestCase {
-    func testOSInfo() {
-        let os = Device.os
-        let osVersion = Device.osVersion
-        let name = Device.name
+    @MainActor func testOSInfo() {
+        Device.current.loadDeviceInfo()
+        let os = Device.current.os
+        let osVersion = Device.current.osVersion
+        let name = Device.current.name
 
         #if os(iOS)
         XCTAssertEqual(os, "iOS")

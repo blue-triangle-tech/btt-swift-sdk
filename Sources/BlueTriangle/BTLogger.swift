@@ -57,7 +57,7 @@ struct LoggerWrapper: SystemLogging {
 
 // MARK: - BTLogger
 
-final class BTLogger: Logging {
+final class BTLogger: Logging , @unchecked Sendable {
     private let logger: SystemLogging
     var enableDebug: Bool
 

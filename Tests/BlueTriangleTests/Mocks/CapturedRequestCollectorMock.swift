@@ -9,14 +9,14 @@
 import Foundation
 
 actor CapturedRequestCollectorMock: CapturedRequestCollecting {
-    var onStart: (Page, TimeInterval) -> Void
-    var onCollectTimer: (InternalTimer, URLResponse?) -> Void
-    var onCollectMetrics: (URLSessionTaskMetrics) -> Void
+    var onStart: @Sendable (Page, TimeInterval) -> Void
+    var onCollectTimer: @Sendable (InternalTimer, URLResponse?) -> Void
+    var onCollectMetrics: @Sendable (URLSessionTaskMetrics) -> Void
 
     init(
-        onStart: @escaping (Page, TimeInterval) -> Void = { _, _ in },
-        onCollectTimer: @escaping (InternalTimer, URLResponse?) -> Void = { _, _ in },
-        onCollectMetrics: @escaping (URLSessionTaskMetrics) -> Void = { _ in }
+        onStart: @Sendable @escaping (Page, TimeInterval) -> Void = { _, _ in },
+        onCollectTimer: @Sendable @escaping (InternalTimer, URLResponse?) -> Void = { _, _ in },
+        onCollectMetrics: @Sendable @escaping (URLSessionTaskMetrics) -> Void = { _ in }
     ) {
         self.onStart = onStart
         self.onCollectTimer = onCollectTimer

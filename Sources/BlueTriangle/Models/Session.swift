@@ -7,12 +7,12 @@
 
 import Foundation
 
-struct Session: Equatable {
+struct Session: Equatable, @unchecked Sendable {
     let wcd = 1
     let eventType = 9
     let navigationType = 9
-    let osInfo = Device.os
-    let appVersion = Device.bvzn
+    let osInfo = Device.current.os
+    let appVersion = Device.current.bvzn
 
     /// Blue Triangle Technologies-assigned site ID.
     var siteID: String

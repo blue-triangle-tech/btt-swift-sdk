@@ -28,15 +28,18 @@ struct CrashReportPersistence: CrashReportPersisting {
     private static var path: String {
         persistence?.file.path ?? "MISSING"
     }
-
+    
     static func configureCrashHandling(configuration: CrashReportConfiguration) {
         switch configuration {
         case .nsException:
             NSSetUncaughtExceptionHandler { exception in
-                SignalHandler.disableCrashTracking()
-                Self.save(
-                    CrashReport(sessionID: BlueTriangle.sessionID,
-                                exception: exception, pageName: BlueTriangle.recentTimer()?.getPageName()))
+                Task {
+                    let nativeApp = await NativeAppProperties.nstEmpty
+                    SignalHandler.disableCrashTracking()
+                    Self.save(
+                        CrashReport(sessionID: BlueTriangle.sessionID,
+                                    exception: exception, pageName: BlueTriangle.recentTimer()?.getPageName(), nativeApp: nativeApp))
+                }
             }
         }
     }
@@ -78,3 +81,5 @@ struct CrashReportPersistence: CrashReportPersisting {
         }
     }
 }
+
+extension NSException : @unchecked @retroactive Sendable {}

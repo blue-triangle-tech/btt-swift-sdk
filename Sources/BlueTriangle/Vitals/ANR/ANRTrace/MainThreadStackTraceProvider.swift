@@ -42,7 +42,7 @@ public func _stdlib_demangleName(_ mangledName: String) -> String {
     }
 }
 
-class MainThreadTraceProvider{
+class MainThreadTraceProvider : @unchecked Sendable{
     private var mainThreadRef : thread_t?
   
     

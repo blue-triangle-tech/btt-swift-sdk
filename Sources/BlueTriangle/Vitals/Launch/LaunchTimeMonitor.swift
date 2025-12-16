@@ -128,14 +128,18 @@ extension LaunchTimeMonitor {
     
     private func registerNotifications() {
 #if os(iOS)
+        let box = WeakBox(self)
         launchObserver = NotificationCenter.default.addObserver(forName: UIApplication.didFinishLaunchingNotification, object: nil, queue: nil) { notification in
-            self.processNonification(notification, date: Date())
+            guard let strong = box.value else { return }
+            strong.processNonification(notification, date: Date())
         }
         foregroundObserver = NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: nil) { notification in
-            self.processNonification(notification, date: Date())
+            guard let strong = box.value else { return }
+            strong.processNonification(notification, date: Date())
         }
         activeObserver = NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil) { notification in
-            self.processNonification(notification, date: Date())
+            guard let strong = box.value else { return }
+            strong.processNonification(notification, date: Date())
         }
         logger.info("Launch time monitor started listining to system event")
 #endif
@@ -190,4 +194,9 @@ extension LaunchTimeMonitor {
         let processTime = Double(start_time.tv_sec) + Double(start_time.tv_usec) / 1e6
         return processTime
     }
+}
+
+final class WeakBox<T: AnyObject>: @unchecked Sendable {
+    weak var value: T?
+    init(_ value: T) { self.value = value }
 }

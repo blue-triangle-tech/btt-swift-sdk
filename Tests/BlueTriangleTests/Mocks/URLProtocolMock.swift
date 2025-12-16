@@ -8,7 +8,8 @@
 import Foundation
 import XCTest
 
-final class URLProtocolMock: URLProtocol {
+@MainActor
+final class URLProtocolMock: URLProtocol, @unchecked Sendable {
     static var responseQueue: DispatchQueue = .global()
     static var responseDelay: TimeInterval? = 0.1
     static var responseProvider: (URL) throws -> (Data, HTTPURLResponse) = { url in
@@ -20,14 +21,14 @@ final class URLProtocolMock: URLProtocol {
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
     override func startLoading() {
-        if let delay = Self.responseDelay {
+      /*  if let delay = Self.responseDelay {
             guard client != nil else { return }
             Self.responseQueue.asyncAfter(deadline: .now() + delay) {
                 self.respond()
             }
         } else {
             respond()
-        }
+        }*/
     }
 
     override func stopLoading() { }

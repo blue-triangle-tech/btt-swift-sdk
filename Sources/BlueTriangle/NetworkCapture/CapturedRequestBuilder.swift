@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct CapturedRequestBuilder {
+struct CapturedRequestBuilder : @unchecked Sendable {
     let build: (Millisecond, Page, [CapturedRequest]) throws -> Request
 
     // swiftlint:disable:next function_parameter_count
@@ -31,7 +31,7 @@ struct CapturedRequestBuilder {
             "pageType": pageType,
             "os": Constants.os,
             "browser": Constants.browser,
-            "browserVersion": Device.bvzn,
+            "browserVersion": Device.current.bvzn,
             "device": Constants.device
         ]
     }

@@ -23,13 +23,13 @@ import AppEventLogger
 #endif
 
 protocol BTScreenLifecycleTracker{
-    func loadStarted(_ id : String, _ name : String, _ title : String)
-    func loadFinish(_ id : String, _ name : String,_ title : String)
-    func viewStart(_ id : String, _ name : String, _ title : String)
-    func viewingEnd(_ id : String, _ name : String, _ title : String)
+    func loadStarted(_ id : String, _ name : String, _ title : String, _ time : TimeInterval) async
+    func loadFinish(_ id : String, _ name : String,_ title : String, _ time : TimeInterval) async
+    func viewStart(_ id : String, _ name : String, _ title : String, _ time : TimeInterval) async
+    func viewingEnd(_ id : String, _ name : String, _ title : String, _ time : TimeInterval) async
 }
 
-public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
+public actor BTTScreenLifecycleTracker : BTScreenLifecycleTracker {
     private var btTimeActivityrMap = [String: TimerMapActivity]()
     private var enableLifecycleTracker = false
     private var screenType = ScreenType.UIKit
@@ -37,13 +37,11 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
     private var startTimerPages = [String : (name: String, title: String)]()
     private let lock = NSLock()
     
-    internal init() {
-        registerAppForegroundAndBackgroundNotification()
-    }
-
-    func setUpLogger(_ logger : Logging){
-        lock.sync {
-            self.logger = logger
+    internal init(_ logger : Logging? = nil, enableLifecycleTracker : Bool = false) {
+        self.logger = logger
+        self.enableLifecycleTracker = enableLifecycleTracker
+        Task {
+            await self.registerAppForegroundAndBackgroundNotification()
         }
     }
     
@@ -59,112 +57,219 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
         }
     }
     
-    func loadStarted(_ id: String, _ name: String, _ title : String = "") {
-        self.manageTimer(name, id: id, type: .load, title: title)
+    func loadStarted(_ id: String, _ name: String, _ title : String = "", _ time : TimeInterval = Date().timeIntervalSince1970)  async{
+        await self.manageTimer(name, id: id, type: .load, title: title, time)
     }
     
-    func loadFinish(_ id: String, _ name: String, _ title : String = "") {
-        self.manageTimer(name, id: id, type: .finish, title: title)
+    func loadFinish(_ id: String, _ name: String, _ title : String = "", _ time : TimeInterval = Date().timeIntervalSince1970)  async{
+        await self.manageTimer(name, id: id, type: .finish, title: title, time)
     }
     
-    func viewStart(_ id: String, _ name: String, _ title : String = "") {
-        self.manageTimer(name, id: id, type: .view, title: title)
+    func viewStart(_ id: String, _ name: String, _ title : String = "", _ time : TimeInterval = Date().timeIntervalSince1970)  async{
+        await self.manageTimer(name, id: id, type: .view, title: title, time)
     }
     
-    func viewingEnd(_ id: String, _ name: String, _ title : String = "") {
-        self.manageTimer(name, id: id, type: .disappear, title: title)
+    func viewingEnd(_ id: String, _ name: String, _ title : String = "", _ time : TimeInterval = Date().timeIntervalSince1970)  async {
+        await self.manageTimer(name, id: id, type: .disappear, title: title, time)
     }
     
-    func manageTimer(_ pageName : String, id : String, type : TimerMapType, title : String = ""){
-        lock.sync {
-            guard self.enableLifecycleTracker else { return }
-            let timerActivity = getTimerActivity(pageName, id: id, pageTitle: title)
-            btTimeActivityrMap[id] = timerActivity
-            timerActivity.manageTimeFor(type: type)
-            if type == .disappear{
-                btTimeActivityrMap.removeValue(forKey: id)
-            }
-            else if (type == .load || type == .view){
-                SignalHandler.setCurrentPageName(pageName)
-            }
+    func manageTimer(_ pageName : String, id : String, type : TimerMapType, title : String = "", _ time : TimeInterval = Date().timeIntervalSince1970) async {
+        guard self.getEnableLifecycleTracker() else { return }
+        let timerActivity = await self.getTimerActivity(pageName, id: id, pageTitle: title, time: time)
+        self.setTimeActivity(timerActivity, for: id)
+        await timerActivity.manageTimeFor(type: type, time)
+        if type == .disappear{
+            self.removeTimeActivity(for: id)
+        }
+        else if (type == .load || type == .view){
+            SignalHandler.setCurrentPageName(pageName)
         }
     }
     
-    private func getTimerActivity(_ pageName : String, id : String, pageTitle : String = "") -> TimerMapActivity{
-        if let btTimerActivity = btTimeActivityrMap[id] {
-            btTimerActivity.setPageName(pageName,title: pageTitle)
+    private func getEnableLifecycleTracker() -> Bool {
+        lock.sync {
+            enableLifecycleTracker
+        }
+    }
+    
+    private func getTimeActivity(for id: String) -> TimerMapActivity? {
+        lock.sync {
+            btTimeActivityrMap[id]
+        }
+    }
+
+    private func setTimeActivity(_ activity: TimerMapActivity, for id: String) {
+        lock.sync {
+            btTimeActivityrMap[id] = activity
+        }
+    }
+    
+    private func getAllActivities() -> [(key: String, value: TimerMapActivity)] {
+        lock.sync {
+            btTimeActivityrMap.map { ($0.key, $0.value) }
+        }
+    }
+
+    private func removeTimeActivity(for id: String) {
+        lock.sync {
+            btTimeActivityrMap.removeValue(forKey: id)
+        }
+    }
+    
+    private func removeAllTimeActivity() {
+        lock.sync {
+            btTimeActivityrMap.removeAll()
+        }
+    }
+    
+    private func getStartPage(for id: String) -> (name: String, title: String)? {
+        lock.sync {
+            startTimerPages[id]
+        }
+    }
+
+    private func setStartTimePage(_ page: (name: String, title: String), for id: String) {
+        lock.sync {
+            startTimerPages[id] = page
+        }
+    }
+
+    private func removeAllStartTimePages() {
+        lock.sync {
+            startTimerPages.removeAll()
+        }
+    }
+
+    private func getAllStartTimePages() -> [(key: String, value: (name: String, title: String))] {
+        lock.sync {
+            Array(startTimerPages.map { ($0.key, $0.value) })
+        }
+    }
+    
+    private func getTimerActivity(_ pageName : String, id : String, pageTitle : String = "", time : TimeInterval) async -> TimerMapActivity{
+        if let btTimerActivity =  getTimeActivity(for: id) {
+            await btTimerActivity.setPageName(pageName,title: pageTitle)
             return btTimerActivity
-        }else{
-            let timerActivity = TimerMapActivity(pageName: pageName, screenType: self.screenType, logger: logger, pageTitle: pageTitle)
+        }else {
+            let timerActivity = await TimerMapActivity(pageName: pageName, screenType: self.screenType, logger: logger, pageTitle: pageTitle, time: time)
             return timerActivity
         }
     }
     
-    private func registerAppForegroundAndBackgroundNotification() {
 #if os(iOS)
-        NotificationCenter.default.addObserver(self, selector: #selector(appMovedToBackground), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(appMovedToForeground), name: UIApplication.willEnterForegroundNotification, object: nil)
+    private var bgObserver: NSObjectProtocol?
+    private var fgObserver: NSObjectProtocol?
+    private var bgTask: Task<Void, Never>?
+    private var fgTask: Task<Void, Never>?
+#endif
+    
+    func registerAppForegroundAndBackgroundNotification() {
+#if os(iOS)
+            let center = NotificationCenter.default
+            
+            if #available(iOS 15, *) {
+                bgTask = Task { [weak self] in
+                    guard let self else { return }
+                    for await _ in center.notifications(named: UIApplication.didEnterBackgroundNotification) {
+                        await self.appMovedToBackground()
+                    }
+                }
+                
+                fgTask = Task { [weak self] in
+                    guard let self else { return }
+                    for await _ in center.notifications(named: UIApplication.willEnterForegroundNotification) {
+                        await self.appMovedToForeground()
+                    }
+                }
+                
+            } else {
+                bgObserver = center.addObserver(
+                    forName: UIApplication.didEnterBackgroundNotification,
+                    object: nil,
+                    queue: .main
+                ) { [weak self] _ in
+                    Task { await self?.appMovedToBackground() }
+                }
+                
+                fgObserver = center.addObserver(
+                    forName: UIApplication.willEnterForegroundNotification,
+                    object: nil,
+                    queue: .main
+                ) { [weak self] _ in
+                    Task { await self?.appMovedToForeground() }
+                }
+            }
 #endif
     }
     
-    private func stopActiveTimersWhenAppWentToBackground() {
-        var items: [(key: String, page: String, title: String)] = []
-        lock.sync {
-            guard self.enableLifecycleTracker else { return }
-
-            for (key, activity) in btTimeActivityrMap {
-                let page = activity.getPageName()
-                let title = activity.getTitleName()
-                startTimerPages[key] = (page, title)
-                items.append((key: key, page: page, title: title))
-            }
-            btTimeActivityrMap.removeAll()
+    private func stopActiveTimersWhenAppWentToBackground() async {
+        guard self.getEnableLifecycleTracker() else { return }
+        for (key, activity) in getAllActivities() {
+            let page = await activity.getPageName()
+            let title = await activity.getTitleName()
+            self.setStartTimePage((page, title), for: key)
+            await viewingEnd(key, page, title)
         }
-
-        for item in items {
-            viewingEnd(item.key, item.page, item.title)
-        }
-
+        self.removeAllTimeActivity()
         logger?.info("Stop active timer when app went to background")
     }
 
-    private func startInactiveTimersWhenAppCameToForeground() {
-        var items: [(key: String, page: (name: String, title: String))] = []
-
-        lock.sync {
-            guard self.enableLifecycleTracker else { return }
-            items = startTimerPages.map { ($0.key, $0.value) }
-            startTimerPages.removeAll()
+    private func startInactiveTimersWhenAppCameToForeground() async {
+        guard self.getEnableLifecycleTracker() else { return }
+        for (key, page) in getAllStartTimePages() {
+            await viewStart(key, page.name, page.title)
         }
-
-        for (key, page) in items {
-            viewStart(key, page.name, page.title)
-        }
-
+        self.removeAllStartTimePages()
         logger?.info("Start active timer when app come to foreground")
     }
     
-    @objc private func appMovedToBackground() {
-        BlueTriangle.screenTracker?.stopActiveTimersWhenAppWentToBackground()
+    @objc private func appMovedToBackground() async {
+        Task {
+            await BlueTriangle.getScreenTracker()?.stopActiveTimersWhenAppWentToBackground()
+        }
     }
     
-    @objc private func appMovedToForeground() {
-        BlueTriangle.screenTracker?.startInactiveTimersWhenAppCameToForeground()
+    @objc private func appMovedToForeground() async {
+        Task {
+            await BlueTriangle.getScreenTracker()?.startInactiveTimersWhenAppCameToForeground()
+        }
     }
     
-    func stop(){
+    func unregisterAppForegroundAndBackgroundNotification() {
 #if os(iOS)
-        UIViewController.removeSetUp()
-        NotificationCenter.default.removeObserver(self)
+        bgTask?.cancel()
+        fgTask?.cancel()
+        bgTask = nil
+        fgTask = nil
+        
+        if let bgObserver {
+            NotificationCenter.default.removeObserver(bgObserver)
+            self.bgObserver = nil
+        }
+        if let fgObserver {
+            NotificationCenter.default.removeObserver(fgObserver)
+            self.fgObserver = nil
+        }
+        
 #endif
+    }
+    
+    @MainActor
+     func stop() {
+         Task {
+#if os(iOS)
+             UIViewController.removeSetUp()
+             await self.unregisterAppForegroundAndBackgroundNotification()
+#endif
+         }
     }
 }
 
-enum TimerMapType {
+enum TimerMapType: @unchecked Sendable{
   case load, finish, view, disappear
 }
 
-class TimerMapActivity {
+actor TimerMapActivity {
     
     private let timer : BTTimer
     private let screenType : ScreenType
@@ -177,12 +282,11 @@ class TimerMapActivity {
     private(set) var logger : Logging?
     private let maxPGTMTime : Millisecond = 20_000
     
-    init(pageName: String, screenType : ScreenType, logger : Logging?, pageTitle : String = "") {
+    init(pageName: String, screenType : ScreenType, logger : Logging?, pageTitle : String = "", time: TimeInterval) async {
         self.screenType = screenType
         self.logger = logger
-        
-        if BlueTriangle.configuration.enableGrouping {
-            BlueTriangle.groupTimer.startGroupIfNeeded()
+        if BlueTriangle.isGroupingEnabled {
+            await BlueTriangle.startGroupIfNeeded(time)
             self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageTitle: pageTitle), timerType: .custom, isGroupedTimer: true)
         } else {
             self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName))
@@ -196,49 +300,50 @@ class TimerMapActivity {
         }
     }
     
-    func manageTimeFor(type: TimerMapType) {
+    func manageTimeFor(type: TimerMapType, _ time : TimeInterval) async {
+        let timeInMilliseconds  = time.milliseconds
         switch type {
         case .load:
-            setLoadTime(timeInMillisecond)
+            await setLoadTime(timeInMilliseconds)
         case .finish:
-            if loadTime == nil { setLoadTime(timeInMillisecond) }
-            setWillViewTime(timeInMillisecond)
+            if loadTime == nil {await setLoadTime(timeInMilliseconds) }
+            await setWillViewTime(timeInMilliseconds)
         case .view:
-            if loadTime == nil { setLoadTime(timeInMillisecond) }
-            setViewTime(timeInMillisecond)
+            if loadTime == nil {await setLoadTime(timeInMilliseconds) }
+            await setViewTime(timeInMilliseconds)
         case .disappear:
-            evaluateConfidence()
-            setDisappearTime(timeInMillisecond)
+            await evaluateConfidence()
+            await setDisappearTime(timeInMilliseconds)
         }
     }
     
-    private func setLoadTime(_ time : Millisecond){
+    private func setLoadTime(_ time : Millisecond) async{
+        await self.submitTimerOfType(.load)
         self.loadTime = time
-        self.submitTimerOfType(.load)
-        BlueTriangle.groupTimer.refreshGroupName()
+        await BlueTriangle.computeNameOfTheGroup()
     }
     
-    private func setWillViewTime(_ time : Millisecond){
+    private func setWillViewTime(_ time : Millisecond) async{
         self.willViewTime = time
-        BlueTriangle.groupTimer.refreshGroupName()
+        await BlueTriangle.computeNameOfTheGroup()
     }
     
-    private func setViewTime(_ time : Millisecond){
+    private func setViewTime(_ time : Millisecond) async{
         self.viewTime = time
-        self.submitTimerOfType(.view)
-        BlueTriangle.groupTimer.refreshGroupName()
+        await self.submitTimerOfType(.view)
+        await BlueTriangle.computeNameOfTheGroup()
     }
     
-    private func setDisappearTime(_ time : Millisecond){
+    private func setDisappearTime(_ time : Millisecond) async{
         self.disapearTime = time
-        self.submitTimerOfType(.disappear)
-        BlueTriangle.groupTimer.refreshGroupName()
+        await self.submitTimerOfType(.disappear)
+        await BlueTriangle.computeNameOfTheGroup()
     }
     
-    private func evaluateConfidence() {
+    private func evaluateConfidence() async {
         switch (loadTime, willViewTime, viewTime) {
         case let (_, willView?, nil):
-            self.setViewTime(willView)
+            await self.setViewTime(willView)
             confidenceRate = 50
             confidenceMsg = "viewDidAppear tracking information is missing."
             
@@ -262,6 +367,11 @@ class TimerMapActivity {
                 confidenceRate = 100
                 confidenceMsg = ""
             }
+        case (nil, nil, nil):
+            confidenceRate = 0
+            confidenceMsg = "Lifecycle tracking information are missing"
+            await self.setLoadTime(timeInMillisecond - 15)
+            await self.setViewTime(timeInMillisecond)
             
         case (nil, _, _):
             confidenceRate = 100
@@ -281,23 +391,24 @@ class TimerMapActivity {
         return self.timer.getPageTitle()
     }
     
-    private func submitTimerOfType(_ type : TimerMapType) {
-        if isGroupedANDAutoTracked {
+    private func submitTimerOfType(_ type : TimerMapType) async {
+        if  BlueTriangle.isGroupingEnabled {
             if type == .load {
-                BlueTriangle.groupTimer.add(timer: timer)
+                print("Added timer : \(timer.getPageName())")
+                await BlueTriangle.addGroupTimer(timer)
             }
             if type == .view {
                 if let viewTime = viewTime, let loadTime = loadTime {
-                    self.updateTrackingTimer(loadTime: loadTime, viewTime: viewTime, disapearTime: timeInMillisecond)
+                    await self.updateTrackingTimer(loadTime: loadTime, viewTime: viewTime, disapearTime: timeInMillisecond)
                 }
             } else {
                 if let viewTime = viewTime, let loadTime = loadTime, let disapearTime = disapearTime {
-                    self.updateTrackingTimer(loadTime: loadTime, viewTime: viewTime, disapearTime: disapearTime)
+                    await self.updateTrackingTimer(loadTime: loadTime, viewTime: viewTime, disapearTime: disapearTime)
                     if timer.isGroupTimer {
                         timer.end()
                     } else {
                         //Submit timer when switch from non group to group
-                        submitTimer()
+                        await submitTimer()
                     }
                 } else if type == .disappear {
                     timer.end()
@@ -305,14 +416,14 @@ class TimerMapActivity {
             }
         } else {
             if type == .disappear {
-                submitTimer()
+                await submitTimer()
             }
         }
     }
     
-    private func submitTimer() {
+    private func submitTimer() async {
         if let viewTime = viewTime, let loadTime = loadTime, let disapearTime = disapearTime {
-            self.updateTrackingTimer(loadTime: loadTime, viewTime: viewTime, disapearTime: disapearTime)
+            await self.updateTrackingTimer(loadTime: loadTime, viewTime: viewTime, disapearTime: disapearTime)
             BlueTriangle.endTimer(timer)
             let pageInfoMessage = "View tracker timer submited for screen :\(self.timer.getPageName())"
             self.logger?.info(pageInfoMessage)
@@ -321,18 +432,20 @@ class TimerMapActivity {
         }
     }
 
-    private func updateTrackingTimer(loadTime: Millisecond, viewTime: Millisecond, disapearTime: Millisecond) {
+    private func updateTrackingTimer(loadTime: Millisecond, viewTime: Millisecond, disapearTime: Millisecond) async {
          //When "pgtm" is zero then fallback mechanism triggered that calculate performence time as screen time automatically. So to avoiding "pgtm" zero value setting default value 15 milliseconds.
          // Default "pgtm" should be minimum 0.01 sec (15 milliseconds). Because timer is not reflecting on dot chat bellow to that interval.
         let calculatedLoadTime = min(max(viewTime - loadTime, Constants.minPgTm), maxPGTMTime)
-        let networkReport = timer.networkReport
+        
+        let networkReport = await timer.getNetworkReport()
 
         timer.pageTimeBuilder = {
             return calculatedLoadTime
         }
         
-        timer.setTrafficSegment(Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT)
-        timer.nativeAppProperties = NativeAppProperties(
+        timer.trafficSegmentName = Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT
+        
+        timer.nativeAppProperties = await NativeAppProperties.make(
             fullTime: disapearTime - loadTime,
             loadTime: calculatedLoadTime,
             loadStartTime: loadTime,
@@ -345,14 +458,8 @@ class TimerMapActivity {
             ethernet: networkReport?.ethernet ?? 0,
             other: networkReport?.other ?? 0,
             confidenceRate: self.confidenceRate,
-            confidenceMsg: self.confidenceMsg,
-            netState: networkReport?.netState ?? "",
-            netStateSource: networkReport?.netSource ?? ""
+            confidenceMsg: self.confidenceMsg
         )
-    }
-    
-    private var isGroupedANDAutoTracked : Bool {
-        BlueTriangle.configuration.enableGrouping
     }
     
     private var timeInMillisecond : Millisecond{

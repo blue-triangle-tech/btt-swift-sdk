@@ -76,6 +76,10 @@ class RootViewController: UIViewController {
         let action = UIAction(title: "Custom Timer") { [weak self] _ in
             let timer = BlueTriangle.startTimer(page: Page(pageName: "Custom Timer"))
             BlueTriangle.endTimer(timer)
+            Task {
+                let timerAcror = await BlueTriangle.startTimer("Custom Timer Actor")
+                await BlueTriangle.endTimer(timerAcror)
+            }
         }
         let control = UIButton(configuration: .filled(), primaryAction: action)
         control.accessibilityIdentifier = "customTimerButton"
@@ -100,11 +104,21 @@ class RootViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         view.addSubview(buttonStackView)
-
+        NSLog("Task--:RootViewController loaded")
         NSLayoutConstraint.activate([
             buttonStackView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             buttonStackView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
         ])
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        NSLog("Task--:RootViewController viewWillAppear")
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        NSLog("Task--:RootViewController viewDidAppear")
     }
     
     private lazy var buttonStackView: UIStackView = {

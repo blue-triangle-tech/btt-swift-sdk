@@ -31,11 +31,15 @@ actor CapturedGroupRequestCollector: CapturedGroupRequestCollecting {
         requestCollection = GroupRequestCollection(page: page, startTime: startTime)
     }
 
-    func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse){
-        requestCollection?.insert(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
+    func collect(startTime : Millisecond, endTime: Millisecond, groupStartTime: Millisecond, response: CustomPageResponse) async {
+        guard var collection = requestCollection else { return }
+        await collection.insert(startTime: startTime, endTime: endTime, groupStartTime: groupStartTime, response: response)
+        requestCollection = collection
+
     }
     
     func uploadCollectedRequests() {
+        print("uploades")
         Task {
             guard let collection = requestCollection, collection.requests.count > 0 else { return }
             upload(startTime: collection.startTime, page: collection.page, requests: collection.requests)

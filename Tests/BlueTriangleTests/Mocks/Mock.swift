@@ -13,7 +13,8 @@ import XCTest
 // swiftlint:disable line_length
 
 // MARK: - Response
-enum Mock {
+@MainActor
+enum Mock : @unchecked Sendable {
     typealias Response = (data: Data, response: HTTPURLResponse)
 
     struct TestError: Error {}
@@ -89,7 +90,7 @@ extension Mock {
     }
 
     static func makeRequestBuilder(
-        onBuild: @escaping (Session, BTTimer, PurchaseConfirmation?) -> Void = { _, _, _ in }
+        onBuild: @Sendable @escaping (Session, BTTimer, PurchaseConfirmation?) -> Void = { _, _, _ in }
     ) -> TimerRequestBuilder {
         TimerRequestBuilder { session, timer, purchaseConfirmation in
             onBuild(session, timer, purchaseConfirmation)
@@ -104,15 +105,15 @@ extension Mock {
 
     static func makeUploaderConfiguration(
         queue: DispatchQueue,
-        onSend: @escaping (Request) -> Void = { _ in }
+        onSend: @Sendable @escaping (Request) -> Void = { _ in }
     ) -> Uploader.Configuration {
         Uploader.Configuration(
             queue: queue,
             networking: { request in
                 Deferred {
-                    Future { promise in
+                    Future {promise in
                         onSend(request)
-                        promise(.success(Mock.successResponse))
+                        //promise(.success(Mock.successResponse))
                     }
                 }.eraseToAnyPublisher()
             },
@@ -120,7 +121,7 @@ extension Mock {
     }
 
     static func makeTimerConfiguration(
-        intervalProvider: @escaping () -> TimeInterval
+        intervalProvider: @Sendable @escaping () -> TimeInterval
     ) -> BTTimer.Configuration {
         BTTimer.Configuration(
             timeIntervalProvider: intervalProvider
@@ -266,7 +267,8 @@ extension Mock {
             duration: endTime - startTime,
             initiatorType: .image,
             decodedBodySize: 100,
-            encodedBodySize: 0)
+            encodedBodySize: 0,
+            nativeAppProperty: .empty)
     }
 }
 

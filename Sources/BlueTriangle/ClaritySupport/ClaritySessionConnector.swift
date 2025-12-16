@@ -8,7 +8,7 @@
 
 import Foundation
 
-class ClaritySessionConnector {
+class ClaritySessionConnector : @unchecked Sendable {
     
     private let logger: Logging
     private let isClarity : Bool = false

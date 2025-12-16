@@ -17,12 +17,12 @@ final class BTActionTracker {
     
     func uploadActions(_ page : String, pageStartTime : TimeInterval) async {
         if !actions.isEmpty {
-            await BlueTriangle.startActionTimerRequest(page: Page(pageName: page), startTime: pageStartTime.milliseconds)
+           /* await BlueTriangle.startActionTimerRequest(page: Page(pageName: page), startTime: pageStartTime.milliseconds)
             for action in actions {
                 print("\(action.actionType) - \(action.action)")
                 await BlueTriangle.captureActionRequest(startTime: action.startTime, endTime: action.endTime + Constants.minPgTm, groupStartTime: pageStartTime.milliseconds, action: action)
             }
-            await BlueTriangle.uploadActionViewCollectedRequests()
+            await BlueTriangle.uploadActionViewCollectedRequests()*/
         }
     }
 }

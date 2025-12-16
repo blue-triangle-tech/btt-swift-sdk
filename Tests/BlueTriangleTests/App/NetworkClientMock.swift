@@ -90,9 +90,9 @@ struct DelayGenerator {
 
 // MARK: - Make Responses
 
-struct MockRequest<ID> {
-    let builder: (ID) -> Data
-    let translator: (ID) -> Int
+struct MockRequest<ID: Sendable> : Sendable{
+    let builder: @Sendable (ID) -> Data
+    let translator: @Sendable (ID) -> Int
     let delayGenerator: DelayGenerator
 
     func fetch(_ value: ID) async throws -> Data {
@@ -105,20 +105,10 @@ struct MockRequest<ID> {
 }
 
 extension MockRequest where ID == Int {
-    init(builder: @escaping (ID) -> Data, delayStrategy: DelayGenerator.Strategy) {
+    init(builder: @Sendable @escaping (ID) -> Data, delayStrategy: DelayGenerator.Strategy) {
         self.builder = builder
         self.translator = { $0 }
         self.delayGenerator = .init(strategy: delayStrategy)
-    }
-
-    static func makeAlbumCollectionRequest(delayStrategy: DelayGenerator.Strategy) -> MockRequest<Int> {
-        MockRequest(builder: compose(JSONFactory.makeAlbums(count:), JSONFactory.data(from:)),
-                    delayStrategy: delayStrategy)
-    }
-
-    static func makeAlbumPhotosRequest(delayStrategy: DelayGenerator.Strategy) -> MockRequest<Int> {
-        MockRequest(builder: compose(JSONFactory.makePhotos(count:), JSONFactory.data(from:)),
-                    delayStrategy: delayStrategy)
     }
 }
 
@@ -159,16 +149,6 @@ struct NetworkClientMock {
 }
 
 extension NetworkClientMock {
-    static func makeClient(
-        delayStrategy: DelayGenerator.Strategy,
-        imageSize: CGSize = .init(width: 150, height: 150)
-    ) -> Self {
-        NetworkClientMock(
-            albumCollectionRequest: MockRequest<Int>.makeAlbumCollectionRequest(delayStrategy: delayStrategy),
-            albumPhotosRequest: MockRequest<Int>.makeAlbumPhotosRequest(delayStrategy: delayStrategy),
-            photoRequest: MockRequest<URL>.makePhotoRequest(delayStrategy: delayStrategy,
-                                                            imageSize: imageSize))
-    }
 }
 
 #endif

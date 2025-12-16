@@ -12,7 +12,8 @@ import UIKit
 enum SingleSection: CaseIterable {
     case main
 
-    static func makeInitialSnapshot<T: Hashable>(for updated: [T]) -> NSDiffableDataSourceSnapshot<Self, T> {
+    static func makeInitialSnapshot<T: Hashable & Sendable>(for updated: [T])
+    -> NSDiffableDataSourceSnapshot<Self, T> {
         var snapshot = NSDiffableDataSourceSnapshot<Self, T>()
         snapshot.appendSections([.main])
         snapshot.appendItems(updated, toSection: .main)

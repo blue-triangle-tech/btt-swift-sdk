@@ -14,7 +14,7 @@ protocol ConfigurationRepo {
     func hasChange( _ config : BTTRemoteConfig) -> Bool
 }
 
-class BTTConfigurationRepo : ConfigurationRepo{
+class BTTConfigurationRepo : ConfigurationRepo, @unchecked Sendable {
     
     private let queue = DispatchQueue(label: "com.bluetriangle.configurationRepo", attributes: .concurrent)
     private let lock = NSLock()
@@ -70,7 +70,7 @@ class BTTConfigurationRepo : ConfigurationRepo{
                                              ignoreScreens: config.ignoreScreens,
                                              dateSaved: Date().timeIntervalSince1970.milliseconds)
         
-        if let current = currentConfig, newConfig == current{
+        if let current = getCurrentConfig(), newConfig == current{
             return false
         }else{
             return true
@@ -95,7 +95,7 @@ extension BTTConfigurationRepo{
     
     private func push(_ config : BTTSavedRemoteConfig){
         if hasChange(config){
-            self.currentConfig = config
+            self.setCurrentConfig(config)
         }
     }
     
@@ -112,5 +112,15 @@ extension BTTConfigurationRepo{
         catch{
             print("Failed to load remote")
         }
+    }
+    
+    private func setCurrentConfig(_ config: BTTSavedRemoteConfig?) {
+        lock.sync {
+            self.currentConfig = config
+        }
+    }
+    
+    private func getCurrentConfig() -> BTTSavedRemoteConfig? {
+        lock.sync { self.currentConfig }
     }
 }

@@ -9,7 +9,7 @@ import Combine
 import Network
 
 extension NWPathMonitor {
-    class NetworkStatusSubscription<Target: Subscriber>: Subscription where Target.Input == NWPath {
+    class NetworkStatusSubscription<Target: Subscriber>: Subscription, @unchecked Sendable where Target.Input == NWPath {
         private let monitor: NWPathMonitor
         private let queue: DispatchQueue
         private var target: Target?

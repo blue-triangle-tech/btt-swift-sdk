@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct CrashReport: Codable {
+struct CrashReport: Codable , @unchecked Sendable{
     let sessionID: Identifier
     let pageName: String?
     let report: ErrorReport
@@ -21,11 +21,12 @@ extension CrashReport {
         sessionID: Identifier,
         exception: NSException,
         pageName:String?,
-        intervalProvider: TimeInterval =  Date().timeIntervalSince1970
+        intervalProvider: TimeInterval =  Date().timeIntervalSince1970,
+        nativeApp: NativeAppProperties,
     ) {
         self.sessionID = sessionID
         self.pageName =  pageName
-        self.report = ErrorReport(eTp: BT_ErrorType.NativeAppCrash.rawValue, message: exception.bttCrashReportMessage,
+        self.report = ErrorReport(nativeApp: nativeApp, eTp: BT_ErrorType.NativeAppCrash.rawValue, message: exception.bttCrashReportMessage,
                                   line: 1,
                                   column: 1,
                                   time: intervalProvider.milliseconds)
@@ -36,11 +37,12 @@ extension CrashReport {
         sessionID: Identifier,
         message: String,
         pageName:String?,
-        intervalProvider: TimeInterval = Date().timeIntervalSince1970
+        intervalProvider: TimeInterval = Date().timeIntervalSince1970,
+        nativeApp: NativeAppProperties,
     ) {
         self.sessionID = sessionID
         self.pageName =  pageName
-        self.report = ErrorReport(eTp: BT_ErrorType.NativeAppCrash.rawValue, message: message.bttReportMessage,
+        self.report = ErrorReport(nativeApp: nativeApp, eTp: BT_ErrorType.NativeAppCrash.rawValue, message: message.bttReportMessage,
                                   line: 1,
                                   column: 1,
                                   time: intervalProvider.milliseconds)
@@ -52,11 +54,12 @@ extension CrashReport {
         sessionID: Identifier,
         message: String,
         pageName:String?,
-        intervalProvider: TimeInterval = Date().timeIntervalSince1970
+        intervalProvider: TimeInterval = Date().timeIntervalSince1970,
+        nativeApp: NativeAppProperties,
     ) {
         self.sessionID = sessionID
         self.pageName =  pageName
-        self.report = ErrorReport(eTp: errorType.rawValue, message: message.bttReportMessage,
+        self.report = ErrorReport(nativeApp: nativeApp, eTp: errorType.rawValue, message: message.bttReportMessage,
                                   line: 1,
                                   column: 1,
                                   time: intervalProvider.milliseconds)
@@ -69,11 +72,12 @@ extension CrashReport {
         sessionID: Identifier,
         ANRmessage: String,
         pageName:String?,
-        intervalProvider: TimeInterval = Date().timeIntervalSince1970
+        intervalProvider: TimeInterval = Date().timeIntervalSince1970,
+        nativeApp: NativeAppProperties,
     ) {
         self.sessionID = sessionID
         self.pageName = pageName
-        self.report = ErrorReport(eTp: BT_ErrorType.ANRWarning.rawValue, message: ANRmessage,
+        self.report = ErrorReport(nativeApp: nativeApp, eTp: BT_ErrorType.ANRWarning.rawValue, message: ANRmessage,
                                   line: 1,
                                   column: 1,
                                   time: intervalProvider.milliseconds)
@@ -86,11 +90,12 @@ extension CrashReport {
         sessionID: Identifier,
         memoryWarningMessage: String,
         pageName:String?,
-        intervalProvider: TimeInterval = Date().timeIntervalSince1970
+        intervalProvider: TimeInterval = Date().timeIntervalSince1970,
+        nativeApp: NativeAppProperties,
     ) {
         self.sessionID = sessionID
         self.pageName = pageName
-        self.report = ErrorReport(eTp: BT_ErrorType.MemoryWarning.rawValue, message: memoryWarningMessage,
+        self.report = ErrorReport(nativeApp: nativeApp, eTp: BT_ErrorType.MemoryWarning.rawValue, message: memoryWarningMessage,
                                   line: 1,
                                   column: 1,
                                   time: intervalProvider.milliseconds)

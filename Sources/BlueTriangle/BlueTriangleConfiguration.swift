@@ -8,7 +8,7 @@
 import Foundation
 
 /// Configuration object for the Blue Triangle SDK.
-final public class BlueTriangleConfiguration: NSObject {
+final public class BlueTriangleConfiguration: NSObject , @unchecked Sendable {
     private var customCampaign: String?
     private var customGlobalUserID: Identifier?
     private var customSessionID: Identifier?
@@ -173,7 +173,7 @@ extension BlueTriangleConfiguration {
     
     func makeSession() -> Session? {
         
-        if let sessionId = BlueTriangleConfiguration.currentSessionId{
+        if let sessionId = BlueTriangleConfiguration.currentSessionId() {
             return Session(siteID: siteID,
                            globalUserID: customGlobalUserID ?? globalUserID,
                            sessionID: sessionId,
@@ -206,7 +206,7 @@ extension BlueTriangleConfiguration {
         }
     }
     
-    private static var currentSessionId : Identifier? {
+    private static func currentSessionId() -> Identifier? {
         return BlueTriangle.sessionData()?.sessionID
     }
 }

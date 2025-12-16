@@ -7,62 +7,79 @@
 
 import Foundation
 
-@preconcurrency
-public final class BTTScreenTracker {
+public final class BTTScreenTracker : Sendable {
     
-    private let lock = NSLock()
-    private var hasViewing = false
-    private var id = "\(Identifier.random())"
-    private var pageName: String
-    private var tracker: BTTScreenLifecycleTracker?
-    private var type = ScreenType.Manual.rawValue
+    class Storage: @unchecked Sendable {
+        private let lock = NSLock()
+        private var _hasViewing: Bool = false
+        private var _type: String = ScreenType.Manual.rawValue
+        
+        internal var hasViewing: Bool {
+            get { lock.sync { _hasViewing } }
+            set { lock.sync { _hasViewing = newValue } }
+        }
+        
+        internal var type: String {
+            get { lock.sync { _type } }
+            set { lock.sync { _type = newValue } }
+        }
+    }
+    
+    private let storage = Storage()
+    private let pageName: String
+    private let id: String = "\(Identifier.random())"
+    private let screenTrackingTask = ScreenTrackingTask()
     
     public init(_ screenName: String) {
         self.pageName = screenName
-        self.tracker = BlueTriangle.screenTracker
     }
 
     // MARK: - Private
-    
-    private func updateScreenType() {
-        if type == ScreenType.UIKit.rawValue {
-            tracker?.setUpScreenType(.UIKit)
-        } else if type == ScreenType.SwiftUI.rawValue {
-            tracker?.setUpScreenType(.SwiftUI)
+    private func updateScreenType() async {
+        if storage.type == ScreenType.UIKit.rawValue {
+            await BlueTriangle.getScreenTracker()?.setUpScreenType(.UIKit)
+        } else if storage.type == ScreenType.SwiftUI.rawValue {
+            await BlueTriangle.getScreenTracker()?.setUpScreenType(.SwiftUI)
         } else {
-            tracker?.setUpScreenType(.Manual)
+            await BlueTriangle.getScreenTracker()?.setUpScreenType(.Manual)
         }
     }
     
     public func loadStarted() {
-        lock.sync {
-            hasViewing = true
-            updateScreenType()
-            tracker?.manageTimer(pageName, id: id, type: .load)
+        let time  = Date().timeIntervalSince1970
+        screenTrackingTask.enqueue { [weak self] in
+            guard let self = self else { return }
+            self.storage.hasViewing = true
+            await self.updateScreenType()
+            await BlueTriangle.getScreenTracker()?.manageTimer(self.pageName, id: self.id, type: .load, time)
         }
     }
     
     public func loadEnded() {
-        lock.sync {
-            guard hasViewing else { return }
-            updateScreenType()
-            tracker?.manageTimer(pageName, id: id, type: .finish)
+        let time  = Date().timeIntervalSince1970
+        screenTrackingTask.enqueue { [weak self] in
+            guard let self = self, self.storage.hasViewing else { return }
+            await self.updateScreenType()
+            await BlueTriangle.getScreenTracker()?.manageTimer(self.pageName, id: self.id, type: .finish, time)
         }
     }
 
     public func viewStart() {
-        lock.sync {
-            hasViewing = true
-            updateScreenType()
-            tracker?.manageTimer(pageName, id: id, type: .view)
+        let time  = Date().timeIntervalSince1970
+        screenTrackingTask.enqueue { [weak self] in
+            guard let self = self else { return }
+            self.storage.hasViewing = true
+            await self.updateScreenType()
+            await BlueTriangle.getScreenTracker()?.manageTimer(self.pageName, id: self.id, type: .view, time)
         }
     }
     
     public func viewingEnd() {
-        lock.sync {
-            guard hasViewing else { return }
-            tracker?.manageTimer(pageName, id: id, type: .disappear)
-            hasViewing = false
+        let time  = Date().timeIntervalSince1970
+        screenTrackingTask.enqueue {  [weak self] in
+            guard let self = self, self.storage.hasViewing else { return }
+            await BlueTriangle.getScreenTracker()?.manageTimer(self.pageName, id: self.id, type: .disappear, time)
+            self.storage.hasViewing = false
         }
     }
 }

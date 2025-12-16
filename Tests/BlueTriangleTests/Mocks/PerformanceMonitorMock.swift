@@ -8,8 +8,9 @@
 @testable import BlueTriangle
 import Foundation
 
-class PerformanceMonitorMock: PerformanceMonitoring {
-    
+@MainActor
+final class PerformanceMonitorMock: @preconcurrency PerformanceMonitoring {
+
     var report: PerformanceReport
     var onStart: () -> Void
     var onEnd: () -> Void
@@ -17,8 +18,8 @@ class PerformanceMonitorMock: PerformanceMonitoring {
 
     init(
         report: PerformanceReport = Mock.performanceReport,
-        onStart: @escaping () -> Void = { },
-        onEnd: @escaping () -> Void = { }
+        onStart: @escaping () -> Void = {},
+        onEnd: @escaping () -> Void = {}
     ) {
         self.report = report
         self.onStart = onStart
@@ -39,13 +40,11 @@ class PerformanceMonitorMock: PerformanceMonitoring {
 
     func reset() {
         report = Mock.performanceReport
-        onStart = { }
-        onEnd = { }
+        onStart = {}
+        onEnd = {}
     }
-    
-    var debugDescription: String{
-        get{
-            return ""
-        }
+
+    var debugDescription: String {
+        ""
     }
 }

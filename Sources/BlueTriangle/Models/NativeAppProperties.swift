@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum ScreenType : String, Encodable, Decodable {
+enum ScreenType : String, Encodable, Decodable, Sendable {
     case UIKit
     case SwiftUI
     case Manual
@@ -28,7 +28,7 @@ enum NativeAppType : CustomStringConvertible, Encodable, Decodable{
     }
 }
 
-struct NativeAppProperties: Equatable {
+struct NativeAppProperties: Equatable , Sendable{
     let fullTime: Millisecond
     let loadTime: Millisecond
     let loadStartTime: Millisecond
@@ -47,13 +47,67 @@ struct NativeAppProperties: Equatable {
     var err: String?
     var groupingCause: String?
     var groupingCauseInterval: Millisecond?
-    var sdkVersion: String = Device.sdkVersion
-    var appVersion: String = Device.appVersion
+    var sdkVersion: String = Device.current.sdkVersion
+    var appVersion: String = Device.current.appVersion
     var type : String = NativeAppType.Regular.description
-    var netState: String = BlueTriangle.networkStateMonitor?.state.value?.description.lowercased() ?? ""
-    var deviceModel : String = Device.model
-    var netStateSource : String = BlueTriangle.networkStateMonitor?.networkSource.value?.description ?? ""
+    var netState: String = ""
+    var deviceModel : String = Device.current.model
+    var netStateSource : String = ""
     var childViews:[String] = [String]()
+}
+
+extension NativeAppProperties {
+    static func make(
+        fullTime: Millisecond,
+        loadTime: Millisecond,
+        loadStartTime: Millisecond,
+        loadEndTime: Millisecond,
+        maxMainThreadUsage: Millisecond,
+        screenType: ScreenType?,
+        offline: Millisecond,
+        wifi: Millisecond,
+        cellular: Millisecond,
+        ethernet: Millisecond,
+        other: Millisecond,
+        type: String = NativeAppType.Regular.description,
+        confidenceRate: Int32? = nil,
+        confidenceMsg: String? = nil,
+        grouped: Bool? = nil,
+        err: String? = nil,
+        groupingCause: String? = nil,
+        groupingCauseInterval: Millisecond? = nil,
+        childViews: [String] = []
+    ) async -> NativeAppProperties {
+        let netState = await BlueTriangle.networkStateMonitor()?.state.value?.description.lowercased() ?? ""
+        let netStateSource = await BlueTriangle.networkStateMonitor()?.networkSource.value?.description ?? ""
+
+        return NativeAppProperties(
+            fullTime: fullTime,
+            loadTime: loadTime,
+            loadStartTime: loadStartTime,
+            loadEndTime: loadEndTime,
+            maxMainThreadUsage: maxMainThreadUsage,
+            screenType: screenType,
+            offline: offline,
+            wifi: wifi,
+            cellular: cellular,
+            ethernet: ethernet,
+            other: other,
+            confidenceRate: confidenceRate,
+            confidenceMsg: confidenceMsg,
+            grouped: grouped,
+            err: err,
+            groupingCause: groupingCause,
+            groupingCauseInterval: groupingCauseInterval,
+            sdkVersion: Device.current.sdkVersion,
+            appVersion: Device.current.appVersion,
+            type: NativeAppType.Regular.description,
+            netState: netState,
+            deviceModel: Device.current.model,
+            netStateSource: netStateSource,
+            childViews: childViews
+        )
+    }
 }
 
 extension NativeAppProperties: Codable{
@@ -153,9 +207,9 @@ extension NativeAppProperties: Codable{
         self.other = try container.decodeIfPresent(Millisecond.self, forKey: .other) ?? 0
         self.netState = try container.decodeIfPresent(String.self, forKey: .netState) ?? ""
         self.type = try container.decodeIfPresent(String.self, forKey: .type) ?? NativeAppType.NST.description
-        self.deviceModel = try container.decodeIfPresent(String.self, forKey: .deviceModel) ?? Device.model
-        self.appVersion = try container.decodeIfPresent(String.self, forKey: .appVersion) ?? Device.appVersion
-        self.sdkVersion = try container.decodeIfPresent(String.self, forKey: .sdkVersion) ?? Device.sdkVersion
+        self.deviceModel = try container.decodeIfPresent(String.self, forKey: .deviceModel) ?? Device.current.model
+        self.appVersion = try container.decodeIfPresent(String.self, forKey: .appVersion) ?? Device.current.appVersion
+        self.sdkVersion = try container.decodeIfPresent(String.self, forKey: .sdkVersion) ?? Device.current.sdkVersion
         self.netStateSource = try container.decodeIfPresent(String.self, forKey: .netStateSource) ?? ""
         self.childViews = try container.decodeIfPresent([String].self, forKey: .childViews) ?? []
         self.confidenceRate = try container.decodeIfPresent(Int32.self, forKey: .confidenceRate) ?? 0
@@ -195,8 +249,8 @@ extension NativeAppProperties: Codable{
 
 extension NativeAppProperties {
     
-    static func `init`(_ error : String?) -> Self{
-        return  .init(
+    static func `init`(_ error : String?) async -> Self{
+        return await make(
             fullTime: 0,
             loadTime: 0,
             loadStartTime: 0,
@@ -208,11 +262,12 @@ extension NativeAppProperties {
             cellular: 0,
             ethernet: 0,
             other: 0,
-            err: error,
-            type: NativeAppType.NST.description)
+            type: NativeAppType.NST.description,
+            err: error
+        )
     }
     
-    static var empty: Self = .init(
+    static let empty: Self = .init(
         fullTime: 0,
         loadTime: 0,
         loadStartTime: 0,
@@ -226,24 +281,26 @@ extension NativeAppProperties {
         other: 0)
     
     static var nstEmpty: Self {
-        .init(
-            fullTime: 0,
-            loadTime: 0,
-            loadStartTime: 0,
-            loadEndTime: 0,
-            maxMainThreadUsage: 0,
-            screenType: nil,
-            offline: 0,
-            wifi: 0,
-            cellular: 0,
-            ethernet: 0,
-            other: 0,
-            type: NativeAppType.NST.description)
+        get async {
+            await NativeAppProperties.make(
+                fullTime: 0,
+                loadTime: 0,
+                loadStartTime: 0,
+                loadEndTime: 0,
+                maxMainThreadUsage: 0,
+                screenType: nil,
+                offline: 0,
+                wifi: 0,
+                cellular: 0,
+                ethernet: 0,
+                other: 0,
+                type: NativeAppType.NST.description
+            )
+        }
     }
     
-   
-    func copy(_ type : NativeAppType) ->NativeAppProperties{
-        return .init(
+    func copy(_ type: NativeAppType) async -> NativeAppProperties {
+        return await NativeAppProperties.make(
             fullTime: self.fullTime,
             loadTime: self.loadTime,
             loadStartTime: self.loadStartTime,
@@ -255,8 +312,7 @@ extension NativeAppProperties {
             cellular: self.cellular,
             ethernet: self.ethernet,
             other: self.other,
-            type: type.description,
-            netState: self.netState,
-            deviceModel: self.deviceModel)
+            type: type.description
+        )
     }
 }

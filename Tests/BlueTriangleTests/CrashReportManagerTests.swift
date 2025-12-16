@@ -8,7 +8,8 @@
 import XCTest
 @testable import BlueTriangle
 
-final class CrashReportManagerTests: XCTestCase {
+@MainActor
+final class CrashReportManagerTests: XCTestCase, @unchecked Sendable {
     struct TestError: Error {
         let message = "There as an error"
     }

@@ -32,7 +32,7 @@ indirect enum NetworkState : CustomStringConvertible, Equatable{
     }
 }
 
-protocol NetworkStateMonitorProtocol{
+protocol NetworkStateMonitorProtocol : Sendable {
     var state : CurrentValueSubject<NetworkState?, Never> { get}
     var networkSource : CurrentValueSubject<String?, Never> { get}
     func stop()
@@ -46,7 +46,7 @@ protocol NetworkPathMonitorProtocol{
 
 extension NWPathMonitor : NetworkPathMonitorProtocol{}
 
-class NetworkStateMonitor : NetworkStateMonitorProtocol{
+final class NetworkStateMonitor : NetworkStateMonitorProtocol, @unchecked Sendable {
     var state: CurrentValueSubject<NetworkState?, Never> = .init(nil)
     var networkSource: CurrentValueSubject<String?, Never> = .init(nil)
     private var monitor : NetworkPathMonitorProtocol

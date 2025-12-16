@@ -56,7 +56,7 @@ class NetworkTelephonyHandler : NetworkTelephonyProtocol {
     
 
     
-    func observeNetworkType(_ completion :@escaping (String?)->()){
+    func observeNetworkType(_ completion :@escaping  (String?)->()){
 #if os(iOS)
         NotificationCenter
             .default
