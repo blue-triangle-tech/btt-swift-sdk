@@ -42,9 +42,7 @@ class BTTStoredConfigSyncer {
     func syncConfigurationFromStorage() {
         do {
             guard let config = try configRepo.get() else { return }
-            
             let defaultConfig = configRepo.defaultConfig
-            
             syncNetworkSampleRate(from: config, defaultConfig: defaultConfig)
             syncGroupedViewSampleRate(from: config, defaultConfig: defaultConfig)
             syncIgnoreScreens(from: config, defaultConfig: defaultConfig)

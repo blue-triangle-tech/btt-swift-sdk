@@ -8,8 +8,10 @@
 #if os(iOS)
 import WebKit
 
+@preconcurrency
 public class BTTWebViewTracker {
      
+    static private let lock = NSLock()
     static var shouldCaptureRequests = false
     static var enableWebViewStitching = true
     static var logger : Logging?
@@ -22,11 +24,13 @@ public class BTTWebViewTracker {
             return
         }
         
-        let weakWebView = WeakWebView(webView)
-        tracker.webViews.append(weakWebView)
-        tracker.injectSessionIdOnWebView(webView)
-        tracker.injectWCDCollectionOnWebView(webView)
-        tracker.injectVersionOnWebView(webView)
+        lock.sync {
+            let weakWebView = WeakWebView(webView)
+            tracker.webViews.append(weakWebView)
+            tracker.injectSessionIdOnWebView(webView)
+            tracker.injectWCDCollectionOnWebView(webView)
+            tracker.injectVersionOnWebView(webView)
+        }
     }
     
     public static func updateSessionId(_ sessionID : Identifier){
@@ -35,10 +39,12 @@ public class BTTWebViewTracker {
             return
         }
         
-        tracker.cleanUpWebViews()
-        for web in tracker.webViews {
-            if let webView = web.weekWebView{
-                self.restitchWebView(webView, sessionID: sessionID)
+        lock.sync {
+            tracker.cleanUpWebViews()
+            for web in tracker.webViews {
+                if let webView = web.weekWebView{
+                    self.restitchWebView(webView, sessionID: sessionID)
+                }
             }
         }
     }
@@ -49,71 +55,73 @@ public class BTTWebViewTracker {
             return
         }
         
+        lock.sync {
 #if DEBUG
-        let sessionId = "\(BlueTriangle.sessionID)"
-        let siteId = "\(BlueTriangle.siteID)"
-        
-        let bttJSVerificationTag = "_bttTagInit"
-        let bttJSSiteIdTag = "_bttUtil.prefix"
-        let bttJSSessionIdTag = "_bttUtil.sessionID"
-        
-        webView.evaluateJavaScript(bttJSVerificationTag) { (result, error) in
+            let sessionId = "\(BlueTriangle.sessionID)"
+            let siteId = "\(BlueTriangle.siteID)"
             
-            if let isBttJSAvailable = result as? Bool{
+            let bttJSVerificationTag = "_bttTagInit"
+            let bttJSSiteIdTag = "_bttUtil.prefix"
+            let bttJSSessionIdTag = "_bttUtil.sessionID"
+            
+            webView.evaluateJavaScript(bttJSVerificationTag) { (result, error) in
                 
-                if isBttJSAvailable {
+                if let isBttJSAvailable = result as? Bool{
                     
-                    webView.evaluateJavaScript(bttJSSiteIdTag) { (result, error) in
+                    if isBttJSAvailable {
                         
-                        if let bttSiteID = result as? String{
+                        webView.evaluateJavaScript(bttJSSiteIdTag) { (result, error) in
                             
-                            if bttSiteID == siteId {
+                            if let bttSiteID = result as? String{
                                 
-                                webView.evaluateJavaScript(bttJSSessionIdTag) { (result, error) in
+                                if bttSiteID == siteId {
                                     
-                                    if let bttSessionID = result as? String{
+                                    webView.evaluateJavaScript(bttJSSessionIdTag) { (result, error) in
                                         
-                                        if bttSessionID == sessionId {
-                                            BTTWebViewTracker.logger?.info("BlueTriangle: Session stitching was successfull with session \(sessionId) and siteId : \(siteId)")
-                                            completion(sessionId, nil)
+                                        if let bttSessionID = result as? String{
+                                            
+                                            if bttSessionID == sessionId {
+                                                BTTWebViewTracker.logger?.info("BlueTriangle: Session stitching was successfull with session \(sessionId) and siteId : \(siteId)")
+                                                completion(sessionId, nil)
+                                            }else{
+                                                let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Session stitching has NOT been done. Make sure the BTTWebViewTracker.webView(_:didCommit:) method is invoked from the webview's webView(_:didCommit:) delegate. as explaned in ReadMe. Found app sessionId \(sessionId) and btt.js \(bttSessionID)"])
+                                                BTTWebViewTracker.logger?.info("BlueTriangle: \(error.localizedDescription) \(sessionId)")
+                                                completion(nil, error)
+                                            }
                                         }else{
-                                            let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Session stitching has NOT been done. Make sure the BTTWebViewTracker.webView(_:didCommit:) method is invoked from the webview's webView(_:didCommit:) delegate. as explaned in ReadMe. Found app sessionId \(sessionId) and btt.js \(bttSessionID)"])
+                                            let error =  NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Something went wrong with btt.js. : \(bttJSSessionIdTag) got \(result ?? "") expected to have tag prifix as String"])
                                             BTTWebViewTracker.logger?.info("BlueTriangle: \(error.localizedDescription) \(sessionId)")
                                             completion(nil, error)
                                         }
-                                    }else{
-                                        let error =  NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Something went wrong with btt.js. : \(bttJSSessionIdTag) got \(result ?? "") expected to have tag prifix as String"])
-                                        BTTWebViewTracker.logger?.info("BlueTriangle: \(error.localizedDescription) \(sessionId)")
-                                        completion(nil, error)
                                     }
+                                    
+                                }else{
+                                    let error =  NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Tag url mismatched. This webpage is using different tag url than app siteId. Tag url/btt.js url's tag prefix should be same as app siteId. Found app siteId \(siteId) tag prefix \(bttSiteID)"])
+                                    BTTWebViewTracker.logger?.info("BlueTriangle: \(error.localizedDescription) \(sessionId)")
+                                    completion(nil, error)
                                 }
                                 
                             }else{
-                                let error =  NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Tag url mismatched. This webpage is using different tag url than app siteId. Tag url/btt.js url's tag prefix should be same as app siteId. Found app siteId \(siteId) tag prefix \(bttSiteID)"])
+                                let error =  NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Something went wrong with btt.js. : \(bttJSSiteIdTag) got \(result ?? "") expected to have tag prifix as String"])
                                 BTTWebViewTracker.logger?.info("BlueTriangle: \(error.localizedDescription) \(sessionId)")
                                 completion(nil, error)
                             }
-                            
-                        }else{
-                            let error =  NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Something went wrong with btt.js. : \(bttJSSiteIdTag) got \(result ?? "") expected to have tag prifix as String"])
-                            BTTWebViewTracker.logger?.info("BlueTriangle: \(error.localizedDescription) \(sessionId)")
-                            completion(nil, error)
                         }
+                    }else{
+                        let error =  NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Something went wrong with btt.js. : \(bttJSVerificationTag) got \(result ?? "") expected to have true"])
+                        BTTWebViewTracker.logger?.info("BlueTriangle: \(error.localizedDescription) \(sessionId)")
+                        completion(nil, error)
                     }
                 }else{
-                    let error =  NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "Something went wrong with btt.js. : \(bttJSVerificationTag) got \(result ?? "") expected to have true"])
-                    BTTWebViewTracker.logger?.info("BlueTriangle: \(error.localizedDescription) \(sessionId)")
-                    completion(nil, error)
+                    let stitchingError = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "btt.js is missing. btt.js not loaded. Make sure btt.js is there in this webpage and its loaded: \(bttJSVerificationTag) got error \(error?.localizedDescription ?? "")"])
+                    BTTWebViewTracker.logger?.info("BlueTriangle: \(stitchingError.localizedDescription) \(sessionId)")
+                    completion(nil, stitchingError)
                 }
-            }else{
-                let stitchingError = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey : "btt.js is missing. btt.js not loaded. Make sure btt.js is there in this webpage and its loaded: \(bttJSVerificationTag) got error \(error?.localizedDescription ?? "")"])
-                BTTWebViewTracker.logger?.info("BlueTriangle: \(stitchingError.localizedDescription) \(sessionId)")
-                completion(nil, stitchingError)
             }
-        }
 #else
-        completion(nil, nil)
+            completion(nil, nil)
 #endif
+        }
         
     }
 }

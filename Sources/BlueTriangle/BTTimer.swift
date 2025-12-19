@@ -9,7 +9,7 @@ import Foundation
 import Combine
 
 /// An object that measures the duration of a user interaction.
-final public class BTTimer: NSObject {
+final public class BTTimer: NSObject, @unchecked Sendable {
     /// Describes the timer type.
     @objc
     public enum TimerType: Int {
@@ -87,6 +87,9 @@ final public class BTTimer: NSObject {
     @objc public func setPageTitle(_ title: String) { lock.sync { page.pageTitle = title }}
     @objc public func getPageName() -> String { lock.sync { page.pageName } }
     @objc public func getPageTitle() -> String { lock.sync { page.pageTitle } }
+    
+    @objc public func setTrafficSegment(_ trafficSegment: String) { lock.sync { trafficSegmentName = trafficSegment }}
+    @objc public func getTrafficSegment() -> String? { lock.sync { trafficSegmentName } }
 
     var pageTimeInterval: PageTimeInterval {
         PageTimeInterval(
@@ -189,12 +192,6 @@ final public class BTTimer: NSObject {
         
         self.stopNetState()
         
-        if let pm = performanceMonitor{
-            let pageName = self.page.pageName
-            let page = pm.debugDescription.replacingOccurrences(of: "PAGE NAME", with: pageName)
-            logger.info(page)
-        }
-        
         BlueTriangle.removeActiveTimer(self)
         handle(.end)
         onEnd?()
@@ -234,14 +231,18 @@ final public class BTTimer: NSObject {
 
 extension BTTimer{
     func startNetState(){
-        if let monitor = BlueTriangle.networkStateMonitor{
-            self.networkAccumulator = BTTimerNetStateAccumulator(monitor)
-            self.networkAccumulator?.start()
+        lock.sync {
+            if let monitor = BlueTriangle.networkStateMonitor{
+                self.networkAccumulator = BTTimerNetStateAccumulator(monitor)
+                self.networkAccumulator?.start()
+            }
         }
     }
     
     func stopNetState(){
-        self.networkAccumulator?.stop()
+        lock.sync {
+            self.networkAccumulator?.stop()
+        }
     }
 }
 

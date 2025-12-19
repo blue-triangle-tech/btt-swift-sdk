@@ -1,5 +1,19 @@
+# Blue Triangle 3.15.6, Nov 24 2025
+### Bug Fixes and Improvements
+- Added swift 6 strict concurancy compatiblity by adding preconcurancy and unchacke sendable.
 
-# Blue Triangle 3.15.3, Latest
+# Blue Triangle 3.15.5, Nov 21 2025
+### Bug Fixes and Improvements
+- Lowercased entry type value to lowercased "screen"
+- Changed remote config URL to use site ID prefix
+- Fixed network sample rate config parsing to accept decimal values e.g. 1.5%, 2.5%, etc.
+
+# Blue Triangle 3.15.4, Nov 19 2025
+### Bug Fixes and Improvements
+- Fixed an occasional concurrency crash when a timer ended by calling end method.
+- Fixed a rare race condition that happens during very quick background foreground action.
+
+# Blue Triangle 3.15.3, Nov 4 2025
 ### Bug Fixes and Improvements
 - Fixed an occasional concurrency crash when updating child sample rate.
 - Fixed a rare concurrency crash occurs during ANR reporting.

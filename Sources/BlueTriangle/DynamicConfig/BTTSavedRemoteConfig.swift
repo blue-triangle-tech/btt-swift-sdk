@@ -11,9 +11,8 @@ import Foundation
 
 class BTTSavedRemoteConfig: BTTRemoteConfig {
     var dateSaved: Millisecond
-    
-    init(networkSampleRateSDK: Int?,
-         groupedViewSampleRate: Int?,
+    init(networkSampleRateSDK: Double?,
+         groupedViewSampleRate: Double?,
          enableRemoteConfigAck : Bool?,
          enableAllTracking : Bool?,
          enableScreenTracking: Bool?,

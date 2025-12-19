@@ -26,11 +26,11 @@ actor ImageLoader: ImageLoading {
         incrementTasks()
         do {
             let data = try await session.btData(from: url).0
-            decrementTasks()
+            await decrementTasks()
 
             return UIImage(data: data)
         } catch {
-            decrementTasks()
+            await decrementTasks()
             throw error
         }
     }
@@ -41,14 +41,14 @@ private extension ImageLoader {
         taskCount += 1
     }
 
-    func decrementTasks() {
+    func decrementTasks() async {
         guard taskCount > 0 else {
             return
         }
         taskCount -= 1
 
         if taskCount == 0 {
-            onComplete?()
+            await onComplete?()
         }
     }
 }

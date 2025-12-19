@@ -31,7 +31,7 @@ struct CapturedRequest: Encodable, Equatable {
         case other
     }
 
-    var entryType = "resource"
+    var entryType = Constants.EntryType.resource
     /// Page domain without host.
     var domain: String
     /// Subdomain of the fully qualified domain name.
@@ -244,7 +244,7 @@ extension CapturedRequest {
         if let native = response.native {
             self.nativeAppProperty = native
         }
-        self.entryType = "Screen"
+        self.entryType = Constants.EntryType.screen
         self.url = response.url ?? ""
         self.initiatorType = .other
         self.file =  response.file
