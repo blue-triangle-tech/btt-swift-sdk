@@ -88,6 +88,9 @@ final public class BlueTriangleConfiguration: NSObject {
     internal var enableGrouping: Bool =  true
     internal var groupingIdleTime: Double =  2.0
     
+    internal var enableWebViewStitching: Bool  = true
+    internal var enableGroupingTapDetection: Bool  = true
+    
     /// Percentage of sessions for which grouped childs calls will be captured. A value of `0.05`
     /// means that 5% of grouped sessions will have childs.
     @objc public var groupedViewSampleRate: Double = 100

@@ -66,6 +66,14 @@ class SessionData: Codable {
     var groupingIdleTime: Double
     var ignoreViewControllers: Set<String>
     
+    var enableCrashTracking: Bool
+    var enableANRTracking: Bool
+    var enableMemoryWarning: Bool
+    var enableLaunchTime: Bool
+    var enableWebViewStitching: Bool
+    var enableNetworkStateTracking: Bool
+    var enableGroupingTapDetection: Bool
+    
     init(expiration: Millisecond) {
         self.expiration = expiration
         self.sessionID =  SessionData.generateSessionID()
@@ -78,6 +86,14 @@ class SessionData: Codable {
         self.enableScreenTracking = BlueTriangle.configuration.enableScreenTracking
         self.networkSampleRate = BlueTriangle.configuration.networkSampleRate
         self.ignoreViewControllers = BlueTriangle.configuration.ignoreViewControllers
+        
+        self.enableCrashTracking = BlueTriangle.configuration.crashTracking == .nsException
+        self.enableANRTracking = BlueTriangle.configuration.ANRMonitoring
+        self.enableMemoryWarning = BlueTriangle.configuration.enableMemoryWarning
+        self.enableLaunchTime = BlueTriangle.configuration.enableLaunchTime
+        self.enableWebViewStitching =  BlueTriangle.configuration.enableWebViewStitching
+        self.enableNetworkStateTracking = BlueTriangle.configuration.enableTrackingNetworkState
+        self.enableGroupingTapDetection =  BlueTriangle.configuration.enableGroupingTapDetection
     }
     
     private static func generateSessionID()-> Identifier {

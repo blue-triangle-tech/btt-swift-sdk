@@ -11,13 +11,14 @@ import WebKit
 public class BTTWebViewTracker {
      
     static var shouldCaptureRequests = false
+    static var enableWebViewStitching = true
     static var logger : Logging?
     private var webViews: [WeakWebView] = []
     private static let tracker = BTTWebViewTracker()
   
     public static func webView( _ webView: WKWebView, didCommit navigation: WKNavigation!){
         
-        guard BlueTriangle.enableAllTracking else{
+        guard BlueTriangle.enableAllTracking, enableWebViewStitching else{
             return
         }
         
@@ -30,7 +31,7 @@ public class BTTWebViewTracker {
     
     public static func updateSessionId(_ sessionID : Identifier){
        
-        guard BlueTriangle.enableAllTracking else{
+        guard BlueTriangle.enableAllTracking, enableWebViewStitching else{
             return
         }
         
@@ -44,7 +45,7 @@ public class BTTWebViewTracker {
 
     public static func verifySessionStitchingOnWebView( _ webView: WKWebView, completion: @escaping (String?, Error?) -> Void){
         
-        guard BlueTriangle.enableAllTracking else{
+        guard BlueTriangle.enableAllTracking, enableWebViewStitching else{
             return
         }
         

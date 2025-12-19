@@ -13,11 +13,12 @@ final class BTTConfigurationFetcherTests: XCTestCase {
 
     var configurationFetcher: ConfigurationFetcher!
     var cancellables: Set<AnyCancellable>!
+    let logger: LoggerMock = .init()
     
     override func setUp() {
         super.setUp()
         cancellables = Set<AnyCancellable>()
-        configurationFetcher = BTTConfigurationFetcher()
+        configurationFetcher = BTTConfigurationFetcher(logger: logger)
     }
 
     override func tearDown() {
@@ -28,7 +29,9 @@ final class BTTConfigurationFetcherTests: XCTestCase {
     
     func testFetchConfigurationSuccess() {
 
+        let logger: LoggerMock = .init()
         let mockNetworking: Networking = { request in
+            
             let mockConfig = BTTRemoteConfig(networkSampleRateSDK: 20,
                                              groupedViewSampleRate: 5,
                                              enableRemoteConfigAck: false,
@@ -36,7 +39,14 @@ final class BTTConfigurationFetcherTests: XCTestCase {
                                              enableScreenTracking: true,
                                              enableGrouping: true,
                                              groupingIdleTime: 2,
-                                             ignoreScreens: [])
+                                             ignoreScreens: [],
+                                             enableCrashTracking: true,
+                                             enableANRTracking: true,
+                                             enableMemoryWarning: true,
+                                             enableLaunchTime: true,
+                                             enableWebViewStitching: true,
+                                             enableNetworkStateTracking: true,
+                                             enableGroupingTapDetection: true)
             
             let mockData = try! JSONEncoder().encode(mockConfig)
             
@@ -52,7 +62,7 @@ final class BTTConfigurationFetcherTests: XCTestCase {
         }
         
         configurationFetcher = BTTConfigurationFetcher(
-            rootUrl: Constants.configEndPoint(for: BlueTriangle.siteID),
+            logger: logger, rootUrl: Constants.configEndPoint(for: BlueTriangle.siteID),
             cancellable: cancellables,
             networking: mockNetworking
         )
@@ -74,9 +84,9 @@ final class BTTConfigurationFetcherTests: XCTestCase {
             return Fail<HTTPResponse<Data>, NetworkError>(error: .noData)
                 .eraseToAnyPublisher()
         }
-        
+        let logger: LoggerMock = .init()
         configurationFetcher = BTTConfigurationFetcher(
-            rootUrl: Constants.configEndPoint(for: BlueTriangle.siteID),
+            logger: logger, rootUrl: Constants.configEndPoint(for: BlueTriangle.siteID),
             cancellable: Set<AnyCancellable>(),
             networking: mockNetworking
         )
