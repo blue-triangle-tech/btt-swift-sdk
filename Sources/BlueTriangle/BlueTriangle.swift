@@ -223,7 +223,7 @@ final public class BlueTriangle: NSObject {
     }
     
     internal static func makeCapturedGroupRequestCollector() -> CapturedGroupRequestCollecting? {
-        if let _ = session(), shouldGroupedCaptureRequests{
+        if let _ = session(), shouldGroupedCaptureRequests, configuration.enableGrouping {
             let groupCollector = configuration.capturedGroupRequestCollectorConfiguration.makeRequestCollector(
                 logger: logger,
                 networkCaptureConfiguration: .standard,
@@ -236,7 +236,7 @@ final public class BlueTriangle: NSObject {
     }
     
     internal static func makeCapturedActionRequestCollector() -> CapturedActionRequestCollecting? {
-        if let _ = session(), shouldGroupedCaptureRequests{
+        if let _ = session(), shouldGroupedCaptureRequests {
             let actionsCollector = configuration.capturedActionsRequestCollectorConfiguration.makeRequestCollector(
                 logger: logger,
                 networkCaptureConfiguration: .standard,
@@ -676,11 +676,11 @@ extension BlueTriangle {
         self.startHttpGroupedChildCapture()
         self.startScreenTracking()
         
-        if  BlueTriangle.configuration.ANRMonitoring {
+        if  BlueTriangle.configuration.crashTracking == .nsException {
             self.startNsAndSignalCrashTracking()
         }
         
-        if  BlueTriangle.configuration.ANRMonitoring {
+        if  BlueTriangle.configuration.enableMemoryWarning {
             self.startMemoryWarning()
         }
         
