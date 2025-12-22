@@ -39,12 +39,17 @@ struct sigaction sigaction_prv_handlers[SIG_COUNT] = {NULL};
 int sig_reg_status[SIG_COUNT] = {0};
 
 static bool __debug_log = false;
-static char* __app_version = "unknown";
+static char* __app_version = NULL;
 static char* __report_folder_path = NULL;
-static NSString* __current_page_name = @"";
-static NSString* __btt_session_id = @"unknown";
+static char *__current_page_name = NULL;
+static char *__btt_session_id = NULL;
 static int __max_cache_files = 5;
 static bool __is_register = false;
+
+static pthread_mutex_t app_lock         = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t page_name_lock   = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t session_id_lock  = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t folder_path_lock   = PTHREAD_MUTEX_INITIALIZER;
 
 void register_btt_tracker(void){
     
@@ -95,7 +100,7 @@ stack_t prevAltStack;
 void register_alt_stack(void){
     stack_t altStack;
     prevAltStack.ss_sp = NULL;
-
+    
     altStack.ss_sp = malloc(SIGSTKSZ * 2);
     altStack.ss_size = SIGSTKSZ;
     altStack.ss_flags = 0;
@@ -130,14 +135,14 @@ void register_prev_handlers(void){
 }
 
 int register_handler(int signal, struct sigaction *prev_act){
-
+    
     struct sigaction act;
-
+    
     memset(&act, 0, sizeof(struct sigaction));
     sigemptyset(&act.sa_mask);
-
+    
     act.sa_sigaction = &btt_signal_handler;
-
+    
     act.sa_flags = SA_SIGINFO;
     prev_act->sa_sigaction = NULL;
     
@@ -153,7 +158,7 @@ int register_handler(int signal, struct sigaction *prev_act){
 void btt_signal_handler(int signo, siginfo_t *sinfo, void *context)
 {
     [SignalHandler debug_log:[NSString stringWithFormat:@"Received crash signal %d", signo]];
-
+    
     //reset handlers to defaults
     reset_sig_handlers();
     
@@ -170,13 +175,23 @@ void btt_signal_handler(int signo, siginfo_t *sinfo, void *context)
     char* file_name = calloc(51, sizeof(char));
     snprintf(file_name, 50, "%ld.bttcrash", crash_time);
     
-    [SignalHandler writeCrashReport:crash_report toReportFolderPath:__report_folder_path withfileName:file_name];
+    char *folder_path = NULL;
+    pthread_mutex_lock(&folder_path_lock);
+    if (__report_folder_path) {
+        folder_path = __report_folder_path;
+    }
+    pthread_mutex_unlock(&folder_path_lock);
+    
+    if (folder_path) {
+        [SignalHandler writeCrashReport:crash_report toReportFolderPath:folder_path withfileName:file_name];
+        free(folder_path);
+    }
     
     [SignalHandler debug_log:[NSString stringWithFormat:@"Written btt crash %s\n%s", file_name, crash_report]];
     
     //call previous handler
     for (int sig_index = 0; sig_index <= SIG_COUNT - 1; sig_index++){
-            
+        
         if (signals[sig_index] == signo){
             
             if(sigaction_prv_handlers[sig_index].sa_sigaction != NULL){
@@ -206,11 +221,11 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
     " \"btt_session_id\" : \"%s\", "
     " \"btt_page_name\" : \"%s\", "
     "}";
-
+    
     const int crash_title_size = 256;
     char crash_title[256] = {0};
     char *code_line = "";
-
+    
     switch (sinfo->si_signo) {
         case SIGABRT:
             snprintf(crash_title, crash_title_size, "SIGABRT (6) abort() %d", sinfo->si_code);
@@ -320,21 +335,26 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
             break;
     }
     
-    const char* btt_pageName = "";
-    NSString *nspagename = __current_page_name;
-    if(__current_page_name != nil){
-        btt_pageName = [nspagename cStringUsingEncoding:NSASCIIStringEncoding];
-        if (btt_pageName == NULL)
-            btt_pageName = "";
+    const char *btt_pageName = "";
+    pthread_mutex_lock(&page_name_lock);
+    if (__current_page_name) {
+        btt_pageName = __current_page_name;
     }
+    pthread_mutex_unlock(&page_name_lock);
     
-    const char* btt_sessionid = "";
-    NSString *bttsessionid = __btt_session_id;
-    if(__btt_session_id != nil){
-        btt_sessionid = [bttsessionid cStringUsingEncoding:NSASCIIStringEncoding];
-        if (btt_sessionid == NULL)
-            btt_sessionid = "";
+    const char *btt_sessionid = "";
+    pthread_mutex_lock(&session_id_lock);
+    if (__btt_session_id) {
+        btt_sessionid = __btt_session_id;
     }
+    pthread_mutex_unlock(&session_id_lock);
+    
+    const char *app_version = "";
+    pthread_mutex_lock(&app_lock);
+    if (__app_version) {
+        app_version = __app_version;
+    }
+    pthread_mutex_unlock(&app_lock);
     
     unsigned long size_of_values = (sizeof(int) * 4) + strlen(sig_name) + sizeof(time_t) + strlen(crash_title);
     unsigned long bufferSize = strlen(report_templet) + (size_of_values * 3); //take size of values 3 times more just for safety
@@ -347,10 +367,10 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
                               sinfo->si_code,
                               sinfo->si_status,
                               crash_time,
-                              __app_version,
+                              app_version,
                               btt_sessionid,
                               btt_pageName);
-
+    
     if (actual_len > bufferSize)
         [SignalHandler debug_log:[NSString stringWithFormat:@"bttcrash report buffer is shorter then expected Expected %d found %lu", actual_len, bufferSize]];
     
@@ -373,47 +393,94 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
 }
 
 + (void) enableCrashTrackingWithApp_version:(NSString*) app_version
-                debug_log:(Boolean) debug_log
-                BTTSessionID:(NSString*) session_id{
+                                  debug_log:(Boolean) debug_log
+                               BTTSessionID:(NSString*) session_id{
     
     //Create report report folder if not found
     NSError *e = [self initReportFolderPath];
     if(e){
-         [self debug_log:[NSString stringWithFormat:@"Error initialising crash report folder. %@", e]];
+        [self debug_log:[NSString stringWithFormat:@"Error initialising crash report folder. %@", e]];
         return;
     }
-
-    //Copy app version
-    unsigned int size = MAX((unsigned int)app_version.length, 32) + 1; //including last \0
-    char *buff = calloc(size, sizeof(char));
-    [app_version getCString:buff maxLength:size encoding:NSASCIIStringEncoding];
-
-    __app_version = buff;
+    
+    // ---- copy app version and debug flag (app lock) ----
+    pthread_mutex_lock(&app_lock);
+    if (app_version) {
+        if (__app_version) {
+            free(__app_version);
+            __app_version = NULL;
+        }
+        unsigned int size = MAX((unsigned int)app_version.length, 32) + 1;
+        char *buff = calloc(size, sizeof(char));
+        [app_version getCString:buff maxLength:size encoding:NSASCIIStringEncoding];
+        __app_version = buff;
+    }
     
     //copy logging status
     __debug_log = debug_log;
-
-    //Copy sessionID
-    __btt_session_id =  session_id;
-
-#if TARGET_OS_IOS
-    if (__is_register) {
-        [self debug_log:[NSString stringWithFormat:@"Signal already registered."]];
-       return;
+    pthread_mutex_unlock(&app_lock);
+    
+    
+    // ---- copy sessionID (session lock) ----
+    pthread_mutex_lock(&session_id_lock);
+    if (__btt_session_id) {
+        free(__btt_session_id);
+        __btt_session_id = NULL;
     }
     
-    //Register all Signal handlers
+    if (session_id) {
+        __btt_session_id = strdup(session_id.UTF8String);
+    }
+    pthread_mutex_unlock(&session_id_lock);
+    
+    
+#if TARGET_OS_IOS
+    pthread_mutex_lock(&app_lock);
+    if (__is_register) {
+        pthread_mutex_unlock(&app_lock);
+        [self debug_log:[NSString stringWithFormat:@"Signal already registered."]];
+        return;
+    }
+    pthread_mutex_unlock(&app_lock);
+    
+    //register all Signal handlers
     register_btt_tracker();
     
+    pthread_mutex_lock(&app_lock);
     __is_register = true;
+    pthread_mutex_unlock(&app_lock);
     
-    [self debug_log:[NSString stringWithFormat:@"Signal registration successful session %@, version %s", __btt_session_id, __app_version]];
+    // ---- logging (read under locks) ----
+    pthread_mutex_lock(&session_id_lock);
+    const char *sid = __btt_session_id ?: "unknown";
+    pthread_mutex_unlock(&session_id_lock);
+    
+    pthread_mutex_lock(&app_lock);
+    const char *ver = __app_version ?: "unknown";
+    pthread_mutex_unlock(&app_lock);
+    
+    [self debug_log:[NSString stringWithFormat:
+                     @"Signal registration successful session %s, version %s",
+                     sid,
+                     ver]];
 #endif
     
 }
 
 + (NSString*) reportsFolderPath{
-    return [NSString stringWithCString:__report_folder_path encoding:NSASCIIStringEncoding];
+    char *path = NULL;
+
+    pthread_mutex_lock(&folder_path_lock);
+    if (__report_folder_path) {
+        path = __report_folder_path;
+    }
+    pthread_mutex_unlock(&folder_path_lock);
+    
+    if (!path) {
+        return @"";
+    }
+    
+    return [NSString stringWithCString:path encoding:NSASCIIStringEncoding];
 }
 
 + (NSError*) initReportFolderPath{
@@ -446,11 +513,16 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
                                userInfo:@{NSDebugDescriptionErrorKey : @"Nil report folder path."}];
     }
     
+    pthread_mutex_lock(&folder_path_lock);
+    if (__report_folder_path) {
+        free(__report_folder_path);
+        __report_folder_path = NULL;
+    }
     unsigned int size = (unsigned int)report_folder_path.length + 1; //including last \0
     char *buff = calloc(size, sizeof(char));
     [report_folder_path getCString:buff maxLength:size encoding:NSASCIIStringEncoding];
-    
     __report_folder_path = buff;
+    pthread_mutex_unlock(&folder_path_lock);
 
     return  nil;
 }
@@ -492,7 +564,12 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
     NSMutableArray<NSString *> *fileList = [NSMutableArray array];
     NSString *directory = [self reportsFolderPath];
     NSError *error = NULL;
-    NSInteger maxFiles = __max_cache_files;
+    NSInteger maxFiles;
+    
+    pthread_mutex_lock(&app_lock);
+    maxFiles = __max_cache_files;
+    pthread_mutex_unlock(&app_lock);
+
     NSArray<NSString *> *files = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:directory error:&error];
 
     if (!files) {
@@ -527,20 +604,33 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
      }
 }
 
-+ (void) setCurrentPageName:(NSString*) page_name{
-    @synchronized(self) {
-        __current_page_name = [page_name copy];
-    }
++ (void)setCurrentPageName:(NSString *)pageName {
+    if (!pageName) return;
+    const char *utf8 = pageName.UTF8String;
+    if (!utf8) return;
+
+    pthread_mutex_lock(&page_name_lock);
+    free(__current_page_name);
+    __current_page_name = strdup(utf8);
+    pthread_mutex_unlock(&page_name_lock);
 }
 
-+ (void) updateSessionID:(NSString*) session_id{
-    @synchronized(self) {
-        __btt_session_id = [session_id copy];
-    }
++ (void)updateSessionID:(NSString *)sessionID {
+    if (!sessionID) return;
+    const char *utf8 = sessionID.UTF8String;
+    if (!utf8) return;
+
+    pthread_mutex_lock(&session_id_lock);
+    free(__btt_session_id);
+    __btt_session_id = strdup(utf8);
+    pthread_mutex_unlock(&session_id_lock);
 }
 
 + (void) debug_log:(NSString *)msg{
-    if(__debug_log){
+    pthread_mutex_lock(&app_lock);
+    BOOL enabled = __debug_log;
+    pthread_mutex_unlock(&app_lock);
+    if (enabled) {
         NSLog(@"BlueTriangle:CrashTracker: %@", msg);
     }
 }
