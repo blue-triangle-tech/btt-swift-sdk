@@ -66,7 +66,6 @@ class LaunchTimeMonitor : ObservableObject{
             }
         }
         
-        AppNotificationLogger.clearNotifications()
         AppNotificationLogger.removeObserver()
     }
     
