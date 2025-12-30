@@ -26,9 +26,14 @@ class LaunchTimeReporter : ObservableObject {
         self.session    = session
         self.start()
     }
-
+    
     func start(){
+        self.registerLaunchEvent()
         self.monitor.start()
+        logger.info("Setup to receive launch event")
+    }
+    
+    private func registerLaunchEvent() {
         self.monitor.launchEventPubliser
             .receive(on: DispatchQueue.main)
             .sink { event in
@@ -43,8 +48,6 @@ class LaunchTimeReporter : ObservableObject {
                     }
                 }
             }.store(in: &self.cancellables)
-        
-        logger.info("Setup to receive launch event")
     }
     
     func stop(){

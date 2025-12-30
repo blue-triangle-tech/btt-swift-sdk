@@ -1220,8 +1220,6 @@ extension BlueTriangle{
                                                     monitor: launchMonitor)
             
         }
-        
-        AppNotificationLogger.removeObserver()
     }
 }
 

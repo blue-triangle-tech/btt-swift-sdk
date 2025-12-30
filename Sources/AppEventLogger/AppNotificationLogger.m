@@ -58,6 +58,10 @@ NSMutableArray *observers;
     return appNotifications;
 }
 
++(void) clearNotifications {
+    [appNotifications removeAllObjects];
+}
+
 +(void) removeObserver{
     for (id observer in observers) {
         [[NSNotificationCenter defaultCenter] removeObserver:observer];
