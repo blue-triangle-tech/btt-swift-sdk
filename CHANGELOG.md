@@ -2,6 +2,7 @@
 ### Bug Fixes and Improvements
 - Added the ability to enable or disable SDK features through remote configuration, including CrashTracking, ANRTracking, MemoryWarning, LaunchTime, WebViewStitching, NetworkStateTracking, and GroupingTapDetection.
 - Fixed a crash that occurred while reporting a signal crash when calling setCurrentPageName.
+- Fixed issues related to launch time reporting and pgtm.
 
 # Blue Triangle 3.15.6, Nov 24 2025
 ### Bug Fixes and Improvements

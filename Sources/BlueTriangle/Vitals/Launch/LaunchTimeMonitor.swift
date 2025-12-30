@@ -68,18 +68,6 @@ class LaunchTimeMonitor : ObservableObject{
         
         AppNotificationLogger.clearNotifications()
         AppNotificationLogger.removeObserver()
-        
-#if os(iOS)
-        //  FORCE flush if app is already active
-        if UIApplication.shared.applicationState == .active {
-            serialQueue.async {
-                if !self.systemEventLog.contains(where: { if case .didBecomeActive = $0 { true } else { false } }) {
-                    self.systemEventLog.append(.didBecomeActive(Date()))
-                    self.notifyLaunchTime()
-                }
-            }
-        }
-#endif
     }
     
     /// Must be called only on `serialQueue`
