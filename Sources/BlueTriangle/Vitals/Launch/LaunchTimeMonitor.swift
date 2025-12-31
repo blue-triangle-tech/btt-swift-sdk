@@ -91,7 +91,7 @@ extension LaunchTimeMonitor {
         } else if notification.name == UIApplication.didBecomeActiveNotification {
             serialQueue.async {
                 self.systemEventLog.append(SystemEvent.didBecomeActive(date))
-                self.notifyLaunchTime()
+                self.notifyLaunchTime(date)
             }
         }
 #endif
@@ -100,18 +100,27 @@ extension LaunchTimeMonitor {
     private func registerNotifications() {
 #if os(iOS)
         launchObserver = NotificationCenter.default.addObserver(forName: UIApplication.didFinishLaunchingNotification, object: nil, queue: nil) { [weak self] notification in
-            self?.processNotification(notification, date: Date())
+            guard let self = self else { return }
+            self.processNotification(notification, date: Date())
         }
         foregroundObserver = NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: nil) { [weak self] notification in
-            self?.processNotification(notification, date: Date())
+            guard let self = self else { return }
+            self.processNotification(notification, date: Date())
         }
         activeObserver = NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: nil) { [weak self] notification in
-            self?.processNotification(notification, date: Date())
+            guard let self = self else { return }
+            self.processNotification(notification, date: Date())
         }
+        //fall back if missed hot or cold launch
         sceneActiveObserver = NotificationCenter.default.addObserver(forName: UIScene.didActivateNotification, object: nil, queue: nil) { [weak self] _ in
             self?.serialQueue.async {
-                self?.systemEventLog.append(.didBecomeActive(Date()))
-                self?.notifyLaunchTime()
+                guard let self = self else { return }
+                guard !self.didReportHot else {
+                    return
+                }
+                let activationDate = Date()
+                self.systemEventLog.append(.didBecomeActive(activationDate))
+                self.notifyLaunchTime(activationDate)
             }
         }
         logger.info("Launch time monitor started listining to system event")
@@ -178,13 +187,7 @@ extension LaunchTimeMonitor {
     }
     
     /// Must be called only on `serialQueue`
-    private func notifyLaunchTime() {
-        let events = systemEventLog
-
-        guard let activeEvent = events.last, case .didBecomeActive(let activeTime) = activeEvent else {
-            return
-        }
-
+    private func notifyLaunchTime(_ activeTime: Date) {
         flushLaunchEvents(activeTime)
     }
 
