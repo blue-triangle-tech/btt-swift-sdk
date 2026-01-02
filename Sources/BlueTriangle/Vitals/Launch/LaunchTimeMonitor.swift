@@ -21,7 +21,7 @@ import UIKit
 import SwiftUI
 #endif
 
-enum LaunchEvent{
+enum LaunchEvent {
     case Cold(Date, TimeInterval)
     case Hot(Date, TimeInterval)
 }
@@ -32,13 +32,12 @@ enum SystemEvent {
     case didBecomeActive(Date)
 }
 
-class LaunchTimeMonitor : ObservableObject{
+class LaunchTimeMonitor : ObservableObject {
     
-    private let logger: Logging
-    private var  systemEventLog = [SystemEvent]()
-    internal var  launchEventPubliser = CurrentValueSubject<LaunchEvent?, Never>(nil)
-    
+    internal var launchEventPubliser = CurrentValueSubject<LaunchEvent?, Never>(nil)
     private let serialQueue = DispatchQueue(label: "com.launchtimemonitor.queue")
+    private let logger: Logging
+    private var systemEventLog = [SystemEvent]()
     private var launchObserver: NSObjectProtocol?
     private var foregroundObserver: NSObjectProtocol?
     private var activeObserver: NSObjectProtocol?
@@ -50,16 +49,16 @@ class LaunchTimeMonitor : ObservableObject{
         self.logger  = logger
     }
     
-    func start(){
+    func start() {
         self.registerNotifications()
         self.restoreNotificationLogs()
     }
     
-    func stop(){
+    func stop() {
         self.removeNotifications()
     }
     
-    private func restoreNotificationLogs(){
+    private func restoreNotificationLogs() {
         AppNotificationLogger.getNotifications().forEach { notification in
             if let notificationLog = notification as? NotificationLog {
                 self.processNotification(notificationLog.notification, date: notificationLog.time)
@@ -70,7 +69,7 @@ class LaunchTimeMonitor : ObservableObject{
     }
     
     /// Must be called only on `serialQueue`
-    private func reset(){
+    private func reset() {
         self.systemEventLog.removeAll()
     }
 }
@@ -95,7 +94,7 @@ extension LaunchTimeMonitor {
             }
         }
 #endif
-}
+    }
     
     private func registerNotifications() {
 #if os(iOS)
@@ -123,9 +122,9 @@ extension LaunchTimeMonitor {
                 self.notifyLaunchTime(activationDate)
             }
         }
+        
         logger.info("Launch time monitor started listining to system event")
 #endif
-        
     }
     
     private func removeNotifications() {
@@ -147,9 +146,8 @@ extension LaunchTimeMonitor {
             sceneActiveObserver = nil
         }
         
-        logger.info("Launch time monitor started listining to system event")
+        logger.info("Launch time monitor removed listining to system event")
 #endif
-        
     }
     
     private func notifyHotLaunch(_ foregroundEvent: SystemEvent, _ activeTime: Date) {
