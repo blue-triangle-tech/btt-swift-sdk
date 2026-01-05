@@ -13,7 +13,6 @@ NS_ASSUME_NONNULL_BEGIN
 @interface AppNotificationLogger : NSObject
 + (NSMutableArray<NotificationLog *> *)getNotifications;
 + (void) removeObserver;
-+ (void) clearNotifications;
 
 @end
 

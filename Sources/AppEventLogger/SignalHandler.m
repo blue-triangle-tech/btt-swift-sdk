@@ -41,7 +41,7 @@ int sig_reg_status[SIG_COUNT] = {0};
 static bool __debug_log = false;
 static char* __app_version = "unknown";
 static char* __report_folder_path = NULL;
-static char * __current_page_name = "";
+static char * __current_page_name = NULL;
 static NSString* __btt_session_id = @"unknown";
 static int __max_cache_files = 5;
 static bool __is_register = false;
@@ -335,6 +335,7 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
     char* report = calloc( bufferSize, sizeof(char));
     
     pthread_mutex_lock(&page_name_lock);
+    const char *current_page_name = __current_page_name ? __current_page_name : "";
     int actual_len = snprintf(report, bufferSize, report_templet,
                               crash_title,
                               sinfo->si_signo,
@@ -344,7 +345,7 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
                               crash_time,
                               __app_version,
                               btt_sessionid,
-                              __current_page_name);
+                              current_page_name);
     pthread_mutex_unlock(&page_name_lock);
     
     if (actual_len > bufferSize)
@@ -527,8 +528,12 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
     if (!pageName) return;
     const char *pageNameutf8 = pageName.UTF8String;
     if (!pageNameutf8) return;
-
+    
     pthread_mutex_lock(&page_name_lock);
+    if (__current_page_name ) {
+        free(__current_page_name);
+        __current_page_name = NULL;
+    }
     __current_page_name = strdup(pageNameutf8);
     pthread_mutex_unlock(&page_name_lock);
 }
