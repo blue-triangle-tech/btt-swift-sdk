@@ -34,7 +34,7 @@ enum SystemEvent {
 
 class LaunchTimeMonitor : ObservableObject {
     
-    internal var launchEventPubliser = CurrentValueSubject<LaunchEvent?, Never>(nil)
+    internal var launchEventPublisher = CurrentValueSubject<LaunchEvent?, Never>(nil)
     private let serialQueue = DispatchQueue(label: "com.launchtimemonitor.queue")
     private let logger: Logging
     private var systemEventLog = [SystemEvent]()
@@ -59,9 +59,17 @@ class LaunchTimeMonitor : ObservableObject {
     }
     
     private func restoreNotificationLogs() {
-        AppNotificationLogger.getNotifications().forEach { notification in
+        let appNotificationLogs = AppNotificationLogger.getNotifications()
+        appNotificationLogs.forEach { notification in
             if let notificationLog = notification as? NotificationLog {
                 self.processNotification(notificationLog.notification, date: notificationLog.time)
+            }
+        }
+        
+        //fallback
+        serialQueue.async {
+            if appNotificationLogs.count > 0 && !self.didReportCold && !self.didReportHot {
+                self.notifyLaunchTime()
             }
         }
         
@@ -112,8 +120,8 @@ extension LaunchTimeMonitor {
         }
         //fall back if missed hot or cold launch
         sceneActiveObserver = NotificationCenter.default.addObserver(forName: UIScene.didActivateNotification, object: nil, queue: nil) { [weak self] _ in
-            self?.serialQueue.async {
-                guard let self = self else { return }
+            guard let self = self else { return }
+            self.serialQueue.async {
                 guard !self.didReportHot else {
                     return
                 }
@@ -153,7 +161,7 @@ extension LaunchTimeMonitor {
     private func notifyHotLaunch(_ foregroundEvent: SystemEvent, _ activeTime: Date) {
         if case .didEnterForeground(let startTime) = foregroundEvent {
             let duration = activeTime.timeIntervalSince(startTime)
-            launchEventPubliser.send(.Hot(startTime, duration))
+            launchEventPublisher.send(.Hot(startTime, duration))
             logger.info("Notify hot launch at \(startTime)")
         }
     }
@@ -163,7 +171,7 @@ extension LaunchTimeMonitor {
             let processStart  = processStartTime()
             let actualStartTime = Date(timeIntervalSince1970: processStart)
             let duration = activeTime.timeIntervalSince(actualStartTime)
-            launchEventPubliser.send(.Cold(actualStartTime, duration))
+            launchEventPublisher.send(.Cold(actualStartTime, duration))
             logger.info("Notify cold launch at \(startTime)")
         }
     }
@@ -185,7 +193,7 @@ extension LaunchTimeMonitor {
     }
     
     /// Must be called only on `serialQueue`
-    private func notifyLaunchTime(_ activeTime: Date) {
+    private func notifyLaunchTime(_ activeTime: Date = Date()) {
         flushLaunchEvents(activeTime)
     }
 
