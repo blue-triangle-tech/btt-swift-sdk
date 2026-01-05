@@ -72,7 +72,9 @@ final class BTTimerGroupManager {
     }
 
     func setLastAction(_ time: Date) {
-        lock.sync { self.lastActionTime = time.timeIntervalSince1970.milliseconds }
+        if BlueTriangle.configuration.enableGroupingTapDetection {
+            lock.sync { self.lastActionTime = time.timeIntervalSince1970.milliseconds }
+        }
     }
 
     // MARK: – Internals
