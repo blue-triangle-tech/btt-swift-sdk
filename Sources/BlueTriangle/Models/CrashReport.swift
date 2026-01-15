@@ -25,7 +25,8 @@ extension CrashReport {
     ) {
         self.sessionID = sessionID
         self.pageName =  pageName
-        self.report = ErrorReport(eTp: BT_ErrorType.NativeAppCrash.rawValue, message: exception.bttCrashReportMessage,
+        self.report = ErrorReport(eCnt: 1,
+                                  eTp: BT_ErrorType.NativeAppCrash.rawValue, message: exception.bttCrashReportMessage,
                                   line: 1,
                                   column: 1,
                                   time: intervalProvider.milliseconds)
@@ -40,7 +41,8 @@ extension CrashReport {
     ) {
         self.sessionID = sessionID
         self.pageName =  pageName
-        self.report = ErrorReport(eTp: BT_ErrorType.NativeAppCrash.rawValue, message: message.bttReportMessage,
+        self.report = ErrorReport(eCnt: 1,
+                                  eTp: BT_ErrorType.NativeAppCrash.rawValue, message: message.bttReportMessage,
                                   line: 1,
                                   column: 1,
                                   time: intervalProvider.milliseconds)
@@ -56,7 +58,8 @@ extension CrashReport {
     ) {
         self.sessionID = sessionID
         self.pageName =  pageName
-        self.report = ErrorReport(eTp: errorType.rawValue, message: message.bttReportMessage,
+        self.report = ErrorReport(eCnt: 1,
+                                  eTp: errorType.rawValue, message: message.bttReportMessage,
                                   line: 1,
                                   column: 1,
                                   time: intervalProvider.milliseconds)
@@ -68,12 +71,14 @@ extension CrashReport {
     init(
         sessionID: Identifier,
         ANRmessage: String,
+        eCount: Int = 1,
         pageName:String?,
         intervalProvider: TimeInterval = Date().timeIntervalSince1970
     ) {
         self.sessionID = sessionID
         self.pageName = pageName
-        self.report = ErrorReport(eTp: BT_ErrorType.ANRWarning.rawValue, message: ANRmessage,
+        self.report = ErrorReport(eCnt: eCount,
+                                  eTp: BT_ErrorType.ANRWarning.rawValue, message: ANRmessage,
                                   line: 1,
                                   column: 1,
                                   time: intervalProvider.milliseconds)
@@ -85,12 +90,15 @@ extension CrashReport {
     init(
         sessionID: Identifier,
         memoryWarningMessage: String,
+        eCount: Int = 1,
         pageName:String?,
         intervalProvider: TimeInterval = Date().timeIntervalSince1970
     ) {
         self.sessionID = sessionID
         self.pageName = pageName
-        self.report = ErrorReport(eTp: BT_ErrorType.MemoryWarning.rawValue, message: memoryWarningMessage,
+        self.report = ErrorReport(eCnt: eCount,
+                                  eTp: BT_ErrorType.MemoryWarning.rawValue,
+                                  message: memoryWarningMessage,
                                   line: 1,
                                   column: 1,
                                   time: intervalProvider.milliseconds)

@@ -8,7 +8,7 @@
 import Foundation
 
 struct ErrorReport: Codable {
-    let eCnt: Int = 1
+    let eCnt: Int 
     let ver: String = Version.number
     var nativeApp : NativeAppProperties = .nstEmpty
     let appName: String = Bundle.main.appName ?? "Unknown"
@@ -49,9 +49,11 @@ extension ErrorReport {
         eTp: String = BT_ErrorType.NativeAppCrash.rawValue,
         error: Error,
         line: UInt,
-        time: Millisecond
+        time: Millisecond,
+        eCnt : Int = 1
     ) {
         self.eTp = eTp
+        self.eCnt = 1
         self.message = String(describing: error)
         self.line = Int(line)
         self.column = 1
@@ -63,10 +65,12 @@ extension ErrorReport {
         eTp: String = BT_ErrorType.NativeAppCrash.rawValue,
         error: Error,
         line: UInt,
-        time: Millisecond
+        time: Millisecond,
+        eCnt : Int = 1
     ) {
         self.nativeApp = nativeApp
         self.eTp = eTp
+        self.eCnt = 1
         self.message = String(describing: error)
         self.line = Int(line)
         self.column = 1

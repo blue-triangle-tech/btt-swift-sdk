@@ -18,6 +18,7 @@ class MemoryWarningWatchDog {
     let session: SessionProvider
     let uploader: Uploading
     let logger: Logging
+    let errorMetricStore = ErrorMetricStore()
     
     init(session: @escaping SessionProvider,
          uploader: Uploading,
@@ -45,12 +46,18 @@ class MemoryWarningWatchDog {
         }
         
         logger.debug("Memory Warning WatchDog :Memory Warning detected...  ")
-        
         let message = formatedMemoryWarningMessage()
-        let pageName = BlueTriangle.recentTimer()?.getPageName()
-        let report = CrashReport(sessionID: BlueTriangle.sessionID,
-                                 memoryWarningMessage: message, pageName: pageName)
-        uploadReports(session: session, report: report)
+
+        if let _ = BlueTriangle.recentTimer() {
+            Task {
+                await self.errorMetricStore.addMemoryWarning(message: message)
+            }
+        } else {
+            let pageName = MemoryWarningWatchDog.DEFAULT_PAGE_NAME
+            let report = CrashReport(sessionID: BlueTriangle.sessionID,
+                                     memoryWarningMessage: message, pageName: pageName)
+            uploadReports(session: session, report: report)
+        }
         logger.debug(message)
     }
     
@@ -102,6 +109,22 @@ extension MemoryWarningWatchDog {
                 strongSelf.uploader.send(request: reportRequest)
             } catch {
                 self?.logger.error(error.localizedDescription)
+            }
+        }
+    }
+    
+    internal func uploadMemoryWarningReport(pageName: String?) {
+        Task {
+            do {
+                guard let session = self.session(), let errorMetric = await self.errorMetricStore.flushMemoryWarning() else {
+                    return
+                }
+                let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: errorMetric.message, eCount: errorMetric.eCount, pageName: pageName)
+                let reportRequest = try self.makeCrashReportRequest(session: session,
+                                                                          report: report.report, pageName: report.pageName)
+                self.uploader.send(request: reportRequest)
+            } catch {
+                self.logger.error(error.localizedDescription)
             }
         }
     }

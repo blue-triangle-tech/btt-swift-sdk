@@ -37,6 +37,7 @@ class ANRWatchDog{
     let session: SessionProvider
     let uploader: Uploading
     let logger: Logging
+    let errorMetricStore = ErrorMetricStore()
     
     init(mainThreadObserver: MainThreadObserver,
          session: @escaping SessionProvider,
@@ -111,9 +112,16 @@ class ANRWatchDog{
 Potential ANR Detected
 An task blocking main thread since \(self.errorTriggerInterval) seconds
 """
-        let pageName = BlueTriangle.recentTimer()?.getPageName()
-        let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName)
-        uploadReports(session: session, report: report)
+        if let _ = BlueTriangle.recentTimer() {
+            Task {
+                await errorMetricStore.addAnrError(message: message)
+            }
+        } else {
+            let pageName = ANRWatchDog.TIMER_PAGE_NAME
+            let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName)
+            uploadReports(session: session, report: report)
+
+        }
         logger.debug(message)
     }
     
@@ -133,6 +141,22 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
                 strongSelf.uploader.send(request: reportRequest)
             } catch {
                 self?.logger.error(error.localizedDescription)
+            }
+        }
+    }
+    
+    internal func uploadAnrReportForPage(pageName: String?) {
+        Task {
+            do {
+                guard let session = self.session(), let errorMetric = await self.errorMetricStore.flushAnrError() else {
+                    return
+                }
+                let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: errorMetric.message, eCount: errorMetric.eCount, pageName: pageName)
+                let reportRequest = try self.makeCrashReportRequest(session: session,
+                                                                          report: report.report, pageName: report.pageName)
+                self.uploader.send(request: reportRequest)
+            } catch {
+                self.logger.error(error.localizedDescription)
             }
         }
     }
@@ -182,4 +206,62 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
                            parameters: params,
                            model: [report])
     }
+}
+
+public actor ErrorMetricStore {
+    private var anrs: ErrorMetric?
+    private var memoryWarnings: ErrorMetric?
+
+    func addMemoryWarning(message: String) {
+        if let current = memoryWarnings {
+            memoryWarnings = ErrorMetric(
+                message: current.message,
+                eCount: current.eCount + 1
+            )
+        } else {
+            memoryWarnings = ErrorMetric(
+                message: message,
+                eCount: 1
+            )
+        }
+    }
+
+    func addAnrError(message: String) {
+        if let current = anrs {
+            anrs = ErrorMetric(
+                message: current.message,
+                eCount: current.eCount + 1
+            )
+        } else {
+            anrs = ErrorMetric(
+                message: message,
+                eCount: 1
+            )
+        }
+    }
+
+    func getAnrError() -> ErrorMetric? {
+        anrs
+    }
+
+    func getMemoryWarning() -> ErrorMetric? {
+        memoryWarnings
+    }
+
+    func flushAnrError() -> ErrorMetric? {
+        let value = anrs
+        anrs = nil
+        return value
+    }
+
+    func flushMemoryWarning() -> ErrorMetric? {
+        let value = memoryWarnings
+        memoryWarnings = nil
+        return value
+    }
+}
+
+struct ErrorMetric {
+    let message: String
+    let eCount: Int
 }
