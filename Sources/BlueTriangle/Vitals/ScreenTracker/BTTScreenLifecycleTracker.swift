@@ -182,7 +182,7 @@ class TimerMapActivity {
         self.logger = logger
         
         if BlueTriangle.configuration.enableGrouping {
-            BlueTriangle.groupTimer.startGroupIfNeeded()
+            BlueTriangle.groupTimer.startGroupIfNeeded(pageTitle.isEmpty ? pageName : pageTitle)
             self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageTitle: pageTitle), timerType: .custom, isGroupedTimer: true)
         } else {
             self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName))

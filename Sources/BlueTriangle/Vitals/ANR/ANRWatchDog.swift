@@ -112,9 +112,9 @@ class ANRWatchDog{
 Potential ANR Detected
 An task blocking main thread since \(self.errorTriggerInterval) seconds
 """
-        if let _ = BlueTriangle.recentTimer() {
+        if let timer = BlueTriangle.recentTimer() {
             Task {
-                await errorMetricStore.addAnrError(message: message)
+                await errorMetricStore.addAnrError(id: timer.uuid, message: message)
             }
         } else {
             let pageName = ANRWatchDog.TIMER_PAGE_NAME
@@ -145,13 +145,13 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
         }
     }
     
-    internal func uploadAnrReportForPage(pageName: String?) {
+    internal func uploadAnrReportForPage(pageName: String, uuid: UUID) {
         Task {
             do {
-                guard let session = self.session(), let errorMetric = await self.errorMetricStore.flushAnrError() else {
+                guard let session = self.session(), let errorMetric = await self.errorMetricStore.flushAnrError(id: uuid) else {
                     return
                 }
-                let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: errorMetric.message, eCount: errorMetric.eCount, pageName: pageName)
+                let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: errorMetric.message, eCount: errorMetric.eCount, pageName: pageName, intervalProvider: errorMetric.time)
                 let reportRequest = try self.makeCrashReportRequest(session: session,
                                                                           report: report.report, pageName: report.pageName)
                 self.uploader.send(request: reportRequest)
@@ -209,59 +209,62 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
 }
 
 public actor ErrorMetricStore {
-    private var anrs: ErrorMetric?
-    private var memoryWarnings: ErrorMetric?
 
-    func addMemoryWarning(message: String) {
-        if let current = memoryWarnings {
-            memoryWarnings = ErrorMetric(
+    private var anrs: [UUID: ErrorMetric] = [:]
+    private var memoryWarnings: [UUID: ErrorMetric] = [:]
+
+    // MARK: - Add
+
+    func addAnrError(id: UUID, message: String) {
+        if let current = anrs[id] {
+            anrs[id] = ErrorMetric(
                 message: current.message,
                 eCount: current.eCount + 1
             )
         } else {
-            memoryWarnings = ErrorMetric(
+            anrs[id] = ErrorMetric(
                 message: message,
                 eCount: 1
             )
         }
     }
 
-    func addAnrError(message: String) {
-        if let current = anrs {
-            anrs = ErrorMetric(
+    func addMemoryWarning(id: UUID, message: String) {
+        if let current = memoryWarnings[id] {
+            memoryWarnings[id] = ErrorMetric(
                 message: current.message,
                 eCount: current.eCount + 1
             )
         } else {
-            anrs = ErrorMetric(
+            memoryWarnings[id] = ErrorMetric(
                 message: message,
                 eCount: 1
             )
         }
     }
 
-    func getAnrError() -> ErrorMetric? {
-        anrs
+    // MARK: - Get
+
+    func getAnrError(id: UUID) -> ErrorMetric? {
+        anrs[id]
     }
 
-    func getMemoryWarning() -> ErrorMetric? {
-        memoryWarnings
+    func getMemoryWarning(id: UUID) -> ErrorMetric? {
+        memoryWarnings[id]
     }
 
-    func flushAnrError() -> ErrorMetric? {
-        let value = anrs
-        anrs = nil
-        return value
+    // MARK: - Flush (get + remove)
+    func flushAnrError(id: UUID) -> ErrorMetric? {
+        anrs.removeValue(forKey: id)
     }
 
-    func flushMemoryWarning() -> ErrorMetric? {
-        let value = memoryWarnings
-        memoryWarnings = nil
-        return value
+    func flushMemoryWarning(id: UUID) -> ErrorMetric? {
+        memoryWarnings.removeValue(forKey: id)
     }
 }
 
 struct ErrorMetric {
     let message: String
     let eCount: Int
+    let time = Date().timeIntervalSince1970
 }

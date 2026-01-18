@@ -821,8 +821,8 @@ public extension BlueTriangle {
                 return
             }
             uploader.send(request: request)
-            anrWatchDog?.uploadAnrReportForPage(pageName: timer.getPageName())
-            memoryWarningWatchDog?.uploadMemoryWarningReport(pageName: timer.getPageName())
+            anrWatchDog?.uploadAnrReportForPage(pageName: timer.getPageName(), uuid: timer.uuid)
+            memoryWarningWatchDog?.uploadMemoryWarningReport(pageName: timer.getPageName(), uuid: timer.uuid)
         }
     }
 }

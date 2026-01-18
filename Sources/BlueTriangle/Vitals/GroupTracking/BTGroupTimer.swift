@@ -42,13 +42,14 @@ final class BTTimerGroup {
 
     init(
         logger: Logging,
-        groupName: String? = nil,
+        groupName: String,
+        hasForcedGroup: Bool = false,
         cause: GroupingCause? = nil,
         causeInterval: Millisecond = 0,
         onGroupCompleted: @escaping (BTTimerGroup) -> Void
     ) {
         self.logger = logger
-        self.hasForcedGroup = (groupName != nil)
+        self.hasForcedGroup = hasForcedGroup
         self.onGroupCompleted = onGroupCompleted
         self.groupingCause = cause
         self.causeInterval = causeInterval

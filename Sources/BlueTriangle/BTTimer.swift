@@ -38,6 +38,7 @@ final public class BTTimer: NSObject, @unchecked Sendable {
         case end
     }
 
+    internal let uuid = UUID()
     private let lock = NSLock()
     private let logger: Logging
     private let timeIntervalProvider: () -> TimeInterval
@@ -165,6 +166,7 @@ final public class BTTimer: NSObject, @unchecked Sendable {
         
         let isInActiveTimer = isGroupTimer && type == .custom
         if !isInActiveTimer {
+         //   print("Recent Page name: \(self.getPageName()), Timer type: \(type)")
             BlueTriangle.addActiveTimer(self)
         }
 
@@ -193,6 +195,8 @@ final public class BTTimer: NSObject, @unchecked Sendable {
         self.stopNetState()
         
         BlueTriangle.removeActiveTimer(self)
+        let page = BlueTriangle.recentTimer()?.getPageName()
+        print("End Recent Page name: \(page), Timer type: \(type)")
         handle(.end)
         onEnd?()
     }
