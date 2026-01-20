@@ -53,7 +53,7 @@ extension ErrorReport {
         eCnt : Int = 1
     ) {
         self.eTp = eTp
-        self.eCnt = 1
+        self.eCnt = eCnt
         self.message = String(describing: error)
         self.line = Int(line)
         self.column = 1
@@ -70,7 +70,7 @@ extension ErrorReport {
     ) {
         self.nativeApp = nativeApp
         self.eTp = eTp
-        self.eCnt = 1
+        self.eCnt = eCnt
         self.message = String(describing: error)
         self.line = Int(line)
         self.column = 1

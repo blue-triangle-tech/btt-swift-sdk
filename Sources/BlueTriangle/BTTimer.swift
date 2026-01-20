@@ -196,7 +196,6 @@ final public class BTTimer: NSObject, @unchecked Sendable {
         
         BlueTriangle.removeActiveTimer(self)
         let page = BlueTriangle.recentTimer()?.getPageName()
-        print("End Recent Page name: \(page), Timer type: \(type)")
         handle(.end)
         onEnd?()
     }

@@ -9,6 +9,8 @@ import Foundation
 
 final class CrashReportManager: CrashReportManaging {
 
+    private let errorMetricStore = ErrorMetricStore()
+
     private let crashReportPersistence: CrashReportPersisting.Type
 
     private let logger: Logging
@@ -79,13 +81,40 @@ final class CrashReportManager: CrashReportManaging {
             return
         }
         
-        let nativeApp = NativeAppProperties.nstEmpty
-        let report = ErrorReport(nativeApp: nativeApp, eTp: BT_ErrorType.NativeAppCrash.rawValue, error: error, line: line, time: intervalProvider().milliseconds)
-        let pageName = BlueTriangle.recentTimer()?.getPageName()
         do {
-            try upload(session:session , report: report, pageName: pageName)
+            if let timer = BlueTriangle.recentTimer() {
+                Task {
+                    let message =  String(describing: error)
+                    await errorMetricStore.addError(id: timer.uuid, message: message, line: line)
+                }
+            } else {
+                let nativeApp = NativeAppProperties.nstEmpty
+                let report = ErrorReport(nativeApp: nativeApp, eTp: BT_ErrorType.NativeAppCrash.rawValue, error: error, line: line, time: intervalProvider().milliseconds)
+                let pageName = BlueTriangle.recentTimer()?.getPageName()
+                try upload(session:session , report: report, pageName: pageName)
+            }
+
         } catch {
             logger.error(error.localizedDescription)
+        }
+    }
+    
+    func uploadErrorForPage(pageName: String, uuid: UUID) {
+        Task {
+            do {
+                guard let session = self.session(), let errorMetric = await self.errorMetricStore.flushError(id: uuid) else {
+                    return
+                }
+                
+                let nativeApp = NativeAppProperties.nstEmpty
+                let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: errorMetric.message])
+                let report = ErrorReport(nativeApp: nativeApp, eTp: BT_ErrorType.NativeAppCrash.rawValue, error: error , line: errorMetric.line, time: errorMetric.time.milliseconds, eCnt: errorMetric.eCount)
+                let reportRequest = try makeErrorReportRequest(session: session,
+                                                               report: report, pageName: pageName)
+                uploader.send(request: reportRequest)
+            } catch {
+                self.logger.error(error.localizedDescription)
+            }
         }
     }
 }
@@ -147,5 +176,4 @@ private extension CrashReportManager {
                                                        report: report, pageName: pageName)
         uploader.send(request: reportRequest)
     }
-    
 }

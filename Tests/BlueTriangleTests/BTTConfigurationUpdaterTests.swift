@@ -43,7 +43,6 @@ final class BTTConfigurationUpdaterTests: XCTestCase {
     func testUpdatePerformsFetchIfNewSession() {
 
         let config = BTTRemoteConfig(networkSampleRateSDK: 75,
-                                         groupedViewSampleRate: 5,
                                          enableRemoteConfigAck: false,
                                          enableAllTracking: true,
                                          enableScreenTracking: true,
@@ -75,7 +74,6 @@ final class BTTConfigurationUpdaterTests: XCTestCase {
     func testUpdateSkipsFetchIfNotNewSessionAndWithinUpdatePeriod() {
         
         let config = BTTRemoteConfig(networkSampleRateSDK: 75,
-                                         groupedViewSampleRate: 5,
                                          enableRemoteConfigAck: false,
                                          enableAllTracking: true,
                                          enableScreenTracking: true,
@@ -104,7 +102,6 @@ final class BTTConfigurationUpdaterTests: XCTestCase {
     func testUpdatePerformsFetchIfNotNewSessionAndUpdatePeriodElapsed() {
         
         let apiConfig = BTTRemoteConfig(networkSampleRateSDK: 75,
-                                         groupedViewSampleRate: 5,
                                          enableRemoteConfigAck: false,
                                          enableAllTracking: true,
                                          enableScreenTracking: true,
@@ -123,7 +120,6 @@ final class BTTConfigurationUpdaterTests: XCTestCase {
         
         let currentTime = Date().timeIntervalSince1970.milliseconds
         let storeConfig = BTTSavedRemoteConfig(networkSampleRateSDK: 70,
-                                         groupedViewSampleRate: 5,
                                          enableRemoteConfigAck: false,
                                          enableAllTracking: true,
                                          enableScreenTracking: true,

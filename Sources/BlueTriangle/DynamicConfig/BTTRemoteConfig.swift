@@ -10,7 +10,6 @@ import Foundation
 
 class BTTRemoteConfig: Codable, Equatable {
     var networkSampleRateSDK: Double?
-    var groupedViewSampleRate: Double?
     var enableRemoteConfigAck: Bool?
     var ignoreScreens : [String]?
     var enableAllTracking: Bool?
@@ -28,7 +27,6 @@ class BTTRemoteConfig: Codable, Equatable {
     
     
     init(networkSampleRateSDK: Double?,
-         groupedViewSampleRate: Double?,
          enableRemoteConfigAck : Bool?,
          enableAllTracking : Bool?,
          enableScreenTracking: Bool?,
@@ -43,7 +41,6 @@ class BTTRemoteConfig: Codable, Equatable {
          enableNetworkStateTracking: Bool?,
          enableGroupingTapDetection: Bool?) {
         self.networkSampleRateSDK = networkSampleRateSDK
-        self.groupedViewSampleRate = groupedViewSampleRate
         self.enableRemoteConfigAck = enableRemoteConfigAck
         self.ignoreScreens = ignoreScreens
         self.enableAllTracking = enableAllTracking
@@ -63,7 +60,6 @@ class BTTRemoteConfig: Codable, Equatable {
     static func == (lhs: BTTRemoteConfig, rhs: BTTRemoteConfig) -> Bool {
         return lhs.networkSampleRateSDK == rhs.networkSampleRateSDK &&
         lhs.enableRemoteConfigAck == rhs.enableRemoteConfigAck  &&
-        lhs.groupedViewSampleRate == rhs.groupedViewSampleRate  &&
         lhs.ignoreScreens == rhs.ignoreScreens &&
         lhs.enableAllTracking == rhs.enableAllTracking &&
         lhs.enableScreenTracking == rhs.enableScreenTracking &&
@@ -80,7 +76,6 @@ class BTTRemoteConfig: Codable, Equatable {
     
     internal static var defaultConfig: BTTSavedRemoteConfig {
         BTTSavedRemoteConfig(networkSampleRateSDK: BlueTriangle.configuration.networkSampleRate * 100,
-                             groupedViewSampleRate: BlueTriangle.configuration.groupedViewSampleRate * 100,
                              enableRemoteConfigAck : false,
                              enableAllTracking: true,
                              enableScreenTracking: BlueTriangle.configuration.enableScreenTracking,
