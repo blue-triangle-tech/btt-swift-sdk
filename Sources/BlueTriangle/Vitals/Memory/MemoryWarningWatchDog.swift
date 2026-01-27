@@ -161,7 +161,7 @@ extension MemoryWarningWatchDog {
             "pageName": pageName ?? MemoryWarningWatchDog.DEFAULT_PAGE_NAME,
             "txnName": trafficSegment,
             "sessionID": String(session.sessionID),
-            "pgTm": "0",
+            "pgTm": String(Constants.minPgTm),
             "pageType": pageType,
             "AB": session.abTestID,
             "DCTR": session.dataCenter,

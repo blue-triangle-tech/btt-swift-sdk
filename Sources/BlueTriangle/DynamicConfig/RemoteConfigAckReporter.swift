@@ -92,7 +92,7 @@ private extension RemoteConfigAckReporter {
             "pageName": pageName,
             "txnName": trafficSegment,
             "sessionID": String(session.sessionID),
-            "pgTm": "0",
+            "pgTm": String(Constants.minPgTm),
             "pageType": pageGroup,
             "AB": session.abTestID,
             "DCTR": session.dataCenter,

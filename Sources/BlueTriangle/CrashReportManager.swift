@@ -154,7 +154,7 @@ private extension CrashReportManager {
             "pageName": pageName ?? Constants.crashID,
             "txnName": trafficSegment,
             "sessionID": String(session.sessionID),
-            "pgTm": "0",
+            "pgTm": String(Constants.minPgTm),
             "pageType": pageType,
             "AB": session.abTestID,
             "DCTR": session.dataCenter,

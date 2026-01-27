@@ -193,7 +193,7 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
             "pageName": pageName ?? ANRWatchDog.TIMER_PAGE_NAME,
             "txnName": trafficSegment,
             "sessionID": String(session.sessionID),
-            "pgTm": "0",
+            "pgTm": String(Constants.minPgTm),
             "pageType": pageTypeValue,
             "AB": session.abTestID,
             "DCTR": session.dataCenter,
