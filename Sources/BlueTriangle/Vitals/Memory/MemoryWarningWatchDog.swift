@@ -131,8 +131,8 @@ extension MemoryWarningWatchDog {
     
     private func makeTimerRequest(session: Session, report: ErrorReport, pageName: String?, segment : String, pageType : String ) throws -> Request {
         let trafficSegment = !segment.isEmpty ? segment : session.trafficSegmentName
-        let pageType = !pageType.isEmpty ? pageType :  session.pageType
-        let page = Page(pageName: pageName ?? MemoryWarningWatchDog.DEFAULT_PAGE_NAME, pageType: pageType)
+        let pageTypeValue = !pageType.isEmpty ? pageType :  session.pageType
+        let page = Page(pageName: pageName ?? MemoryWarningWatchDog.DEFAULT_PAGE_NAME, pageType: pageTypeValue)
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
         let nativeProperty = BlueTriangle.recentTimer()?.nativeAppProperties ?? .empty
         let customMetrics = session.customVarriables(logger: logger)

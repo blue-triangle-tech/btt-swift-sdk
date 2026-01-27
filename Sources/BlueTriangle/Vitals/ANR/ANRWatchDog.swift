@@ -163,8 +163,8 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
     
     private func makeTimerRequest(session: Session, report: ErrorReport, pageName: String?, segment: String, pageType: String) throws -> Request {
         let trafficSegment = !segment.isEmpty ? segment : session.trafficSegmentName
-        let pageType = !pageType.isEmpty ? pageType :  session.pageType
-        let page = Page(pageName: pageName ?? ANRWatchDog.TIMER_PAGE_NAME, pageType: trafficSegment)
+        let pageTypeValue = !pageType.isEmpty ? pageType :  session.pageType
+        let page = Page(pageName: pageName ?? ANRWatchDog.TIMER_PAGE_NAME, pageType: pageTypeValue)
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
         let nativeProperty = BlueTriangle.recentTimer()?.nativeAppProperties ?? .empty
         let customMetrics = session.customVarriables(logger: logger)
@@ -186,7 +186,7 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
         
     private func makeCrashReportRequest(session: Session, report: ErrorReport, pageName: String?, segment: String, pageType: String) throws -> Request {
         let trafficSegment = !segment.isEmpty ? segment : session.trafficSegmentName
-        let pageType = !pageType.isEmpty ? pageType :  session.pageType
+        let pageTypeValue = !pageType.isEmpty ? pageType :  session.pageType
         let params: [String: String] = [
             "siteID": session.siteID,
             "nStart": String(report.time),
@@ -194,7 +194,7 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
             "txnName": trafficSegment,
             "sessionID": String(session.sessionID),
             "pgTm": "0",
-            "pageType": pageType,
+            "pageType": pageTypeValue,
             "AB": session.abTestID,
             "DCTR": session.dataCenter,
             "CmpN": session.campaignName,
