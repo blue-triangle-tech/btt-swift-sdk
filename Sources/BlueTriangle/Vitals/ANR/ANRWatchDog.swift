@@ -118,7 +118,7 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
             }
         } else {
             let pageName = ANRWatchDog.TIMER_PAGE_NAME
-            let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName, segment: ANRWatchDog.TIMER_PAGE_NAME)
+            let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName, segment: ANRWatchDog.TIMER_PAGE_NAME, pageType: ANRWatchDog.TIMER_PAGE_NAME)
             uploadReports(session: session, report: report, segment: ANRWatchDog.TIMER_PAGE_NAME)
 
         }
@@ -145,13 +145,13 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
         }
     }
     
-    internal func uploadAnrReportForPage(pageName: String, uuid: UUID, segment : String?) {
+    internal func uploadAnrReportForPage(pageName: String, uuid: UUID, segment : String, pageType : String) {
         Task {
             do {
                 guard let session = self.session(), let errorMetric = await self.errorMetricStore.flushAnrError(id: uuid) else {
                     return
                 }
-                let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: errorMetric.message, eCount: errorMetric.eCount, pageName: pageName, segment: segment, intervalProvider: errorMetric.time)
+                let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: errorMetric.message, eCount: errorMetric.eCount, pageName: pageName, segment: segment, pageType: pageType, intervalProvider: errorMetric.time)
                 let reportRequest = try self.makeCrashReportRequest(session: session,
                                                                     report: report.report, pageName: report.pageName, segment: segment)
                 self.uploader.send(request: reportRequest)

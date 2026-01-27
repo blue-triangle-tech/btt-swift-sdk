@@ -817,9 +817,9 @@ public extension BlueTriangle {
                 return
             }
             uploader.send(request: request)
-            anrWatchDog?.uploadAnrReportForPage(pageName: timer.getPageName(), uuid: timer.uuid, segment: timer.getTrafficSegment())
-            memoryWarningWatchDog?.uploadMemoryWarningReport(pageName: timer.getPageName(), uuid: timer.uuid, segment: timer.getTrafficSegment())
-            nsExeptionReporter?.uploadErrorForPage(pageName: timer.getPageName(), uuid: timer.uuid, segment: timer.getTrafficSegment())
+            anrWatchDog?.uploadAnrReportForPage(pageName: timer.getPageName(), uuid: timer.uuid, segment: timer.getTrafficSegment(), pageType: timer.page.pageType)
+            memoryWarningWatchDog?.uploadMemoryWarningReport(pageName: timer.getPageName(), uuid: timer.uuid, segment: timer.getTrafficSegment(), pageType: timer.page.pageType)
+            nsExeptionReporter?.uploadErrorForPage(pageName: timer.getPageName(), uuid: timer.uuid, segment: timer.getTrafficSegment(), pageType: timer.page.pageType)
         }
     }
 }
@@ -1149,10 +1149,13 @@ extension BlueTriangle {
     ///
     /// - Parameter exception: The exception to upload.
     public static func storeException(exception: NSException) {
-        let pageName = BlueTriangle.recentTimer()?.getPageName()
-        let segment = BlueTriangle.recentTimer()?.getTrafficSegment()
-        let crashReport = CrashReport(sessionID: sessionID, exception: exception, pageName: pageName, segment: segment)
-        CrashReportPersistence.save(crashReport)
+        if let session = session() {
+            let pageName = BlueTriangle.recentTimer()?.getPageName()
+            let segment = BlueTriangle.recentTimer()?.getTrafficSegment() ?? session.trafficSegmentName
+            let pageType = BlueTriangle.recentTimer()?.page.pageType ?? session.pageType
+            let crashReport = CrashReport(sessionID: sessionID, exception: exception, pageName: pageName, segment: segment, pageType: pageType)
+            CrashReportPersistence.save(crashReport)
+        }
     }
 }
 

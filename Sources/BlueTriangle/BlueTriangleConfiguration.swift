@@ -56,7 +56,10 @@ final public class BlueTriangleConfiguration: NSObject {
     @objc public var dataCenter: String = "Default"
 
     /// Traffic segment.
-    @objc public var trafficSegmentName: String = ""
+    @objc public var trafficSegmentName: String = Constants.defaultTraficSegment
+    
+    /// Page type.
+    @objc public var pageType: String = Constants.defaultPageType
 
     /// Crash tracking behavior.
     @objc public var crashTracking: CrashTracking = .nsException
@@ -183,7 +186,8 @@ extension BlueTriangleConfiguration {
                            campaignName: campaignName,
                            campaignSource: campaignSource,
                            dataCenter: dataCenter,
-                           trafficSegmentName: trafficSegmentName
+                           trafficSegmentName: trafficSegmentName,
+                           pageType: pageType
             )
         }
 

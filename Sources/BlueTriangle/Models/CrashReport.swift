@@ -12,6 +12,7 @@ struct CrashReport: Codable {
     let pageName: String?
     let report: ErrorReport
     let segment: String?
+    let pageType: String?
 }
 
 //Cunstructor to cunstruct Crash Report
@@ -23,11 +24,13 @@ extension CrashReport {
         exception: NSException,
         pageName:String?,
         segment:String?,
+        pageType:String?,
         intervalProvider: TimeInterval =  Date().timeIntervalSince1970
     ) {
         self.sessionID = sessionID
         self.pageName =  pageName
         self.segment = segment
+        self.pageType = pageType
         self.report = ErrorReport(eCnt: 1,
                                   eTp: BT_ErrorType.NativeAppCrash.rawValue, message: exception.bttCrashReportMessage,
                                   line: 1,
@@ -41,11 +44,13 @@ extension CrashReport {
         message: String,
         pageName:String?,
         segment:String?,
+        pageType:String?,
         intervalProvider: TimeInterval = Date().timeIntervalSince1970
     ) {
         self.sessionID = sessionID
         self.pageName =  pageName
         self.segment = segment
+        self.pageType = pageType
         self.report = ErrorReport(eCnt: 1,
                                   eTp: BT_ErrorType.NativeAppCrash.rawValue, message: message.bttReportMessage,
                                   line: 1,
@@ -60,11 +65,13 @@ extension CrashReport {
         message: String,
         pageName:String?,
         segment:String?,
+        pageType:String?,
         intervalProvider: TimeInterval = Date().timeIntervalSince1970
     ) {
         self.sessionID = sessionID
         self.pageName =  pageName
         self.segment = segment
+        self.pageType = pageType
         self.report = ErrorReport(eCnt: 1,
                                   eTp: errorType.rawValue, message: message.bttReportMessage,
                                   line: 1,
@@ -81,11 +88,13 @@ extension CrashReport {
         eCount: Int = 1,
         pageName:String?,
         segment:String?,
+        pageType:String?,
         intervalProvider: TimeInterval = Date().timeIntervalSince1970
     ) {
         self.sessionID = sessionID
         self.pageName = pageName
         self.segment = segment
+        self.pageType = pageType
         self.report = ErrorReport(eCnt: eCount,
                                   eTp: BT_ErrorType.ANRWarning.rawValue, message: ANRmessage,
                                   line: 1,
@@ -102,11 +111,13 @@ extension CrashReport {
         eCount: Int = 1,
         pageName:String?,
         segment:String?,
+        pageType:String?,
         intervalProvider: TimeInterval = Date().timeIntervalSince1970
     ) {
         self.sessionID = sessionID
         self.pageName = pageName
         self.segment = segment
+        self.pageType = pageType
         self.report = ErrorReport(eCnt: eCount,
                                   eTp: BT_ErrorType.MemoryWarning.rawValue,
                                   message: memoryWarningMessage,

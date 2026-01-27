@@ -15,7 +15,7 @@ struct TimerRequest: Equatable {
     let purchaseConfirmation: PurchaseConfirmation?
     let performanceReport: PerformanceReport?
     let excluded: String?
-    let trafficSegmentName: String?
+    let trafficSegmentName: String
     let nativeAppProperties: NativeAppProperties?
     let isErrorTimer: Bool
 
@@ -24,7 +24,7 @@ struct TimerRequest: Equatable {
         page: Page,
         timer: PageTimeInterval,
         customMetrics: String? = nil,
-        trafficSegmentName: String? = nil,
+        trafficSegmentName: String = "",
         purchaseConfirmation: PurchaseConfirmation? = nil,
         performanceReport: PerformanceReport? = nil,
         excluded: String? = nil,
@@ -71,12 +71,12 @@ extension TimerRequest: Codable {
         try con.encode(session.campaignName, forKey: .campaignName)
         try con.encode(session.campaignSource, forKey: .campaignSource)
         try con.encode(session.dataCenter, forKey: .dataCenter)
-        try con.encode(trafficSegmentName ?? session.trafficSegmentName, forKey: .trafficSegmentName)
+        try con.encode(!trafficSegmentName.isEmpty ? trafficSegmentName : session.trafficSegmentName, forKey: .trafficSegmentName)
 
         // Page
         try con.encode(page.brandValue, forKey: .brandValue)
         try con.encode(page.pageName, forKey: .pageName)
-        try con.encode(page.pageType, forKey: .pageType)
+        try con.encode(!page.pageType.isEmpty ? page.pageType : session.pageType, forKey: .pageType)
         try con.encode(page.referringURL, forKey: .referringURL)
         try con.encode(page.url, forKey: .url)
 
@@ -186,7 +186,8 @@ extension TimerRequest: Codable {
             campaignName: try container.decode(String.self, forKey: CodingKeys.campaignName),
             campaignSource: try container.decode(String.self, forKey: CodingKeys.campaignSource),
             dataCenter: try container.decode(String.self, forKey: CodingKeys.dataCenter),
-            trafficSegmentName: try container.decode(String.self, forKey: CodingKeys.trafficSegmentName))
+            trafficSegmentName: try container.decode(String.self, forKey: CodingKeys.trafficSegmentName),
+            pageType: try container.decode(String.self, forKey: CodingKeys.pageType))
 
         // CustomVariables
         let customVariables = CustomVariables(
@@ -288,7 +289,7 @@ extension TimerRequest: Codable {
         self.excluded = try container.decodeIfPresent(String.self, forKey: .excluded)
         let errValue = try container.decodeIfPresent(Int.self, forKey: .err) ?? 0
         self.isErrorTimer = errValue > 0 ? true : false
-        self.trafficSegmentName = nil
+        self.trafficSegmentName = ""
     }
 
     enum CodingKeys: String, CodingKey {

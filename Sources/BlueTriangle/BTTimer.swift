@@ -56,7 +56,7 @@ final public class BTTimer: NSObject, @unchecked Sendable {
     @objc public var page: Page
     
     /// Traffic segment.
-    @objc public var trafficSegmentName: String?
+    @objc public var trafficSegmentName: String = ""
 
     /// The state of the timer.
     @objc public private(set) var state: State = .initial
@@ -90,7 +90,7 @@ final public class BTTimer: NSObject, @unchecked Sendable {
     @objc public func getPageTitle() -> String { lock.sync { page.pageTitle } }
     
     @objc public func setTrafficSegment(_ trafficSegment: String) { lock.sync { trafficSegmentName = trafficSegment }}
-    @objc public func getTrafficSegment() -> String? { lock.sync { trafficSegmentName } }
+    @objc public func getTrafficSegment() -> String { lock.sync { trafficSegmentName } }
 
     var pageTimeInterval: PageTimeInterval {
         PageTimeInterval(

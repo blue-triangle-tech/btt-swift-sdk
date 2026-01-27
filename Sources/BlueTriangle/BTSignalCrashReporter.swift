@@ -91,7 +91,7 @@ class BTSignalCrashReporter {
                 if let strongSelf = self, let session_id = crash.btt_session_id, session_id.count > 0, let sessionId = UInt64(session_id){
                     var sessionCopy = session
                     sessionCopy.sessionID = sessionId
-                    let trafficSegment = session.trafficSegmentName.isEmpty ? ((crash.btt_page_name ?? "").count > 0  ? Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT : Constants.crashID) : session.trafficSegmentName
+                    let trafficSegment = (((crash.btt_page_name ?? "").count > 0 && crash.btt_page_name != Constants.crashID)  ? Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT : Constants.crashID)
                     let pageName = (crash.btt_page_name ?? "").count > 0 ? crash.btt_page_name : Constants.crashID
                     let message = """
 App crashed \(crash.signal)
@@ -100,8 +100,8 @@ errno : \(crash.errno)
 signal code : \(crash.sig_code)
 exit value : \(crash.exit_value)
 """
-                    let crashReport = CrashReport(sessionID: sessionId, message: message, pageName: pageName, segment: trafficSegment, intervalProvider: TimeInterval(crash.crash_time))
-                    try strongSelf.upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName, segment: trafficSegment)
+                    let crashReport = CrashReport(sessionID: sessionId, message: message, pageName: pageName, segment: trafficSegment, pageType: trafficSegment, intervalProvider: TimeInterval(crash.crash_time))
+                    try strongSelf.upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName, segment: trafficSegment, pageType: trafficSegment)
                     try strongSelf.removeFile(crash)
                 }else{
                     try self?.removeFile(crash)
@@ -115,9 +115,10 @@ exit value : \(crash.exit_value)
 
 // MARK: - Private
 private extension BTSignalCrashReporter {
-    private  func makeTimerRequest(session: Session, report: ErrorReport, pageName : String?, segment : String?) throws -> Request {
-        let trafficSegment = session.trafficSegmentName.isEmpty ? (segment ?? Constants.crashID) : session.trafficSegmentName
-        let page = Page(pageName: pageName ?? Constants.crashID, pageType: trafficSegment)
+    private  func makeTimerRequest(session: Session, report: ErrorReport, pageName : String?, segment : String, pageType: String) throws -> Request {
+        let trafficSegment = !segment.isEmpty ? segment : session.trafficSegmentName
+        let pageType = !pageType.isEmpty ? pageType :  session.pageType
+        let page = Page(pageName: pageName ?? Constants.crashID, pageType: pageType)
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
         let nativeProperty =  report.nativeApp.copy(.Regular)
         let customMetrics = session.customVarriables(logger: logger)
@@ -125,6 +126,7 @@ private extension BTSignalCrashReporter {
                                  page: page,
                                  timer: timer,
                                  customMetrics: customMetrics,
+                                 trafficSegmentName: trafficSegment,
                                  purchaseConfirmation: nil,
                                  performanceReport: nil,
                                  excluded: Constants.excludedValue,
@@ -136,8 +138,9 @@ private extension BTSignalCrashReporter {
                            model: model)
     }
     
-    private  func makeErrorReportRequest(session: Session, report: ErrorReport, pageName : String?, segment : String?) throws -> Request {
-        let trafficSegment = session.trafficSegmentName.isEmpty ? (segment ?? Constants.crashID) : session.trafficSegmentName
+    private  func makeErrorReportRequest(session: Session, report: ErrorReport, pageName : String?, segment : String, pageType: String) throws -> Request {
+        let trafficSegment = !segment.isEmpty ? segment : session.trafficSegmentName
+        let pageType = !pageType.isEmpty ? pageType :  session.pageType
         let params: [String: String] = [
             "siteID": session.siteID,
             "nStart": String(report.time),
@@ -145,7 +148,7 @@ private extension BTSignalCrashReporter {
             "txnName": trafficSegment,
             "sessionID": String(session.sessionID),
             "pgTm": "0",
-            "pageType": trafficSegment,
+            "pageType": pageType,
             "AB": session.abTestID,
             "DCTR": session.dataCenter,
             "CmpN": session.campaignName,
@@ -163,13 +166,13 @@ private extension BTSignalCrashReporter {
                            model: [report])
     }
     
-    private func upload(session: Session, report: ErrorReport, pageName : String?, segment : String?) throws {
+    private func upload(session: Session, report: ErrorReport, pageName : String?, segment : String, pageType: String) throws {
         let timerRequest = try self.makeTimerRequest(session: session,
-                                                     report: report, pageName: pageName, segment: segment)
+                                                     report: report, pageName: pageName, segment: segment, pageType: pageType)
         self.uploader.send(request: timerRequest)
         
         let reportRequest = try self.makeErrorReportRequest(session: session,
-                                                            report: report, pageName: pageName, segment: segment)
+                                                            report: report, pageName: pageName, segment: segment, pageType: pageType)
         self.uploader.send(request: reportRequest)
     }
 }

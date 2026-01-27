@@ -55,7 +55,7 @@ class MemoryWarningWatchDog {
         } else {
             let pageName = MemoryWarningWatchDog.DEFAULT_PAGE_NAME
             let report = CrashReport(sessionID: BlueTriangle.sessionID,
-                                     memoryWarningMessage: message, pageName: pageName, segment: MemoryWarningWatchDog.DEFAULT_PAGE_NAME)
+                                     memoryWarningMessage: message, pageName: pageName, segment: MemoryWarningWatchDog.DEFAULT_PAGE_NAME, pageType: MemoryWarningWatchDog.DEFAULT_PAGE_NAME)
             uploadReports(session: session, report: report, segment: MemoryWarningWatchDog.DEFAULT_PAGE_NAME)
         }
         logger.debug(message)
@@ -113,13 +113,13 @@ extension MemoryWarningWatchDog {
         }
     }
     
-    internal func uploadMemoryWarningReport(pageName: String, uuid: UUID, segment : String?) {
+    internal func uploadMemoryWarningReport(pageName: String, uuid: UUID, segment : String, pageType : String) {
         Task {
             do {
                 guard let session = self.session(), let errorMetric = await self.errorMetricStore.flushMemoryWarning(id: uuid) else {
                     return
                 }
-                let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: errorMetric.message, eCount: errorMetric.eCount, pageName: pageName, segment: segment, intervalProvider: errorMetric.time)
+                let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: errorMetric.message, eCount: errorMetric.eCount, pageName: pageName, segment: segment, pageType: pageType, intervalProvider: errorMetric.time)
                 let reportRequest = try self.makeCrashReportRequest(session: session,
                                                                     report: report.report, pageName: report.pageName, segment: segment)
                 self.uploader.send(request: reportRequest)

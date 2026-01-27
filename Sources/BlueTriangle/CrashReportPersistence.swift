@@ -38,7 +38,8 @@ struct CrashReportPersistence: CrashReportPersisting {
                     CrashReport(sessionID: BlueTriangle.sessionID,
                                 exception: exception,
                                 pageName: BlueTriangle.recentTimer()?.getPageName(),
-                                segment: BlueTriangle.recentTimer()?.getTrafficSegment()))
+                                segment: BlueTriangle.recentTimer()?.getTrafficSegment(),
+                                pageType: BlueTriangle.recentTimer()?.page.pageType))
             }
         }
     }

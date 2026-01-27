@@ -96,7 +96,7 @@ final public class Page: NSObject, @unchecked Sendable {
         pageName: String,
         pageTitle: String = "",
         brandValue: Decimal = 0.0,
-        pageType: String = "Main Group",
+        pageType: String = "",
         referringURL: String = "",
         url: String = "",
         customVariables: CustomVariables? = nil,
@@ -119,7 +119,7 @@ final public class Page: NSObject, @unchecked Sendable {
         pageName: String,
         pageTitle: String = "",
         brandValue: Decimal = 0.0,
-        pageType: String = "Main Group",
+        pageType: String = "",
         referringURL: String = "",
         url: String = ""
     ) {
