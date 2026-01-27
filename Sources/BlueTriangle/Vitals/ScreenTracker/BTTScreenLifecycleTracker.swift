@@ -86,6 +86,8 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
             }
             else if (type == .load || type == .view){
                 SignalHandler.setCurrentPageName(pageName)
+                SignalHandler.setPageType(Constants.SCREEN_TRACKING_PAGE_GROUP)
+                SignalHandler.setTraficSegment(Constants.SCREEN_TRACKING_PAGE_GROUP)
             }
         }
     }

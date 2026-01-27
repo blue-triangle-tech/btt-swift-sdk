@@ -118,9 +118,8 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
             }
         } else {
             let pageName = ANRWatchDog.TIMER_PAGE_NAME
-            let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName, segment: ANRWatchDog.TIMER_PAGE_NAME, pageType: ANRWatchDog.TIMER_PAGE_NAME)
-            uploadReports(session: session, report: report, segment: ANRWatchDog.TIMER_PAGE_NAME, pageType: ANRWatchDog.TIMER_PAGE_NAME)
-
+            let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName, segment: session.trafficSegmentName, pageType: session.pageType)
+            uploadReports(session: session, report: report, segment: session.trafficSegmentName, pageType: session.pageType)
         }
         logger.debug(message)
     }

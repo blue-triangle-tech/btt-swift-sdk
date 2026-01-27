@@ -20,6 +20,9 @@ struct SignalCrash: Codable {
     var app_version: String
     var btt_session_id: String?
     var btt_page_name: String?
+    var trafic_segment: String
+    var page_type: String
+
 }
 
 
@@ -91,7 +94,8 @@ class BTSignalCrashReporter {
                 if let strongSelf = self, let session_id = crash.btt_session_id, session_id.count > 0, let sessionId = UInt64(session_id){
                     var sessionCopy = session
                     sessionCopy.sessionID = sessionId
-                    let trafficSegment = (((crash.btt_page_name ?? "").count > 0 && crash.btt_page_name != Constants.crashID)  ? Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT : Constants.crashID)
+                    let trafficSegment = !crash.trafic_segment.isEmpty ? crash.trafic_segment : session.trafficSegmentName
+                    let pageType = !crash.page_type.isEmpty ? crash.page_type : session.pageType
                     let pageName = (crash.btt_page_name ?? "").count > 0 ? crash.btt_page_name : Constants.crashID
                     let message = """
 App crashed \(crash.signal)
@@ -100,7 +104,7 @@ errno : \(crash.errno)
 signal code : \(crash.sig_code)
 exit value : \(crash.exit_value)
 """
-                    let crashReport = CrashReport(sessionID: sessionId, message: message, pageName: pageName, segment: trafficSegment, pageType: trafficSegment, intervalProvider: TimeInterval(crash.crash_time))
+                    let crashReport = CrashReport(sessionID: sessionId, message: message, pageName: pageName, segment: trafficSegment, pageType: pageType, intervalProvider: TimeInterval(crash.crash_time))
                     try strongSelf.upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName, segment: trafficSegment, pageType: trafficSegment)
                     try strongSelf.removeFile(crash)
                 }else{

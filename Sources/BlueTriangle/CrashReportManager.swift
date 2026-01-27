@@ -91,7 +91,7 @@ final class CrashReportManager: CrashReportManaging {
                 let nativeApp = NativeAppProperties.nstEmpty
                 let report = ErrorReport(nativeApp: nativeApp, eTp: BT_ErrorType.NativeAppCrash.rawValue, error: error, line: line, time: intervalProvider().milliseconds)
                 let pageName = Constants.crashID
-                try upload(session:session , report: report, pageName: pageName, segment: Constants.crashID, pageType: Constants.crashID)
+                try upload(session:session , report: report, pageName: pageName, segment: session.trafficSegmentName, pageType: session.pageType)
             }
 
         } catch {

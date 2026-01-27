@@ -42,11 +42,13 @@ static bool __debug_log = false;
 static char* __app_version = "unknown";
 static char* __report_folder_path = NULL;
 static char * __current_page_name = NULL;
+static char * __trafic_segment = NULL;
+static char * __page_type = NULL;
 static NSString* __btt_session_id = @"unknown";
 static int __max_cache_files = 5;
 static bool __is_register = false;
 
-static pthread_mutex_t page_name_lock   = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t crash_context_lock   = PTHREAD_MUTEX_INITIALIZER;
 
 void register_btt_tracker(void){
     
@@ -207,6 +209,8 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
     " \"app_version\" : \"%s\", "
     " \"btt_session_id\" : \"%s\", "
     " \"btt_page_name\" : \"%s\", "
+    " \"trafic_segment\" : \"%s\", "
+    " \"page_type\" : \"%s\", "
     "}";
 
     const int crash_title_size = 256;
@@ -334,8 +338,10 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
     unsigned long bufferSize = strlen(report_templet) + (size_of_values * 3); //take size of values 3 times more just for safety
     char* report = calloc( bufferSize, sizeof(char));
     
-    pthread_mutex_lock(&page_name_lock);
+    pthread_mutex_lock(&crash_context_lock);
     const char *current_page_name = __current_page_name ? __current_page_name : "";
+    const char *trafic_segment = __trafic_segment ? __trafic_segment : "";
+    const char *page_type = __page_type ? __page_type : "";
     int actual_len = snprintf(report, bufferSize, report_templet,
                               crash_title,
                               sinfo->si_signo,
@@ -345,8 +351,11 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
                               crash_time,
                               __app_version,
                               btt_sessionid,
-                              current_page_name);
-    pthread_mutex_unlock(&page_name_lock);
+                              current_page_name,
+                              trafic_segment,
+                              page_type
+                              );
+    pthread_mutex_unlock(&crash_context_lock);
     
     if (actual_len > bufferSize)
         [SignalHandler debug_log:[NSString stringWithFormat:@"bttcrash report buffer is shorter then expected Expected %d found %lu", actual_len, bufferSize]];
@@ -529,13 +538,41 @@ char* make_report(char* sig_name, siginfo_t* sinfo, time_t crash_time){
     const char *pageNameutf8 = pageName.UTF8String;
     if (!pageNameutf8) return;
     
-    pthread_mutex_lock(&page_name_lock);
+    pthread_mutex_lock(&crash_context_lock);
     if (__current_page_name ) {
         free(__current_page_name);
         __current_page_name = NULL;
     }
     __current_page_name = strdup(pageNameutf8);
-    pthread_mutex_unlock(&page_name_lock);
+    pthread_mutex_unlock(&crash_context_lock);
+}
+
++ (void)setTraficSegment:(NSString*) segment{
+    if (!segment) return;
+    const char *segmentutf8 = segment.UTF8String;
+    if (!segmentutf8) return;
+    
+    pthread_mutex_lock(&crash_context_lock);
+    if (__trafic_segment) {
+        free(__trafic_segment);
+        __trafic_segment = NULL;
+    }
+    __trafic_segment = strdup(segmentutf8);
+    pthread_mutex_unlock(&crash_context_lock);
+}
+
++ (void)setPageType:(NSString*) page_type{
+    if (!page_type) return;
+    const char *pageTypeutf8 = page_type.UTF8String;
+    if (!pageTypeutf8) return;
+    
+    pthread_mutex_lock(&crash_context_lock);
+    if (__page_type) {
+        free(__page_type);
+        __page_type = NULL;
+    }
+    __page_type = strdup(pageTypeutf8);
+    pthread_mutex_unlock(&crash_context_lock);
 }
 
 + (void) updateSessionID:(NSString*) session_id{

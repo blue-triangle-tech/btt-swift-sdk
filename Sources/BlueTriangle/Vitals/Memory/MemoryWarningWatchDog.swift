@@ -55,8 +55,8 @@ class MemoryWarningWatchDog {
         } else {
             let pageName = MemoryWarningWatchDog.DEFAULT_PAGE_NAME
             let report = CrashReport(sessionID: BlueTriangle.sessionID,
-                                     memoryWarningMessage: message, pageName: pageName, segment: MemoryWarningWatchDog.DEFAULT_PAGE_NAME, pageType: MemoryWarningWatchDog.DEFAULT_PAGE_NAME)
-            uploadReports(session: session, report: report, segment: MemoryWarningWatchDog.DEFAULT_PAGE_NAME, pageType: MemoryWarningWatchDog.DEFAULT_PAGE_NAME)
+                                     memoryWarningMessage: message, pageName: pageName, segment: session.trafficSegmentName, pageType: session.pageType)
+            uploadReports(session: session, report: report, segment: session.trafficSegmentName, pageType: session.pageType)
         }
         logger.debug(message)
     }

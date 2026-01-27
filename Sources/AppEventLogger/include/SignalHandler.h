@@ -22,6 +22,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (void) setCurrentPageName:(NSString*) page_name;
 
++ (void) setTraficSegment:(NSString*) segment;
+
++ (void) setPageType:(NSString*) page_type;
+
 + (void) updateSessionID:(NSString*) session_id;
 
 + (void) debug_log:(NSString *)msg;
