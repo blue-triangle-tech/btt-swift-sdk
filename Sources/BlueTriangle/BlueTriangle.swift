@@ -817,9 +817,9 @@ public extension BlueTriangle {
                 return
             }
             uploader.send(request: request)
-            anrWatchDog?.uploadAnrReportForPage(pageName: timer.getPageName(), uuid: timer.uuid)
-            memoryWarningWatchDog?.uploadMemoryWarningReport(pageName: timer.getPageName(), uuid: timer.uuid)
-            nsExeptionReporter?.uploadErrorForPage(pageName: timer.getPageName(), uuid: timer.uuid)
+            anrWatchDog?.uploadAnrReportForPage(pageName: timer.getPageName(), uuid: timer.uuid, segment: timer.getTrafficSegment())
+            memoryWarningWatchDog?.uploadMemoryWarningReport(pageName: timer.getPageName(), uuid: timer.uuid, segment: timer.getTrafficSegment())
+            nsExeptionReporter?.uploadErrorForPage(pageName: timer.getPageName(), uuid: timer.uuid, segment: timer.getTrafficSegment())
         }
     }
 }
@@ -1150,7 +1150,8 @@ extension BlueTriangle {
     /// - Parameter exception: The exception to upload.
     public static func storeException(exception: NSException) {
         let pageName = BlueTriangle.recentTimer()?.getPageName()
-        let crashReport = CrashReport(sessionID: sessionID, exception: exception, pageName: pageName)
+        let segment = BlueTriangle.recentTimer()?.getTrafficSegment()
+        let crashReport = CrashReport(sessionID: sessionID, exception: exception, pageName: pageName, segment: segment)
         CrashReportPersistence.save(crashReport)
     }
 }

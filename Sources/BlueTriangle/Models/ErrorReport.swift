@@ -71,7 +71,7 @@ extension ErrorReport {
         self.nativeApp = nativeApp
         self.eTp = eTp
         self.eCnt = eCnt
-        self.message = String(describing: error)
+        self.message = error.localizedDescription
         self.line = Int(line)
         self.column = 1
         self.time = time

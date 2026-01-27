@@ -118,14 +118,14 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
             }
         } else {
             let pageName = ANRWatchDog.TIMER_PAGE_NAME
-            let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName)
-            uploadReports(session: session, report: report)
+            let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName, segment: ANRWatchDog.TIMER_PAGE_NAME)
+            uploadReports(session: session, report: report, segment: ANRWatchDog.TIMER_PAGE_NAME)
 
         }
         logger.debug(message)
     }
     
-    private func uploadReports(session: Session, report: CrashReport) {
+    private func uploadReports(session: Session, report: CrashReport, segment : String) {
         DispatchQueue.global(qos: .utility).async { [weak self] in
             do {
                 guard let strongSelf = self else {
@@ -133,11 +133,11 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
                 }
                 
                 let timerRequest = try strongSelf.makeTimerRequest(session: session,
-                                                                   report: report.report, pageName: report.pageName)
+                                                                   report: report.report, pageName: report.pageName, segment: segment)
                  strongSelf.uploader.send(request: timerRequest)
                 
                 let reportRequest = try strongSelf.makeCrashReportRequest(session: session,
-                                                                          report: report.report, pageName: report.pageName)
+                                                                          report: report.report, pageName: report.pageName, segment: segment)
                 strongSelf.uploader.send(request: reportRequest)
             } catch {
                 self?.logger.error(error.localizedDescription)
@@ -145,15 +145,15 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
         }
     }
     
-    internal func uploadAnrReportForPage(pageName: String, uuid: UUID) {
+    internal func uploadAnrReportForPage(pageName: String, uuid: UUID, segment : String?) {
         Task {
             do {
                 guard let session = self.session(), let errorMetric = await self.errorMetricStore.flushAnrError(id: uuid) else {
                     return
                 }
-                let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: errorMetric.message, eCount: errorMetric.eCount, pageName: pageName, intervalProvider: errorMetric.time)
+                let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: errorMetric.message, eCount: errorMetric.eCount, pageName: pageName, segment: segment, intervalProvider: errorMetric.time)
                 let reportRequest = try self.makeCrashReportRequest(session: session,
-                                                                          report: report.report, pageName: report.pageName)
+                                                                    report: report.report, pageName: report.pageName, segment: segment)
                 self.uploader.send(request: reportRequest)
             } catch {
                 self.logger.error(error.localizedDescription)
@@ -161,8 +161,9 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
         }
     }
     
-    private func makeTimerRequest(session: Session, report: ErrorReport, pageName: String?) throws -> Request {
-        let page = Page(pageName: pageName ?? ANRWatchDog.TIMER_PAGE_NAME, pageType: "")
+    private func makeTimerRequest(session: Session, report: ErrorReport, pageName: String?, segment: String?) throws -> Request {
+        let trafficSegment = session.trafficSegmentName.isEmpty ? (segment ?? ANRWatchDog.TIMER_PAGE_NAME) : session.trafficSegmentName
+        let page = Page(pageName: pageName ?? ANRWatchDog.TIMER_PAGE_NAME, pageType: trafficSegment)
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
         let nativeProperty = BlueTriangle.recentTimer()?.nativeAppProperties ?? .empty
         let customMetrics = session.customVarriables(logger: logger)
@@ -181,15 +182,16 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
                            model: model)
     }
         
-    private func makeCrashReportRequest(session: Session, report: ErrorReport, pageName: String?) throws -> Request {
+    private func makeCrashReportRequest(session: Session, report: ErrorReport, pageName: String?, segment: String?) throws -> Request {
+        let trafficSegment = session.trafficSegmentName.isEmpty ? (segment ?? ANRWatchDog.TIMER_PAGE_NAME) : session.trafficSegmentName
         let params: [String: String] = [
             "siteID": session.siteID,
             "nStart": String(report.time),
             "pageName": pageName ?? ANRWatchDog.TIMER_PAGE_NAME,
-            "txnName": session.trafficSegmentName,
+            "txnName": trafficSegment,
             "sessionID": String(session.sessionID),
             "pgTm": "0",
-            "pageType": "",
+            "pageType": trafficSegment,
             "AB": session.abTestID,
             "DCTR": session.dataCenter,
             "CmpN": session.campaignName,

@@ -91,6 +91,7 @@ class BTSignalCrashReporter {
                 if let strongSelf = self, let session_id = crash.btt_session_id, session_id.count > 0, let sessionId = UInt64(session_id){
                     var sessionCopy = session
                     sessionCopy.sessionID = sessionId
+                    let trafficSegment = session.trafficSegmentName.isEmpty ? ((crash.btt_page_name ?? "").count > 0  ? Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT : Constants.crashID) : session.trafficSegmentName
                     let pageName = (crash.btt_page_name ?? "").count > 0 ? crash.btt_page_name : Constants.crashID
                     let message = """
 App crashed \(crash.signal)
@@ -99,8 +100,8 @@ errno : \(crash.errno)
 signal code : \(crash.sig_code)
 exit value : \(crash.exit_value)
 """
-                    let crashReport = CrashReport(sessionID: sessionId, message: message, pageName: pageName, intervalProvider: TimeInterval(crash.crash_time))
-                    try strongSelf.upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName)
+                    let crashReport = CrashReport(sessionID: sessionId, message: message, pageName: pageName, segment: trafficSegment, intervalProvider: TimeInterval(crash.crash_time))
+                    try strongSelf.upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName, segment: trafficSegment)
                     try strongSelf.removeFile(crash)
                 }else{
                     try self?.removeFile(crash)
@@ -114,8 +115,9 @@ exit value : \(crash.exit_value)
 
 // MARK: - Private
 private extension BTSignalCrashReporter {
-    private  func makeTimerRequest(session: Session, report: ErrorReport, pageName : String?) throws -> Request {
-        let page = Page(pageName: pageName ?? Constants.crashID, pageType: "")
+    private  func makeTimerRequest(session: Session, report: ErrorReport, pageName : String?, segment : String?) throws -> Request {
+        let trafficSegment = session.trafficSegmentName.isEmpty ? (segment ?? Constants.crashID) : session.trafficSegmentName
+        let page = Page(pageName: pageName ?? Constants.crashID, pageType: trafficSegment)
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
         let nativeProperty =  report.nativeApp.copy(.Regular)
         let customMetrics = session.customVarriables(logger: logger)
@@ -134,15 +136,16 @@ private extension BTSignalCrashReporter {
                            model: model)
     }
     
-    private  func makeErrorReportRequest(session: Session, report: ErrorReport, pageName : String?) throws -> Request {
+    private  func makeErrorReportRequest(session: Session, report: ErrorReport, pageName : String?, segment : String?) throws -> Request {
+        let trafficSegment = session.trafficSegmentName.isEmpty ? (segment ?? Constants.crashID) : session.trafficSegmentName
         let params: [String: String] = [
             "siteID": session.siteID,
             "nStart": String(report.time),
             "pageName": pageName ?? Constants.crashID,
-            "txnName": session.trafficSegmentName,
+            "txnName": trafficSegment,
             "sessionID": String(session.sessionID),
             "pgTm": "0",
-            "pageType": "",
+            "pageType": trafficSegment,
             "AB": session.abTestID,
             "DCTR": session.dataCenter,
             "CmpN": session.campaignName,
@@ -160,13 +163,13 @@ private extension BTSignalCrashReporter {
                            model: [report])
     }
     
-    private func upload(session: Session, report: ErrorReport, pageName : String?) throws {
+    private func upload(session: Session, report: ErrorReport, pageName : String?, segment : String?) throws {
         let timerRequest = try self.makeTimerRequest(session: session,
-                                                     report: report, pageName: pageName)
+                                                     report: report, pageName: pageName, segment: segment)
         self.uploader.send(request: timerRequest)
         
         let reportRequest = try self.makeErrorReportRequest(session: session,
-                                                            report: report, pageName: pageName)
+                                                            report: report, pageName: pageName, segment: segment)
         self.uploader.send(request: reportRequest)
     }
 }

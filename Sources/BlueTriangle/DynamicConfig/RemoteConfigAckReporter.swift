@@ -47,7 +47,7 @@ class RemoteConfigAckReporter {
                     let pageGroup = "BTTConfigUpdate"
                     let trafficSegment = "BTTConfigUpdate"
                     let message = "\(BT_ErrorType.BTTConfigUpdateError.rawValue) : \(error)"
-                    let crashReport = CrashReport(errorType : BT_ErrorType.BTTConfigUpdateError, sessionID: session.sessionID, message: message, pageName: pageName)
+                    let crashReport = CrashReport(errorType : BT_ErrorType.BTTConfigUpdateError, sessionID: session.sessionID, message: message, pageName: pageName, segment: trafficSegment)
                     try self.upload(session: session,
                                     report: crashReport.report,
                                     pageName: pageName,

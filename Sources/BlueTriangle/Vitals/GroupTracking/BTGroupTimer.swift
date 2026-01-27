@@ -54,7 +54,7 @@ final class BTTimerGroup {
         self.groupingCause = cause
         self.causeInterval = causeInterval
         self.groupName = hasForcedGroup ? groupName : nil
-        self.groupTimer = BlueTriangle.startTimer(page: Page(pageName: groupName), isGroupedTimer: true)
+        self.groupTimer = BlueTriangle.startTimer(page: Page(pageName: groupName, pageType: Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT), isGroupedTimer: true)
 
         updatePageNameFromSnapshot()
         scheduleIdleTimer()

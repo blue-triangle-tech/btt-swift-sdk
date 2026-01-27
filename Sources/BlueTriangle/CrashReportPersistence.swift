@@ -36,7 +36,9 @@ struct CrashReportPersistence: CrashReportPersisting {
                 SignalHandler.disableCrashTracking()
                 Self.save(
                     CrashReport(sessionID: BlueTriangle.sessionID,
-                                exception: exception, pageName: BlueTriangle.recentTimer()?.getPageName()))
+                                exception: exception,
+                                pageName: BlueTriangle.recentTimer()?.getPageName(),
+                                segment: BlueTriangle.recentTimer()?.getTrafficSegment()))
             }
         }
     }
