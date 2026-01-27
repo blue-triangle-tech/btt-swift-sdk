@@ -166,7 +166,6 @@ final public class BTTimer: NSObject, @unchecked Sendable {
         
         let isInActiveTimer = isGroupTimer && type == .custom
         if !isInActiveTimer {
-         //   print("Recent Page name: \(self.getPageName()), Timer type: \(type)")
             BlueTriangle.addActiveTimer(self)
         }
 
@@ -195,7 +194,6 @@ final public class BTTimer: NSObject, @unchecked Sendable {
         self.stopNetState()
         
         BlueTriangle.removeActiveTimer(self)
-        let page = BlueTriangle.recentTimer()?.getPageName()
         handle(.end)
         onEnd?()
     }
