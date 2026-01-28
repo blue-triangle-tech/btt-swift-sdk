@@ -185,9 +185,9 @@ class TimerMapActivity {
         
         if BlueTriangle.configuration.enableGrouping {
             BlueTriangle.groupTimer.startGroupIfNeeded(pageTitle.isEmpty ? pageName : pageTitle)
-            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageTitle: pageTitle, pageType: Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT), timerType: .custom, isGroupedTimer: true)
+            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageTitle: pageTitle, pageType: Constants.SCREEN_TRACKING_PAGE_GROUP), timerType: .custom, isGroupedTimer: true)
         } else {
-            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageType: Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT))
+            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageType: Constants.SCREEN_TRACKING_PAGE_GROUP))
         }
     }
     
