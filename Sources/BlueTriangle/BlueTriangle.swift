@@ -162,18 +162,7 @@ final public class BlueTriangle: NSObject {
     
     internal static func removeActiveTimer(_ timer : BTTimer){
         timerLock.sync {
-            var index = 0
-            var isTimerAvailable = false
-            
-            for timerObj in activeTimers{
-                if timerObj == timer { isTimerAvailable = true
-                    break }
-                index = index + 1
-            }
-            
-            if isTimerAvailable {
-                activeTimers.remove(at: index)
-            }
+            self.activeTimers.removeAll { $0.uuid == timer.uuid }
         }
     }
     

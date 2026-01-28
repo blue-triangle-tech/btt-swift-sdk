@@ -223,7 +223,8 @@ extension Mock {
         campaignName: "MY_CAMPAIGN_NAME",
         campaignSource: "MY_CAMPAIGN_SOURCE",
         dataCenter: "MY_DATA_CENTER",
-        trafficSegmentName: "MY_SEGMENT_NAME")
+        trafficSegmentName: "MY_SEGMENT_NAME",
+        pageType: "MAIN GROUP")
     
     internal static func sessionProvider() -> Session {
         return session

@@ -510,7 +510,7 @@ extension BlueTriangleTests {
         
         timer.end()
         
-        _ = BlueTriangle.startTimer(page: Page(pageName: "Another_Page"))
+        let anotherTimer = BlueTriangle.startTimer(page: Page(pageName: "Another_Page"))
         await waitForExpectations(timeout: 15.0)
 
         let capturedRequestString = String(data: Data(base64Encoded: capturedRequest.body!)!, encoding: .utf8)
@@ -534,6 +534,8 @@ extension BlueTriangleTests {
         }else{
             XCTFail()
         }
+        
+        anotherTimer.end()
     }
 }
 
