@@ -37,6 +37,7 @@ class ANRWatchDog{
     let session: SessionProvider
     let uploader: Uploading
     let logger: Logging
+    let errorMetricStore = ErrorMetricStore()
     
     init(mainThreadObserver: MainThreadObserver,
          session: @escaping SessionProvider,
@@ -111,13 +112,19 @@ class ANRWatchDog{
 Potential ANR Detected
 An task blocking main thread since \(self.errorTriggerInterval) seconds
 """
-        let pageName = BlueTriangle.recentTimer()?.getPageName()
-        let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName)
-        uploadReports(session: session, report: report)
+        if let timer = BlueTriangle.recentTimer() {
+            Task {
+                await errorMetricStore.addAnrError(id: timer.uuid, message: message)
+            }
+        } else {
+            let pageName = ANRWatchDog.TIMER_PAGE_NAME
+            let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: message, pageName: pageName, segment: session.trafficSegmentName, pageType: session.pageType)
+            uploadReports(session: session, report: report, segment: session.trafficSegmentName, pageType: session.pageType)
+        }
         logger.debug(message)
     }
     
-    private func uploadReports(session: Session, report: CrashReport) {
+    private func uploadReports(session: Session, report: CrashReport, segment : String, pageType : String) {
         DispatchQueue.global(qos: .utility).async { [weak self] in
             do {
                 guard let strongSelf = self else {
@@ -125,11 +132,11 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
                 }
                 
                 let timerRequest = try strongSelf.makeTimerRequest(session: session,
-                                                                   report: report.report, pageName: report.pageName)
+                                                                   report: report.report, pageName: report.pageName, segment: segment, pageType: pageType)
                  strongSelf.uploader.send(request: timerRequest)
                 
                 let reportRequest = try strongSelf.makeCrashReportRequest(session: session,
-                                                                          report: report.report, pageName: report.pageName)
+                                                                          report: report.report, pageName: report.pageName, segment: segment, pageType: pageType)
                 strongSelf.uploader.send(request: reportRequest)
             } catch {
                 self?.logger.error(error.localizedDescription)
@@ -137,8 +144,26 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
         }
     }
     
-    private func makeTimerRequest(session: Session, report: ErrorReport, pageName: String?) throws -> Request {
-        let page = Page(pageName: pageName ?? ANRWatchDog.TIMER_PAGE_NAME, pageType: "")
+    internal func uploadAnrReportForPage(pageName: String, uuid: UUID, segment : String, pageType : String) {
+        Task {
+            do {
+                guard let session = self.session(), let errorMetric = await self.errorMetricStore.flushAnrError(id: uuid) else {
+                    return
+                }
+                let report = CrashReport(sessionID: BlueTriangle.sessionID, ANRmessage: errorMetric.message, eCount: errorMetric.eCount, pageName: pageName, segment: segment, pageType: pageType, intervalProvider: errorMetric.time)
+                let reportRequest = try self.makeCrashReportRequest(session: session,
+                                                                    report: report.report, pageName: report.pageName, segment: segment, pageType: pageType)
+                self.uploader.send(request: reportRequest)
+            } catch {
+                self.logger.error(error.localizedDescription)
+            }
+        }
+    }
+    
+    private func makeTimerRequest(session: Session, report: ErrorReport, pageName: String?, segment: String, pageType: String) throws -> Request {
+        let trafficSegment = !segment.isEmpty ? segment : session.trafficSegmentName
+        let pageTypeValue = !pageType.isEmpty ? pageType :  session.pageType
+        let page = Page(pageName: pageName ?? ANRWatchDog.TIMER_PAGE_NAME, pageType: pageTypeValue)
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
         let nativeProperty = BlueTriangle.recentTimer()?.nativeAppProperties ?? .empty
         let customMetrics = session.customVarriables(logger: logger)
@@ -146,6 +171,7 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
                                  page: page,
                                  timer: timer,
                                  customMetrics: customMetrics,
+                                 trafficSegmentName: trafficSegment,
                                  purchaseConfirmation: nil,
                                  performanceReport: nil,
                                  excluded: Constants.excludedValue,
@@ -157,15 +183,17 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
                            model: model)
     }
         
-    private func makeCrashReportRequest(session: Session, report: ErrorReport, pageName: String?) throws -> Request {
+    private func makeCrashReportRequest(session: Session, report: ErrorReport, pageName: String?, segment: String, pageType: String) throws -> Request {
+        let trafficSegment = !segment.isEmpty ? segment : session.trafficSegmentName
+        let pageTypeValue = !pageType.isEmpty ? pageType :  session.pageType
         let params: [String: String] = [
             "siteID": session.siteID,
             "nStart": String(report.time),
             "pageName": pageName ?? ANRWatchDog.TIMER_PAGE_NAME,
-            "txnName": session.trafficSegmentName,
+            "txnName": trafficSegment,
             "sessionID": String(session.sessionID),
-            "pgTm": "0",
-            "pageType": "",
+            "pgTm": String(Constants.minPgTm),
+            "pageType": pageTypeValue,
             "AB": session.abTestID,
             "DCTR": session.dataCenter,
             "CmpN": session.campaignName,

@@ -25,9 +25,9 @@ class RemoteConfigAckReporter {
         queue.async {
             do {
                 if let session = BlueTriangle.session() {
-                    let pageName = "BTTConfigUpdate"
-                    let pageGroup = "BTTConfigUpdate"
-                    let trafficSegment = "BTTConfigUpdate"
+                    let pageName = Constants.bttConfigUpdate
+                    let pageGroup = Constants.bttConfigUpdate
+                    let trafficSegment = Constants.bttConfigUpdate
                     try self.upload(session: session,
                                     pageName: pageName,
                                     pageGroup: pageGroup,
@@ -43,11 +43,12 @@ class RemoteConfigAckReporter {
         queue.async {
             do {
                 if let session = BlueTriangle.session(){
-                    let pageName = "BTTConfigUpdate"
-                    let pageGroup = "BTTConfigUpdate"
-                    let trafficSegment = "BTTConfigUpdate"
+                    let pageName = Constants.bttConfigUpdate
+                    let pageGroup = Constants.bttConfigUpdate
+                    let trafficSegment = Constants.bttConfigUpdate
+                    let pageType = Constants.bttConfigUpdate
                     let message = "\(BT_ErrorType.BTTConfigUpdateError.rawValue) : \(error)"
-                    let crashReport = CrashReport(errorType : BT_ErrorType.BTTConfigUpdateError, sessionID: session.sessionID, message: message, pageName: pageName)
+                    let crashReport = CrashReport(errorType : BT_ErrorType.BTTConfigUpdateError, sessionID: session.sessionID, message: message, pageName: pageName, segment: trafficSegment, pageType: pageType)
                     try self.upload(session: session,
                                     report: crashReport.report,
                                     pageName: pageName,
@@ -91,7 +92,7 @@ private extension RemoteConfigAckReporter {
             "pageName": pageName,
             "txnName": trafficSegment,
             "sessionID": String(session.sessionID),
-            "pgTm": "0",
+            "pgTm": String(Constants.minPgTm),
             "pageType": pageGroup,
             "AB": session.abTestID,
             "DCTR": session.dataCenter,

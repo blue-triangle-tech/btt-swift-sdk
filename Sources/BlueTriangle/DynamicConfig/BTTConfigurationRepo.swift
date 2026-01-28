@@ -41,7 +41,6 @@ class BTTConfigurationRepo : ConfigurationRepo{
         
         let newConfig = BTTSavedRemoteConfig(
               networkSampleRateSDK: config.networkSampleRateSDK,
-              groupedViewSampleRate: config.groupedViewSampleRate,
               enableRemoteConfigAck: config.enableRemoteConfigAck,
               enableAllTracking: config.enableAllTracking,
               enableScreenTracking: config.enableScreenTracking,
@@ -71,7 +70,6 @@ class BTTConfigurationRepo : ConfigurationRepo{
         
         let newConfig = BTTSavedRemoteConfig(
              networkSampleRateSDK: config.networkSampleRateSDK,
-             groupedViewSampleRate: config.groupedViewSampleRate,
              enableRemoteConfigAck: config.enableRemoteConfigAck,
              enableAllTracking: config.enableAllTracking,
              enableScreenTracking: config.enableScreenTracking,

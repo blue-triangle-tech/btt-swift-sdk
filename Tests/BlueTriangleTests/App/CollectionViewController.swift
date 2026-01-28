@@ -76,6 +76,9 @@ final class CollectionViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        if let timer = self.timer {
+            BlueTriangle.endTimer(timer)
+        }
         timer = BlueTriangle.startTimer(page: Page(pageName: "PerformanceTest"))
 #if os(iOS)
         view.backgroundColor = .systemBackground
@@ -103,12 +106,16 @@ final class CollectionViewController: UIViewController {
                 dataSource.apply(snapshot)
 
                 // FIXME: end timer after all cells load
-                BlueTriangle.endTimer(timer!)
-
+                if let timer = self.timer {
+                    BlueTriangle.endTimer(timer)
+                }
                 loadingTask?.cancel()
                 loadingTask = nil
             } catch {
                 handleError(error)
+                if let timer = self.timer {
+                    BlueTriangle.endTimer(timer)
+                }
             }
         }
     }

@@ -8,7 +8,7 @@
 import Foundation
 
 struct Session: Equatable {
-    let wcd = 1
+    var wcd = 1
     let eventType = 9
     let navigationType = 9
     let osInfo = Device.os
@@ -46,6 +46,9 @@ struct Session: Equatable {
 
     /// Traffic segment.
     var trafficSegmentName: String
+    
+    /// Traffic segment.
+    var pageType: String
 
     /// Custom metrics.
     var metrics: [String: AnyCodable]?

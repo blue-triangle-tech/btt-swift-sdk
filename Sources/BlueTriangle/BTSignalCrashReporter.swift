@@ -20,6 +20,9 @@ struct SignalCrash: Codable {
     var app_version: String
     var btt_session_id: String?
     var btt_page_name: String?
+    var trafic_segment: String
+    var page_type: String
+
 }
 
 
@@ -91,6 +94,8 @@ class BTSignalCrashReporter {
                 if let strongSelf = self, let session_id = crash.btt_session_id, session_id.count > 0, let sessionId = UInt64(session_id){
                     var sessionCopy = session
                     sessionCopy.sessionID = sessionId
+                    let trafficSegment = !crash.trafic_segment.isEmpty ? crash.trafic_segment : session.trafficSegmentName
+                    let pageType = !crash.page_type.isEmpty ? crash.page_type : session.pageType
                     let pageName = (crash.btt_page_name ?? "").count > 0 ? crash.btt_page_name : Constants.crashID
                     let message = """
 App crashed \(crash.signal)
@@ -99,8 +104,8 @@ errno : \(crash.errno)
 signal code : \(crash.sig_code)
 exit value : \(crash.exit_value)
 """
-                    let crashReport = CrashReport(sessionID: sessionId, message: message, pageName: pageName, intervalProvider: TimeInterval(crash.crash_time))
-                    try strongSelf.upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName)
+                    let crashReport = CrashReport(sessionID: sessionId, message: message, pageName: pageName, segment: trafficSegment, pageType: pageType, intervalProvider: TimeInterval(crash.crash_time))
+                    try strongSelf.upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName, segment: trafficSegment, pageType: trafficSegment)
                     try strongSelf.removeFile(crash)
                 }else{
                     try self?.removeFile(crash)
@@ -114,8 +119,10 @@ exit value : \(crash.exit_value)
 
 // MARK: - Private
 private extension BTSignalCrashReporter {
-    private  func makeTimerRequest(session: Session, report: ErrorReport, pageName : String?) throws -> Request {
-        let page = Page(pageName: pageName ?? Constants.crashID, pageType: "")
+    private  func makeTimerRequest(session: Session, report: ErrorReport, pageName : String?, segment : String, pageType: String) throws -> Request {
+        let trafficSegment = !segment.isEmpty ? segment : session.trafficSegmentName
+        let pageType = !pageType.isEmpty ? pageType :  session.pageType
+        let page = Page(pageName: pageName ?? Constants.crashID, pageType: pageType)
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
         let nativeProperty =  report.nativeApp.copy(.Regular)
         let customMetrics = session.customVarriables(logger: logger)
@@ -123,6 +130,7 @@ private extension BTSignalCrashReporter {
                                  page: page,
                                  timer: timer,
                                  customMetrics: customMetrics,
+                                 trafficSegmentName: trafficSegment,
                                  purchaseConfirmation: nil,
                                  performanceReport: nil,
                                  excluded: Constants.excludedValue,
@@ -134,15 +142,17 @@ private extension BTSignalCrashReporter {
                            model: model)
     }
     
-    private  func makeErrorReportRequest(session: Session, report: ErrorReport, pageName : String?) throws -> Request {
+    private  func makeErrorReportRequest(session: Session, report: ErrorReport, pageName : String?, segment : String, pageType: String) throws -> Request {
+        let trafficSegment = !segment.isEmpty ? segment : session.trafficSegmentName
+        let pageType = !pageType.isEmpty ? pageType :  session.pageType
         let params: [String: String] = [
             "siteID": session.siteID,
             "nStart": String(report.time),
             "pageName": pageName ?? Constants.crashID,
-            "txnName": session.trafficSegmentName,
+            "txnName": trafficSegment,
             "sessionID": String(session.sessionID),
-            "pgTm": "0",
-            "pageType": "",
+            "pgTm": String(Constants.minPgTm),
+            "pageType": pageType,
             "AB": session.abTestID,
             "DCTR": session.dataCenter,
             "CmpN": session.campaignName,
@@ -160,13 +170,13 @@ private extension BTSignalCrashReporter {
                            model: [report])
     }
     
-    private func upload(session: Session, report: ErrorReport, pageName : String?) throws {
+    private func upload(session: Session, report: ErrorReport, pageName : String?, segment : String, pageType: String) throws {
         let timerRequest = try self.makeTimerRequest(session: session,
-                                                     report: report, pageName: pageName)
+                                                     report: report, pageName: pageName, segment: segment, pageType: pageType)
         self.uploader.send(request: timerRequest)
         
         let reportRequest = try self.makeErrorReportRequest(session: session,
-                                                            report: report, pageName: pageName)
+                                                            report: report, pageName: pageName, segment: segment, pageType: pageType)
         self.uploader.send(request: reportRequest)
     }
 }

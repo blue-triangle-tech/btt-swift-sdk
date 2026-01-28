@@ -56,7 +56,10 @@ final public class BlueTriangleConfiguration: NSObject {
     @objc public var dataCenter: String = "Default"
 
     /// Traffic segment.
-    @objc public var trafficSegmentName: String = ""
+    @objc public var trafficSegmentName: String = Constants.defaultTraficSegment
+    
+    /// Page type.
+    @objc public var pageType: String = Constants.defaultPageType
 
     /// Crash tracking behavior.
     @objc public var crashTracking: CrashTracking = .nsException
@@ -90,10 +93,6 @@ final public class BlueTriangleConfiguration: NSObject {
     
     internal var enableWebViewStitching: Bool  = true
     internal var enableGroupingTapDetection: Bool  = true
-    
-    /// Percentage of sessions for which grouped childs calls will be captured. A value of `0.05`
-    /// means that 5% of grouped sessions will have childs.
-    @objc public var groupedViewSampleRate: Double = 0.05
 
     /// When enabled tasks running on main thread are monitored for there run duration time.
     ///
@@ -187,7 +186,8 @@ extension BlueTriangleConfiguration {
                            campaignName: campaignName,
                            campaignSource: campaignSource,
                            dataCenter: dataCenter,
-                           trafficSegmentName: trafficSegmentName
+                           trafficSegmentName: trafficSegmentName,
+                           pageType: pageType
             )
         }
 

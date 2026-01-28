@@ -15,16 +15,17 @@ class PagerViewController: UIViewController{
     
     private var slides:[SlideViewController] = []
     
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.title = "Pager"
+    }
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        BlueTriangle.setGroupName("Pager Screen-setGroupName")
         self.loadSlidePages()
     }
     
     private func loadSlidePages(){
-        Thread.sleep(forTimeInterval: 0.5)
-        self.title = "Pager"
-        
         slides = SlideViewController.getSlides()
         setupSlideScrollView(slides: slides)
         scrollView.delegate = self

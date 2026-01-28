@@ -33,7 +33,6 @@ final class BTTConfigurationFetcherTests: XCTestCase {
         let mockNetworking: Networking = { request in
             
             let mockConfig = BTTRemoteConfig(networkSampleRateSDK: 20,
-                                             groupedViewSampleRate: 5,
                                              enableRemoteConfigAck: false,
                                              enableAllTracking: true,
                                              enableScreenTracking: true,

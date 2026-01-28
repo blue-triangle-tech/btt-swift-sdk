@@ -42,18 +42,19 @@ final class BTTimerGroup {
 
     init(
         logger: Logging,
-        groupName: String? = nil,
+        groupName: String,
+        hasForcedGroup: Bool = false,
         cause: GroupingCause? = nil,
         causeInterval: Millisecond = 0,
         onGroupCompleted: @escaping (BTTimerGroup) -> Void
     ) {
         self.logger = logger
-        self.hasForcedGroup = (groupName != nil)
+        self.hasForcedGroup = hasForcedGroup
         self.onGroupCompleted = onGroupCompleted
         self.groupingCause = cause
         self.causeInterval = causeInterval
-        self.groupName = groupName
-        self.groupTimer = BlueTriangle.startTimer(page: Page(pageName: groupName ?? "BTTGroupPage"), isGroupedTimer: true)
+        self.groupName = hasForcedGroup ? groupName : nil
+        self.groupTimer = BlueTriangle.startTimer(page: Page(pageName: groupName, pageType: Constants.SCREEN_TRACKING_PAGE_GROUP), isGroupedTimer: true)
 
         updatePageNameFromSnapshot()
         scheduleIdleTimer()
@@ -107,7 +108,7 @@ final class BTTimerGroup {
         var pages = [String]()
         var screenType: ScreenType?
         var intervals = [(Millisecond, Millisecond)]()
-        let hasSampleRate =  BlueTriangle.sessionData()?.shouldGroupedViewCapture ?? false
+        let hasSampleRate =  BlueTriangle.sessionData()?.shouldNetworkCapture ?? false
 
         for timer in snap.timers {
             let maxLoadTime = max(timer.nativeAppProperties.loadTime, Constants.minPgTm)
@@ -244,7 +245,6 @@ final class BTTimerGroup {
             let pairs: [(String, String)] = Array(timers).map { timer in
                 (timer.getPageName(), timer.getPageTitle())
             }
-            
             let newName: String
             if !hasForcedGroup {
                 newName = groupName ?? extractLastPageName(from: pairs)

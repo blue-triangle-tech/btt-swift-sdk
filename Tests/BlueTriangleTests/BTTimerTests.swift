@@ -81,6 +81,7 @@ final class BTTimerTests: XCTestCase {
         XCTAssertEqual(timer.pageTimeInterval.interactiveTime, expectedInteractiveTime.milliseconds)
         XCTAssertEqual(timer.pageTimeInterval.pageTime,
                        expectedEndTime.milliseconds - expectedStartTime.milliseconds)
+        timer.end()
     }
 
     func testTimerStateTransition() {
@@ -120,5 +121,6 @@ final class BTTimerTests: XCTestCase {
         XCTAssertEqual(timer.state, .ended)
         timer.markInteractive()
         XCTAssertEqual(timer.state, .ended)
+        timer.end()
     }
 }

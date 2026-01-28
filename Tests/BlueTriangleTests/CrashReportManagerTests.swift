@@ -11,9 +11,13 @@ import XCTest
 final class CrashReportManagerTests: XCTestCase {
     struct TestError: Error {
         let message = "There as an error"
+        
+        var errorDescription: String? {
+            message
+        }
     }
     
-    let crashErrorReport = ErrorReport(nativeApp:  NativeAppProperties(
+    let crashErrorReport = ErrorReport(eCnt: 1, nativeApp:  NativeAppProperties(
         fullTime: 0,
         loadTime: 0,
         loadStartTime: 0,
@@ -31,9 +35,14 @@ final class CrashReportManagerTests: XCTestCase {
                                        line: 1, column: 2,
                                        time: 100)
     var crashReport: CrashReport {
-        .init(sessionID: 100_000_000_000_000_001, pageName: "CrashReportManagerTests", report: crashErrorReport)
+        .init(sessionID: 100_000_000_000_000_001, pageName: "CrashReportManagerTests", report: crashErrorReport, segment: "Main Segment", pageType: "Main Group")
     }
 
+    override func setUp() {
+        super.setUp()
+        CrashReportPersistenceMock.reset()
+    }
+    
     override func tearDown() {
         super.tearDown()
         CrashReportPersistenceMock.reset()
@@ -150,9 +159,7 @@ final class CrashReportManagerTests: XCTestCase {
 
     func testErrorReportUploaded() throws {
         let expectedErrorStart: TimeInterval = 1000.0
-        let expectedMessage = """
-        TestError(message: "There as an error")
-        """
+        let expectedMessage = TestError().localizedDescription
 
         var requestCount = 0
         var errorRequest: Request!
@@ -185,3 +192,4 @@ final class CrashReportManagerTests: XCTestCase {
         XCTAssertEqual(actualReport.time, expectedErrorStart.milliseconds)
     }
 }
+
