@@ -14,6 +14,14 @@ enum Constants {
         static let screen = "screen"
     }
     
+    enum EventId {
+        static let coldLaunch = "1"
+        static let hotLaunch = "3"
+        static let anrWarning = "4"
+        static let memoryWarning = "5"
+        static let iOSCrash = "6"
+    }
+    
     static let browser = "Native App"
     static let device = "Mobile"
     static let os = "iOS"

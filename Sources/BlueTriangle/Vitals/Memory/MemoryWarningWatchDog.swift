@@ -134,7 +134,8 @@ extension MemoryWarningWatchDog {
         let pageTypeValue = !pageType.isEmpty ? pageType :  session.pageType
         let page = Page(pageName: pageName ?? MemoryWarningWatchDog.DEFAULT_PAGE_NAME, pageType: pageTypeValue)
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
-        let nativeProperty = BlueTriangle.recentTimer()?.nativeAppProperties ?? .empty
+        var nativeProperty = BlueTriangle.recentTimer()?.nativeAppProperties ?? .empty
+        nativeProperty.eventId = Constants.EventId.memoryWarning
         let customMetrics = session.customVarriables(logger: logger)
         let model = TimerRequest(session: session,
                                  page: page,
