@@ -162,18 +162,7 @@ final public class BlueTriangle: NSObject {
     
     internal static func removeActiveTimer(_ timer : BTTimer){
         timerLock.sync {
-            var index = 0
-            var isTimerAvailable = false
-            
-            for timerObj in activeTimers{
-                if timerObj == timer { isTimerAvailable = true
-                    break }
-                index = index + 1
-            }
-            
-            if isTimerAvailable {
-                activeTimers.remove(at: index)
-            }
+            self.activeTimers.removeAll { $0.uuid == timer.uuid }
         }
     }
     
@@ -223,7 +212,7 @@ final public class BlueTriangle: NSObject {
     }
     
     internal static func makeCapturedGroupRequestCollector() -> CapturedGroupRequestCollecting? {
-        if let _ = session(), shouldGroupedCaptureRequests, configuration.enableGrouping {
+        if let _ = session(), shouldCaptureRequests, configuration.enableGrouping {
             let groupCollector = configuration.capturedGroupRequestCollectorConfiguration.makeRequestCollector(
                 logger: logger,
                 networkCaptureConfiguration: .standard,
@@ -236,7 +225,7 @@ final public class BlueTriangle: NSObject {
     }
     
     internal static func makeCapturedActionRequestCollector() -> CapturedActionRequestCollecting? {
-        if let _ = session(), shouldGroupedCaptureRequests {
+        if let _ = session(), shouldCaptureRequests {
             let actionsCollector = configuration.capturedActionsRequestCollectorConfiguration.makeRequestCollector(
                 logger: logger,
                 networkCaptureConfiguration: .standard,
@@ -272,10 +261,6 @@ final public class BlueTriangle: NSObject {
 
     private static var shouldCaptureRequests: Bool = {
         sessionData()?.shouldNetworkCapture ?? false
-    }()
-    
-    private static var shouldGroupedCaptureRequests: Bool = {
-        sessionData()?.shouldGroupedViewCapture ?? false
     }()
     
     /// A Boolean value indicating  whether the SDK has been successfully configured and initialized.
@@ -480,7 +465,7 @@ extension BlueTriangle {
     
     // Starts HTTP network capture and updates capture requests
     private static func startHttpGroupedChildCapture(){
-        self.updateGroupedViewCaptureRequest()
+        self.updateCaptureRequests()
         logger.info("BlueTriangle :: Grouped child view capture has started.")
     }
     
@@ -821,6 +806,10 @@ public extension BlueTriangle {
                 return
             }
             uploader.send(request: request)
+            
+            anrWatchDog?.uploadAnrReportForPage(pageName: timer.getPageName(), uuid: timer.uuid, segment: timer.getTrafficSegment(), pageType: timer.page.pageType)
+            memoryWarningWatchDog?.uploadMemoryWarningReport(pageName: timer.getPageName(), uuid: timer.uuid, segment: timer.getTrafficSegment(), pageType: timer.page.pageType)
+            nsExeptionReporter?.uploadErrorForPage(pageName: timer.getPageName(), uuid: timer.uuid, segment: timer.getTrafficSegment(), pageType: timer.page.pageType)
         }
     }
 }
@@ -1022,13 +1011,13 @@ public extension BlueTriangle {
     }
     
     static func setGroupName(_ groupName: String) {
-        if getNetworkRequestCapture() != nil {
+        if configuration.enableGrouping {
             BlueTriangle.groupTimer.setGroupName(groupName)
         }
     }
     
     static func setNewGroup(_ newGroup: String) {
-        if getNetworkRequestCapture() != nil {
+        if configuration.enableGrouping {
             BlueTriangle.groupTimer.setNewGroup(newGroup)
         }
     }
@@ -1150,9 +1139,13 @@ extension BlueTriangle {
     ///
     /// - Parameter exception: The exception to upload.
     public static func storeException(exception: NSException) {
-        let pageName = BlueTriangle.recentTimer()?.getPageName()
-        let crashReport = CrashReport(sessionID: sessionID, exception: exception, pageName: pageName)
-        CrashReportPersistence.save(crashReport)
+        if let session = session() {
+            let pageName = BlueTriangle.recentTimer()?.getPageName()
+            let segment = BlueTriangle.recentTimer()?.getTrafficSegment() ?? session.trafficSegmentName
+            let pageType = BlueTriangle.recentTimer()?.page.pageType ?? session.pageType
+            let crashReport = CrashReport(sessionID: sessionID, exception: exception, pageName: pageName, segment: segment, pageType: pageType)
+            CrashReportPersistence.save(crashReport)
+        }
     }
 }
 
@@ -1294,10 +1287,6 @@ extension BlueTriangle {
         configuration.networkSampleRate = rate
     }
     
-    internal static func updateGroupedViewSampleRate(_ rate : Double) {
-        configuration.groupedViewSampleRate = rate
-    }
-    
     internal static func updateIgnoreVcs(_ vcs : Set<String>?) {
         if let vcs = vcs{
             configuration.ignoreViewControllers = vcs
@@ -1324,6 +1313,7 @@ extension BlueTriangle {
     internal static func updateCaptureRequests() {
         if let sessionData = sessionData(){
             shouldCaptureRequests = sessionData.shouldNetworkCapture
+            _session?.wcd = shouldCaptureRequests ? 1 : 0
             if shouldCaptureRequests {
                 if getNetworkRequestCapture() == nil {
                     setNetworkRequestCapture(makeCapturedRequestCollector())
@@ -1332,22 +1322,17 @@ extension BlueTriangle {
                 setNetworkRequestCapture(makeCapturedRequestCollector())
             }
             
-#if os(iOS)
-            BTTWebViewTracker.shouldCaptureRequests = shouldCaptureRequests
-#endif
-        }
-    }
-    
-    internal static func updateGroupedViewCaptureRequest() {
-        if let sessionData = sessionData(){
-            shouldGroupedCaptureRequests = sessionData.shouldGroupedViewCapture
-            if shouldGroupedCaptureRequests {
+            if shouldCaptureRequests {
                 if getGroupRequestCapture() == nil {
                     setGroupRequestCapture(makeCapturedGroupRequestCollector())
                 }
             } else {
                 setGroupRequestCapture(makeCapturedGroupRequestCollector())
             }
+            
+#if os(iOS)
+            BTTWebViewTracker.shouldCaptureRequests = shouldCaptureRequests
+#endif
         }
     }
     

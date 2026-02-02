@@ -204,6 +204,8 @@ extension MetricKitSubscriber {
         let crashReport  = CrashReport(sessionID: timerDetail.sessionId,
                                        message: formattedCrashReportString,
                                        pageName: timerDetail.pageName,
+                                       segment: Constants.defaultTraficSegment,
+                                       pageType: Constants.defaultPageType,
                                        intervalProvider: timerDetail.startTime)
         
        CrashReportPersistence.saveCrash(crashReport: crashReport)

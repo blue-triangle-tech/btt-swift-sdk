@@ -44,7 +44,6 @@ class BTTStoredConfigSyncer {
             guard let config = try configRepo.get() else { return }
             let defaultConfig = configRepo.defaultConfig
             syncNetworkSampleRate(from: config, defaultConfig: defaultConfig)
-            syncGroupedViewSampleRate(from: config, defaultConfig: defaultConfig)
             syncIgnoreScreens(from: config, defaultConfig: defaultConfig)
             syncScreenTracking(from: config, defaultConfig: defaultConfig)
             syncGrouping(from: config, defaultConfig: defaultConfig)
@@ -75,17 +74,6 @@ class BTTStoredConfigSyncer {
                 BlueTriangle.updateNetworkSampleRate(0.0)
             } else {
                 BlueTriangle.updateNetworkSampleRate(Double(rate) / 100.0)
-            }
-        }
-    }
-    
-    private func syncGroupedViewSampleRate(from config: BTTRemoteConfig, defaultConfig: BTTRemoteConfig) {
-        let groupedViewRate = config.groupedViewSampleRate ?? defaultConfig.groupedViewSampleRate
-        if let rate = groupedViewRate {
-            if rate == 0 {
-                BlueTriangle.updateGroupedViewSampleRate(0.0)
-            } else {
-                BlueTriangle.updateGroupedViewSampleRate(Double(rate) / 100.0)
             }
         }
     }

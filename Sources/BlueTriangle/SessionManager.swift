@@ -186,7 +186,6 @@ extension SessionManager {
     private func updateConfigurationOnChange(){
         self.syncStoredConfigToSessionAndApply()
         BlueTriangle.updateCaptureRequests()
-        BlueTriangle.updateGroupedViewCaptureRequest()
         configSyncer.updateAndApplySDKState()
     }
 
@@ -196,11 +195,9 @@ extension SessionManager {
                 configSyncer.syncConfigurationFromStorage()
                 session.networkSampleRate = BlueTriangle.configuration.networkSampleRate
                 session.enableScreenTracking = BlueTriangle.configuration.enableScreenTracking
-                session.groupedViewSampleRate = BlueTriangle.configuration.groupedViewSampleRate
                 session.enableGrouping = BlueTriangle.configuration.enableGrouping
                 session.groupingIdleTime = BlueTriangle.configuration.groupingIdleTime
                 session.shouldNetworkCapture = .random(probability: BlueTriangle.configuration.networkSampleRate)
-                session.shouldGroupedViewCapture = .random(probability: BlueTriangle.configuration.groupedViewSampleRate)
                 session.ignoreViewControllers = BlueTriangle.configuration.ignoreViewControllers
                 session.enableCrashTracking = BlueTriangle.configuration.crashTracking == .nsException
                 session.enableANRTracking = BlueTriangle.configuration.ANRMonitoring
@@ -211,7 +208,6 @@ extension SessionManager {
                 session.enableGroupingTapDetection = BlueTriangle.configuration.enableGroupingTapDetection
                 sessionStore.saveSession(session)
             } else {
-                BlueTriangle.updateGroupedViewSampleRate(session.groupedViewSampleRate)
                 BlueTriangle.updateGrouping(session.enableGrouping, idleTime: session.groupingIdleTime)
                 BlueTriangle.updateScreenTracking(session.enableScreenTracking)
                 BlueTriangle.updateNetworkSampleRate(session.networkSampleRate)

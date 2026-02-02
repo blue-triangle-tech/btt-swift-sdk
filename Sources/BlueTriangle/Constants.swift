@@ -41,6 +41,9 @@ enum Constants {
     }
 
     // Crash Tracking
+    static let defaultTraficSegment = "Main Segment"
+    static let defaultPageType = "Main Group"
+    static let bttConfigUpdate = "BTTConfigUpdate"
     static let crashID = "iOS Crash"
     static let crashReportFilename = "com.bluetriangle.crash"
     static let crashReportLineSeparator = "~~"

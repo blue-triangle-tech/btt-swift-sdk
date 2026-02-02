@@ -45,7 +45,7 @@ struct CapturedRequestBuilder {
                     sessionID: String(session.sessionID),
                     trafficSegment: session.trafficSegmentName,
                     isNewUser: !session.isReturningVisitor,
-                    pageType: page.pageType,
+                    pageType: !page.pageType.isEmpty ? page.pageType : session.pageType,
                     pageName: page.pageName,
                     startTime: startTime
                 )

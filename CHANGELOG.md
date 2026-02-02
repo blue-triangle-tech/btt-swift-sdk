@@ -1,3 +1,10 @@
+# Blue Triangle 3.15.8, Jan 28 2026
+### Bug Fixes and Improvements
+- Removed Redundant HITS from errors
+- Unifying the sample rates for network and classes
+- WCD flag to denote whether the session has WCD data
+- Matching pageType/Traffic segment between error and HITS beacons 
+
 # Blue Triangle 3.15.7, Dec 22 2025
 ### Bug Fixes and Improvements
 - Added the ability to enable or disable SDK features through remote configuration, including CrashTracking, ANRTracking, MemoryWarning, LaunchTime, WebViewStitching, NetworkStateTracking, and GroupingTapDetection.

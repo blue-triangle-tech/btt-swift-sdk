@@ -86,6 +86,8 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
             }
             else if (type == .load || type == .view){
                 SignalHandler.setCurrentPageName(pageName)
+                SignalHandler.setPageType(Constants.SCREEN_TRACKING_PAGE_GROUP)
+                SignalHandler.setTraficSegment(Constants.SCREEN_TRACKING_PAGE_GROUP)
             }
         }
     }
@@ -182,10 +184,10 @@ class TimerMapActivity {
         self.logger = logger
         
         if BlueTriangle.configuration.enableGrouping {
-            BlueTriangle.groupTimer.startGroupIfNeeded()
-            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageTitle: pageTitle), timerType: .custom, isGroupedTimer: true)
+            BlueTriangle.groupTimer.startGroupIfNeeded(pageTitle.isEmpty ? pageName : pageTitle)
+            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageTitle: pageTitle, pageType: Constants.SCREEN_TRACKING_PAGE_GROUP), timerType: .custom, isGroupedTimer: true)
         } else {
-            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName))
+            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageType: Constants.SCREEN_TRACKING_PAGE_GROUP))
         }
     }
     
