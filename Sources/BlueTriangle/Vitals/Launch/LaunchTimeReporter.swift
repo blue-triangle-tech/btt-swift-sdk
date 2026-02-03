@@ -41,10 +41,10 @@ class LaunchTimeReporter : ObservableObject {
                     switch event {
                     case .Cold(let date, let duration):
                         self.logger.info("Received cold launch at \(date)")
-                        self.uploadReports(Constants.COLD_LAUNCH_PAGE_NAME, date, duration, eventId: Constants.EventId.coldLaunch)
+                        self.uploadReports(BTTEvents.coldLaunch, date, duration)
                     case .Hot(let date, let duration):
                         self.logger.info("Received hot launch at \(date)")
-                        self.uploadReports(Constants.HOT_LAUNCH_PAGE_NAME, date, duration, eventId: Constants.EventId.hotLaunch)
+                        self.uploadReports(BTTEvents.hotLaunch, date, duration,)
                     }
                 }
             }.store(in: &self.cancellables)
@@ -58,7 +58,7 @@ class LaunchTimeReporter : ObservableObject {
         self.cancellables.removeAll()
     }
     
-    private func uploadReports(_ pageName : String, _ time : Date, _ duration : TimeInterval, eventId : String) {
+    private func uploadReports(_ event : BTTEvent, _ time : Date, _ duration : TimeInterval) {
         DispatchQueue.global(qos: .utility).async { [weak self] in
             do {
                 guard let strongSelf = self, let session = strongSelf.session() else {
@@ -74,10 +74,10 @@ class LaunchTimeReporter : ObservableObject {
                 let timerRequest = try strongSelf.makeTimerRequest(session: session,
                                                                    time: timeMS,
                                                                    duration: durationMS,
-                                                                   pageName: pageName,
+                                                                   pageName: event.defaultPageName,
                                                                    pageGroup: groupName,
                                                                    trafficSegment: trafficSegmentName,
-                                                                   eventId: eventId)
+                                                                   eventId: event.id)
                 strongSelf.uploader.send(request: timerRequest)
                 strongSelf.logger.info("Launch time reported at \(time)")
             } catch {
@@ -107,3 +107,4 @@ class LaunchTimeReporter : ObservableObject {
         stop()
     }
 }
+

@@ -162,11 +162,12 @@ An task blocking main thread since \(self.errorTriggerInterval) seconds
     
     private func makeTimerRequest(session: Session, report: ErrorReport, pageName: String?, segment: String, pageType: String) throws -> Request {
         let trafficSegment = !segment.isEmpty ? segment : session.trafficSegmentName
+        let event = BTTEvents.anrWarning
         let pageTypeValue = !pageType.isEmpty ? pageType :  session.pageType
-        let page = Page(pageName: pageName ?? ANRWatchDog.TIMER_PAGE_NAME, pageType: pageTypeValue)
+        let page = Page(pageName: pageName ?? event.defaultPageName, pageType: pageTypeValue)
         let timer = PageTimeInterval(startTime: report.time, interactiveTime: 0, pageTime: Constants.minPgTm)
         var nativeProperty = BlueTriangle.recentTimer()?.nativeAppProperties ?? .empty
-        nativeProperty.eventId = Constants.EventId.anrWarning
+        nativeProperty.eventId = event.id
         let customMetrics = session.customVarriables(logger: logger)
         let model = TimerRequest(session: session,
                                  page: page,
