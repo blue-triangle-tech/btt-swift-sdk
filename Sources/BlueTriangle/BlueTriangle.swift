@@ -22,6 +22,7 @@ final public class BlueTriangle: NSObject {
     
     internal static var groupTimer : BTTimerGroupManager = BTTimerGroupManager(logger: logger)
     internal static var configuration = BlueTriangleConfiguration()
+    internal static let globleProperty = GlobalProperties()
     
     private static var _screenTracker: BTTScreenLifecycleTracker?
     internal static var screenTracker: BTTScreenLifecycleTracker?{
@@ -347,9 +348,20 @@ final public class BlueTriangle: NSObject {
             lock.sync {_session?.isReturningVisitor = newValue }
         }
     }
+    
+    /// Traffic segment.
+    @objc public static var trafficSegmentName: String {
+         get {
+            lock.sync { session()?.trafficSegmentName ?? "" }
+        }
+        set {
+            lock.sync { _session?.trafficSegmentName = newValue }
+        }
+    }
 
     /// A/B testing identifier.
-    @objc public static var abTestID: String {
+    @available(*, deprecated, message: "Use `func setAbTestID:` instead.")
+    public static var abTestID: String {
         get {
             lock.sync { session()?.abTestID ?? configuration.abTestID}
         }
@@ -370,53 +382,187 @@ final public class BlueTriangle: NSObject {
     }
 
     /// Campaign medium.
-    @objc public static var campaignMedium: String {
+    @available(*, deprecated, message: "Use `func setCampaignMedium:` instead.")
+     public static var campaignMedium: String {
         get {
-            lock.sync { session()?.campaignMedium ?? ""}
+            lock.sync { globleProperty.getGlobalProperties().campaignMedium ?? ""}
         }
         set {
-            lock.sync { _session?.campaignMedium = newValue}
+            lock.sync { globleProperty.updateCampaignMedium(newValue) }
         }
     }
 
     /// Campaign name.
-    @objc public static var campaignName: String {
+    @available(*, deprecated, message: "Use `func setCampaignName:` instead.")
+    public static var campaignName: String {
         get {
-            lock.sync { session()?.campaignName ?? "" }
+            lock.sync { globleProperty.getGlobalProperties().campaignName ?? "" }
         }
         set {
-            lock.sync { _session?.campaignName = newValue }
+            lock.sync { globleProperty.updateCampaignName(newValue)}
         }
     }
 
     /// Campaign source.
-    @objc public static var campaignSource: String {
+    @available(*, deprecated, message: "Use `func setCampaignSource:` instead.")
+    public static var campaignSource: String {
         get {
-            lock.sync { session()?.campaignSource ?? "" }
+            lock.sync { globleProperty.getGlobalProperties().campaignSource ?? "" }
         }
         set {
-            lock.sync { _session?.campaignSource = newValue}
+            lock.sync { globleProperty.updateCampaignSource(newValue)}
         }
     }
 
     /// Data center.
-    @objc public static var dataCenter: String {
+    @available(*, deprecated, message: "Use `func setDataCenter:` instead.")
+    public static var dataCenter: String {
         get {
-            lock.sync { session()?.dataCenter ?? "" }
+            lock.sync { globleProperty.getGlobalProperties().dataCenter ?? "" }
         }
         set {
-            lock.sync { _session?.dataCenter = newValue }
+            lock.sync { globleProperty.updateDataCenter(newValue) }
         }
     }
+    
+    /// Sets the value for AbTestID.
+    ///
+    /// This value is applied to all timers submitted after this call.
+    /// The setting remains active until it is explicitly changed.
+    ///
+    /// Use `nil` to clear the current value.
+    ///
+    /// - Parameter value: The AbTestID value, or `nil` to reset.
+    ///
+    @objc(setAbTestID:)
+    public static func setAbTestID(_ id: String?) {
+        lock.sync { globleProperty.updateAbTestID(id) }
+    }
+    
+    /// Sets the value for CampaignMedium.
+    ///
+    /// This value is applied to all timers submitted after this call.
+    /// The setting remains active until it is explicitly changed.
+    ///
+    /// Use `nil` to clear the current value.
+    ///
+    /// - Parameter value: The CampaignMedium value, or `nil` to reset.
+    ///
+    @objc(setCampaignMedium:)
+    public static func setCampaignMedium(_ value: String?) {
+        lock.sync { globleProperty.updateCampaignMedium(value) }
+    }
+    
+    /// Sets the value for CampaignName.
+    ///
+    /// This value is applied to all timers submitted after this call.
+    /// The setting remains active until it is explicitly changed.
+    ///
+    /// Use `nil` to clear the current value.
+    ///
+    /// - Parameter value: The CampaignName value, or `nil` to reset.
+    ///
+    @objc(setCampaignName:)
+    public static func setCampaignName(_ value: String?) {
+        lock.sync { globleProperty.updateCampaignName(value)}
+    }
+    
+    /// Sets the value for CampaignSource.
+    ///
+    /// This value is applied to all timers submitted after this call.
+    /// The setting remains active until it is explicitly changed.
+    ///
+    /// Use `nil` to clear the current value.
+    ///
+    /// - Parameter value: The CampaignSource value, or `nil` to reset.
+    ///
+    @objc(setCampaignSource:)
+    public static func setCampaignSource(_ value: String?) {
+        lock.sync { globleProperty.updateCampaignSource(value)}
+    }
 
-    /// Traffic segment.
-    @objc public static var trafficSegmentName: String {
-        get {
-            lock.sync { session()?.trafficSegmentName ?? "" }
-        }
-        set {
-            lock.sync { _session?.trafficSegmentName = newValue }
-        }
+    /// Sets the value for DataCenter.
+    ///
+    /// This value is applied to all timers submitted after this call.
+    /// The setting remains active until it is explicitly changed.
+    ///
+    /// Use `nil` to clear the current value.
+    ///
+    /// - Parameter value: The DataCenter value, or `nil` to reset.
+    ///
+    @objc(setDataCenter:)
+    public static func setDataCenter(_ value: String?) {
+        lock.sync { globleProperty.updateDataCenter(value)}
+    }
+    
+    /// Sets the value for Custom Category 1.
+    ///
+    /// This value is applied to all timers submitted after this call.
+    /// The setting remains active until it is explicitly changed.
+    ///
+    /// Use `nil` to clear the current value.
+    ///
+    /// - Parameter value: The custom category value, or `nil` to reset.
+    ///
+    @objc(setCustomCategory1:)
+    public static func setCustomCategory1(_ value: String?) {
+        lock.sync { globleProperty.updateCustomCategory1(value)}
+    }
+    
+    /// Sets the value for Custom Category 2.
+    ///
+    /// This value is applied to all timers submitted after this call.
+    /// The setting remains active until it is explicitly changed.
+    ///
+    /// Use `nil` to clear the current value.
+    ///
+    /// - Parameter value: The custom category value, or `nil` to reset.
+    ///
+    @objc(setCustomCategory2:)
+    public static func setCustomCategory2(_ value: String?) {
+        lock.sync { globleProperty.updateCustomCategory2(value)}
+    }
+    
+    /// Sets the value for Custom Category 3.
+    ///
+    /// This value is applied to all timers submitted after this call.
+    /// The setting remains active until it is explicitly changed.
+    ///
+    /// Use `nil` to clear the current value.
+    ///
+    /// - Parameter value: The custom category value, or `nil` to reset.
+    ///
+    @objc(setCustomCategory3:)
+    public static func setCustomCategory3(_ value: String?) {
+        lock.sync { globleProperty.updateCustomCategory3(value)}
+    }
+    
+    /// Sets the value for Custom Category 4.
+    ///
+    /// This value is applied to all timers submitted after this call.
+    /// The setting remains active until it is explicitly changed.
+    ///
+    /// Use `nil` to clear the current value.
+    ///
+    /// - Parameter value: The custom category value, or `nil` to reset.
+    ///
+    @objc(setCustomCategory4:)
+    public static func setCustomCategory4(_ value: String?) {
+        lock.sync { globleProperty.updateCustomCategory4(value)}
+    }
+    
+    /// Sets the value for Custom Category 5.
+    ///
+    /// This value is applied to all timers submitted after this call.
+    /// The setting remains active until it is explicitly changed.
+    ///
+    /// Use `nil` to clear the current value.
+    ///
+    /// - Parameter value: The custom category value, or `nil` to reset.
+    ///
+    @objc(setCustomCategory5:)
+    public static func setCustomCategory5(_ value: String?) {
+        lock.sync { globleProperty.updateCustomCategory5(value)}
     }
 
     /// Custom metrics.

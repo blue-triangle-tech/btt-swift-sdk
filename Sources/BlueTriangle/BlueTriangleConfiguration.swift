@@ -176,16 +176,17 @@ extension BlueTriangleConfiguration {
     func makeSession() -> Session? {
         
         if let sessionId = BlueTriangleConfiguration.currentSessionId{
+            let globleVariables = BlueTriangle.globleProperty.getGlobalProperties()
             return Session(siteID: siteID,
                            globalUserID: customGlobalUserID ?? globalUserID,
                            sessionID: sessionId,
                            isReturningVisitor: isReturningVisitor,
-                           abTestID: abTestID,
-                           campaign: customCampaign,
-                           campaignMedium: campaignMedium,
-                           campaignName: campaignName,
-                           campaignSource: campaignSource,
-                           dataCenter: dataCenter,
+                           abTestID: globleVariables.abTestID ?? "",
+                           campaign: globleVariables.campaignName ?? "",
+                           campaignMedium: globleVariables.campaignMedium ?? "",
+                           campaignName: globleVariables.campaignName ?? "",
+                           campaignSource: globleVariables.campaignSource ?? "",
+                           dataCenter: globleVariables.dataCenter ?? "",
                            trafficSegmentName: trafficSegmentName,
                            pageType: pageType
             )
