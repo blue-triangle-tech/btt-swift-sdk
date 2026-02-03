@@ -63,7 +63,8 @@ final class CrashReportManager: CrashReportManaging {
         sessionCopy.sessionID = crashReport.sessionID
 
         do {
-            try upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName, segment: crashReport.segment ?? session.trafficSegmentName, pageType: crashReport.pageType ?? session.pageType)
+            let event = BTTEvents.iOSCrash
+            try upload(session: sessionCopy, report: crashReport.report, pageName: crashReport.pageName, segment: crashReport.segment ?? session.trafficSegmentName, pageType: crashReport.pageType ?? session.pageType, event: event)
 
             crashReportPersistence.clear()
         } catch {
@@ -177,11 +178,11 @@ private extension CrashReportManager {
 
     func upload(session: Session, report: ErrorReport, pageName : String?, segment : String, pageType : String, event: BTTEvent) throws {
         let timerRequest = try makeTimerRequest(session: session,
-                                                report: report, pageName: pageName, segment : segment, pageType: pageType)
+                                                report: report, pageName: pageName, segment : segment, pageType: pageType, event: event)
         uploader.send(request: timerRequest)
 
         let reportRequest = try makeErrorReportRequest(session: session,
-                                                       report: report, pageName: pageName, segment : segment, pageType: pageType)
+                                                       report: report, pageName: pageName, segment : segment, pageType: pageType, event: event)
         uploader.send(request: reportRequest)
     }
 }

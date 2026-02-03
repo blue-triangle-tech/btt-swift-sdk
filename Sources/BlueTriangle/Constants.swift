@@ -14,14 +14,6 @@ enum Constants {
         static let screen = "screen"
     }
     
-    enum EventId {
-        static let coldLaunch = "1"
-        static let hotLaunch = "3"
-        static let anrWarning = "4"
-        static let memoryWarning = "5"
-        static let iOSCrash = "6"
-    }
-    
     static let browser = "Native App"
     static let device = "Mobile"
     static let os = "iOS"
@@ -52,7 +44,6 @@ enum Constants {
     static let defaultTraficSegment = "Main Segment"
     static let defaultPageType = "Main Group"
     static let bttConfigUpdate = "BTTConfigUpdate"
-   // static let crashID = "iOS Crash"
     static let crashReportFilename = "com.bluetriangle.crash"
     static let crashReportLineSeparator = "~~"
     static let excludedValue = "20"
@@ -67,8 +58,6 @@ enum Constants {
     static let loggingSubsystem = "com.bluetriangle.sdk"
     static let loggingCategory = "tracker"
     
- //   static let COLD_LAUNCH_PAGE_NAME = "ColdLaunchTime"
- //   static let HOT_LAUNCH_PAGE_NAME = "HotLaunchTime"
     static let LAUNCH_TIME_PAGE_GROUP = "LaunchTime"
     static let LAUNCH_TIME_TRAFFIC_SEGMENT = "LaunchTime"
     static let SCREEN_TRACKING_PAGE_GROUP = "ScreenTracker"
