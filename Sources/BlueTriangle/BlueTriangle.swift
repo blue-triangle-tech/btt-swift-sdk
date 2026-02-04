@@ -358,15 +358,25 @@ final public class BlueTriangle: NSObject {
             lock.sync { _session?.trafficSegmentName = newValue }
         }
     }
+    
+    /// page type
+    @objc public static var pageType: String {
+         get {
+            lock.sync { session()?.pageType ?? "" }
+        }
+        set {
+            lock.sync { _session?.pageType = newValue }
+        }
+    }
 
     /// A/B testing identifier.
     @available(*, deprecated, message: "Use `func setAbTestID:` instead.")
     public static var abTestID: String {
         get {
-            lock.sync { session()?.abTestID ?? configuration.abTestID}
+            lock.sync { globleProperty.getGlobalProperties().abTestID ?? configuration.abTestID}
         }
         set {
-            lock.sync { _session?.abTestID = newValue }
+            lock.sync { globleProperty.updateAbTestID(newValue) }
         }
     }
 

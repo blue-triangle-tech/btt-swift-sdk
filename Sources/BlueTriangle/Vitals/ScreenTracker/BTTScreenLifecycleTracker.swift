@@ -86,8 +86,10 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
             }
             else if (type == .load || type == .view){
                 SignalHandler.setCurrentPageName(pageName)
-                SignalHandler.setPageType(Constants.SCREEN_TRACKING_PAGE_GROUP)
-                SignalHandler.setTraficSegment(Constants.SCREEN_TRACKING_PAGE_GROUP)
+                let traficSegment = BlueTriangle.trafficSegmentName == Constants.defaultTraficSegment ? Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT : BlueTriangle.trafficSegmentName
+                let pageType = BlueTriangle.pageType == Constants.defaultPageType ? Constants.SCREEN_TRACKING_PAGE_TYPE : BlueTriangle.pageType
+                SignalHandler.setTraficSegment(traficSegment)
+                SignalHandler.setPageType(pageType)
             }
         }
     }
@@ -184,10 +186,12 @@ class TimerMapActivity {
         self.logger = logger
         
         if BlueTriangle.configuration.enableGrouping {
+            let pageType = BlueTriangle.pageType == Constants.defaultPageType ? Constants.SCREEN_TRACKING_PAGE_TYPE : BlueTriangle.pageType
             BlueTriangle.groupTimer.startGroupIfNeeded(pageTitle.isEmpty ? pageName : pageTitle)
-            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageTitle: pageTitle, pageType: Constants.SCREEN_TRACKING_PAGE_GROUP), timerType: .custom, isGroupedTimer: true)
+            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageTitle: pageTitle, pageType: pageType), timerType: .custom, isGroupedTimer: true)
         } else {
-            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageType: Constants.SCREEN_TRACKING_PAGE_GROUP))
+            let pageType = BlueTriangle.pageType == Constants.defaultPageType ? Constants.SCREEN_TRACKING_PAGE_TYPE : BlueTriangle.pageType
+            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageType: pageType))
         }
     }
     
@@ -333,7 +337,8 @@ class TimerMapActivity {
             return calculatedLoadTime
         }
         
-        timer.setTrafficSegment(Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT)
+        let traficSegment = BlueTriangle.trafficSegmentName == Constants.defaultTraficSegment ? Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT : BlueTriangle.trafficSegmentName
+        timer.setTrafficSegment(traficSegment)
         timer.nativeAppProperties = NativeAppProperties(
             fullTime: disapearTime - loadTime,
             loadTime: calculatedLoadTime,
