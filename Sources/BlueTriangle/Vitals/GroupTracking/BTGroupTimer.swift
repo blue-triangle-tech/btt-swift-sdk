@@ -54,8 +54,9 @@ final class BTTimerGroup {
         self.groupingCause = cause
         self.causeInterval = causeInterval
         self.groupName = hasForcedGroup ? groupName : nil
+        let trafficSegment = BlueTriangle.trafficSegmentName == Constants.defaultTraficSegment ? Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT : BlueTriangle.trafficSegmentName
         let pageType = BlueTriangle.pageType == Constants.defaultPageType ? Constants.SCREEN_TRACKING_PAGE_TYPE : BlueTriangle.pageType
-        self.groupTimer = BlueTriangle.startTimer(page: Page(pageName: groupName, pageType: pageType), isGroupedTimer: true)
+        self.groupTimer = BlueTriangle.startTimer(page: Page(pageName: groupName, pageType: pageType, trafficSegment: trafficSegment), isGroupedTimer: true)
 
         updatePageNameFromSnapshot()
         scheduleIdleTimer()
@@ -270,11 +271,13 @@ final class BTTimerGroup {
 
     private func submitChildsWcdRequests() {
         let pageName = groupTimer.getPageName()
+        let pageType = groupTimer.page.pageType
+        let trafficSegment = groupTimer.page.trafficSegment
         let groupStart = groupTimer.startTime.milliseconds
         let timersSnap = lock.sync { Array(self.timers) }
 
         Task {
-            await BlueTriangle.startGroupTimerRequest(page: Page(pageName: pageName), startTime: groupStart)
+            await BlueTriangle.startGroupTimerRequest(page: Page(pageName: pageName, pageType: pageType, trafficSegment: trafficSegment), startTime: groupStart)
             for t in timersSnap {
                 await self.submitSingleRequest(groupTimer: self.groupTimer, timer: t, group: pageName)
             }

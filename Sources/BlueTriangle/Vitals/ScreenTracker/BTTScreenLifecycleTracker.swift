@@ -185,13 +185,14 @@ class TimerMapActivity {
         self.screenType = screenType
         self.logger = logger
         
+        let trafficSegment = BlueTriangle.trafficSegmentName == Constants.defaultTraficSegment ? Constants.SCREEN_TRACKING_TRAFFIC_SEGMENT : BlueTriangle.trafficSegmentName
+        let pageType = BlueTriangle.pageType == Constants.defaultPageType ? Constants.SCREEN_TRACKING_PAGE_TYPE : BlueTriangle.pageType
+        
         if BlueTriangle.configuration.enableGrouping {
-            let pageType = BlueTriangle.pageType == Constants.defaultPageType ? Constants.SCREEN_TRACKING_PAGE_TYPE : BlueTriangle.pageType
             BlueTriangle.groupTimer.startGroupIfNeeded(pageTitle.isEmpty ? pageName : pageTitle)
-            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageTitle: pageTitle, pageType: pageType), timerType: .custom, isGroupedTimer: true)
+            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageTitle: pageTitle, pageType: pageType, trafficSegment: trafficSegment), timerType: .custom, isGroupedTimer: true)
         } else {
-            let pageType = BlueTriangle.pageType == Constants.defaultPageType ? Constants.SCREEN_TRACKING_PAGE_TYPE : BlueTriangle.pageType
-            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageType: pageType))
+            self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageType: pageType, trafficSegment: trafficSegment))
         }
     }
     
