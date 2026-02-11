@@ -93,6 +93,15 @@ final public class BlueTriangleConfiguration: NSObject {
     
     internal var enableWebViewStitching: Bool  = true
     internal var enableGroupingTapDetection: Bool  = true
+    
+    internal var checkoutTrackingEnabled : Bool = false
+    internal var checkoutClassName : [String] = []
+    internal var checkoutURL : String = ""
+    internal var checkOutAmount : Double = 1.0
+    internal var checkoutCartCount : Int = 1
+    internal var checkoutCartCountCheckout: Int = 1
+    internal var checkoutOrderNumber : String = ""
+    internal var checkoutTimeValue : Int = 100
 
     /// When enabled tasks running on main thread are monitored for there run duration time.
     ///
