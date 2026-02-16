@@ -23,6 +23,7 @@ final public class BlueTriangle: NSObject {
     internal static var groupTimer : BTTimerGroupManager = BTTimerGroupManager(logger: logger)
     internal static var configuration = BlueTriangleConfiguration()
     internal static let globleProperty = GlobalProperties()
+    internal static let checkoutEvent = CheckoutEventReporter()
     
     private static var _screenTracker: BTTScreenLifecycleTracker?
     internal static var screenTracker: BTTScreenLifecycleTracker?{

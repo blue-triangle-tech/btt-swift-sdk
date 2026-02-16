@@ -171,6 +171,7 @@ final public class BTTimer: NSObject, @unchecked Sendable {
 
         handle(.start)
         self.startNetState()
+        self.checkOutEvent()
     }
 
     /// Mark the timer interactive at current time if the timer has been started and not
@@ -226,6 +227,13 @@ final public class BTTimer: NSObject, @unchecked Sendable {
             default:
                 logger.error("Invalid transition.")
             }
+        }
+    }
+    
+    func checkOutEvent() {
+        let pageName = self.getPageName()
+        Task {
+            await BlueTriangle.checkoutEvent.onCheckoutEvent(ClassCheckoutEvent(name: pageName))
         }
     }
 }

@@ -90,6 +90,9 @@ actor CapturedRequestCollector: CapturedRequestCollecting {
 
     private func upload(startTime: Millisecond, page: Page, requests: [CapturedRequest]) {
         Task.detached(priority: uploadTaskPriority) {
+            for request in requests {
+                await BlueTriangle.checkoutEvent.onCheckoutEvent(NetworkCheckoutEvent(url: request.url, statusCode: request.statusCode))
+            }
             do {
                 let request = try self.requestBuilder.build(startTime, page, requests)
                 self.uploader.send(request: request)

@@ -42,6 +42,7 @@ enum Constants {
     }
 
     // Crash Tracking
+    static let autoCheckoutPageName = "Purchase Confirmation"
     static let defaultTraficSegment = "Main Segment"
     static let defaultPageType = "Main Group"
     static let bttConfigUpdate = "BTTConfigUpdate"
