@@ -55,6 +55,7 @@ extension CheckoutEventReporter {
                last.name == classEvent.name {
                 return false
             }
+            print("Reported Event Checkout  Page : \(classEvent.name)")
             // Match against class names
             return session.checkoutClassName.contains { configuredName in
                 configuredName
@@ -64,12 +65,12 @@ extension CheckoutEventReporter {
             
         case let networkEvent as NetworkCheckoutEvent:
             // Prevent immediate duplicate
-            print("Reported Event Checkout  Url : \(networkEvent.url)")
             if let last = lastEvent as? NetworkCheckoutEvent,
                last.url == networkEvent.url {
                 return false
             }
             
+            print("Reported Event Checkout  Url : \(networkEvent.url)")
             // Validate HTTP success range (200–299)
             let isSuccessStatus: Bool = {
                 if let codeString = networkEvent.statusCode,
