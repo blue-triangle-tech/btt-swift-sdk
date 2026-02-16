@@ -31,7 +31,7 @@ final actor CheckoutEventReporter {
                 cartCount: session.checkoutCartCount,
                 cartCountCheckout:session.checkoutCartCountCheckout,
                 orderNumber: session.checkoutOrderNumber,
-                orderTime: TimeInterval(session.checkoutTimeValue))
+                orderTime: session.checkoutTimeValue.asTimeInterval)
             BlueTriangle.endTimer(
                 timer,
                 purchaseConfirmation: purchaseConfirmation)
@@ -52,13 +52,12 @@ extension CheckoutEventReporter {
 
         case let classEvent as ClassCheckoutEvent:
 
-            // Immediate duplicate block (no validation involved)
+            // Immediate duplicate block
             if let last = lastClassEvent,
                last.name == classEvent.name {
                 return false
             }
 
-            // Update immediately because you said even invalid should count
             lastClassEvent = classEvent
 
             return session.checkoutClassName.contains(classEvent.name)
@@ -72,7 +71,6 @@ extension CheckoutEventReporter {
                 return false
             }
 
-            // Update immediately (even if invalid)
             lastNetworkEvent = networkEvent
 
             let matchesURL = networkEvent.url

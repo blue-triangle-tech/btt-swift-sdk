@@ -101,7 +101,7 @@ final public class BlueTriangleConfiguration: NSObject {
     internal var checkoutCartCount : Int = 1
     internal var checkoutCartCountCheckout: Int = 1
     internal var checkoutOrderNumber : String = ""
-    internal var checkoutTimeValue : Int = 100
+    internal var checkoutTimeValue : Int = 100 // Millisecond
 
     /// When enabled tasks running on main thread are monitored for there run duration time.
     ///
