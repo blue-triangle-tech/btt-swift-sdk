@@ -97,7 +97,7 @@ final public class BlueTriangleConfiguration: NSObject {
     internal var checkoutTrackingEnabled : Bool = false
     internal var checkoutClassName : [String] = []
     internal var checkoutURL : String = ""
-    internal var checkOutAmount : Double = 1.0
+    internal var checkoutAmount : Double = 1.0
     internal var checkoutCartCount : Int = 1
     internal var checkoutCartCountCheckout: Int = 1
     internal var checkoutOrderNumber : String = ""

@@ -1548,4 +1548,36 @@ extension BlueTriangle {
     internal static func updateGroupingTapDetection(_ enabled : Bool) {
         configuration.enableGroupingTapDetection = enabled
     }
+    
+    internal static func updateCheckoutTracking(_ enabled: Bool) {
+        configuration.checkoutTrackingEnabled = enabled
+    }
+
+    internal static func updateCheckoutClassNames(_ classNames: [String]) {
+        configuration.checkoutClassName = classNames
+    }
+
+    internal static func updateCheckoutURL(_ url: String) {
+        configuration.checkoutURL = url
+    }
+
+    internal static func updateCheckoutAmount(_ amount: Double) {
+        configuration.checkoutAmount = amount
+    }
+
+    internal static func updateCheckoutCartCount(_ count: Int) {
+        configuration.checkoutCartCount = count
+    }
+
+    internal static func updateCheckoutCartCountCheckout(_ count: Int) {
+        configuration.checkoutCartCountCheckout = count
+    }
+
+    internal static func updateCheckoutOrderNumber(_ orderNumber: String) {
+        configuration.checkoutOrderNumber = orderNumber
+    }
+
+    internal static func updateCheckoutTimeValue(_ timeValue: Int) {
+        configuration.checkoutTimeValue = timeValue
+    }
 }

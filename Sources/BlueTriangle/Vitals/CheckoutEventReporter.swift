@@ -27,7 +27,7 @@ final actor CheckoutEventReporter {
                     pageName: Constants.autoCheckoutPageName))
             timer.nativeAppProperties.autoCheckout = true
             let purchaseConfirmation: PurchaseConfirmation = PurchaseConfirmation(
-                cartValue: Decimal(session.checkOutAmount),
+                cartValue: Decimal(session.checkoutAmount),
                 cartCount: session.checkoutCartCount,
                 cartCountCheckout:session.checkoutCartCountCheckout,
                 orderNumber: session.checkoutOrderNumber,
@@ -64,6 +64,7 @@ extension CheckoutEventReporter {
             
         case let networkEvent as NetworkCheckoutEvent:
             // Prevent immediate duplicate
+            print("Reported Event Checkout  Url : \(networkEvent.url)")
             if let last = lastEvent as? NetworkCheckoutEvent,
                last.url == networkEvent.url {
                 return false

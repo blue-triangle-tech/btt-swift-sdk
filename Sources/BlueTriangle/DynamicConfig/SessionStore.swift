@@ -75,7 +75,7 @@ class SessionData: Codable {
     var checkoutTrackingEnabled : Bool
     var checkoutClassName : [String]
     var checkoutURL : String
-    var checkOutAmount : Double
+    var checkoutAmount : Double
     var checkoutCartCount : Int
     var checkoutCartCountCheckout: Int
     var checkoutOrderNumber : String
@@ -103,7 +103,7 @@ class SessionData: Codable {
         self.checkoutTrackingEnabled = BlueTriangle.configuration.checkoutTrackingEnabled
         self.checkoutClassName = BlueTriangle.configuration.checkoutClassName
         self.checkoutURL = BlueTriangle.configuration.checkoutURL
-        self.checkOutAmount = BlueTriangle.configuration.checkOutAmount
+        self.checkoutAmount = BlueTriangle.configuration.checkoutAmount
         self.checkoutCartCount = BlueTriangle.configuration.checkoutCartCount
         self.checkoutCartCountCheckout = BlueTriangle.configuration.checkoutCartCountCheckout
         self.checkoutOrderNumber = BlueTriangle.configuration.checkoutOrderNumber
