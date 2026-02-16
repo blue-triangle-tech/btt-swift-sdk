@@ -70,6 +70,13 @@ extension CheckoutEventReporter {
                 return false
             }
             
+            let matchesURL = networkEvent.url
+                .matchesWildcard(session.checkoutURL)
+            
+            if !matchesURL {
+                return false
+            }
+            
             print("Reported Event Checkout  Url : \(networkEvent.url)")
             // Validate HTTP success range (200–299)
             let isSuccessStatus: Bool = {
@@ -81,8 +88,7 @@ extension CheckoutEventReporter {
             }()
             
             // Match URL using wildcard support
-            let matchesURL = networkEvent.url
-                .matchesWildcard(session.checkoutURL)
+
             return isSuccessStatus && matchesURL
             
             
