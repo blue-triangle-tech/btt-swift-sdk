@@ -14,42 +14,10 @@ final actor CheckoutEventReporter {
     private var lastEvent: CheckoutEvent?
     
     func onCheckoutEvent(_ event: CheckoutEvent) {
-        guard let session = BlueTriangle.sessionData(), session.checkoutTrackingEnabled else { return }
-        switch event {
-            
-        case let classEvent as ClassCheckoutEvent:
-            handleClassEvent(classEvent)
-            
-        case let networkEvent as NetworkCheckoutEvent:
-            handleNetworkEvent(networkEvent)
-            
-        default:
-            break
+        if isValidEvent(event) {
+            fireCheckoutEvent()
         }
-        
         lastEvent = event
-    }
-    
-    private func handleClassEvent(_ event: ClassCheckoutEvent) {
-        print("Checkout event fired ---- \(event.name)")
-        if let lastEvent = lastEvent as? ClassCheckoutEvent, lastEvent.name == event.name { return }
-        if let session = BlueTriangle.sessionData(), session.checkoutClassName.contains(event.name) {
-            fireCheckoutEvent()
-        }
-    }
-    
-    private func handleNetworkEvent(_ event: NetworkCheckoutEvent) {
-        
-        if let lastEvent = lastEvent as? NetworkCheckoutEvent, lastEvent.url == event.url { return }
-        
-        if  let session = BlueTriangle.sessionData(), event.statusCode == "200" &&
-                event.url.matchesWildcard(session.checkoutURL) {
-            fireCheckoutEvent()
-        }
-    }
-    
-    private func isValidEvent(_ event: CheckoutEvent) -> Bool {
-       return true
     }
     
     private func fireCheckoutEvent() {
@@ -57,14 +25,67 @@ final actor CheckoutEventReporter {
             let timer = BlueTriangle.startTimer(
                 page: Page(
                     pageName: Constants.autoCheckoutPageName))
+            timer.nativeAppProperties.autoCheckout = true
+            let purchaseConfirmation: PurchaseConfirmation = PurchaseConfirmation(
+                cartValue: Decimal(session.checkOutAmount),
+                cartCount: session.checkoutCartCount,
+                cartCountCheckout:session.checkoutCartCountCheckout,
+                orderNumber: session.checkoutOrderNumber,
+                orderTime: TimeInterval(session.checkoutTimeValue))
             BlueTriangle.endTimer(
                 timer,
-                purchaseConfirmation: PurchaseConfirmation(
-                    cartValue: Decimal(session.checkOutAmount),
-                    cartCount: session.checkoutCartCount,
-                    cartCountCheckout:session.checkoutCartCountCheckout,
-                    orderNumber: session.checkoutOrderNumber,
-                    orderTime: TimeInterval(session.checkoutTimeValue)))
+                purchaseConfirmation: purchaseConfirmation)
+        }
+    }
+}
+
+extension CheckoutEventReporter {
+    
+    private func isValidEvent(_ event: CheckoutEvent) -> Bool {
+        
+        guard let session = BlueTriangle.sessionData(),
+              session.checkoutTrackingEnabled else {
+            return false
+        }
+        
+        switch event {
+        case let classEvent as ClassCheckoutEvent:
+            // Prevent immediate duplicate
+            if let last = lastEvent as? ClassCheckoutEvent,
+               last.name == classEvent.name {
+                return false
+            }
+            // Match against class names
+            return session.checkoutClassName.contains { configuredName in
+                configuredName
+                    .localizedCaseInsensitiveContains(classEvent.name)
+            }
+            
+            
+        case let networkEvent as NetworkCheckoutEvent:
+            // Prevent immediate duplicate
+            if let last = lastEvent as? NetworkCheckoutEvent,
+               last.url == networkEvent.url {
+                return false
+            }
+            
+            // Validate HTTP success range (200–299)
+            let isSuccessStatus: Bool = {
+                if let codeString = networkEvent.statusCode,
+                   let code = Int(codeString) {
+                    return (200...299).contains(code)
+                }
+                return false
+            }()
+            
+            // Match URL using wildcard support
+            let matchesURL = networkEvent.url
+                .matchesWildcard(session.checkoutURL)
+            return isSuccessStatus && matchesURL
+            
+            
+        default:
+            return false
         }
     }
 }
