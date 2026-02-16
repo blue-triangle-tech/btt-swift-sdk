@@ -42,46 +42,44 @@ final actor CheckoutEventReporter {
 extension CheckoutEventReporter {
     
     private func isValidEvent(_ event: CheckoutEvent) -> Bool {
-        
+
         guard let session = BlueTriangle.sessionData(),
               session.checkoutTrackingEnabled else {
             return false
         }
-        
+
         switch event {
+
         case let classEvent as ClassCheckoutEvent:
-            // Prevent immediate duplicate
+
+            // Immediate duplicate block (no validation involved)
             if let last = lastClassEvent,
                last.name == classEvent.name {
                 return false
             }
+
+            // Update immediately because you said even invalid should count
             lastClassEvent = classEvent
-            print("Reported Event Checkout  Page : \(classEvent.name)")
-            // Match against class names
-            return session.checkoutClassName.contains { configuredName in
-                configuredName
-                    .localizedCaseInsensitiveContains(classEvent.name)
-            }
-            
-            
+
+            return session.checkoutClassName.contains(classEvent.name)
+
+
         case let networkEvent as NetworkCheckoutEvent:
-            // Prevent immediate duplicate
+
+            // Immediate duplicate block
             if let last = lastNetworkEvent,
                last.url == networkEvent.url {
                 return false
             }
-            
+
+            // Update immediately (even if invalid)
             lastNetworkEvent = networkEvent
-            
+
             let matchesURL = networkEvent.url
                 .matchesWildcard(session.checkoutURL)
-            
-            if !matchesURL {
-                return false
-            }
-            
-            print("Reported Event Checkout  Url : \(networkEvent.url)")
-            // Validate HTTP success range (200–299)
+
+            guard matchesURL else { return false }
+
             let isSuccessStatus: Bool = {
                 if let codeString = networkEvent.statusCode,
                    let code = Int(codeString) {
@@ -89,12 +87,9 @@ extension CheckoutEventReporter {
                 }
                 return false
             }()
-            
-            // Match URL using wildcard support
 
-            return isSuccessStatus && matchesURL
-            
-            
+            return isSuccessStatus
+
         default:
             return false
         }
