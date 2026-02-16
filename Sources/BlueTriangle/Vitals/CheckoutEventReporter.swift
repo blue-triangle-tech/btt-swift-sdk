@@ -11,13 +11,13 @@ protocol CheckoutEvent {}
 
 final actor CheckoutEventReporter {
     
-    private var lastEvent: CheckoutEvent?
+    private var lastNetworkEvent: NetworkCheckoutEvent?
+    private var lastClassEvent: ClassCheckoutEvent?
     
     func onCheckoutEvent(_ event: CheckoutEvent) {
         if isValidEvent(event) {
             fireCheckoutEvent()
         }
-        lastEvent = event
     }
     
     private func fireCheckoutEvent() {
@@ -51,10 +51,11 @@ extension CheckoutEventReporter {
         switch event {
         case let classEvent as ClassCheckoutEvent:
             // Prevent immediate duplicate
-            if let last = lastEvent as? ClassCheckoutEvent,
+            if let last = lastClassEvent,
                last.name == classEvent.name {
                 return false
             }
+            lastClassEvent = classEvent
             print("Reported Event Checkout  Page : \(classEvent.name)")
             // Match against class names
             return session.checkoutClassName.contains { configuredName in
@@ -65,10 +66,12 @@ extension CheckoutEventReporter {
             
         case let networkEvent as NetworkCheckoutEvent:
             // Prevent immediate duplicate
-            if let last = lastEvent as? NetworkCheckoutEvent,
+            if let last = lastNetworkEvent,
                last.url == networkEvent.url {
                 return false
             }
+            
+            lastNetworkEvent = networkEvent
             
             let matchesURL = networkEvent.url
                 .matchesWildcard(session.checkoutURL)
