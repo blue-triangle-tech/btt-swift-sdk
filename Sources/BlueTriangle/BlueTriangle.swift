@@ -261,7 +261,7 @@ final public class BlueTriangle: NSObject {
         configuration.internalTimerConfiguration.makeTimerFactory(logger: logger)
     }()
 
-    private static var shouldCaptureRequests: Bool = {
+    internal static var shouldCaptureRequests: Bool = {
         sessionData()?.shouldNetworkCapture ?? false
     }()
     
@@ -1188,12 +1188,14 @@ public extension BlueTriangle {
     static func captureRequest(timer: InternalTimer, response: URLResponse?) {
         Task {
             await getNetworkRequestCapture()?.collect(timer: timer, response: response)
+            await reportAutoCheckoutFor(CapturedRequest(timer: timer, relativeTo: 0, response: response))
         }
     }
 
     internal static func captureRequest(timer: InternalTimer, response: CustomResponse) {
         Task {
             await getNetworkRequestCapture()?.collect(timer: timer, response: response)
+            await reportAutoCheckoutFor(CapturedRequest(timer: timer, relativeTo: 0, response: response))
         }
     }
 
@@ -1204,21 +1206,27 @@ public extension BlueTriangle {
     static func captureRequest(timer: InternalTimer, tuple: (Data, URLResponse)) {
         Task {
             await getNetworkRequestCapture()?.collect(timer: timer, response: tuple.1)
+            await reportAutoCheckoutFor(CapturedRequest(timer: timer, relativeTo: 0, response: tuple.1))
         }
     }
     
     static func captureRequest(timer: InternalTimer, request : URLRequest, error: Error?) {
         Task {
             await getNetworkRequestCapture()?.collect(timer: timer, request: request, error: error)
+            await reportAutoCheckoutFor(CapturedRequest(timer: timer, relativeTo: 0, request: request, error: error))
         }
     }
-
     /// Captures a network request.
     /// - Parameter metrics: An object encapsulating the metrics for a session task.
     static func captureRequest(metrics: URLSessionTaskMetrics, error : Error?) {
         Task {
             await getNetworkRequestCapture()?.collect(metrics: metrics, error: error)
+            await reportAutoCheckoutFor(CapturedRequest(metrics: metrics, relativeTo: 0, error: error))
         }
+    }
+    
+    private static func reportAutoCheckoutFor(_ request: CapturedRequest) async {
+        await BlueTriangle.checkoutEvent.onCheckoutEvent(NetworkCheckoutEvent(url: request.url, statusCode: request.statusCode))
     }
     
     internal static func startGroupTimerRequest(page : Page, startTime : Millisecond) async {

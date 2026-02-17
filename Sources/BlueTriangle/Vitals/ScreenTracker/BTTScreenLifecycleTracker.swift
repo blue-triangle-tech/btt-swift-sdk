@@ -201,7 +201,6 @@ class TimerMapActivity {
         self.checkOutEvent(pageName)
     }
     
-    
     func checkOutEvent(_ pageName : String) {
         Task {
             await BlueTriangle.checkoutEvent.onCheckoutEvent(ClassCheckoutEvent(name: pageName))
