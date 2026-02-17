@@ -47,7 +47,8 @@ final public class BTTimer: NSObject, @unchecked Sendable {
     private var networkAccumulator : BTTimerNetStateAccumulatorProtocol?
     private var nativeAppProp : NativeAppProperties?
     
-    @objc public var isGroupTimer: Bool = false
+    @objc internal var isGroupTimer: Bool = false
+    @objc internal var isAutoTimer: Bool = false
     
     /// The type of the timer.
     @objc public let type: TimerType
@@ -141,6 +142,7 @@ final public class BTTimer: NSObject, @unchecked Sendable {
 
     init(page: Page,
          isGroupTimer : Bool = false,
+         isAutoTimer : Bool = false,
          type: TimerType = .main,
          logger: Logging,
          intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 },
@@ -148,6 +150,7 @@ final public class BTTimer: NSObject, @unchecked Sendable {
          performanceMonitor: PerformanceMonitoring? = nil) {
         self.page = page
         self.isGroupTimer = isGroupTimer
+        self.isAutoTimer = isAutoTimer
         self.type = type
         self.logger = logger
         self.timeIntervalProvider = intervalProvider
@@ -171,7 +174,6 @@ final public class BTTimer: NSObject, @unchecked Sendable {
 
         handle(.start)
         self.startNetState()
-        self.checkOutEvent()
     }
 
     /// Mark the timer interactive at current time if the timer has been started and not
@@ -227,13 +229,6 @@ final public class BTTimer: NSObject, @unchecked Sendable {
             default:
                 logger.error("Invalid transition.")
             }
-        }
-    }
-    
-    func checkOutEvent() {
-        let pageName = self.getPageName()
-        Task {
-            await BlueTriangle.checkoutEvent.onCheckoutEvent(ClassCheckoutEvent(name: pageName))
         }
     }
 }

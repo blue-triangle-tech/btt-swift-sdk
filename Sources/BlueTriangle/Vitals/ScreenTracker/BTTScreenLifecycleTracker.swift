@@ -113,6 +113,7 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
     
     private func stopActiveTimersWhenAppWentToBackground() {
         var items: [(key: String, page: String, title: String)] = []
+        
         lock.sync {
             guard self.enableLifecycleTracker else { return }
 
@@ -122,11 +123,13 @@ public class BTTScreenLifecycleTracker : BTScreenLifecycleTracker{
                 startTimerPages[key] = (page, title)
                 items.append((key: key, page: page, title: title))
             }
-            btTimeActivityrMap.removeAll()
         }
-
+        
         for item in items {
             viewingEnd(item.key, item.page, item.title)
+        }
+        lock.sync {
+            btTimeActivityrMap.removeAll()
         }
 
         logger?.info("Stop active timer when app went to background")
@@ -193,6 +196,15 @@ class TimerMapActivity {
             self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageTitle: pageTitle, pageType: pageType, trafficSegment: trafficSegment), timerType: .custom, isGroupedTimer: true)
         } else {
             self.timer = BlueTriangle.startTimer(page:Page(pageName: pageName, pageType: pageType, trafficSegment: trafficSegment))
+        }
+        
+        self.checkOutEvent(pageName)
+    }
+    
+    
+    func checkOutEvent(_ pageName : String) {
+        Task {
+            await BlueTriangle.checkoutEvent.onCheckoutEvent(ClassCheckoutEvent(name: pageName))
         }
     }
     
