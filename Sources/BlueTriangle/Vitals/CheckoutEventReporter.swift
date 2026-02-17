@@ -11,16 +11,19 @@ protocol CheckoutEvent {}
 
 final actor CheckoutEventReporter {
     
+    private let logger: Logging
     private var lastNetworkEvent: NetworkCheckoutEvent?
     private var lastClassEvent: ClassCheckoutEvent?
+    init(logger: Logging) { self.logger = logger }
     
     func onCheckoutEvent(_ event: CheckoutEvent) {
+        self.reportLogFor(event, message: "BlueTriangle:CheckoutEventReporter - checkout event", debug: true)
         if isValidEvent(event) {
-            fireCheckoutEvent()
+            fireCheckoutEvent(event)
         }
     }
     
-    private func fireCheckoutEvent() {
+    private func fireCheckoutEvent(_ event: CheckoutEvent) {
         if BlueTriangle.initialized,  let session = BlueTriangle.sessionData() {
             let timer = BlueTriangle.startTimer(
                 page: Page(
@@ -35,6 +38,31 @@ final actor CheckoutEventReporter {
             BlueTriangle.endTimer(
                 timer,
                 purchaseConfirmation: purchaseConfirmation)
+            
+            self.reportLogFor(event, message: "BlueTriangle:CheckoutEventReporter - Auto checkout event fired successfully")
+        }
+    }
+    
+    private func reportLogFor(_ event: CheckoutEvent, message: String, debug: Bool = false) {
+        switch event {
+        case let classEvent as ClassCheckoutEvent:
+            if debug {
+                logger.debug(message + " for class: \(classEvent.name)")
+            } else {
+                logger.info(message + " for class: \(classEvent.name)")
+            }
+        case let networkEvent as NetworkCheckoutEvent:
+            if debug {
+                logger.debug(message + " for network url: \(networkEvent.url) and status code \(networkEvent.statusCode ?? "")")
+            } else {
+                logger.info(message + " for network url: \(networkEvent.url) and status code \(networkEvent.statusCode ?? "")")
+            }
+        default:
+            if debug {
+                logger.debug(message)
+            } else {
+                logger.info(message)
+            }
         }
     }
 }
@@ -67,7 +95,7 @@ extension CheckoutEventReporter {
 
             // Immediate duplicate block
             if let last = lastNetworkEvent,
-               last.url == networkEvent.url {
+               last.url == networkEvent.url && last.statusCode == networkEvent.statusCode {
                 return false
             }
 

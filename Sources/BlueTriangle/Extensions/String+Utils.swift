@@ -8,8 +8,13 @@
 import Foundation
 
 extension String {
+    
     func matchesWildcard(_ pattern: String) -> Bool {
-        let keyword = pattern.replacingOccurrences(of: "*", with: "")
-        return self.localizedCaseInsensitiveContains(keyword)
+        let regexPattern = "^" + pattern.replacingOccurrences(of: "*", with: ".*") + "$"
+        
+        return self.range(
+            of: regexPattern,
+            options: [.regularExpression]
+        ) != nil
     }
 }
