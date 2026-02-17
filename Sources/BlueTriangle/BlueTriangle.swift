@@ -265,6 +265,10 @@ final public class BlueTriangle: NSObject {
         sessionData()?.shouldNetworkCapture ?? false
     }()
     
+    internal static var shouldCheckoutTracking: Bool = {
+        sessionData()?.checkoutTrackingEnabled ?? false
+    }()
+    
     /// A Boolean value indicating  whether the SDK has been successfully configured and initialized.
     ///
     /// - `true`: The SDK has been configured and is ready to function. This means
@@ -1159,7 +1163,7 @@ public extension BlueTriangle {
     }
     /// Returns a timer for network capture.
     static func startRequestTimer() -> InternalTimer? {
-        guard shouldCaptureRequests else {
+        guard shouldCaptureRequests || shouldCheckoutTracking else {
             return nil
         }
         var timer = internalTimerFactory()
