@@ -48,7 +48,6 @@ final public class BTTimer: NSObject, @unchecked Sendable {
     private var nativeAppProp : NativeAppProperties?
     
     @objc internal var isGroupTimer: Bool = false
-    @objc internal var isAutoTimer: Bool = false
     
     /// The type of the timer.
     @objc public let type: TimerType
@@ -142,7 +141,6 @@ final public class BTTimer: NSObject, @unchecked Sendable {
 
     init(page: Page,
          isGroupTimer : Bool = false,
-         isAutoTimer : Bool = false,
          type: TimerType = .main,
          logger: Logging,
          intervalProvider: @escaping () -> TimeInterval = { Date().timeIntervalSince1970 },
@@ -150,7 +148,6 @@ final public class BTTimer: NSObject, @unchecked Sendable {
          performanceMonitor: PerformanceMonitoring? = nil) {
         self.page = page
         self.isGroupTimer = isGroupTimer
-        self.isAutoTimer = isAutoTimer
         self.type = type
         self.logger = logger
         self.timeIntervalProvider = intervalProvider

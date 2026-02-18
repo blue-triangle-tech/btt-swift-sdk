@@ -29,12 +29,14 @@ final actor CheckoutEventReporter {
                 page: Page(
                     pageName: Constants.autoCheckoutPageName))
             timer.nativeAppProperties.autoCheckout = true
+            timer.pageTimeBuilder = {
+                return Millisecond(session.checkoutTimeValue)
+            }
             let purchaseConfirmation: PurchaseConfirmation = PurchaseConfirmation(
                 cartValue: Decimal(session.checkoutAmount),
                 cartCount: session.checkoutCartCount,
                 cartCountCheckout:session.checkoutCartCountCheckout,
-                orderNumber: session.checkoutOrderNumber,
-                orderTime: session.checkoutTimeValue.asTimeInterval)
+                orderNumber: session.checkoutOrderNumber)
             BlueTriangle.endTimer(
                 timer,
                 purchaseConfirmation: purchaseConfirmation)
