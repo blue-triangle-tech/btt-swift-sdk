@@ -21,7 +21,12 @@ final class GlobalProperties {
     }
 
     func updateAbTestID(_ id: String?) {
-        data.abTestID = id
+        guard let id else {
+            data.abTestID = nil
+            save()
+            return
+        }
+        data.abTestID = String(id.prefix(512))
         save()
     }
     

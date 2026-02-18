@@ -28,9 +28,10 @@ final actor CheckoutEventReporter {
             let timer = BlueTriangle.startTimer(
                 page: Page(
                     pageName: Constants.autoCheckoutPageName))
+            let pgtm = Millisecond(session.checkoutTimeValue) > Constants.minPgTm ? Millisecond(session.checkoutTimeValue) : Constants.minPgTm
             timer.nativeAppProperties.autoCheckout = true
             timer.pageTimeBuilder = {
-                return Millisecond(session.checkoutTimeValue)
+                return pgtm
             }
             let purchaseConfirmation: PurchaseConfirmation = PurchaseConfirmation(
                 cartValue: Decimal(session.checkoutAmount),
