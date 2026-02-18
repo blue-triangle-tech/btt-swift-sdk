@@ -44,7 +44,7 @@ class LaunchTimeReporter : ObservableObject {
                         self.uploadReports(BTTEvents.coldLaunch, date, duration)
                     case .Hot(let date, let duration):
                         self.logger.info("Received hot launch at \(date)")
-                        self.uploadReports(BTTEvents.hotLaunch, date, duration,)
+                        self.uploadReports(BTTEvents.hotLaunch, date, duration)
                     }
                 }
             }.store(in: &self.cancellables)
