@@ -270,16 +270,23 @@ final class BTTimerGroup {
         let groupStart = groupTimer.startTime.milliseconds
         let timersSnap = lock.sync { Array(self.timers) }
 
+        // count occurrences per pageName
+        let freq = timersSnap.reduce(into: [String: Int]()) { $0[$1.getPageName(), default: 0] += 1 }
+        var seen = Set<String>()
+        let uniqueTimers = timersSnap.filter { seen.insert($0.getPageName()).inserted }
+
         Task {
             await BlueTriangle.startGroupTimerRequest(page: Page(pageName: pageName, pageType: pageType, trafficSegment: trafficSegment), startTime: groupStart)
-            for t in timersSnap {
-                await self.submitSingleRequest(groupTimer: self.groupTimer, timer: t, group: pageName)
+            for t in uniqueTimers {
+                let count = freq[t.getPageName(), default: 1]
+                let pageNameWithCount = count > 1 ? "\(t.getPageName()) x\(count)" : t.getPageName()
+                await self.submitSingleRequest(groupTimer: self.groupTimer, timer: t, page: pageNameWithCount,  group: pageName)
             }
             await BlueTriangle.uploadGroupedViewCollectedRequests()
         }
     }
 
-    private func submitSingleRequest(groupTimer: BTTimer, timer: BTTimer, group: String) async {
+    private func submitSingleRequest(groupTimer: BTTimer, timer: BTTimer, page :String, group: String) async {
         let prop = timer.nativeAppProperties
         let loadStartTime = prop.loadStartTime > 0 ? prop.loadStartTime : timer.startTime.milliseconds
         let loadEndTime = prop.loadEndTime > 0 ? prop.loadEndTime : (loadStartTime + Constants.minPgTm)
@@ -312,8 +319,8 @@ final class BTTimerGroup {
             startTime: loadStartTime,
             endTime: actualLoadEndTime,
             groupStartTime: groupTimer.startTime.milliseconds,
-            response: CustomPageResponse(file: timer.getPageName(),
-                                         url: timer.getPageName(),
+            response: CustomPageResponse(file: page,
+                                         url: page,
                                          domain: group,
                                          native: native,
                                          minCPU: minCPU,
@@ -345,12 +352,6 @@ final class BTTimerGroup {
         total += currentEnd - currentStart
         return total
     }
-    
-    //Old
-   /* private func extractLastPageName(from titles: [(String, String)]) -> String {
-        if let lastWithTitle = titles.last(where: { !$0.1.isEmpty }) { return lastWithTitle.1 }
-        return titles.last?.0 ?? ""
-    }*/
     
     private func extractLastPageName(from titles: [(String, String)]) -> String {
         let names = titles.compactMap { !$0.1.isEmpty ? $0.1 : nil }
