@@ -14,9 +14,7 @@ let package = Package(
         .library(
             name: "BlueTriangle",
             targets: ["BlueTriangle"]
-        ),
-        .executable(name: "BTTSetup",   targets: ["BTTSetup"]),
-        .executable(name: "BTTCleanup", targets: ["BTTCleanup"])
+        )
     ],
     dependencies: [
         .package(
@@ -40,20 +38,6 @@ let package = Package(
             name: "BlueTriangle",
             dependencies: ["Backtrace", "AppEventLogger", "BTTMacros"],
             resources: [.copy("PrivacyInfo.xcprivacy")]
-        ),
-        .executableTarget(
-            name: "BTTSetup",
-            path: "Sources/BTTSetup",
-            swiftSettings: [
-                .define("BTTSETUP_ENABLED", .when(platforms: [.macOS]))
-            ]
-        ),
-        .executableTarget(
-            name: "BTTCleanup",
-            path: "Sources/BTTCleanup",
-            swiftSettings: [
-                .define("BTTClEANUP_ENABLED", .when(platforms: [.macOS]))
-            ]
         ),
         .target(name: "Backtrace"),
         .target(name: "AppEventLogger"),
