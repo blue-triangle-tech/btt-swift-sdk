@@ -39,11 +39,9 @@ final class BTTimerGroupManager {
                 // Check if the timer belongs to the same group
                 if closedGroup.belongsToSameGroup(timer.getPageName()) {
                     // Forcefully add to the closed group if it's from the same group
-                    logger.info("Adding timer to closed but unsubmitted group: \(timer.getPageName())")
                     closedGroup.add(timer)
                 } else {
                     // Different group - forcefully submit the closed group and create new one
-                    logger.info("Forcefully submitting closed group before creating new unique group")
                     closedGroup.forcefullyEndAllTimers()
                     // Create new group for unique timer
                     let interval = computeCauseInterval(from: lock.sync { lastTimerTime })
@@ -83,15 +81,13 @@ final class BTTimerGroupManager {
             }
             
             // If there's a closed but unsubmitted group, check if timer belongs to it
-            if let closedGroup = existingGroup, closedGroup.isClosed {
+            if let closedGroup = existingGroup, closedGroup.isClosed, !closedGroup.hasGroupSubmitted {
                 // Check if the timer belongs to the closed group
                 if closedGroup.belongsToSameGroup(groupName) {
                     // Timer belongs to closed group - don't create new group, will add to closed group
-                    logger.info("View belongs to closed but unsubmitted group: \(groupName)")
                     return (false, nil, lastTimerTime, nil)
                 } else {
                     // Timer doesn't belong to closed group - force submit closed group and create new one
-                    logger.info("Forcefully submitting closed group before creating new group")
                     return (true, .timeout, lastTimerTime, closedGroup)
                 }
             }
