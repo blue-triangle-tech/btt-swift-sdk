@@ -1,7 +1,5 @@
 import SwiftUI
-import BlueTriangle
 
-@BTTTrack
 struct HomeView: View {
     let viewModel: ItemViewModel
     var body: some View {
