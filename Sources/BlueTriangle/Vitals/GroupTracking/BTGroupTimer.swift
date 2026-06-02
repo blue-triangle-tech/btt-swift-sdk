@@ -38,6 +38,25 @@ final class BTTimerGroup {
 
     var isClosed: Bool { lock.sync { isGroupClosed } }
     var hasGroupSubmitted: Bool { lock.sync { hasSubmitted } }
+    
+    func containsPageName(_ pageName: String) -> Bool {
+        lock.sync {
+            timers.contains(where: { $0.getPageName() == pageName })
+        }
+    }
+    
+    func reopenIfClosed() {
+        let didReopen: Bool = lock.sync {
+            guard isGroupClosed, !hasSubmitted else { return false }
+            isGroupClosed = false
+            return true
+        }
+        
+        if didReopen {
+            logger.info("Reopened closed group due to matching page name")
+            scheduleIdleTimer()
+        }
+    }
 
     init(
         logger: Logging,
@@ -69,6 +88,12 @@ final class BTTimerGroup {
         observe(timer)
 
         let shouldUpdateNameAndReset: Bool = lock.sync {
+            // If group is closed but timer's page exists in this group, reopen it
+            if isGroupClosed && !hasSubmitted && timers.contains(where: { $0.getPageName() == timer.getPageName() }) {
+                isGroupClosed = false
+                logger.info("Reopening closed group to add matching timer: \(timer.getPageName())")
+            }
+            
             guard !isGroupClosed else { return false }
             timers.insert(timer)
             return true
