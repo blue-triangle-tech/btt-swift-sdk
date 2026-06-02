@@ -69,14 +69,25 @@ final class BTTimerGroup {
         observe(timer)
 
         let shouldUpdateNameAndReset: Bool = lock.sync {
-            guard !isGroupClosed else { return false }
+            // Allow adding to closed groups that haven't been submitted yet
+            guard !hasSubmitted else { return false }
             timers.insert(timer)
             return true
         }
 
         if shouldUpdateNameAndReset {
             updatePageNameFromSnapshot()
-            scheduleIdleTimer()
+            // Only reschedule idle timer if group is not closed
+            if !lock.sync({ isGroupClosed }) {
+                scheduleIdleTimer()
+            }
+        }
+    }
+    
+    func belongsToSameGroup(_ pageName: String) -> Bool {
+        lock.sync {
+            // Check if the incoming timer's page name matches any timer in this group
+            return timers.contains(where: { $0.getPageName() == pageName })
         }
     }
 
