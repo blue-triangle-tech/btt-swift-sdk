@@ -38,25 +38,6 @@ final class BTTimerGroup {
 
     var isClosed: Bool { lock.sync { isGroupClosed } }
     var hasGroupSubmitted: Bool { lock.sync { hasSubmitted } }
-    
-    func containsPageName(_ pageName: String) -> Bool {
-        lock.sync {
-            timers.contains(where: { $0.getPageName() == pageName })
-        }
-    }
-    
-    func reopenIfClosed() {
-        let didReopen: Bool = lock.sync {
-            guard isGroupClosed, !hasSubmitted else { return false }
-            isGroupClosed = false
-            return true
-        }
-        
-        if didReopen {
-            logger.info("Reopened closed group due to matching page name")
-            scheduleIdleTimer()
-        }
-    }
 
     init(
         logger: Logging,
@@ -88,12 +69,6 @@ final class BTTimerGroup {
         observe(timer)
 
         let shouldUpdateNameAndReset: Bool = lock.sync {
-            // If group is closed but timer's page exists in this group, reopen it
-            if isGroupClosed && !hasSubmitted && timers.contains(where: { $0.getPageName() == timer.getPageName() }) {
-                isGroupClosed = false
-                logger.info("Reopening closed group to add matching timer: \(timer.getPageName())")
-            }
-            
             guard !isGroupClosed else { return false }
             timers.insert(timer)
             return true
@@ -288,6 +263,22 @@ final class BTTimerGroup {
         }
     }
 
+   /* private func submitChildsWcdRequests() {
+        let pageName = groupTimer.getPageName()
+        let pageType = groupTimer.page.pageType
+        let trafficSegment = groupTimer.page.trafficSegment
+        let groupStart = groupTimer.startTime.milliseconds
+        let timersSnap = lock.sync { Array(self.timers) }
+
+        Task {
+            await BlueTriangle.startGroupTimerRequest(page: Page(pageName: pageName, pageType: pageType, trafficSegment: trafficSegment), startTime: groupStart)
+            for t in timersSnap {
+                await self.submitSingleRequest(groupTimer: self.groupTimer, timer: t, group: pageName)
+            }
+            await BlueTriangle.uploadGroupedViewCollectedRequests()
+        }
+    }*/
+    
     private func submitChildsWcdRequests() {
         let pageName = groupTimer.getPageName()
         let pageType = groupTimer.page.pageType
@@ -297,6 +288,8 @@ final class BTTimerGroup {
 
         // count occurrences per pageName
         let freq = timersSnap.reduce(into: [String: Int]()) { $0[$1.getPageName(), default: 0] += 1 }
+        
+        // dedupe: keep first occurrence of each pageName
         var seen = Set<String>()
         let uniqueTimers = timersSnap.filter { seen.insert($0.getPageName()).inserted }
 
@@ -377,6 +370,11 @@ final class BTTimerGroup {
         total += currentEnd - currentStart
         return total
     }
+    
+   /* private func extractLastPageName(from titles: [(String, String)]) -> String {
+        if let lastWithTitle = titles.last(where: { !$0.1.isEmpty }) { return lastWithTitle.1 }
+        return titles.last?.0 ?? ""
+    }*/
     
     private func extractLastPageName(from titles: [(String, String)]) -> String {
         let names = titles.compactMap { !$0.1.isEmpty ? $0.1 : nil }
