@@ -17,7 +17,7 @@ struct DemoView: View {
                             }
                         }
                         
-                        NavigationLink(destination: HomeView() , isActive: $isHomeActive) {
+                        NavigationLink(destination: HomeView(viewModel: ItemViewModel()) , isActive: $isHomeActive) {
                             Button("Go to Home") {
                                 isHomeActive = true
                             }
@@ -36,5 +36,60 @@ struct DemoView: View {
                 }
             }
         }
+    }
+}
+
+struct LineItemRow<ModifiedTitle: View>: View {
+    let title: String
+    let value: Double
+    let currencyCode: String
+    let titleModifier: (Text) -> ModifiedTitle
+
+    init(
+        title: String,
+        value: Double,
+        currencyCode: String = "$",
+        @ViewBuilder titleModifier: @escaping (Text) -> ModifiedTitle = { $0 }
+    ) {
+        self.title = title
+        self.currencyCode = currencyCode
+        self.value = value
+        self.titleModifier = titleModifier
+    }
+
+    public var body: some View {
+        HStack {
+            titleModifier(Text(title))
+
+            Spacer()
+
+            Text(
+                value,
+                format: .currency(
+                    code: currencyCode))
+        }
+    }
+}
+
+final class ItemViewModel: ObservableObject {
+    
+    var estimatedTax: Double {
+        50
+    }
+    
+    var itemCount: Int {
+        4
+    }
+    
+    var itemTotal: Double {
+        400
+    }
+    
+    var shipping: Double {
+        0.0
+    }
+    
+    var total: Double {
+        estimatedTax + shipping + itemTotal
     }
 }
