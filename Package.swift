@@ -8,17 +8,12 @@ let package = Package(
         .iOS(.v13),
         .tvOS(.v13),
         .watchOS(.v6),
-        .macOS(.v12)
+        .macOS(.v10_15)
     ],
     products: [
         .library(
             name: "BlueTriangle",
             targets: ["BlueTriangle"]
-        ),
-        // ── Plugin exposed to app developers ──────────────────────
-        .plugin(
-            name: "BTTInstrumentorPlugin",
-            targets: ["BTTInstrumentorPlugin"]
         ),
     ],
     dependencies: [
@@ -43,25 +38,6 @@ let package = Package(
             name: "BlueTriangle",
             dependencies: ["Backtrace", "AppEventLogger", "BTTMacros"],
             resources: [.copy("PrivacyInfo.xcprivacy")]
-        ),
-        .binaryTarget(
-            name: "BTTInstrumentor",
-            path: "Sources/Artifacts/BTTInstrumentor.artifactbundle"
-        ),
-        .plugin(
-            name: "BTTInstrumentorPlugin",
-            capability: .command(
-                intent: .custom(
-                    verb: "btt-inject",
-                    description: "Inject @BTTTrackScreen into SwiftUI views for automatic screen tracking"
-                ),
-                permissions: [
-                    .writeToPackageDirectory(
-                        reason: "BTTInstrumentor needs to inject @BTTTrackScreen into SwiftUI source files"
-                    )
-                ]
-            ),
-            dependencies: ["BTTInstrumentor"]
         ),
         .target(name: "Backtrace"),
         .target(name: "AppEventLogger"),
