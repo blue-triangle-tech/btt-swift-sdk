@@ -65,11 +65,11 @@ extension BTTTrackMacro: MemberMacro {
         else {
             context.diagnose(
                 Diagnostic(node: node, message: BTTDiagnostic(message: "Struct must have a `body` property to use BTTTrack"))
-                                                             )
-                           throw BTTMacroError.noBody
+            )
+            throw BTTMacroError.noBody
         }
         
-        // MARK: - Extract ONLY body statements (FIX)
+        // MARK: - Extract body statements
         guard let declaration = bodyVar.bindings.first?.accessorBlock?.accessors._syntaxNode else {
             context.diagnose(
                 Diagnostic(
@@ -95,29 +95,40 @@ extension BTTTrackMacro: MemberMacro {
         
         let structName = structDecl.name.text
         
-        // MARK: - Generate code (SAFE)
+        // MARK: - Extract access level
+        // open maps to public since nested types/typealiases cannot be open
+        let accessLevel = structDecl.modifiers
+            .compactMap { $0.as(DeclModifierSyntax.self) }
+            .first {
+                ["public", "internal", "fileprivate", "private", "open"].contains($0.name.text)
+            }?
+            .name.text ?? "internal"
+        
+        let accessPrefix = (accessLevel == "public" || accessLevel == "open") ? "public " : ""
+        
+        // MARK: - Generate code
         let syntax = DeclSyntax(
         """
         // MARK: - BTT Auto Generated
-        
+
         @ViewBuilder
         private var _bttOriginalBody: some View {
         \(raw: bodyContent)
         }
-        
-        struct _BTTBodyContainer: View {
-            let view: \(raw: structName)
-            var body: some View {
+
+        \(raw: accessPrefix)struct _BTTBodyContainer: View {
+            \(raw: accessPrefix)let view: \(raw: structName)
+            \(raw: accessPrefix)var body: some View {
                 view._bttOriginalBody
             }
         }
-        
-        typealias Body = BTTTrack<_BTTBodyContainer>
-        
+
+        \(raw: accessPrefix)typealias Body = BTTTrack<_BTTBodyContainer>
+
         @_implements(View, body)
         @inline(never)
         @ViewBuilder
-        var _bttTrackedBody: Self.Body {
+        \(raw: accessPrefix)var _bttTrackedBody: Self.Body {
             BTTTrack("\(raw: screenName)") {
                 _BTTBodyContainer(view: self)
             }
