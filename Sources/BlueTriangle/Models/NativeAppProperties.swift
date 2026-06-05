@@ -8,10 +8,11 @@
 
 import Foundation
 
-enum ScreenType : String, Encodable, Decodable {
+public enum ScreenType : String, Encodable, Decodable {
     case UIKit
     case SwiftUI
     case Manual
+    case ReactNative
 }
 
 enum NativeAppType : CustomStringConvertible, Encodable, Decodable{

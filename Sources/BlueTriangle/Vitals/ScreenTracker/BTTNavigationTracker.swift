@@ -48,7 +48,7 @@ public final class BTTNavigationTracker<Value: Hashable>: ObservableObject {
 
     private func track(_ screenName: String) {
         print("[BTT] Screen:", screenName)
-        let sceenTracker = BTTScreenTracker(screenName)
+        let sceenTracker = BTTScreenTracker(screenName, type: .SwiftUI)
         sceenTracker.loadStarted()
         sceenTracker.loadEnded()
         sceenTracker.viewStart()

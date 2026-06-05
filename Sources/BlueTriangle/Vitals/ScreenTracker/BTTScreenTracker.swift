@@ -15,9 +15,10 @@ public final class BTTScreenTracker {
     private var id = "\(Identifier.random())"
     private var pageName: String
     private var tracker: BTTScreenLifecycleTracker?
-    private var type = ScreenType.Manual.rawValue
+    private var type = ScreenType.Manual
     
-    public init(_ screenName: String) {
+    public init(_ screenName: String, type : ScreenType = .Manual) {
+        self.type = type
         self.pageName = screenName
         self.tracker = BlueTriangle.screenTracker
     }
@@ -25,9 +26,9 @@ public final class BTTScreenTracker {
     // MARK: - Private
     
     private func updateScreenType() {
-        if type == ScreenType.UIKit.rawValue {
+        if type == ScreenType.UIKit {
             tracker?.setUpScreenType(.UIKit)
-        } else if type == ScreenType.SwiftUI.rawValue {
+        } else if type == ScreenType.SwiftUI {
             tracker?.setUpScreenType(.SwiftUI)
         } else {
             tracker?.setUpScreenType(.Manual)
