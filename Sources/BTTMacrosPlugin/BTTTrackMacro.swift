@@ -26,7 +26,7 @@ extension BTTTrackMacro: MemberMacro {
         // MARK: - Validate struct
         guard let structDecl = declaration.as(StructDeclSyntax.self) else {
             context.diagnose(
-                Diagnostic(node: node, message: BTTDiagnostic(message: "BTTTrackScreen can only be applied to structs"))
+                Diagnostic(node: node, message: BTTDiagnostic(message: "BTTTrack can only be applied to structs"))
             )
             throw BTTMacroError.notStruct
         }
