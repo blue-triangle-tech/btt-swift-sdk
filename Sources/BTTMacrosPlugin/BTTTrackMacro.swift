@@ -12,7 +12,22 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 
-public struct BTTTrackMacro {}
+public struct BTTTrackMacro: MemberAttributeMacro {
+    public static func expansion(
+        of node: AttributeSyntax,
+        attachedTo declaration: some DeclGroupSyntax,
+        providingAttributesFor member: some DeclSyntaxProtocol,
+        in context: some MacroExpansionContext
+    ) throws -> [AttributeSyntax] {
+        guard let varDecl = member.as(VariableDeclSyntax.self),
+              varDecl.bindings.first?.pattern.trimmedDescription == "body"
+        else { return [] }
+        return [AttributeSyntax(
+            atSign: .atSignToken(),
+            attributeName: IdentifierTypeSyntax(name: .identifier("ViewBuilder"))
+        )]
+    }
+}
 
 extension BTTTrackMacro: MemberMacro {
     

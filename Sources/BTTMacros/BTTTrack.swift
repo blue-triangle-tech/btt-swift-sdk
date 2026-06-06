@@ -6,6 +6,7 @@
 //
 
 #if swift(>=5.9)
+@attached(memberAttribute)
 @attached(member, names: arbitrary)
 public macro BTTTrack(_ name: String = "") = #externalMacro(
     module: "BTTMacrosPlugin",
