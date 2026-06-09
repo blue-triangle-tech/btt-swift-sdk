@@ -17,7 +17,7 @@ let package = Package(
         ),
         .library(
             name: "BTTSwiftUITracker",
-            targets: ["BTTSwiftUITracker", "BlueTriangle"]
+            targets: ["BTTSwiftUITracker"]
         )
     ],
     dependencies: [
