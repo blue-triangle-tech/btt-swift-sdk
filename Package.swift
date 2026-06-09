@@ -15,6 +15,10 @@ let package = Package(
             name: "BlueTriangle",
             targets: ["BlueTriangle"]
         ),
+        .library(
+            name: "BTTSwiftUITracker",
+            targets: ["BTTSwiftUITracker", "BlueTriangle"]
+        )
     ],
     dependencies: [
         .package(
@@ -23,20 +27,26 @@ let package = Package(
         )
     ],
     targets: [
+        // macros support -----------------------------------------------------------
         .macro(
             name: "BTTMacrosPlugin",
             dependencies: [
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
-            ]
+            ],
+            path: "Sources/BTTSwiftUITracker/Plugins"
         ),
         .target(
-            name: "BTTMacros",
-            dependencies: ["BTTMacrosPlugin"]
+            name: "BTTSwiftUITracker",
+            dependencies: [
+                "BTTMacrosPlugin",
+                "BlueTriangle"
+            ],
+            path: "Sources/BTTSwiftUITracker/Source"
         ),
         .target(
             name: "BlueTriangle",
-            dependencies: ["Backtrace", "AppEventLogger", "BTTMacros"],
+            dependencies: ["Backtrace", "AppEventLogger"],
             resources: [.copy("PrivacyInfo.xcprivacy")]
         ),
         .target(name: "Backtrace"),
