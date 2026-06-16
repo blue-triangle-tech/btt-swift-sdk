@@ -124,6 +124,7 @@ extension BTTTrackMacro: MemberMacro {
         // MARK: - Generate code
         let syntax = DeclSyntax(
         """
+        // @BTTTrack
         // MARK: - BTT Auto Generated
 
         @ViewBuilder
