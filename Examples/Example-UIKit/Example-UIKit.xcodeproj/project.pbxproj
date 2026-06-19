@@ -50,7 +50,6 @@
 		51AB6A692D2E5DEA005F21C4 /* CPUTestsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51AB6A682D2E5DEA005F21C4 /* CPUTestsViewController.swift */; };
 		51ADF3F62D2D664700E96148 /* NetworkTrackingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51ADF3F52D2D664700E96148 /* NetworkTrackingViewController.swift */; };
 		51ADF3F82D2D8E5500E96148 /* MemoryWarningViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51ADF3F72D2D8E5500E96148 /* MemoryWarningViewController.swift */; };
-		51CACBC52FD71841008BAF3D /* BTTSwiftUITracker in Frameworks */ = {isa = PBXBuildFile; productRef = 51CACBC42FD71841008BAF3D /* BTTSwiftUITracker */; };
 		51F8578F2A8B6E8600B9F77F /* MemoryAllocationTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51F8578E2A8B6E8600B9F77F /* MemoryAllocationTest.swift */; };
 		8405FECA2A40A97900CC13B5 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8405FEC92A40A97900CC13B5 /* Constants.swift */; };
 		8405FECC2A40A98300CC13B5 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8405FECB2A40A98300CC13B5 /* Utils.swift */; };
@@ -183,7 +182,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				51CACBC52FD71841008BAF3D /* BTTSwiftUITracker in Frameworks */,
 				C9015AEF2719CAFA003BC6C2 /* BlueTriangle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -545,7 +543,6 @@
 			name = "Example-UIKit";
 			packageProductDependencies = (
 				C9015AEE2719CAFA003BC6C2 /* BlueTriangle */,
-				51CACBC42FD71841008BAF3D /* BTTSwiftUITracker */,
 			);
 			productName = "Example-UIKit";
 			productReference = C9015AB82719CA60003BC6C2 /* Example-UIKit.app */;
@@ -1101,10 +1098,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		51CACBC42FD71841008BAF3D /* BTTSwiftUITracker */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = BTTSwiftUITracker;
-		};
 		C9015AEE2719CAFA003BC6C2 /* BlueTriangle */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = BlueTriangle;

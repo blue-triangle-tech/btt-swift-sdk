@@ -1,6 +1,5 @@
 // swift-tools-version:5.9
 import PackageDescription
-import CompilerPluginSupport
 
 let package = Package(
     name: "blue-triangle",
@@ -13,45 +12,25 @@ let package = Package(
     products: [
         .library(
             name: "BlueTriangle",
-            targets: ["BlueTriangle"]
-        ),
-        .library(
-            name: "BTTSwiftUITracker",
-            targets: ["BTTSwiftUITracker"]
-        )
-    ],
-    dependencies: [
-        .package(
-            url: "https://github.com/apple/swift-syntax.git",
-            from: "509.0.0"
-        )
+            targets: ["BlueTriangle"])
     ],
     targets: [
-        // macros support -----------------------------------------------------------
-        .macro(
-            name: "BTTMacrosPlugin",
-            dependencies: [
-                .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                .product(name: "SwiftCompilerPlugin", package: "swift-syntax")
-            ],
-            path: "Sources/BTTSwiftUITracker/Plugins"
+        .target(
+          name: "BlueTriangle",
+          dependencies: ["Backtrace","AppEventLogger"],
+          resources: [.copy("PrivacyInfo.xcprivacy")]
         ),
         .target(
-            name: "BTTSwiftUITracker",
-            dependencies: [
-                "BTTMacrosPlugin",
-                "BlueTriangle"
-            ],
-            path: "Sources/BTTSwiftUITracker/Source"
-        ),
+            name: "Backtrace",
+            dependencies: []),
         .target(
-            name: "BlueTriangle",
-            dependencies: ["Backtrace", "AppEventLogger"],
-            resources: [.copy("PrivacyInfo.xcprivacy")]
-        ),
-        .target(name: "Backtrace"),
-        .target(name: "AppEventLogger"),
-        .testTarget(name: "BlueTriangleTests", dependencies: ["BlueTriangle"]),
-        .testTarget(name: "ObjcCompatibilityTests", dependencies: ["BlueTriangle"])
+            name: "AppEventLogger",
+            dependencies: []),
+        .testTarget(
+            name: "BlueTriangleTests",
+            dependencies: ["BlueTriangle"]),
+        .testTarget(
+            name: "ObjcCompatibilityTests",
+            dependencies: ["BlueTriangle"])
     ]
 )
