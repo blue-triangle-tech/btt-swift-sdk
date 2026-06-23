@@ -154,6 +154,7 @@ BTTInstrumentor check
 
 Visit the [**Official Help Doc**](https://help.bluetriangle.com/hc/en-us/articles) for more information.
 
+
 To disable screen tracking, you need to set the enableScreenTracking configuration to false during configuration like bellow, This will ignore UIViewControllers activities and bttTrackScreen() modifier calls.
 
 ```swift
@@ -277,7 +278,7 @@ extension YourWebView {
 }
 
 ```
-** Troubleshoot session stitching **
+**Troubleshoot session stitching**
 
 To verify if session stitching is done correctly, We have function verifySessionStitchingOnWebView(_:completion:) to verify. Use is for debuging purpose only 
 
