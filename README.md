@@ -125,6 +125,35 @@ struct ContentView: View {
 }
 ```
 
+For automatic SwiftUI instrumentation, we have a tool **BTTInstrumentor** that injects `.bttTrackScreen()` into your views at build time. Requires SDK **3.15.13** or above.
+
+**Setup**
+
+**1. Install BTTInstrumentor**
+
+Add the BlueTriangle Homebrew tap and install the tool:
+
+```bash
+brew tap blue-triangle-tech/tools
+brew install bttinstrumentor
+```
+
+**2. Install Instrumentor to Your Project**
+
+Quit Xcode, navigate to your project root in Terminal, then run:
+
+```bash
+BTTInstrumentor install
+```
+
+**3. Verify Setup**
+
+```bash
+BTTInstrumentor check
+```
+
+Visit the [**Official Help Doc**](https://help.bluetriangle.com/hc/en-us/articles) for more information.
+
 To disable screen tracking, you need to set the enableScreenTracking configuration to false during configuration like bellow, This will ignore UIViewControllers activities and bttTrackScreen() modifier calls.
 
 ```swift
