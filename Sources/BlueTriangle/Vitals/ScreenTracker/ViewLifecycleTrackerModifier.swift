@@ -69,22 +69,6 @@ internal struct ViewLifecycleTrackerModifier: ViewModifier {
     }
 }
 
-public struct BTTTrack<Content: View>: View {
-
-    private let screenName: String
-    private let content: Content
-
-    public init(_ screenName: String, @ViewBuilder content: () -> Content) {
-        self.screenName = screenName
-        self.content    = content()
-    }
-
-    public var body: some View {
-        content
-            .bttTrackScreen(screenName)
-    }
-}
-
 public extension View {
     
     private func shouldTrackScreen(_ name : String) -> Bool{
@@ -105,7 +89,7 @@ public extension View {
     }
     
     ///Uses for manual screen tracking to log individual views in SwiftUI.
-    ///To track screen, call "trackScreen(_ screenName: String)" on view which screen compose(which life cycle you want to track) like VStack().trackScreen("ContentView") or  ContentView().trackScreen("ContentView")
+    ///To track screen, call "bttTrackScreen(_ screenName: String)" on view which screen compose(which life cycle you want to track) like VStack().bttTrackScreen("ContentView") or  ContentView().bttTrackScreen("ContentView")
     ///This method track screen when this view appears on screen
     
     
@@ -115,6 +99,13 @@ public extension View {
              self.modifier(ViewLifecycleTrackerModifier(name: screenName))
         } else {
             self
+        }
+    }
+    
+    @ViewBuilder
+    func bttTrack(_ screenName: String) -> some View {
+        if BlueTriangle.configuration.enableGrouping {
+            self.bttTrackScreen(screenName)
         }
     }
 }
