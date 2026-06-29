@@ -107,5 +107,8 @@ public extension View {
         if BlueTriangle.configuration.enableGrouping {
             self.bttTrackScreen(screenName)
         }
+        else {
+           self
+       }
     }
 }
