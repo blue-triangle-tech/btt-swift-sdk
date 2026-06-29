@@ -144,7 +144,7 @@ Quit Xcode, navigate to your project root in Terminal, then run:
 BTTInstrumentor install
 ```
 
-For more information on Instrumentor, visit the [**Official Help Doc**](https://help.bluetriangle.com/hc/en-us/articles)
+For more information on Instrumentor, visit the [**Official Help Doc**](https://help.bluetriangle.com/hc/en-us/articles/52918697353875-iOS-SwiftUI-SDK-Instrumentation-Automated-Screen-Tracking)
 
 
 To disable screen tracking, you need to set the enableScreenTracking configuration to false during configuration like bellow, This will ignore UIViewControllers activities and bttTrackScreen() modifier calls.
