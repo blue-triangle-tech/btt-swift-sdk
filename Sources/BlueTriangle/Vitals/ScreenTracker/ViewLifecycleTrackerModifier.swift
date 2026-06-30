@@ -106,8 +106,7 @@ public extension View {
     func bttTrack(_ screenName: String) -> some View {
         if BlueTriangle.configuration.enableGrouping {
             self.bttTrackScreen(screenName)
-        }
-        else {
+        } else {
            self
        }
     }

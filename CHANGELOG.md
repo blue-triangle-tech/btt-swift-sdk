@@ -3,7 +3,7 @@
 - Added .bttTrack modifier for auto instrumentor tracking
 - Added NavigationStackTracker for NavigationStack path tracking
 - Fixed multiple group creation for the same screen during scrolling
-- Fixed incorrect screen name resolution caused by repeated child views
+- Fixed impact on screen name resolution caused by repeated child views
 
 # Blue Triangle 3.15.12, May 22 2026
 ### New Features and Bug Fixes

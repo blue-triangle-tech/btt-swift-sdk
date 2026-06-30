@@ -129,10 +129,15 @@ OR SwiftUI views can be instrumented using BTTInstrumentor, a tool that injects 
 
 **1. Install BTTInstrumentor**
 
-Add the BlueTriangle Homebrew tap and install the tool:
+Install the BlueTriangle SwiftUI instrumentor via Homebrew:
 
 ```bash
 brew tap blue-triangle-tech/tools
+```
+```bash
+brew trust blue-triangle-tech/tools
+```
+```bash
 brew install bttinstrumentor
 ```
 
