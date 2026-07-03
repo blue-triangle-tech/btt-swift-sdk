@@ -112,7 +112,7 @@ BlueTriangle.configure { config in
  }
 ```
 
-SwiftUI views are not captured automatically. You need to call bttTrackScreen() modifier on each view which you want to track. Below example show usage of "bttTrackScreen(_ screenName: String)" to track About Us screen.
+SwiftUI views can be instrumented manually. To do this, you need to call bttTrackScreen() modifier on each view which you want to track. Below example show usage of "bttTrackScreen(_ screenName: String)" to track About Us screen.
 
 ```swift
 struct ContentView: View {
@@ -124,6 +124,33 @@ struct ContentView: View {
     }
 }
 ```
+
+OR SwiftUI views can be instrumented using BTTInstrumentor, a tool that injects .bttTrack() into your views at build time. Requires SDK 3.15.13 or above.
+
+**1. Install BTTInstrumentor**
+
+Install the BlueTriangle SwiftUI instrumentor via Homebrew:
+
+```bash
+brew tap blue-triangle-tech/tools
+```
+```bash
+brew trust blue-triangle-tech/tools
+```
+```bash
+brew install bttinstrumentor
+```
+
+**2. Install Instrumentor to Your Project**
+
+Quit Xcode, navigate to your project root in Terminal, then run:
+
+```bash
+BTTInstrumentor install
+```
+
+For more information on Instrumentor, visit the [**Official Help Doc**](https://help.bluetriangle.com/hc/en-us/articles/52918697353875-iOS-SwiftUI-SDK-Instrumentation-Automated-Screen-Tracking)
+
 
 To disable screen tracking, you need to set the enableScreenTracking configuration to false during configuration like bellow, This will ignore UIViewControllers activities and bttTrackScreen() modifier calls.
 
@@ -248,7 +275,7 @@ extension YourWebView {
 }
 
 ```
-** Troubleshoot session stitching **
+**Troubleshoot session stitching**
 
 To verify if session stitching is done correctly, We have function verifySessionStitchingOnWebView(_:completion:) to verify. Use is for debuging purpose only 
 

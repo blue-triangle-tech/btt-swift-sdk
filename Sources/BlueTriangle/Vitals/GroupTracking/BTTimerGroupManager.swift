@@ -30,23 +30,85 @@ final class BTTimerGroupManager {
         if let tg = target {
             tg.add(timer)
         } else {
-            let interval = computeCauseInterval(from: lock.sync { lastTimerTime })
-            let newGroup = startNewGroup(groupName: timer.getPageName(), hasForcedGroup: false, cause: .timeout, causeInterval: interval)
-            newGroup.add(timer)
+            // Check if there's a closed but unsubmitted group
+            let closedGroup: BTTimerGroup? = lock.sync {
+                activeGroups.first(where: { $0.isClosed && !$0.hasGroupSubmitted })
+            }
+            
+            if let closedGroup = closedGroup {
+                // Check if the timer belongs to the same group
+                if closedGroup.belongsToSameGroup(timer.getPageName()) {
+                    // Forcefully add to the closed group if it's from the same group
+                    closedGroup.add(timer)
+                } else {
+                    // Different group - forcefully submit the closed group and create new one
+                    closedGroup.forcefullyEndAllTimers()
+                    // Create new group for unique timer
+                    let interval = computeCauseInterval(from: lock.sync { lastTimerTime })
+                    let newGroup = startNewGroup(groupName: timer.getPageName(), hasForcedGroup: false, cause: .timeout, causeInterval: interval)
+                    newGroup.add(timer)
+                }
+            } else {
+                // No closed unsubmitted group exists - create new group
+                let interval = computeCauseInterval(from: lock.sync { lastTimerTime })
+                let newGroup = startNewGroup(groupName: timer.getPageName(), hasForcedGroup: false, cause: .timeout, causeInterval: interval)
+                newGroup.add(timer)
+            }
         }
     }
 
     func startGroupIfNeeded(_ groupName : String) {
-        let decision: (shouldStart: Bool, cause: GroupingCause?, lastTimerSnap: Millisecond?) = lock.sync {
-            if activeGroups.last(where: { !$0.isClosed }) == nil {
-                return (true, .timeout, lastTimerTime)
-            } else if let lt = lastTimerTime, lt < lastActionTime {
-                return (true, .tap, lastTimerTime)
+        let decision: (shouldStart: Bool, cause: GroupingCause?, lastTimerSnap: Millisecond?, existingGroup: BTTimerGroup?) = lock.sync {
+            // There's only one active group at a time (either open or closed but not submitted)
+            let existingGroup = activeGroups.first(where: { !$0.hasGroupSubmitted })
+            
+            // If there's an existing group that's open
+            if let group = existingGroup, !group.isClosed {
+                // First check if this timer already belongs to the open group
+                if group.belongsToSameGroup(groupName) {
+                    // Same timer - always add to existing group, ignore tap detection
+                    return (false, nil, lastTimerTime, nil)
+                }
+                
+                // Different timer - check for tap detection
+                if let lt = lastTimerTime, lt < lastActionTime {
+                    // Tap detected with different timer - force start a new group
+                    return (true, .tap, lastTimerTime, group)
+                }
+                
+                // Different timer but no tap detected - add to existing open group
+                return (false, nil, lastTimerTime, nil)
             }
-            return (false, nil, lastTimerTime)
+            
+            // If there's a closed but unsubmitted group, check if timer belongs to it
+            if let closedGroup = existingGroup, closedGroup.isClosed, !closedGroup.hasGroupSubmitted {
+                // Check if the timer belongs to the closed group
+                if closedGroup.belongsToSameGroup(groupName) {
+                    // Timer belongs to closed group - don't create new group, will add to closed group
+                    return (false, nil, lastTimerTime, nil)
+                } else {
+                    // Timer doesn't belong to closed group - force submit closed group and create new one
+                    return (true, .timeout, lastTimerTime, closedGroup)
+                }
+            }
+            
+            // No existing group - create new one
+            return (true, .timeout, lastTimerTime, nil)
         }
         
-        guard decision.shouldStart, let cause = decision.cause else { return }
+        // If we don't need to start a new group, just return
+        // Timers will be added to existing group via add(timer:) method
+        if !decision.shouldStart {
+            return
+        }
+        
+        // Need to start a new group
+        // First, forcefully submit the existing group if it exists (tap case or closed group doesn't match)
+        if let existingGroup = decision.existingGroup {
+            existingGroup.forcefullyEndAllTimers()
+        }
+        
+        guard let cause = decision.cause else { return }
         let interval = computeCauseInterval(from: decision.lastTimerSnap)
         _ = startNewGroup(groupName: groupName, hasForcedGroup: false, cause: cause, causeInterval: interval)
     }

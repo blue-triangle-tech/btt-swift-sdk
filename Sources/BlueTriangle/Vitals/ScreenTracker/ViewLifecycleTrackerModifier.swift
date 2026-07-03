@@ -89,7 +89,7 @@ public extension View {
     }
     
     ///Uses for manual screen tracking to log individual views in SwiftUI.
-    ///To track screen, call "trackScreen(_ screenName: String)" on view which screen compose(which life cycle you want to track) like VStack().trackScreen("ContentView") or  ContentView().trackScreen("ContentView")
+    ///To track screen, call "bttTrackScreen(_ screenName: String)" on view which screen compose(which life cycle you want to track) like VStack().bttTrackScreen("ContentView") or  ContentView().bttTrackScreen("ContentView")
     ///This method track screen when this view appears on screen
     
     
@@ -100,5 +100,14 @@ public extension View {
         } else {
             self
         }
+    }
+    
+    @ViewBuilder
+    func bttTrack(_ screenName: String) -> some View {
+        if BlueTriangle.configuration.enableGrouping {
+            self.bttTrackScreen(screenName)
+        } else {
+           self
+       }
     }
 }
