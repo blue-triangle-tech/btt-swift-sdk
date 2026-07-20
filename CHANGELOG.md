@@ -1,4 +1,8 @@
-# Blue Triangle 3.15.12, Latest
+# Blue Triangle 3.15.14, Latest
+### Bug Fixes
+- Fixed the breadcrumb limit exceeded issue for the SwiftUI lifecycle
+
+# Blue Triangle 3.15.13,  July 8 2026
 ### New Features and Bug Fixes
 - Added .bttTrack modifier for auto instrumentor tracking
 - Added NavigationStackTracker for NavigationStack path tracking
