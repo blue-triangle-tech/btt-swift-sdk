@@ -108,8 +108,7 @@ final class BreadcrumbCollector {
     }
 
     private static let swiftUILifecycleMethods: Set<String> = [
-        Constants.Breadcrums.UILifeCycle.onAppear,
-        Constants.Breadcrums.UILifeCycle.onDisappear
+        Constants.Breadcrums.UILifeCycle.onAppear
     ]
 
     private func captures(event: any BreadcrumbEvent, data: Data, key: String) {
