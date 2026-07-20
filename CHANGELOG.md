@@ -1,6 +1,6 @@
 # Blue Triangle 3.15.14, Latest
-### Bug Fixes
-- Fixed the breadcrumb limit exceeded issue for the SwiftUI lifecycle
+### Improvements
+- Combined repetitive SwiftUI view entries in breadcrumbs for cases like list and for each. Multiple view appear in a list will be shown as a single entry with a count.
 
 # Blue Triangle 3.15.13,  July 8 2026
 ### New Features and Bug Fixes
