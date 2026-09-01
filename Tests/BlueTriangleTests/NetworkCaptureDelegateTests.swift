@@ -31,6 +31,7 @@ final class NetworkCaptureDelegateTests: XCTestCase {
 
         let configuration = BlueTriangleConfiguration()
         Mock.configureBlueTriangle(configuration: configuration)
+        configuration.requestBuilder = BlueTriangleTests.requestBuilder
 
         // Configure Blue Triangle
         BlueTriangle.reconfigure(
@@ -78,7 +79,8 @@ final class NetworkCaptureDelegateTests: XCTestCase {
 
         let configuration = BlueTriangleConfiguration()
         Mock.configureBlueTriangle(configuration: configuration)
-
+        configuration.requestBuilder = BlueTriangleTests.requestBuilder
+        
         // Configure Blue Triangle
         BlueTriangle.reconfigure(
             configuration: configuration,
